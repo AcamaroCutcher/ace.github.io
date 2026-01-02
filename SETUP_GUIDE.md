@@ -9,7 +9,7 @@ Follow these steps to customize your personal portfolio website.
 1. **Hero Section** (Lines ~40-80)
    ```html
    <!-- Change these -->
-   <span class="name">Your Name</span>
+   <span class="name">Acamaro Cutcher</span>
    <p class="hero-subtitle">Researcher | Developer | Innovator</p>
    <p class="hero-description">
        Your personal description here...
