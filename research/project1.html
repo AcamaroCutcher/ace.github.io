@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Research Project: Advanced Computational Methods">
+    <title>Research Project - Your Name</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/research.css">
+
+    <!-- PDF.js for PDF viewing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="../index.html" class="logo">Your Name</a>
+
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="../index.html#home" class="nav-link">Home</a></li>
+                <li><a href="../index.html#about" class="nav-link">About</a></li>
+                <li><a href="../index.html#research" class="nav-link active">Research</a></li>
+                <li><a href="../index.html#blog" class="nav-link">Blog</a></li>
+                <li><a href="../index.html#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="../cv.html" class="nav-link">CV</a></li>
+                <li><a href="../index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Research Project Header -->
+    <div class="research-header">
+        <div class="container">
+            <a href="../index.html#research" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Research
+            </a>
+            <h1 class="research-title">Advanced Computational Methods for Complex Systems</h1>
+            <p class="research-subtitle">
+                Novel algorithms and numerical techniques for solving large-scale optimization problems
+            </p>
+            <div class="research-meta">
+                <span class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    2023 - 2024
+                </span>
+                <span class="meta-item">
+                    <i class="fas fa-user"></i>
+                    Lead Researcher
+                </span>
+                <span class="meta-item status-badge current">
+                    <i class="fas fa-circle"></i>
+                    Current Project
+                </span>
+            </div>
+            <div class="research-actions">
+                <a href="../papers/project1.pdf" class="btn btn-primary" download>
+                    <i class="fas fa-download"></i> Download Paper
+                </a>
+                <a href="https://github.com/yourusername/project1" class="btn btn-secondary" target="_blank">
+                    <i class="fab fa-github"></i> View Code
+                </a>
+                <a href="https://drive.google.com/file/d/YOUR_FILE_ID/view" class="btn btn-secondary" target="_blank">
+                    <i class="fab fa-google-drive"></i> Google Drive
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Content -->
+    <div class="research-content">
+        <div class="container">
+            <div class="research-grid">
+                <!-- Main Content -->
+                <div class="research-main">
+                    <!-- Abstract -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-align-left"></i> Abstract</h2>
+                        <p class="abstract">
+                            This research presents a novel framework for solving large-scale optimization problems
+                            in complex systems. We introduce advanced computational methods that combine classical
+                            numerical techniques with modern machine learning approaches to achieve unprecedented
+                            efficiency and accuracy.
+                        </p>
+                        <p>
+                            Our methodology has been successfully applied to various domains including computational
+                            fluid dynamics, structural optimization, and large-scale data analysis. The results
+                            demonstrate significant improvements over existing state-of-the-art methods, with
+                            speedups of up to 100x on real-world problems.
+                        </p>
+                    </section>
+
+                    <!-- Motivation -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-lightbulb"></i> Motivation & Background</h2>
+                        <p>
+                            Traditional optimization methods face significant challenges when dealing with:
+                        </p>
+                        <ul>
+                            <li>High-dimensional parameter spaces (>10,000 dimensions)</li>
+                            <li>Non-convex objective functions with multiple local minima</li>
+                            <li>Expensive function evaluations requiring HPC resources</li>
+                            <li>Real-time constraints in industrial applications</li>
+                        </ul>
+                        <p>
+                            Our research addresses these challenges through a hybrid approach that leverages both
+                            domain knowledge and data-driven techniques.
+                        </p>
+                    </section>
+
+                    <!-- Key Contributions -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-star"></i> Key Contributions</h2>
+                        <div class="contributions-grid">
+                            <div class="contribution-card">
+                                <div class="contribution-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <h3>Novel Algorithm</h3>
+                                <p>
+                                    Developed a hybrid optimization algorithm combining gradient-based methods
+                                    with evolutionary strategies
+                                </p>
+                            </div>
+                            <div class="contribution-card">
+                                <div class="contribution-icon">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </div>
+                                <h3>Performance</h3>
+                                <p>
+                                    Achieved 50-100x speedup on benchmark problems compared to existing methods
+                                </p>
+                            </div>
+                            <div class="contribution-card">
+                                <div class="contribution-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <h3>Open Source</h3>
+                                <p>
+                                    Released highly optimized C++/Python library used by 500+ researchers
+                                </p>
+                            </div>
+                            <div class="contribution-card">
+                                <div class="contribution-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h3>Applications</h3>
+                                <p>
+                                    Demonstrated effectiveness across 5 different industrial applications
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Methodology -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-cogs"></i> Methodology</h2>
+                        <p>
+                            Our approach consists of three main components:
+                        </p>
+                        <ol class="methodology-list">
+                            <li>
+                                <strong>Adaptive Sampling Strategy:</strong> Intelligently select evaluation points
+                                using Bayesian optimization and active learning principles
+                            </li>
+                            <li>
+                                <strong>Surrogate Model:</strong> Build fast-to-evaluate approximations using
+                                Gaussian processes and neural networks
+                            </li>
+                            <li>
+                                <strong>Hybrid Optimization:</strong> Combine local gradient-based search with
+                                global evolutionary exploration
+                            </li>
+                        </ol>
+
+                        <div class="figure">
+                            <img src="../images/research/methodology-diagram.png" alt="Methodology Diagram">
+                            <p class="figure-caption">
+                                Figure 1: Overview of the proposed hybrid optimization framework
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Results -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-chart-bar"></i> Results & Findings</h2>
+                        <p>
+                            We evaluated our method on standard benchmark problems and real-world applications:
+                        </p>
+
+                        <div class="results-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Problem</th>
+                                        <th>Dimensions</th>
+                                        <th>Our Method</th>
+                                        <th>State-of-the-Art</th>
+                                        <th>Speedup</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Rosenbrock</td>
+                                        <td>1000</td>
+                                        <td>0.3s</td>
+                                        <td>12.4s</td>
+                                        <td class="speedup">41x</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ackley</td>
+                                        <td>5000</td>
+                                        <td>1.2s</td>
+                                        <td>89.3s</td>
+                                        <td class="speedup">74x</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CFD Optimization</td>
+                                        <td>10000</td>
+                                        <td>45min</td>
+                                        <td>72hrs</td>
+                                        <td class="speedup">96x</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="highlight-box">
+                            <i class="fas fa-trophy"></i>
+                            <div>
+                                <strong>Award:</strong> This work received the Best Paper Award at the
+                                International Conference on Optimization Methods 2024.
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Publications -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-file-alt"></i> Publications & Presentations</h2>
+
+                        <div class="publication-item">
+                            <h4>Journal Article</h4>
+                            <p class="publication-citation">
+                                <strong>Your Name</strong>, Co-Author A., Co-Author B. (2024).
+                                "Hybrid Computational Methods for Large-Scale Optimization."
+                                <em>Journal of Computational Science</em>, 45(2), 123-145.
+                            </p>
+                            <div class="publication-links">
+                                <a href="https://doi.org/xxx" target="_blank" class="pub-link">
+                                    <i class="fas fa-external-link-alt"></i> DOI
+                                </a>
+                                <a href="../papers/project1.pdf" target="_blank" class="pub-link">
+                                    <i class="fas fa-file-pdf"></i> PDF
+                                </a>
+                                <a href="#" class="pub-link" onclick="event.preventDefault(); showBibtex()">
+                                    <i class="fas fa-quote-right"></i> BibTeX
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="publication-item">
+                            <h4>Conference Presentation</h4>
+                            <p class="publication-citation">
+                                International Conference on Optimization Methods, San Francisco, CA (2024)
+                            </p>
+                            <div class="publication-links">
+                                <a href="../papers/presentation.pdf" target="_blank" class="pub-link">
+                                    <i class="fas fa-file-powerpoint"></i> Slides
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=xxx" target="_blank" class="pub-link">
+                                    <i class="fab fa-youtube"></i> Video
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Code & Data -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-code"></i> Code & Reproducibility</h2>
+                        <p>
+                            All code and data are publicly available to ensure reproducibility:
+                        </p>
+
+                        <div class="code-resources">
+                            <div class="resource-card">
+                                <i class="fab fa-github"></i>
+                                <h4>Source Code</h4>
+                                <p>Complete implementation in C++ and Python</p>
+                                <a href="https://github.com/yourusername/project1" target="_blank" class="btn-link">
+                                    View Repository <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="resource-card">
+                                <i class="fas fa-database"></i>
+                                <h4>Datasets</h4>
+                                <p>Benchmark problems and results</p>
+                                <a href="https://zenodo.org/record/xxx" target="_blank" class="btn-link">
+                                    Download Data <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="resource-card">
+                                <i class="fas fa-book"></i>
+                                <h4>Documentation</h4>
+                                <p>API reference and tutorials</p>
+                                <a href="https://docs.example.com" target="_blank" class="btn-link">
+                                    Read Docs <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PDF Viewer -->
+                    <section class="content-section">
+                        <h2><i class="fas fa-file-pdf"></i> View Paper</h2>
+                        <div class="pdf-viewer-container">
+                            <div class="pdf-toolbar">
+                                <button onclick="previousPage()" class="pdf-btn">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </button>
+                                <span class="pdf-page-info">
+                                    Page <span id="page_num">1</span> / <span id="page_count">1</span>
+                                </span>
+                                <button onclick="nextPage()" class="pdf-btn">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <button onclick="zoomIn()" class="pdf-btn">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button onclick="zoomOut()" class="pdf-btn">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                            </div>
+                            <div class="pdf-canvas-container">
+                                <canvas id="pdf-canvas"></canvas>
+                            </div>
+                            <p class="pdf-note">
+                                <i class="fas fa-info-circle"></i>
+                                The PDF can also be viewed from
+                                <a href="https://drive.google.com/file/d/YOUR_FILE_ID/view" target="_blank">
+                                    Google Drive
+                                </a>
+                            </p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="research-sidebar">
+                    <!-- Quick Links -->
+                    <div class="sidebar-section">
+                        <h3>Quick Links</h3>
+                        <ul class="quick-links">
+                            <li>
+                                <a href="#abstract"><i class="fas fa-align-left"></i> Abstract</a>
+                            </li>
+                            <li>
+                                <a href="#motivation"><i class="fas fa-lightbulb"></i> Motivation</a>
+                            </li>
+                            <li>
+                                <a href="#contributions"><i class="fas fa-star"></i> Contributions</a>
+                            </li>
+                            <li>
+                                <a href="#methodology"><i class="fas fa-cogs"></i> Methodology</a>
+                            </li>
+                            <li>
+                                <a href="#results"><i class="fas fa-chart-bar"></i> Results</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Project Info -->
+                    <div class="sidebar-section">
+                        <h3>Project Information</h3>
+                        <div class="info-list">
+                            <div class="info-item">
+                                <span class="info-label">Status</span>
+                                <span class="info-value badge-current">Active</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Duration</span>
+                                <span class="info-value">2023 - Present</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Funding</span>
+                                <span class="info-value">NSF Grant #12345</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Collaborators</span>
+                                <span class="info-value">3 institutions</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technologies -->
+                    <div class="sidebar-section">
+                        <h3>Technologies Used</h3>
+                        <div class="tech-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">C++</span>
+                            <span class="tag">CUDA</span>
+                            <span class="tag">MPI</span>
+                            <span class="tag">NumPy</span>
+                            <span class="tag">SciPy</span>
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">Docker</span>
+                        </div>
+                    </div>
+
+                    <!-- Team -->
+                    <div class="sidebar-section">
+                        <h3>Research Team</h3>
+                        <div class="team-list">
+                            <div class="team-member">
+                                <strong>Your Name</strong>
+                                <span>Principal Investigator</span>
+                            </div>
+                            <div class="team-member">
+                                <strong>Dr. Jane Doe</strong>
+                                <span>Co-Investigator</span>
+                            </div>
+                            <div class="team-member">
+                                <strong>John Smith</strong>
+                                <span>PhD Student</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Related Projects -->
+                    <div class="sidebar-section">
+                        <h3>Related Projects</h3>
+                        <div class="related-projects">
+                            <a href="project2.html" class="related-link">
+                                <i class="fas fa-arrow-right"></i> Numerical Methods for PDEs
+                            </a>
+                            <a href="project3.html" class="related-link">
+                                <i class="fas fa-arrow-right"></i> Machine Learning Applications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BibTeX Modal -->
+    <div id="bibtexModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideBibtex()">&times;</span>
+            <h3>BibTeX Citation</h3>
+            <pre class="bibtex-code"><code>@article{yourname2024hybrid,
+  title={Hybrid Computational Methods for Large-Scale Optimization},
+  author={Your Name and Co-Author A. and Co-Author B.},
+  journal={Journal of Computational Science},
+  volume={45},
+  number={2},
+  pages={123--145},
+  year={2024},
+  publisher={Elsevier}
+}</code></pre>
+            <button onclick="copyBibtex()" class="btn btn-primary">
+                <i class="far fa-copy"></i> Copy to Clipboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Your Name. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // BibTeX modal functions
+        function showBibtex() {
+            document.getElementById('bibtexModal').style.display = 'block';
+        }
+
+        function hideBibtex() {
+            document.getElementById('bibtexModal').style.display = 'none';
+        }
+
+        function copyBibtex() {
+            const code = document.querySelector('.bibtex-code code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('BibTeX copied to clipboard!');
+            });
+        }
+
+        // PDF.js viewer (placeholder - requires actual PDF file)
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        let scale = 1.5;
+
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+
+        // Note: This is a placeholder. In production, you would load an actual PDF
+        // pdfjsLib.getDocument('../papers/project1.pdf').promise.then(...)
+
+        function renderPage(num) {
+            if (!pdfDoc) return;
+            pageRendering = true;
+
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({scale: scale});
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                const renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+
+            document.getElementById('page_num').textContent = num;
+        }
+
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+
+        function previousPage() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
+
+        function nextPage() {
+            if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
+
+        function zoomIn() {
+            scale += 0.25;
+            queueRenderPage(pageNum);
+        }
+
+        function zoomOut() {
+            if (scale <= 0.5) return;
+            scale -= 0.25;
+            queueRenderPage(pageNum);
+        }
+    </script>
+</body>
+</html>

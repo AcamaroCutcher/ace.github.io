@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mathematical Modeling: From Theory to Implementation">
+    <title>Mathematical Modeling - Blog</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+    <!-- LaTeX Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+    <!-- Plotly for visualizations -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/blog.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="../index.html" class="logo">Your Name</a>
+
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="../index.html#home" class="nav-link">Home</a></li>
+                <li><a href="../index.html#about" class="nav-link">About</a></li>
+                <li><a href="../index.html#research" class="nav-link">Research</a></li>
+                <li><a href="../index.html#blog" class="nav-link active">Blog</a></li>
+                <li><a href="../index.html#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="../cv.html" class="nav-link">CV</a></li>
+                <li><a href="../index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Blog Post Header -->
+    <article class="blog-post">
+        <header class="post-header">
+            <div class="container">
+                <div class="post-meta">
+                    <a href="../index.html#blog" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to Blog
+                    </a>
+                    <div class="post-info">
+                        <span><i class="far fa-calendar"></i> January 2, 2026</span>
+                        <span><i class="far fa-clock"></i> 10 min read</span>
+                    </div>
+                </div>
+                <h1 class="post-title">Mathematical Modeling: From Theory to Implementation</h1>
+                <p class="post-subtitle">
+                    A comprehensive guide to implementing mathematical models with Python,
+                    complete with LaTeX equations and interactive visualizations
+                </p>
+                <div class="post-tags">
+                    <span class="tag">Mathematics</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">Numerical Methods</span>
+                    <span class="tag">Visualization</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Post Content -->
+        <div class="container">
+            <div class="post-content">
+                <section>
+                    <h2>Introduction</h2>
+                    <p>
+                        Mathematical modeling is the art and science of translating real-world phenomena into
+                        mathematical language. In this article, we'll explore how to bridge the gap between
+                        theoretical mathematics and practical implementation using Python.
+                    </p>
+                    <p>
+                        We'll cover ordinary differential equations (ODEs), numerical methods, and visualization
+                        techniques that bring mathematical concepts to life.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>The Mathematics: Lotka-Volterra Equations</h2>
+                    <p>
+                        Let's start with a classic example: the Lotka-Volterra equations, which model
+                        predator-prey dynamics. The system is described by the following coupled ODEs:
+                    </p>
+
+                    <div class="equation-block">
+                        <span class="katex-equation">
+                            \[
+                            \begin{aligned}
+                            \frac{dx}{dt} &= \alpha x - \beta xy \\
+                            \frac{dy}{dt} &= \delta xy - \gamma y
+                            \end{aligned}
+                            \]
+                        </span>
+                    </div>
+
+                    <p>Where:</p>
+                    <ul>
+                        <li><span class="inline-math">\(x\)</span> represents the prey population</li>
+                        <li><span class="inline-math">\(y\)</span> represents the predator population</li>
+                        <li><span class="inline-math">\(\alpha\)</span> is the prey growth rate</li>
+                        <li><span class="inline-math">\(\beta\)</span> is the predation rate</li>
+                        <li><span class="inline-math">\(\delta\)</span> is the predator efficiency</li>
+                        <li><span class="inline-math">\(\gamma\)</span> is the predator death rate</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Python Implementation</h2>
+                    <p>
+                        Now let's implement this system using Python and SciPy's ODE solver:
+                    </p>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">
+                                <i class="fab fa-python"></i> Python
+                            </span>
+                            <button class="copy-code" onclick="copyCode(this)">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre><code class="language-python">import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+
+def lotka_volterra(state, t, alpha, beta, delta, gamma):
+    """
+    Lotka-Volterra equations for predator-prey dynamics.
+
+    Parameters:
+    -----------
+    state : array_like
+        Current state [prey, predator]
+    t : float
+        Current time
+    alpha, beta, delta, gamma : float
+        Model parameters
+
+    Returns:
+    --------
+    derivatives : array_like
+        [dx/dt, dy/dt]
+    """
+    x, y = state
+
+    dx_dt = alpha * x - beta * x * y
+    dy_dt = delta * x * y - gamma * y
+
+    return [dx_dt, dy_dt]
+
+# Parameters
+alpha = 1.0   # Prey growth rate
+beta = 0.1    # Predation rate
+delta = 0.075 # Predator efficiency
+gamma = 1.5   # Predator death rate
+
+# Initial conditions
+x0 = 10  # Initial prey population
+y0 = 5   # Initial predator population
+initial_state = [x0, y0]
+
+# Time points
+t = np.linspace(0, 15, 1000)
+
+# Solve ODE
+solution = odeint(lotka_volterra, initial_state, t,
+                  args=(alpha, beta, delta, gamma))
+
+prey, predator = solution.T
+
+print(f"Simulation complete!")
+print(f"Max prey population: {prey.max():.2f}")
+print(f"Max predator population: {predator.max():.2f}")</code></pre>
+                    </div>
+
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>Note:</strong> The <code>odeint</code> function uses LSODA from the
+                            FORTRAN library odepack, which automatically switches between stiff and
+                            non-stiff methods.
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Numerical Analysis</h2>
+                    <p>
+                        The system exhibits periodic behavior. The equilibrium points can be found by setting
+                        the derivatives to zero:
+                    </p>
+
+                    <div class="equation-block">
+                        <span class="katex-equation">
+                            \[
+                            x^* = \frac{\gamma}{\delta}, \quad y^* = \frac{\alpha}{\beta}
+                            \]
+                        </span>
+                    </div>
+
+                    <p>
+                        The stability analysis using the Jacobian matrix
+                        <span class="inline-math">\(J\)</span> reveals:
+                    </p>
+
+                    <div class="equation-block">
+                        <span class="katex-equation">
+                            \[
+                            J = \begin{pmatrix}
+                            \alpha - \beta y & -\beta x \\
+                            \delta y & \delta x - \gamma
+                            \end{pmatrix}
+                            \]
+                        </span>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Interactive Visualization</h2>
+                    <p>
+                        Let's visualize the dynamics using an interactive plot. This shows both the time
+                        evolution and the phase space trajectory:
+                    </p>
+
+                    <div id="time-series-plot" class="visualization-container"></div>
+                    <div id="phase-space-plot" class="visualization-container"></div>
+                </section>
+
+                <section>
+                    <h2>C++ Implementation for Performance</h2>
+                    <p>
+                        For computationally intensive simulations, we can implement the same model in C++:
+                    </p>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">
+                                <i class="fas fa-code"></i> C++
+                            </span>
+                            <button class="copy-code" onclick="copyCode(this)">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+
+class LotkaVolterra {
+private:
+    double alpha, beta, delta, gamma;
+
+public:
+    LotkaVolterra(double a, double b, double d, double g)
+        : alpha(a), beta(b), delta(d), gamma(g) {}
+
+    std::pair&lt;double, double&gt; derivatives(double x, double y) {
+        double dx_dt = alpha * x - beta * x * y;
+        double dy_dt = delta * x * y - gamma * y;
+        return {dx_dt, dy_dt};
+    }
+
+    std::vector&lt;std::pair&lt;double, double&gt;&gt; solve_rk4(
+        double x0, double y0, double t_max, double dt) {
+
+        std::vector&lt;std::pair&lt;double, double&gt;&gt; solution;
+        double x = x0, y = y0;
+
+        for (double t = 0; t &lt; t_max; t += dt) {
+            solution.push_back({x, y});
+
+            // Runge-Kutta 4th order
+            auto [k1_x, k1_y] = derivatives(x, y);
+            auto [k2_x, k2_y] = derivatives(x + dt*k1_x/2, y + dt*k1_y/2);
+            auto [k3_x, k3_y] = derivatives(x + dt*k2_x/2, y + dt*k2_y/2);
+            auto [k4_x, k4_y] = derivatives(x + dt*k3_x, y + dt*k3_y);
+
+            x += dt * (k1_x + 2*k2_x + 2*k3_x + k4_x) / 6;
+            y += dt * (k1_y + 2*k2_y + 2*k3_y + k4_y) / 6;
+        }
+
+        return solution;
+    }
+};
+
+int main() {
+    LotkaVolterra model(1.0, 0.1, 0.075, 1.5);
+    auto solution = model.solve_rk4(10.0, 5.0, 15.0, 0.01);
+
+    std::cout &lt;&lt; "Simulation complete! Points: "
+              &lt;&lt; solution.size() &lt;&lt; std::endl;
+
+    return 0;
+}</code></pre>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Bash Script for Automation</h2>
+                    <p>
+                        Here's a bash script to automate running multiple simulations with different parameters:
+                    </p>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">
+                                <i class="fas fa-terminal"></i> Bash
+                            </span>
+                            <button class="copy-code" onclick="copyCode(this)">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre><code class="language-bash">#!/bin/bash
+
+# Run parameter sweep for Lotka-Volterra model
+
+OUTPUT_DIR="results"
+mkdir -p "$OUTPUT_DIR"
+
+# Parameter ranges
+alphas=(0.8 1.0 1.2)
+betas=(0.08 0.1 0.12)
+
+echo "Starting parameter sweep..."
+
+for alpha in "${alphas[@]}"; do
+    for beta in "${betas[@]}"; do
+        echo "Running simulation: alpha=$alpha, beta=$beta"
+
+        python3 simulate.py \
+            --alpha "$alpha" \
+            --beta "$beta" \
+            --output "$OUTPUT_DIR/sim_a${alpha}_b${beta}.csv"
+
+        if [ $? -eq 0 ]; then
+            echo "✓ Success"
+        else
+            echo "✗ Failed"
+            exit 1
+        fi
+    done
+done
+
+echo "All simulations complete!"
+echo "Generating summary plots..."
+
+python3 plot_results.py --input "$OUTPUT_DIR"</code></pre>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Advanced: Stochastic Effects</h2>
+                    <p>
+                        In real populations, stochastic effects matter. We can incorporate noise using the
+                        Euler-Maruyama method for stochastic differential equations (SDEs):
+                    </p>
+
+                    <div class="equation-block">
+                        <span class="katex-equation">
+                            \[
+                            \begin{aligned}
+                            dx &= (\alpha x - \beta xy)dt + \sigma_x x dW_x \\
+                            dy &= (\delta xy - \gamma y)dt + \sigma_y y dW_y
+                            \end{aligned}
+                            \]
+                        </span>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">
+                                <i class="fab fa-python"></i> Python (Stochastic)
+                            </span>
+                            <button class="copy-code" onclick="copyCode(this)">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre><code class="language-python">def stochastic_lotka_volterra(x0, y0, t_max, dt, sigma_x=0.1, sigma_y=0.1):
+    """
+    Stochastic Lotka-Volterra using Euler-Maruyama method.
+    """
+    n_steps = int(t_max / dt)
+    x = np.zeros(n_steps)
+    y = np.zeros(n_steps)
+
+    x[0], y[0] = x0, y0
+
+    for i in range(1, n_steps):
+        # Deterministic part
+        dx_det = (alpha * x[i-1] - beta * x[i-1] * y[i-1]) * dt
+        dy_det = (delta * x[i-1] * y[i-1] - gamma * y[i-1]) * dt
+
+        # Stochastic part
+        dW_x = np.random.normal(0, np.sqrt(dt))
+        dW_y = np.random.normal(0, np.sqrt(dt))
+
+        dx_stoch = sigma_x * x[i-1] * dW_x
+        dy_stoch = sigma_y * y[i-1] * dW_y
+
+        x[i] = max(0, x[i-1] + dx_det + dx_stoch)
+        y[i] = max(0, y[i-1] + dy_det + dy_stoch)
+
+    return x, y
+
+# Run multiple stochastic realizations
+n_realizations = 100
+for i in range(n_realizations):
+    x_stoch, y_stoch = stochastic_lotka_volterra(10, 5, 15, 0.01)
+    plt.plot(t, x_stoch, 'b-', alpha=0.1)
+    plt.plot(t, y_stoch, 'r-', alpha=0.1)</code></pre>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Conclusion</h2>
+                    <p>
+                        We've explored the complete pipeline from mathematical formulation to computational
+                        implementation. Key takeaways:
+                    </p>
+                    <ul>
+                        <li>Mathematical models provide insights into complex dynamics</li>
+                        <li>Python offers excellent tools for rapid prototyping and visualization</li>
+                        <li>C++ provides performance when needed for large-scale simulations</li>
+                        <li>Stochastic effects can significantly alter system behavior</li>
+                    </ul>
+
+                    <p>
+                        The tools and techniques demonstrated here are applicable to a wide range of
+                        problems in physics, biology, economics, and engineering.
+                    </p>
+                </section>
+
+                <!-- Author Bio -->
+                <div class="author-bio">
+                    <img src="../images/profile.jpg" alt="Author" class="author-image">
+                    <div class="author-info">
+                        <h3>About the Author</h3>
+                        <p>
+                            A researcher specializing in computational science and mathematical modeling.
+                            Passionate about bridging theory and practice through code.
+                        </p>
+                        <div class="social-links">
+                            <a href="https://github.com/yourusername" target="_blank">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/yourusername" target="_blank">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="https://scholar.google.com" target="_blank">
+                                <i class="fas fa-graduation-cap"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Posts -->
+                <div class="related-posts">
+                    <h3>Related Articles</h3>
+                    <div class="related-grid">
+                        <a href="#" class="related-card">
+                            <h4>Advanced Python Techniques</h4>
+                            <p>Scientific computing optimization</p>
+                        </a>
+                        <a href="#" class="related-card">
+                            <h4>3D Visualizations</h4>
+                            <p>Interactive plots with Three.js</p>
+                        </a>
+                        <a href="#" class="related-card">
+                            <h4>Numerical Methods</h4>
+                            <p>ODE and PDE solvers</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Your Name. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/main.js"></script>
+
+    <!-- LaTeX Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Syntax Highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+    <script>
+        // Render LaTeX
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ]
+            });
+        });
+
+        // Copy code function
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block').querySelector('code');
+            const text = codeBlock.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="far fa-copy"></i> Copy';
+                }, 2000);
+            });
+        }
+
+        // Create visualizations with Plotly
+        function createVisualizations() {
+            // Time series plot
+            const t = Array.from({length: 1000}, (_, i) => i * 0.015);
+            const prey = t.map(time => 10 * Math.cos(2 * Math.PI * time / 5) + 15);
+            const predator = t.map(time => 5 * Math.sin(2 * Math.PI * time / 5) + 7);
+
+            const timeSeriesData = [
+                {
+                    x: t,
+                    y: prey,
+                    name: 'Prey',
+                    type: 'scatter',
+                    line: {color: '#2563eb', width: 2}
+                },
+                {
+                    x: t,
+                    y: predator,
+                    name: 'Predator',
+                    type: 'scatter',
+                    line: {color: '#dc2626', width: 2}
+                }
+            ];
+
+            const timeSeriesLayout = {
+                title: 'Population Dynamics Over Time',
+                xaxis: {title: 'Time'},
+                yaxis: {title: 'Population'},
+                hovermode: 'closest'
+            };
+
+            Plotly.newPlot('time-series-plot', timeSeriesData, timeSeriesLayout);
+
+            // Phase space plot
+            const phaseData = [{
+                x: prey,
+                y: predator,
+                mode: 'lines',
+                line: {color: '#7c3aed', width: 2},
+                name: 'Trajectory'
+            }];
+
+            const phaseLayout = {
+                title: 'Phase Space (Prey vs Predator)',
+                xaxis: {title: 'Prey Population'},
+                yaxis: {title: 'Predator Population'},
+                hovermode: 'closest'
+            };
+
+            Plotly.newPlot('phase-space-plot', phaseData, phaseLayout);
+        }
+
+        // Create visualizations when page loads
+        window.addEventListener('load', createVisualizations);
+    </script>
+</body>
+</html>

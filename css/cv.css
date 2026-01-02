@@ -1,0 +1,462 @@
+/* ======================
+   CV Specific Styles
+   ====================== */
+
+.cv-header {
+    padding: 120px 0 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.cv-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+}
+
+.cv-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.cv-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+}
+
+.cv-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.cv-actions .btn {
+    color: white;
+}
+
+.cv-actions .btn-secondary {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: white;
+}
+
+.cv-actions .btn-secondary:hover {
+    background-color: white;
+    color: var(--primary-color);
+}
+
+/* CV Content */
+.cv-content {
+    padding: var(--spacing-3xl) 0;
+}
+
+.cv-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: var(--spacing-3xl);
+}
+
+/* CV Sections */
+.cv-section {
+    margin-bottom: var(--spacing-3xl);
+}
+
+.cv-section-title {
+    font-size: 1.75rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.cv-section-title i {
+    color: var(--primary-color);
+}
+
+/* CV Items */
+.cv-item {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cv-item:last-child {
+    border-bottom: none;
+}
+
+.cv-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-md);
+}
+
+.cv-item h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.cv-institution {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.cv-date {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    background-color: var(--bg-secondary);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+}
+
+.cv-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--spacing-md);
+}
+
+.cv-list {
+    margin-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.cv-list li {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.cv-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.cv-summary {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+/* Publications */
+.cv-publication {
+    margin-bottom: var(--spacing-xl);
+}
+
+.cv-publication h4 {
+    color: var(--primary-color);
+    font-size: 1.125rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.cv-pub-list {
+    margin-left: var(--spacing-lg);
+}
+
+.cv-pub-list li {
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.pub-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-left: var(--spacing-sm);
+    transition: color var(--transition-fast);
+}
+
+.pub-link:hover {
+    color: var(--secondary-color);
+}
+
+/* Awards */
+.cv-awards {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.cv-award-item {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--primary-color);
+}
+
+.award-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+}
+
+.cv-award-item h4 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.cv-award-item p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Sidebar */
+.cv-sidebar {
+    position: sticky;
+    top: 90px;
+    height: fit-content;
+}
+
+.cv-sidebar-section {
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.cv-sidebar-section h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-color);
+}
+
+.cv-sidebar-section h4 {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.cv-sidebar-section h4:first-of-type {
+    margin-top: 0;
+}
+
+/* Contact */
+.cv-contact {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.cv-contact-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.cv-contact-item i {
+    width: 1.25rem;
+    color: var(--primary-color);
+}
+
+.cv-contact-item a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.cv-contact-item a:hover {
+    color: var(--primary-color);
+}
+
+/* Skills */
+.skill-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.skill-group:last-child {
+    margin-bottom: 0;
+}
+
+.skill-bar-container {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.skill-bar {
+    position: relative;
+}
+
+.skill-name {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.skill-progress {
+    height: 0.5rem;
+    background-color: var(--primary-color);
+    border-radius: var(--radius-sm);
+    position: relative;
+    transition: width var(--transition-slow);
+}
+
+.skill-progress::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    z-index: -1;
+}
+
+.cv-skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+/* Languages */
+.cv-language {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.language-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.language-item span:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.language-level {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+/* Certifications */
+.cv-cert-list {
+    list-style: none;
+}
+
+.cv-cert-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.cv-cert-list li i {
+    color: var(--primary-color);
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .footer,
+    .cv-actions,
+    .theme-toggle,
+    .no-print {
+        display: none !important;
+    }
+
+    .cv-header {
+        background: none;
+        color: var(--text-primary);
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .cv-content {
+        padding: 0;
+    }
+
+    .cv-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cv-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .cv-section {
+        page-break-inside: avoid;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .cv-section-title {
+        border-bottom-color: #000;
+    }
+
+    * {
+        box-shadow: none !important;
+    }
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .cv-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cv-sidebar {
+        position: static;
+    }
+
+    .cv-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .cv-item-header {
+        flex-direction: column;
+    }
+
+    .cv-date {
+        align-self: flex-start;
+    }
+
+    .cv-actions {
+        width: 100%;
+    }
+
+    .cv-actions .btn {
+        flex: 1;
+    }
+}

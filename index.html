@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Personal Portfolio - Research, Blog, and CV">
+    <meta name="author" content="Your Name">
+    <title>Your Name - Portfolio</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">Your Name</a>
+
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#research" class="nav-link">Research</a></li>
+                <li><a href="#blog" class="nav-link">Blog</a></li>
+                <li><a href="#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="cv.html" class="nav-link">CV</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="greeting">Hello, I'm</span>
+                    <span class="name">Your Name</span>
+                </h1>
+                <p class="hero-subtitle">Researcher | Developer | Innovator</p>
+                <p class="hero-description">
+                    Exploring the intersection of computational science, mathematics, and technology.
+                    Passionate about research, coding, and sharing knowledge.
+                </p>
+                <div class="hero-cta">
+                    <a href="#contact" class="btn btn-primary">Get in Touch</a>
+                    <a href="cv.html" class="btn btn-secondary">View CV</a>
+                </div>
+                <div class="social-links">
+                    <a href="https://github.com/yourusername" target="_blank" rel="noopener" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="mailto:your.email@example.com" aria-label="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="https://scholar.google.com/citations?user=yourid" target="_blank" rel="noopener" aria-label="Google Scholar">
+                        <i class="fas fa-graduation-cap"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="profile-image-container">
+                    <img src="images/profile.jpg" alt="Your Name" class="profile-image">
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <a href="#about" aria-label="Scroll to about section">
+                <i class="fas fa-chevron-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about-section">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p class="lead">
+                        I'm a passionate researcher and developer specializing in computational science,
+                        mathematical modeling, and software development.
+                    </p>
+                    <p>
+                        My work focuses on [your research area], combining theoretical foundations with
+                        practical implementations. I enjoy tackling complex problems and sharing my findings
+                        through publications, code, and blog posts.
+                    </p>
+                    <p>
+                        When I'm not researching or coding, you can find me traveling, attending conferences,
+                        and connecting with fellow researchers and developers around the world.
+                    </p>
+                </div>
+
+                <div class="skills-section">
+                    <h3>Technical Skills</h3>
+                    <div class="skills-grid">
+                        <div class="skill-category">
+                            <h4><i class="fas fa-code"></i> Programming</h4>
+                            <div class="skill-tags">
+                                <span class="tag">Python</span>
+                                <span class="tag">C/C++</span>
+                                <span class="tag">JavaScript</span>
+                                <span class="tag">Bash</span>
+                                <span class="tag">Mathematica</span>
+                            </div>
+                        </div>
+                        <div class="skill-category">
+                            <h4><i class="fas fa-flask"></i> Scientific Computing</h4>
+                            <div class="skill-tags">
+                                <span class="tag">NumPy</span>
+                                <span class="tag">SciPy</span>
+                                <span class="tag">Matplotlib</span>
+                                <span class="tag">Plotly</span>
+                                <span class="tag">TensorFlow</span>
+                            </div>
+                        </div>
+                        <div class="skill-category">
+                            <h4><i class="fas fa-tools"></i> Tools & Frameworks</h4>
+                            <div class="skill-tags">
+                                <span class="tag">Git</span>
+                                <span class="tag">Docker</span>
+                                <span class="tag">LaTeX</span>
+                                <span class="tag">Jupyter</span>
+                                <span class="tag">Linux</span>
+                            </div>
+                        </div>
+                        <div class="skill-category">
+                            <h4><i class="fas fa-database"></i> Data & ML</h4>
+                            <div class="skill-tags">
+                                <span class="tag">Machine Learning</span>
+                                <span class="tag">Data Analysis</span>
+                                <span class="tag">Visualization</span>
+                                <span class="tag">Statistical Modeling</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research Section -->
+    <section id="research" class="section research-section">
+        <div class="container">
+            <h2 class="section-title">Research & Projects</h2>
+            <p class="section-subtitle">Selected work in computational science and mathematics</p>
+
+            <div class="research-grid">
+                <!-- Research Project 1 -->
+                <article class="research-card">
+                    <div class="research-header">
+                        <h3>Project Title 1</h3>
+                        <span class="research-status current">Current</span>
+                    </div>
+                    <p class="research-description">
+                        Brief description of your research project. What problem does it solve?
+                        What methods did you use?
+                    </p>
+                    <div class="research-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">Machine Learning</span>
+                        <span class="tag">Data Science</span>
+                    </div>
+                    <div class="research-links">
+                        <a href="research/project1.html" class="btn-link">
+                            <i class="fas fa-book"></i> Read More
+                        </a>
+                        <a href="papers/project1.pdf" class="btn-link" target="_blank">
+                            <i class="fas fa-file-pdf"></i> Paper
+                        </a>
+                        <a href="https://github.com/yourusername/project1" class="btn-link" target="_blank">
+                            <i class="fab fa-github"></i> Code
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Research Project 2 -->
+                <article class="research-card">
+                    <div class="research-header">
+                        <h3>Project Title 2</h3>
+                        <span class="research-status completed">Completed</span>
+                    </div>
+                    <p class="research-description">
+                        Another research project focusing on computational methods and numerical analysis.
+                    </p>
+                    <div class="research-tags">
+                        <span class="tag">C++</span>
+                        <span class="tag">Numerical Methods</span>
+                        <span class="tag">Simulation</span>
+                    </div>
+                    <div class="research-links">
+                        <a href="research/project2.html" class="btn-link">
+                            <i class="fas fa-book"></i> Read More
+                        </a>
+                        <a href="papers/project2.pdf" class="btn-link" target="_blank">
+                            <i class="fas fa-file-pdf"></i> Paper
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Research Project 3 -->
+                <article class="research-card">
+                    <div class="research-header">
+                        <h3>Project Title 3</h3>
+                        <span class="research-status current">Current</span>
+                    </div>
+                    <p class="research-description">
+                        Mathematical modeling and simulation of complex systems.
+                    </p>
+                    <div class="research-tags">
+                        <span class="tag">Mathematica</span>
+                        <span class="tag">Mathematical Modeling</span>
+                        <span class="tag">Visualization</span>
+                    </div>
+                    <div class="research-links">
+                        <a href="research/project3.html" class="btn-link">
+                            <i class="fas fa-book"></i> Read More
+                        </a>
+                        <a href="https://drive.google.com/file/d/your-file-id" class="btn-link" target="_blank">
+                            <i class="fas fa-cloud"></i> Google Drive
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="section blog-section">
+        <div class="container">
+            <h2 class="section-title">Blog & Notes</h2>
+            <p class="section-subtitle">Technical articles, tutorials, and research notes</p>
+
+            <div class="blog-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="tutorial">Tutorials</button>
+                <button class="filter-btn" data-filter="research">Research Notes</button>
+                <button class="filter-btn" data-filter="code">Code</button>
+                <button class="filter-btn" data-filter="visualization">Visualizations</button>
+            </div>
+
+            <div class="blog-grid">
+                <!-- Blog Post 1 -->
+                <article class="blog-card" data-category="tutorial code">
+                    <div class="blog-image">
+                        <img src="images/blog/python-tutorial.jpg" alt="Python Tutorial">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date"><i class="far fa-calendar"></i> Jan 1, 2026</span>
+                            <span class="blog-read-time"><i class="far fa-clock"></i> 5 min read</span>
+                        </div>
+                        <h3>Advanced Python Techniques for Scientific Computing</h3>
+                        <p>Exploring NumPy broadcasting, vectorization, and performance optimization techniques.</p>
+                        <div class="blog-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">NumPy</span>
+                            <span class="tag">Performance</span>
+                        </div>
+                        <a href="blog/python-scientific-computing.html" class="btn-link">
+                            Read Article <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 2 -->
+                <article class="blog-card" data-category="visualization research">
+                    <div class="blog-image">
+                        <img src="images/blog/3d-viz.jpg" alt="3D Visualization">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date"><i class="far fa-calendar"></i> Dec 28, 2025</span>
+                            <span class="blog-read-time"><i class="far fa-clock"></i> 8 min read</span>
+                        </div>
+                        <h3>Interactive 3D Visualizations with Three.js and Python</h3>
+                        <p>Creating stunning 3D scientific visualizations for web and presentations.</p>
+                        <div class="blog-tags">
+                            <span class="tag">Three.js</span>
+                            <span class="tag">Visualization</span>
+                            <span class="tag">WebGL</span>
+                        </div>
+                        <a href="blog/3d-visualizations.html" class="btn-link">
+                            Read Article <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 3 -->
+                <article class="blog-card" data-category="research code">
+                    <div class="blog-image">
+                        <img src="images/blog/latex-math.jpg" alt="LaTeX Mathematics">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date"><i class="far fa-calendar"></i> Dec 20, 2025</span>
+                            <span class="blog-read-time"><i class="far fa-clock"></i> 6 min read</span>
+                        </div>
+                        <h3>Mathematical Modeling: From Theory to Implementation</h3>
+                        <p>Step-by-step guide to implementing mathematical models with code examples and LaTeX equations.</p>
+                        <div class="blog-tags">
+                            <span class="tag">Mathematics</span>
+                            <span class="tag">LaTeX</span>
+                            <span class="tag">Modeling</span>
+                        </div>
+                        <a href="blog/mathematical-modeling.html" class="btn-link">
+                            Read Article <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section gallery-section">
+        <div class="container">
+            <h2 class="section-title">Gallery</h2>
+            <p class="section-subtitle">Moments from research, travel, and conferences</p>
+
+            <div class="gallery-tabs">
+                <button class="gallery-tab active" data-gallery="all">All</button>
+                <button class="gallery-tab" data-gallery="conferences">Conferences</button>
+                <button class="gallery-tab" data-gallery="travel">Travel</button>
+                <button class="gallery-tab" data-gallery="personal">Personal</button>
+            </div>
+
+            <div class="gallery-grid">
+                <!-- Gallery items will be populated here -->
+                <div class="gallery-item" data-category="conferences">
+                    <img src="images/gallery/conference1.jpg" alt="Conference presentation">
+                    <div class="gallery-overlay">
+                        <h4>International Conference 2025</h4>
+                        <p>Presenting research findings</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item" data-category="travel">
+                    <img src="images/gallery/travel1.jpg" alt="Travel photo">
+                    <div class="gallery-overlay">
+                        <h4>Research Trip</h4>
+                        <p>Beautiful scenery during fieldwork</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item" data-category="personal">
+                    <img src="images/gallery/personal1.jpg" alt="Personal photo">
+                    <div class="gallery-overlay">
+                        <h4>Lab Work</h4>
+                        <p>Working on experiments</p>
+                    </div>
+                </div>
+
+                <!-- Add more gallery items as needed -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact-section">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-subtitle">I'd love to hear from you!</p>
+
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Contact Information</h3>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <a href="mailto:your.email@example.com">your.email@example.com</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Location</h4>
+                            <p>City, Country</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-github"></i>
+                        <div>
+                            <h4>GitHub</h4>
+                            <a href="https://github.com/yourusername" target="_blank">@yourusername</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-linkedin"></i>
+                        <div>
+                            <h4>LinkedIn</h4>
+                            <a href="https://linkedin.com/in/yourusername" target="_blank">Your Name</a>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Your Name</h3>
+                    <p>Researcher | Developer | Innovator</p>
+                    <div class="social-links">
+                        <a href="https://github.com/yourusername" target="_blank" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://linkedin.com/in/yourusername" target="_blank" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="mailto:your.email@example.com" aria-label="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a href="https://scholar.google.com/citations?user=yourid" target="_blank" aria-label="Google Scholar">
+                            <i class="fas fa-graduation-cap"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#research">Research</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="cv.html">CV</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="publications.html">Publications</a></li>
+                        <li><a href="talks.html">Talks & Presentations</a></li>
+                        <li><a href="teaching.html">Teaching</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Your Name. All rights reserved.</p>
+                <p>Built with ❤️ and modern web technologies</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+</body>
+</html>
