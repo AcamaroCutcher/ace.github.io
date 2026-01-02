@@ -399,6 +399,7 @@ body {
 
 .skills-section h3 {
   font-size: 1.75rem;
+  margin-top: var(--spacing-xl);
   margin-bottom: var(--spacing-lg);
   text-align: center;
 }
@@ -481,7 +482,7 @@ body {
   font-weight: 600;
   font-size: 1.1em;
   color: var(--primary-color);
-  margin-right: 0.5rem;
+  margin-right: 0.2rem;
 }
 
 /* ======================
