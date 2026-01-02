@@ -473,6 +473,17 @@ body {
   gap: var(--spacing-sm);
 }
 
+.icon-pi {
+  display: inline-block;
+  width: 1.25em;
+  text-align: center;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.1em;
+  color: var(--primary-color);
+  margin-right: 0.5rem;
+}
+
 /* ======================
    Research Section
    ====================== */
