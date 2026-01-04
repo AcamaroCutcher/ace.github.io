@@ -267,13 +267,28 @@
 
           <article class="research-card">
             <div class="research-header">
-              <h3>WildFire Digital Twin</h3>
+              <h3>
+                Modified Fourier Neural Operators for Direct Wildfire Spread
+                Prediction: A FourCastNet Adaptation
+              </h3>
               <span class="research-status current">Current</span>
             </div>
             <p class="research-description">
-              Forecast Wildfire Spread using a machine learning weather
-              prediction model (MLWP), specifically FourCastNet. To train and
-              test the model we generating data from WRF-SFIRE dynamical model.
+              Structural Adaptation of FourCastNet for Direct Wildfire Spread
+              Modeling This research re-engineers the FourCastNet
+              architecture—originally designed for global weather emulation—to
+              serve as a direct solver for wildfire propagation. Unlike
+              traditional approaches that use FourCastNet solely for atmospheric
+              inputs, this project modifies the internal tokenization and latent
+              space to integrate static and dynamic fire drivers, including fuel
+              moisture, vegetation density (LANDFIRE), and high-resolution
+              topography. By expanding the model's input channels and retraining
+              the Adaptive Fourier Neural Operator (AFNO) on historical fire
+              perimeters, the system learns to predict the evolution of the fire
+              front as a discrete state-space variable. This approach leverages
+              FourCastNet’s characteristic speed to generate subseasonal
+              fire-spread ensembles up to 80,000 times faster than coupled
+              physics models like WRF-SFIRE.
             </p>
             <div class="research-tags">
               <span class="tag">Python</span>
