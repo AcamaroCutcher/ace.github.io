@@ -98,9 +98,7 @@
               rel="noopener"
               aria-label="Google Scholar"
             >
-              <i
-                class="fas fa-graduation-caphttps://scholar.google.com/citations?hl=en&user=OsKdb4IAAAAJ"
-              ></i>
+              <i class="fas fa-graduation-cap"></i>
             </a>
           </div>
         </div>
@@ -147,6 +145,7 @@
 
           <div class="skills-section">
             <h3>Technical Skills</h3>
+
             <div class="skills-grid">
               <div class="skill-category">
                 <h4><i class="fas fa-code"></i> Programming</h4>
@@ -192,55 +191,61 @@
                   <span class="tag">Modeling</span>
                 </div>
               </div>
+            </div>
 
-              <div class="skill-category">
-                <h4><i class="fas fa-database"></i>Mathematics</h4>
-                <div class="skill-tags">
-                  <span class="tag"
-                    >Advance Linear Algebra / Spectral Analysis</span
-                  >
-                  <span class="tag">Calculus</span>
-                  <span class="tag">Differential Equations</span>
-                  <span class="tag">Abstract Algebra</span>
-                  <span class="tag">Real Analysis</span>
-                  <span class="tag">Complex Analysis</span>
-                  <span class="tag">Number Theory</span>
-                  <span class="tag">Discrete Mathematics</span>
+            <div class="knowledge-section">
+              <h3>Academic Knowledge</h3>
+              <div class="knowledge-grid">
+                <div class="knowledge-category">
+                  <h4><span class="icon-pi">π</span> Mathematics</h4>
+                  <div class="knowledge-tags">
+                    <span class="tag"
+                      >Advance Linear Algebra / Spectral Analysis</span
+                    >
+                    <span class="tag">Single and Multivariable Calculus</span>
+                    <span class="tag">Differential Equations</span>
+                    <span class="tag">Abstract Algebra</span>
+                    <span class="tag">Real Analysis</span>
+                    <span class="tag">Complex Analysis</span>
+                    <span class="tag">Number Theory</span>
+                    <span class="tag">Discrete Mathematics</span>
+                  </div>
                 </div>
-              </div>
 
-              <div class="skill-category">
-                <h4><i class="fas fa-database"></i>Computer Science</h4>
-                <div class="skill-tags">
-                  <span class="tag">Data Structures</span>
-                  <span class="tag">Algorithms</span>
-                  <span class="tag">Operating Systems</span>
-                  <span class="tag">Cloud Computing</span>
-                  <span class="tag">Network Protocols</span>
-                  <span class="tag">Programming Languages</span>
-                  <span class="tag">Web Development</span>
-                  <span class="tag">Software Engineering</span>
-                  <span class="tag">Deep Learning</span>
+                <div class="knowledge-category">
+                  <h4><i class="fas fa-laptop"></i>Computer Science</h4>
+                  <div class="knowledge-tags">
+                    <span class="tag">Data Structures</span>
+                    <span class="tag">Algorithms</span>
+                    <span class="tag">Operating Systems</span>
+                    <span class="tag">Cloud Computing</span>
+                    <span class="tag">Network Protocols</span>
+                    <span class="tag">Programming Languages</span>
+                    <span class="tag">Web Development</span>
+                    <span class="tag">Software Engineering</span>
+                    <span class="tag">Deep Learning</span>
+                  </div>
                 </div>
-              </div>
 
-              <div class="skill-category">
-                <h4><i class="fas fa-database"></i>Physics</h4>
-                <div class="skill-tags">
-                  <span class="tag">Classical Mechanics</span>
-                  <span class="tag">Quantum Mechanics</span>
-                  <span class="tag">Thermodynamics</span>
-                  <span class="tag">Electromagnetism</span>
-                  <span class="tag">Basic Electronics</span>
-                  <span class="tag">Thin Film Frabrication</span>
+                <div class="knowledge-category">
+                  <h4><i class="fas fa-phi"></i>Physics</h4>
+                  <div class="knowledge-tags">
+                    <span class="tag">Classical Mechanics</span>
+                    <span class="tag">Quantum Mechanics</span>
+                    <span class="tag">Thermodynamics</span>
+                    <span class="tag">Electromagnetism</span>
+                    <span class="tag">Computational Physics</span>
+                    <span class="tag">Basic Electronics</span>
+                    <span class="tag">Thin Film Fabrication</span>
+                  </div>
                 </div>
-              </div>
 
-              <div class="skill-category">
-                <h4><i class="fas fa-database"></i>Languages</h4>
-                <div class="skill-tags">
-                  <span class="tag">Spanish</span>
-                  <span class="tag">English</span>
+                <div class="knowledge-category">
+                  <h4><i class="fas fa-language"></i>Languages</h4>
+                  <div class="knowledge-tags">
+                    <span class="tag">Spanish</span>
+                    <span class="tag">English</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -259,15 +264,31 @@
 
         <div class="research-grid">
           <!-- Research Project 1 -->
+
           <article class="research-card">
             <div class="research-header">
-              <h3>WildFire Digital Twin</h3>
+              <h3>
+                Modified Fourier Neural Operators for Direct Wildfire Spread
+                Prediction: A FourCastNet Adaptation
+              </h3>
               <span class="research-status current">Current</span>
             </div>
             <p class="research-description">
-              Forecast Wildfire Spread using a machine learning weather
-              prediction model (MLWP), specifically FourCastNet. To train and
-              test the model we generating data from WRF-SFIRE dynamical model.
+              Structural Adaptation of FourCastNet for Direct Wildfire Spread
+              Modeling This research re-engineers the FourCastNet
+              architecture—originally designed for global weather emulation—to
+              serve as a direct solver for wildfire propagation. Unlike
+              traditional approaches that use FourCastNet solely for atmospheric
+              inputs, this project modifies the internal tokenization and latent
+              space to integrate static and dynamic fire drivers, including fuel
+              moisture, vegetation density (LANDFIRE), and high-resolution
+              topography. By expanding the model's input channels and retraining
+              the Adaptive Fourier Neural Operator (AFNO) on historical fire
+              perimeters, the system learns to predict the evolution of the fire
+              front as a discrete state-space variable. This approach leverages
+              FourCastNet’s characteristic speed to generate subseasonal
+              fire-spread ensembles up to 80,000 times faster than coupled
+              physics models like WRF-SFIRE.
             </p>
             <div class="research-tags">
               <span class="tag">Python</span>
@@ -292,19 +313,74 @@
           </article>
 
           <!-- Research Project 2 -->
+
           <article class="research-card">
             <div class="research-header">
-              <h3>Some Minimal Group Embeddings</h3>
+              <h3>
+                Hybrid Data-Driven and Dynamical Forecasting of the South Asian
+                Monsoon Intraseasonal Oscillation
+              </h3>
+              <span class="research-status current">Current</span>
+            </div>
+            <p class="research-description">
+              Advancing Monsoon Forecasting through Data-Driven Oscillatory
+              Modes Current dynamical models often struggle to predict the
+              active and break phases of the South Asian monsoon, which are
+              driven by northward-propagating rainfall anomalies known as MISOs.
+              My research introduces Ensemble Oscillation Correction (EnOC) to
+              overcome these limitations. By leveraging the near-regularity of
+              climate oscillations, this methodology refines traditional
+              physics-based forecasts with data-driven insights. The result is a
+              more accurate tool for agricultural and hydrological planning,
+              providing reliable rainfall predictions three to four weeks in
+              advance—a timeframe previously considered unreliable by standard
+              meteorological models.
+            </p>
+            <div class="research-tags">
+              <span class="tag">Python/Julia</span>
+              <span class="tag">Data-driven Forecasting</span>
+              <span class="tag">Machine Learning</span>
+              <span class="tag">Dynamical Models</span>
+            </div>
+            <div class="research-links">
+              <a href="research/project1.html" class="btn-link">
+                <i class="fas fa-book"></i> Read More
+              </a>
+              <a href="papers/project1.pdf" class="btn-link" target="_blank">
+                <i class="fas fa-file-pdf"></i> Paper
+              </a>
+              <a
+                href="https://github.com/PSU-CS-Wildfire-Capstone-Sp-S-25"
+                class="btn-link"
+                target="_blank"
+              >
+                <i class="fab fa-github"></i> Code
+              </a>
+            </div>
+          </article>
+
+          <!-- Research Project 3 -->
+
+          <article class="research-card">
+            <div class="research-header">
+              <h3>Minimal Group Embeddings</h3>
               <span class="research-status completed">Completed</span>
             </div>
             <p class="research-description">
-              Exploring finite group classification schemes and minimal group
-              embeddings.
+              This project focuses on the classification of small finite groups
+              and the determination of their minimal embedding degree. By
+              utilizing the Sylow Theorems, I analyzed the prime power subgroups
+              for each order to verify group structures and non-simplicity.
+              Building upon Cayley’s Theorem, which guarantees an embedding into
+              \(S_{|G|}\), I calculated the minimum \(n\) such that
+              \(G\hookrightarrow S_{n}\), often finding degrees significantly
+              smaller than the group's order.
             </p>
             <div class="research-tags">
               <span class="tag">Abstract Algebra</span>
               <span class="tag">Group Theory</span>
-              <span class="tag">Group Embeddings</span>
+              <span class="tag">Sylow Theorems</span>
+              <span class="tag">Math Honors Thesis</span>
             </div>
             <div class="research-links">
               <a
@@ -323,16 +399,24 @@
             </div>
           </article>
 
-          <!-- Research Project 3 -->
+          <!-- Research Project 4 -->
           <article class="research-card">
             <div class="research-header">
-              <h3>Surface Plasmon Polaritons</h3>
-              <span class="research-status current">Completed</span>
+              <h3>
+                Multiscale Theoretical Modeling of Surface Plasmon Polaritons
+                (SPPs): From Fundamentals to Integrated Photonic Applications.
+              </h3>
+              <span class="research-status completed">Completed</span>
             </div>
             <p class="research-description">
-              Excitation of “forbidden” guided-wave plasmon polariton modes via
-              direct reflectance using a low refractive index polymer coupling
-              layer.
+              Theoretical investigation of SPP dispersion relations by applying
+              Bloch’s Theorem to the fundamental Maxwell’s equations. By
+              treating the multilayer as a 1D plasmonic crystal, this model
+              identifies how periodic modulation creates unique band structures
+              and forbidden gaps. The findings provide a roadmap for tailoring
+              the optical response of superllatice metal-insulator-metal
+              devices, bridging the gap between analytical theory and functional
+              nanophotonic device design.
             </p>
             <div class="research-tags">
               <span class="tag">Maxwell's Equations</span>
@@ -343,7 +427,7 @@
               <span class="tag">Mathematica</span>
             </div>
             <div class="research-links">
-              <a href="research/project3.html" class="btn-link">
+              <a href="research/project4.html" class="btn-link">
                 <i class="fas fa-book"></i> Read More
               </a>
               <a
@@ -362,16 +446,28 @@
             </div>
           </article>
 
-          <!-- Research Project 4 -->
+          <!-- Research Project 5 -->
           <article class="research-card">
             <div class="research-header">
-              <h3>Surface Plasmon Polaritons</h3>
-              <span class="research-status current">Completed</span>
+              <h3>
+                Excitation of “forbidden” guided-wave plasmon polariton modes
+                via direct reflectance using a low refractive index polymer
+                coupling layer.
+              </h3>
+              <span class="research-status completed">Completed</span>
             </div>
             <p class="research-description">
-              Excitation of “forbidden” guided-wave plasmon polariton modes via
-              direct reflectance using a low refractive index polymer coupling
-              layer.
+              Experimental investigation of plasmonic modes in
+              metal-insulator-metal thin film structures using a low refractive
+              index polymer coupling layer. By employing angle-resolved
+              reflectance spectroscopy, we successfully excited and
+              characterized "forbidden" guided-wave plasmon polariton modes that
+              are typically inaccessible through conventional methods. The study
+              reveals how the polymer layer modifies the coupling conditions,
+              enabling direct excitation of these modes. Our findings provide
+              new insights into light-matter interactions in complex thin film
+              systems and open up avenues for advanced photonic device
+              applications.
             </p>
             <div class="research-tags">
               <span class="tag">Thin Film Devices</span>
