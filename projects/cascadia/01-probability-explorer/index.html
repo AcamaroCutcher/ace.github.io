@@ -41,8 +41,15 @@
           </div>
 
           <div class="formula" aria-label="Formula with current values">
-            <p class="formula-generic">P = 1 − e<sup>−t / τ</sup></p>
-            <p id="formula-filled" class="formula-filled"></p>
+            <p class="formula-generic math" aria-label="P equals 1 minus e to the power of minus t over tau">
+              <var>P</var> = 1 − <var>e</var><sup class="exp-frac">−<span class="frac"><span><var>t</var></span><span><var>τ</var></span></span></sup>
+            </p>
+            <dl class="formula-key">
+              <div><dt class="math"><var>P</var></dt><dd>chance of at least one quake</dd></div>
+              <div><dt class="math"><var>t</var></dt><dd>years in the time window</dd></div>
+              <div><dt class="math"><var>τ</var></dt><dd>average years between quakes</dd></div>
+            </dl>
+            <div id="formula-filled" class="formula-filled math" aria-live="polite"></div>
           </div>
 
           <dl class="facts">
@@ -84,7 +91,18 @@
       </div>
     </section>
 
-    <!-- 2. Comparison -->
+    <!-- 2. Worked examples -->
+    <section class="examples" aria-labelledby="examples-title">
+      <div class="section-head">
+        <div>
+          <h2 id="examples-title">Two worked examples</h2>
+          <p class="secondary">The same formula, step by step, for the two most famous earthquake sources around Seattle.</p>
+        </div>
+      </div>
+      <div class="example-grid" id="examples"><!-- filled by app.js --></div>
+    </section>
+
+    <!-- 3. Comparison -->
     <section class="card compare" aria-labelledby="compare-title">
       <div class="section-head">
         <div>
@@ -126,7 +144,7 @@
       </details>
     </section>
 
-    <!-- 3. Takeaways -->
+    <!-- 4. Takeaways -->
     <section class="takeaways" aria-label="Key takeaways">
       <article class="card">
         <h3>The "Big One" isn't the most likely one</h3>

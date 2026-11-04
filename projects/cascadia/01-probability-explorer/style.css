@@ -1,18 +1,90 @@
 /* Project 1 specific styles. Generic components live in ../shared/components.css. */
 
 /* Explorer layout */
-.explorer-grid { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 32px; }
+.explorer-grid { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 32px; }
 @media (max-width: 1000px) { .explorer-grid { grid-template-columns: minmax(0, 1fr); } }
 
+/* Math typesetting: a serif math face, italic variables, stacked fractions in exponents */
+.math {
+  font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", "Times New Roman", Georgia, serif;
+  font-variant-numeric: lining-nums tabular-nums; line-height: 1.2;
+}
+.math var { font-style: italic; }
+.math sup { font-size: 0.62em; vertical-align: 0.95em; line-height: 0; white-space: nowrap; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.08em;
+}
+.frac > span { padding: 0 0.15em; }
+/* Exponent that holds a fraction: keep the minus sign centred on the fraction bar */
+.math sup.exp-frac { display: inline-flex; align-items: center; vertical-align: 0.55em; line-height: 1.05; margin-left: 0.05em; }
+.math sup.exp-frac .frac { vertical-align: baseline; }
+.math var { margin-right: 0.04em; }
+.frac > span:first-child { border-bottom: 0.06em solid currentColor; }
 
+/* The formula block */
 .formula {
-  border-left: 3px solid var(--axis); padding: 4px 0 4px 14px; margin-bottom: 16px;
-  font-variant-numeric: tabular-nums;
+  background: var(--wash); border-left: 4px solid var(--text-primary); border-radius: 0 10px 10px 0;
+  padding: 18px 20px 16px; margin-bottom: 20px;
 }
 .formula p { margin: 0; }
-.formula-generic { color: var(--text-muted); font-size: 14px; }
-.formula-filled { font-size: 17px; }
-.formula sup { font-size: 0.7em; }
+.formula-generic { font-size: clamp(36px, 5vw, 46px); color: var(--text-primary); padding: 8px 0 14px; }
+
+.formula-key { margin: 0 0 14px; display: grid; gap: 2px; font-size: 14px; color: var(--text-secondary); }
+.formula-key div { display: grid; grid-template-columns: 22px 1fr; align-items: baseline; gap: 8px; }
+.formula-key dt { font-size: 19px; color: var(--text-primary); text-align: center; }
+.formula-key dd { margin: 0; }
+
+/* Substituted values, one step per line with the "=" signs aligned */
+.formula-filled {
+  display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; column-gap: 0.3em; row-gap: 6px;
+  font-size: clamp(22px, 2.6vw, 26px); border-top: 1px solid var(--grid); padding-top: 14px;
+}
+.formula-filled .lhs { text-align: right; }
+.formula-filled .result { font-weight: 700; }
+.formula-filled .approx { font-family: system-ui, sans-serif; font-size: 0.7em; font-weight: 650; color: var(--text-secondary); margin-left: 0.4em; }
+
+/* Worked examples */
+.example-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .example-grid { grid-template-columns: minmax(0, 1fr); } }
+.example { display: flex; flex-direction: column; border-top: 4px solid var(--ex-color); }
+.ex-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 0 0 6px; }
+.ex-eyebrow .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ex-color); }
+.example h3 { font-size: 22px; margin: 0 0 6px; }
+.ex-intro { margin: 0 0 16px; color: var(--text-secondary); font-size: 15px; }
+
+.ex-givens { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 18px; }
+.ex-givens div { background: var(--wash); border-radius: 8px; padding: 10px 12px; }
+.ex-givens dt { font-size: 13px; color: var(--text-secondary); }
+.ex-givens dd { margin: 2px 0 0; font-size: 24px; }
+.ex-givens dd small { display: block; font-family: system-ui, sans-serif; font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.ex-steps { list-style: none; counter-reset: step; margin: 0 0 18px; padding: 0; display: grid; gap: 12px; }
+.ex-steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.ex-steps li::before {
+  content: counter(step); width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 13px; font-weight: 700;
+  background: var(--ex-color); color: #fff;
+}
+.ex-step-label { display: block; font-size: 14px; color: var(--text-secondary); }
+.ex-step-math { display: block; font-size: 24px; margin-top: 2px; }
+.ex-step-math .result { font-weight: 700; }
+.ex-steps li.final .ex-step-math { font-size: 28px; }
+
+.ex-answer { display: flex; align-items: center; gap: 18px; background: var(--wash); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+.ex-answer-value { font-size: 48px; font-weight: 650; line-height: 1; color: var(--ex-color); letter-spacing: -0.02em; }
+.ex-answer p { margin: 0; font-size: 15px; }
+
+/* 100 possible futures */
+.ex-futures { margin: 0 0 14px; }
+.ex-futures figcaption { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+.waffle { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; max-width: 420px; }
+.waffle span { aspect-ratio: 1; border-radius: 2px; background: var(--grid); }
+.waffle span.hit { background: var(--ex-color); }
+
+.ex-note { font-size: 14px; color: var(--text-secondary); margin: 0 0 16px; }
+.ex-note strong { color: var(--text-primary); }
+.example .btn { align-self: flex-start; margin-top: auto; }
 
 .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 20px; }
 .facts div { background: var(--wash); border-radius: 8px; padding: 10px 12px; }

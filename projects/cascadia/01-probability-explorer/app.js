@@ -57,6 +57,35 @@
   function selectedScenario() { return state.selected === 'custom' ? null : byId[state.selected]; }
   function colorOf(s) { return s ? Q.types[s.type].color : 'var(--custom)'; }
 
+  // ---------- tiny math builder ----------
+  // m(a, b, ...) wraps strings and nodes in a <span>.
+  function m() {
+    var s = el('span');
+    for (var i = 0; i < arguments.length; i++) {
+      var a = arguments[i];
+      s.appendChild(typeof a === 'string' ? document.createTextNode(a) : a);
+    }
+    return s;
+  }
+  function mvar(name) { return el('var', null, name); }
+  function frac(num, den) {
+    var f = el('span', 'frac');
+    f.appendChild(typeof num === 'string' ? el('span', null, num) : m(num));
+    f.appendChild(typeof den === 'string' ? el('span', null, den) : m(den));
+    return f;
+  }
+  function fmtNum(n) { return n.toLocaleString('en-US'); }
+  // Exponent "−t/τ" as a superscript with a stacked fraction.
+  function expFrac(num, den) {
+    var sup = el('sup', 'exp-frac');
+    sup.appendChild(document.createTextNode('−'));
+    sup.appendChild(frac(fmtNum(num), fmtNum(den)));
+    return sup;
+  }
+  function expPlain(text) { return el('sup', null, text); }
+  // Up to 3 decimals, trailing zeros dropped: 0.1, 0.05, 0.905
+  function dec(n) { return String(+n.toFixed(3)); }
+
   function keyLine(color) {
     var k = el('span', 'key-line');
     k.style.background = color;
@@ -105,10 +134,17 @@
 
     var f = $('formula-filled');
     f.textContent = '';
-    f.appendChild(document.createTextNode('P = 1 − e'));
-    var sup = el('sup', null, '−' + state.t + ' / ' + state.tau.toLocaleString('en-US'));
-    f.appendChild(sup);
-    f.appendChild(document.createTextNode(' = 1 − ' + survive.toFixed(3) + ' = ' + p.toFixed(3)));
+    f.setAttribute('aria-label', 'P = 1 − e^(−' + state.t + ' / ' + state.tau + ') = 1 − ' +
+      survive.toFixed(3) + ' = ' + p.toFixed(3) + ', about ' + fmtPct(p));
+    [
+      [mvar('P'), m(' 1 − ', mvar('e'), expFrac(state.t, state.tau))],
+      [null, m('1 − ' + survive.toFixed(3))],
+      [null, m(el('span', 'result', p.toFixed(3)), el('span', 'approx', '≈ ' + fmtPct(p)))],
+    ].forEach(function (row) {
+      f.appendChild(m(row[0] || '')).className = 'lhs';
+      f.appendChild(el('span', 'eq', '='));
+      f.appendChild(row[1]);
+    });
 
     $('fact-annual').textContent = fmtPct(P(state.tau, 1));
     $('fact-none').textContent = fmtPct(survive);
@@ -281,6 +317,136 @@
     $('chart-tip').hidden = true;
   }
 
+  // ---------- worked examples ----------
+  var YEARS_SINCE_1700 = new Date().getFullYear() - 1700;
+  var EXAMPLES = [
+    {
+      id: 'mega-full', label: 'Example 1 · Subduction zone (megathrust)',
+      title: 'A magnitude 9 on the Cascadia Subduction Zone',
+      intro: 'The ocean floor is sliding under North America along a 1,000 km fault off the coast. When it ' +
+        'slips all at once, it makes a magnitude ~9 earthquake and a tsunami, like the one in January 1700.',
+      tauNote: 'from coastal and offshore geology',
+      what: 'an M ~9 Cascadia earthquake in the next 50 years',
+      futures: 'an M ~9 strikes.',
+      note: [
+        ['strong', 'The report also gives 15%. '],
+        ['text', 'That number comes from a different model that also counts the ' + YEARS_SINCE_1700 +
+          ' years since the last M9 in 1700. Time since the last quake pushes the odds up. ' +
+          'The simple formula has no memory, so it gives 10%. Project 5 compares the two.'],
+      ],
+    },
+    {
+      id: 'crustal-seattle', label: 'Example 2 · Crustal fault',
+      title: 'A magnitude 6.5+ on the Seattle Fault',
+      intro: 'A shallow fault zone that runs east–west right under Seattle, from the Kitsap Peninsula across ' +
+        'Puget Sound to Lake Sammamish. An M 6.5 releases about 5,000 times less energy than an M 9, and it is shallow and directly ' +
+        'beneath the city.',
+      tauNote: 'from the 2023 National Seismic Hazard Model',
+      what: 'an M ≥ 6.5 Seattle Fault earthquake in the next 50 years',
+      futures: 'the Seattle Fault ruptures.',
+      note: [
+        ['strong', 'Rarer, but closer. '],
+        ['text', 'The last large Seattle Fault earthquake was about 1,100 years ago (around AD 900). It ' +
+          'raised the Bainbridge Island shoreline by several meters. (That date comes from geology studies, not ' +
+          'from this report.)'],
+      ],
+    },
+  ];
+
+  function buildExamples() {
+    var wrap = $('examples');
+    var t = DEFAULT_T;
+    EXAMPLES.forEach(function (ex) {
+      var s = byId[ex.id];
+      var tau = s.tau;
+      var ratio = t / tau, survive = Math.exp(-ratio), p = 1 - survive;
+      var pctRounded = Math.round(p * 100);
+
+      var card = el('article', 'card example');
+      card.dataset.id = ex.id;
+      card.style.setProperty('--ex-color', Q.types[s.type].color);
+
+      var eb = el('p', 'ex-eyebrow');
+      eb.appendChild(el('span', 'dot'));
+      eb.appendChild(document.createTextNode(ex.label));
+      card.appendChild(eb);
+      card.appendChild(el('h3', null, ex.title));
+      card.appendChild(el('p', 'ex-intro', ex.intro));
+
+      // Givens
+      var dl = el('dl', 'ex-givens');
+      [[m('Average gap ', mvar('τ')), fmtNum(tau) + ' years', ex.tauNote],
+       [m('Time window ', mvar('t')), t + ' years', 'a typical building lifetime']].forEach(function (g) {
+        var d = el('div');
+        var dt = el('dt'); dt.appendChild(g[0]); d.appendChild(dt);
+        var dd = el('dd', 'math', g[1]); dd.appendChild(el('small', null, g[2])); d.appendChild(dd);
+        dl.appendChild(d);
+      });
+      card.appendChild(dl);
+
+      // Steps
+      var ol = el('ol', 'ex-steps');
+      function step(label, math, cls) {
+        var li = el('li', cls || null);
+        var body = el('div');
+        body.appendChild(el('span', 'ex-step-label', label));
+        var mm = el('span', 'ex-step-math math');
+        mm.appendChild(math);
+        body.appendChild(mm);
+        li.appendChild(body);
+        ol.appendChild(li);
+      }
+      step('Put the numbers into the formula',
+        m(mvar('P'), ' = 1 − ', mvar('e'), expFrac(t, tau)));
+      step('How many average gaps fit in ' + t + ' years?',
+        m(frac(fmtNum(t), fmtNum(tau)), ' = ', el('span', 'result', dec(ratio))));
+      step('Chance of no quake in ' + t + ' years',
+        m(mvar('e'), expPlain('−' + dec(ratio)), ' = ', el('span', 'result', survive.toFixed(3))));
+      step('Chance of at least one: subtract from 1',
+        m(mvar('P'), ' = 1 − ' + survive.toFixed(3) + ' = ', el('span', 'result', p.toFixed(3))), 'final');
+      card.appendChild(ol);
+
+      // Answer
+      var ans = el('div', 'ex-answer');
+      ans.appendChild(el('span', 'ex-answer-value', fmtPct(p)));
+      var ap = el('p');
+      ap.appendChild(document.createTextNode('chance of ' + ex.what + '. '));
+      ap.appendChild(el('strong', null, 'Matches the report’s ' + fmtPct(s.reported) + ' (p. ' + s.page + ').'));
+      ans.appendChild(ap);
+      card.appendChild(ans);
+
+      // 100 possible futures
+      var fig = el('figure', 'ex-futures');
+      fig.appendChild(el('figcaption', null, 'Picture 100 possible versions of the next ' + t + ' years. In about ' +
+        pctRounded + ' of them, ' + ex.futures + ' Each year on its own has a ' + fmtPct(1 / tau) + ' chance (1 in ' +
+        fmtNum(tau) + ').'));
+      var waffle = el('div', 'waffle');
+      waffle.setAttribute('role', 'img');
+      waffle.setAttribute('aria-label', pctRounded + ' of 100 squares filled');
+      for (var i = 0; i < 100; i++) waffle.appendChild(el('span', i < pctRounded ? 'hit' : null));
+      fig.appendChild(waffle);
+      card.appendChild(fig);
+
+      var note = el('p', 'ex-note');
+      ex.note.forEach(function (n) {
+        note.appendChild(n[0] === 'strong' ? el('strong', null, n[1]) : document.createTextNode(n[1]));
+      });
+      card.appendChild(note);
+
+      var btn = el('button', 'btn ex-load', 'Try it in the explorer ↑');
+      btn.type = 'button';
+      btn.addEventListener('click', function () {
+        state.t = DEFAULT_T;
+        $('t-slider').value = DEFAULT_T;
+        selectScenario(ex.id);
+        document.querySelector('.explorer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      card.appendChild(btn);
+
+      wrap.appendChild(card);
+    });
+  }
+
   // ---------- comparison bars ----------
   function buildBars() {
     var lg = $('type-legend');
@@ -374,6 +540,7 @@
 
   function init() {
     buildChips();
+    buildExamples();
     buildBars();
     buildTable();
 
