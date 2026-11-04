@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Cascadia: what are the odds? · The story of the USGS report</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main>
+    <header class="hero page">
+      <div class="top">
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 8 of 10</p>
+        <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      </div>
+      <h1>Cascadia: what are the odds?</h1>
+      <p class="lede">
+        A scrolling walkthrough of the USGS report <em>Earthquake Probabilities and Hazards in the U.S. Pacific Northwest</em>
+        (Fact Sheet 2025–3050): three kinds of earthquakes, how often each one strikes, and what that means for the next 50 years.
+      </p>
+      <p class="scroll-cue" aria-hidden="true">Scroll to begin ↓</p>
+    </header>
+
+    <div class="scrolly page" id="scrolly">
+      <figure class="graphic" aria-live="polite">
+        <svg id="graphic" role="img" aria-label="Story graphic"></svg>
+        <figcaption id="graphic-caption" class="graphic-caption"></figcaption>
+      </figure>
+
+      <div class="steps">
+        <section class="step" data-step="plates" tabindex="0">
+          <h2>Two plates collide</h2>
+          <p>Off the Pacific Northwest coast, the <strong>Juan de Fuca Plate</strong> slides east beneath the <strong>North American
+            Plate</strong> at a few centimeters per year. This is the <strong>Cascadia Subduction Zone</strong>, running from northern
+            California to Vancouver Island.</p>
+          <p class="aside">The graphic is a real slice through the ground at the latitude of Seattle. The sinking plate's shape comes from the
+            USGS Slab2 model, and the dots are earthquakes recorded since 1980. Depth is stretched ×2.5.</p>
+        </section>
+        <section class="step" data-step="crustal" tabindex="0">
+          <h2>1. Shallow crustal quakes</h2>
+          <p>The North American Plate gets squeezed, and faults in its crust break: the Seattle, Tacoma and southern Whidbey Island
+            faults, among others. The <strong>Seattle Fault produced an M7.5–7.8 around 923–924 C.E.</strong></p>
+          <p>Chance of an M6.5+ in the Puget Sound region in the next 50 years: <strong>17%</strong>.</p>
+        </section>
+        <section class="step" data-step="deep" tabindex="0">
+          <h2>2. Deep (intraslab) quakes</h2>
+          <p>Inside the sinking plate, <strong>40–60 km down</strong>, the rock bends and releases fluids, and it breaks. These quakes are
+            the region's most common damaging type: <strong>1949 Olympia (M6.8), 1965 Seattle (M6.5), 2001 Nisqually (M6.8)</strong>.</p>
+          <p>Chance of an M6.5+ under Puget Sound in the next 50 years: <strong>85%</strong>.</p>
+        </section>
+        <section class="step" data-step="megathrust" tabindex="0">
+          <h2>3. The megathrust: the "Big One"</h2>
+          <p>The boundary between the plates is locked. It stores strain for centuries and then slips all at once, lifting the sea floor,
+            dropping the coast and launching a tsunami. The last time was <strong>January 26, 1700</strong>, an estimated M8.7–9.2.</p>
+          <p>Chance of an M~9 in the next 50 years: <strong>10–15%</strong>.</p>
+        </section>
+        <section class="step" data-step="clock" tabindex="0">
+          <h2>How often does each one strike?</h2>
+          <p>On average: a deep M6.5+ under Puget Sound about every <strong>26 years</strong>, a crustal M6.5+ about every
+            <strong>265 years</strong>, and an M9 on the whole coast about every <strong>500 years</strong>.</p>
+          <p class="aside">The graphic shows one possible next 300 years, drawn at random at those rates. The timing really is irregular.</p>
+        </section>
+        <section class="step" data-step="formula" tabindex="0">
+          <h2>Turning "how often" into "how likely"</h2>
+          <p>If quakes have no memory, the chance of at least one in <em>t</em> years is <strong>P = 1 − e<sup>−t/τ</sup></strong>, where
+            τ is the average time between them. The report uses <em>t</em> = 50 years, about the life of a typical building.</p>
+        </section>
+        <section class="step" data-step="odds" tabindex="0">
+          <h2>The next 50 years</h2>
+          <p>The most likely damaging quake isn't the Big One. It's a <strong>deep quake under Puget Sound</strong>. Crustal faults and the
+            megathrust are less likely, but they can be far more destructive.</p>
+        </section>
+        <section class="step" data-step="memory" tabindex="0">
+          <h2>Does the fault remember 1700?</h2>
+          <p>If strain builds steadily, a quake gets more likely the longer it's been. <span data-elapsed>326</span> years after 1700, a
+            "memory" model raises the M9 odds from <strong>10% to about 15%</strong>, which is why the report gives a range.</p>
+        </section>
+        <section class="step" data-step="record" tabindex="0">
+          <h2>It has happened many times</h2>
+          <p>Sediment layers shaken loose by great quakes record <strong>at least 19 whole-coast ruptures in ~10,000 years</strong>, plus more
+            partial ones in the south. That's why the M9 is a matter of when, not if.</p>
+        </section>
+        <section class="step" data-step="prepare" tabindex="0">
+          <h2>What you can do</h2>
+          <p>Shaking, tsunamis, landslides and liquefaction are all part of the hazard. The report's advice:</p>
+          <ul class="checklist" id="checklist">
+            <li><label><input type="checkbox" data-item="secure"> Identify hazards and secure movable items at home and work</label></li>
+            <li><label><input type="checkbox" data-item="plan"> Make an emergency plan and supply kit</label></li>
+            <li><label><input type="checkbox" data-item="drop"> Practice "Drop, Cover, and Hold On"</label></li>
+            <li><label><input type="checkbox" data-item="tsunami"> Learn local tsunami evacuation routes</label></li>
+            <li><label><input type="checkbox" data-item="drill"> Join a drill like the Great ShakeOut (<a href="https://www.shakeout.org">shakeout.org</a>)</label></li>
+          </ul>
+          <p class="aside" id="checklist-status"></p>
+        </section>
+      </div>
+    </div>
+
+    <section class="page outro" aria-labelledby="dive-title">
+      <h2 id="dive-title">Dig deeper</h2>
+      <div class="dive" id="dive"></div>
+      <footer class="site-footer">
+        Based on Wirth, E., Frankel, A., Sherrod, B., Grant, A., Dunham, A., Stone, I., and Grossman, J., 2025, U.S. Geological Survey Fact
+        Sheet 2025–3050, <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>. Plate geometry: USGS Slab2. Earthquakes:
+        USGS ComCat. Turbidite ages: Goldfinger and others (2012).
+      </footer>
+    </section>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/quake-data.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/bpt.js"></script>
+  <script src="../shared/data/pnw-catalog.js"></script>
+  <script src="../shared/data/cascadia-slab.js"></script>
+  <script src="../shared/data/cascadia-turbidites.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

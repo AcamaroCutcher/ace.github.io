@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Cascadia earthquake visualizations</title>
+  <link rel="stylesheet" href="shared/theme.css">
+  <link rel="stylesheet" href="hub.css">
+  <script src="shared/theme.js"></script>
+</head>
+<body>
+  <section class="hero" id="hero" aria-labelledby="hero-title">
+    <canvas id="hero-map" aria-hidden="true"></canvas>
+    <div class="hero-fade" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <div class="hero-bar">
+        <p class="eyebrow rise" style="--d:0">USGS Fact Sheet 2025–3050 · Cascadia earthquake visualizations</p>
+        <div class="hero-actions">
+          <a class="home-link" id="home-link" href="../index.html" hidden>← All projects</a>
+          <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <h1 id="hero-title">
+          <span class="rise" style="--d:1">What are the odds of</span>
+          <span class="rise" style="--d:2">the next big <span class="hl">Cascadia</span></span>
+          <span class="rise" style="--d:3">earthquake?</span>
+        </h1>
+        <p class="lede rise" style="--d:4">Ten interactive explainers for the USGS report
+          <em>Earthquake Probabilities and Hazards in the U.S. Pacific Northwest</em>. Behind this text, every M4+ earthquake recorded
+          in the region since 1980 is replaying on the map, at its real place and in order.</p>
+        <div class="cta-row rise" style="--d:5">
+          <a class="btn-cta primary" href="08-story/index.html"><span>Start with the story</span><span class="arr" aria-hidden="true">→</span></a>
+          <a class="btn-cta" href="#projects"><span>Browse all 10</span><span class="arr down" aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+
+      <ul class="stats rise" style="--d:6" aria-label="Chance of each kind of earthquake in the next 50 years">
+        <li class="stat"><span class="dot" style="--c: var(--deep)"></span>
+          <strong><span data-count="85">85</span>%</strong><span>deep M6.5+ under Puget Sound</span></li>
+        <li class="stat"><span class="dot" style="--c: var(--crustal)"></span>
+          <strong><span data-count="17">17</span>%</strong><span>shallow M6.5+ in the Puget Sound crust</span></li>
+        <li class="stat"><span class="dot" style="--c: var(--megathrust)"></span>
+          <strong><span data-count="10">10</span>–<span data-count="15">15</span>%</strong><span>Cascadia M9 megathrust</span></li>
+        <li class="stat-note">Chance in the next 50 years, from the report</li>
+      </ul>
+    </div>
+
+    <div class="replay" aria-live="off">
+      <div class="replay-legend" aria-hidden="true">
+        <span><i style="--c: var(--deep)"></i>Deep (30 km+)</span>
+        <span><i style="--c: var(--crustal)"></i>Shallow, onshore</span>
+        <span><i style="--c: var(--context)"></i>Offshore</span>
+        <span><i class="line"></i>Plate boundary</span>
+      </div>
+      <div class="replay-status">
+        <span class="replay-year" id="replay-year">1980</span>
+        <span class="replay-count"><span id="replay-n">0</span> quakes</span>
+        <button type="button" class="replay-btn" id="replay-toggle" aria-pressed="false" aria-label="Pause the earthquake replay">Pause</button>
+      </div>
+    </div>
+  </section>
+
+  <main class="page" id="projects">
+    <div class="section-head reveal">
+      <h2>Ten ways into the report</h2>
+      <p>Each one stands alone. Start anywhere, or follow the numbers.</p>
+    </div>
+
+    <div class="grid">
+      <a class="card proj reveal" href="01-probability-explorer/index.html">
+        <span class="icon i-gauge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 0 1 16 0"/><path class="needle" d="M12 16l4-5"/><circle cx="12" cy="16" r="1.4"/></svg></span>
+        <span class="num">01</span>
+        <h3>What are the odds in the next 50 years?</h3>
+        <p>Probability explorer for the report's time-independent model and all seven 50-year probabilities.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="02-monte-carlo/index.html">
+        <span class="icon i-dice" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9" cy="15" r="1.2"/></svg></span>
+        <span class="num">02</span>
+        <h3>Roll the next 50 years</h3>
+        <p>Monte Carlo simulator: thousands of possible futures on a Pacific Northwest map, compared against the report's formula.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="03-earthquake-record/index.html">
+        <span class="icon i-pin" aria-hidden="true"><svg viewBox="0 0 24 24"><circle class="ping" cx="12" cy="11" r="7"/><circle cx="12" cy="11" r="2.5"/><path d="M5 20h14"/></svg></span>
+        <span class="num">03</span>
+        <h3>What the record shows</h3>
+        <p>45 years of real USGS earthquakes by depth and time, a cross-section under Puget Sound, and the report's claims checked against the data.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="04-small-quakes/index.html">
+        <span class="icon i-bars" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V5"/><path d="M10 20v-9"/><path d="M15 20v-5"/><path d="M20 20v-2"/></svg></span>
+        <span class="num">04</span>
+        <h3>Small quakes predict big ones</h3>
+        <p>The Gutenberg–Richter rule: from 20 small Puget Sound quakes to the odds of an M6.5+, and why the b-value matters.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="05-memory/index.html">
+        <span class="icon i-glass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4h10M7 20h10"/><path d="M8 4c0 5 8 5 8 8s-8 3-8 8"/><path d="M16 4c0 5-8 5-8 8s8 3 8 8"/></svg></span>
+        <span class="num">05</span>
+        <h3>Memory or no memory?</h3>
+        <p>Why a Cascadia M9 is 10% likely with one model and 15% with the other: the odds since 1700, and why waiting matters.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="06-megathrust-history/index.html">
+        <span class="icon i-layers" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7c3-2 6 2 9 0s6 2 9 0"/><path d="M3 12c3-2 6 2 9 0s6 2 9 0"/><path d="M3 17c3-2 6 2 9 0s6 2 9 0"/></svg></span>
+        <span class="num">06</span>
+        <h3>10,000 years of great Cascadia earthquakes</h3>
+        <p>All 30 dated turbidite events (Goldfinger et al., 2012): whole-coast vs partial ruptures, and the gaps between them.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="07-subduction-3d/index.html">
+        <span class="icon i-cube" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span>
+        <span class="num">07</span>
+        <h3>Inside the subduction zone</h3>
+        <p>A rotatable 3D view of the sinking plate (USGS Slab2) with every quake placed at its true depth and sorted into the report's three types.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="08-story/index.html">
+        <span class="icon i-book" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v14c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-14c-3-.5-6 0-8 1.5z"/><path d="M12 6v14"/></svg></span>
+        <span class="num">08</span>
+        <h3>Cascadia: what are the odds? (the story)</h3>
+        <p>A scrolling walkthrough of the whole report: the plates, the three kinds of quakes, the odds, and what to do.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="09-three-quakes/index.html">
+        <span class="icon i-play" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></svg></span>
+        <span class="num">09</span>
+        <h3>Three kinds of earthquakes</h3>
+        <p>A one-minute animated explainer with chapters: locking, the Big One and its tsunami, deep and shallow quakes, and the odds.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card proj reveal" href="10-orphan-tsunami/index.html">
+        <span class="icon i-wave" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M2 19c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M6 9c0-3 3-5 6-5"/></svg></span>
+        <span class="num">10</span>
+        <h3>The orphan tsunami of 1700</h3>
+        <p>The tsunami's 10-hour trip to Japan, and the detective work that dated Cascadia's last M9 to the hour.</p>
+        <span class="go">Open <span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+
+    <footer class="site-footer">
+      Source: U.S. Geological Survey Fact Sheet 2025–3050, ver. 1.1.
+      <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+      Background: USGS ANSS ComCat earthquakes M4+, 1980–2024; coastline from Natural Earth.
+    </footer>
+  </main>
+
+  <script src="shared/data/pnw-map.js"></script>
+  <script src="shared/data/pnw-catalog.js"></script>
+  <script src="hub.js"></script>
+</body>
+</html>

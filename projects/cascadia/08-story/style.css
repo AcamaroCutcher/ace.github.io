@@ -1,0 +1,53 @@
+/* Project 8: scrollytelling. Generic components live in ../shared/components.css. */
+
+.hero { padding-top: 32px; padding-bottom: 8px; }
+.hero .top { margin-bottom: 12px; }
+.hero h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.05; margin: 8px 0 16px; }
+.hero .lede { font-size: 19px; max-width: 760px; }
+.scroll-cue { margin-top: 40px; color: var(--text-muted); font-size: 14px; }
+
+.scrolly { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; padding-top: 0; padding-bottom: 0; }
+.graphic {
+  position: sticky; top: 4vh; height: 92vh; margin: 0; display: flex; flex-direction: column; justify-content: center;
+}
+#graphic { width: 100%; height: auto; max-height: 82vh; display: block; overflow: visible; }
+#graphic text { font-family: inherit; }
+.graphic-caption { font-size: 13px; color: var(--text-muted); margin-top: 6px; min-height: 2.6em; }
+
+.steps { padding: 30vh 0 40vh; }
+.step {
+  min-height: 70vh; display: flex; flex-direction: column; justify-content: center;
+  opacity: 0.35; transition: opacity 0.3s;
+}
+.step.is-active { opacity: 1; }
+.step:focus-visible { outline-offset: 8px; }
+.step h2 { font-size: 26px; margin-bottom: 10px; }
+.step p { font-size: 17px; margin: 0 0 12px; color: var(--text-secondary); }
+.step p strong { color: var(--text-primary); }
+.step .aside { font-size: 14px; color: var(--text-muted); }
+
+.checklist { list-style: none; padding: 0; margin: 4px 0 12px; display: grid; gap: 8px; font-size: 16px; }
+.checklist label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.checklist input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--crustal); flex: none; }
+
+@media (max-width: 860px) {
+  .scrolly { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .graphic { top: 0; height: 52vh; z-index: 1; background: var(--page); padding: 8px 0; }
+  #graphic { max-height: 44vh; }
+  .steps { padding: 10vh 0 30vh; position: relative; z-index: 2; }
+  .step { min-height: 60vh; opacity: 1; }
+  .step > * { background: var(--surface-1); }
+  .step h2, .step p, .step ul { padding: 0 14px; }
+  .step h2 { padding-top: 12px; border-radius: 10px 10px 0 0; }
+  .step > *:last-child { padding-bottom: 12px; border-radius: 0 0 10px 10px; }
+}
+
+.outro { padding-top: 24px; }
+.dive { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
+.dive a { display: block; text-decoration: none; color: inherit; }
+.dive a:hover { background: var(--wash); }
+.dive .num { font-size: 13px; color: var(--text-muted); }
+.dive h3 { margin: 4px 0 4px; font-size: 16px; }
+.dive p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+@media (prefers-reduced-motion: reduce) { .step { transition: none; } }

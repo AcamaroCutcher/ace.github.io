@@ -1,0 +1,80 @@
+/* Project 2 specific styles. Generic components live in ../shared/components.css. */
+
+.years-control { margin-bottom: 0; min-width: 220px; flex: 1 1 220px; max-width: 360px; }
+.chip .check { width: 14px; text-align: center; font-weight: 700; }
+
+
+/* Main view */
+.main-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 32px; }
+@media (max-width: 1000px) { .main-grid { grid-template-columns: minmax(0, 1fr); } }
+.grid-col, .side-col { min-width: 0; }
+.canvas-wrap { position: relative; }
+#futures { display: block; width: 100%; cursor: pointer; border-radius: 4px; }
+
+.year-readout { margin: 0 0 4px; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.year-readout .muted { font-size: 14px; font-weight: 500; }
+.hero-text { margin-bottom: 8px; }
+.formula-compare { margin: 0 0 20px; font-size: 14px; color: var(--text-secondary); }
+.formula-compare strong { color: var(--text-primary); }
+
+
+/* Tallies */
+.tallies { display: flex; flex-direction: column; gap: 4px; }
+.tally {
+  display: grid; grid-template-columns: minmax(170px, 300px) 64px 1fr 110px; gap: 16px; align-items: center;
+  padding: 8px 10px; border-radius: 8px;
+}
+.tally.is-union { border-top: 1px solid var(--grid); border-radius: 0; margin-top: 6px; padding-top: 14px; }
+.tally.is-off { opacity: 0.4; }
+.tally-name { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.tally-name .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.tally-sim { font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; text-align: right; }
+.tally-track { position: relative; height: 20px; }
+.tally-bar { position: absolute; left: 0; top: 2px; height: 16px; border-radius: 0 4px 4px 0; }
+.tally-tick { position: absolute; top: -2px; width: 0; height: 24px; border-left: 2px solid var(--text-primary); }
+.tally-theory { font-size: 13px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) {
+  .tally { grid-template-columns: 1fr auto; gap: 4px 12px; }
+  .tally-track { grid-column: 1 / -1; }
+  .tally-theory { grid-column: 1 / -1; }
+}
+
+
+
+.strip-wrap { margin-top: 4px; }
+.strip-wrap svg { cursor: pointer; }
+
+.quake-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.quake-list button {
+  display: grid; grid-template-columns: 52px 14px 64px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  width: 100%; text-align: left; font: inherit; font-size: 14px; color: inherit;
+  background: transparent; border: 0; border-radius: 8px; padding: 7px 10px; cursor: pointer;
+}
+.quake-list button:hover, .quake-list button:focus-visible { background: var(--wash); }
+.quake-list button[aria-pressed="true"] { background: var(--wash); box-shadow: inset 3px 0 0 var(--text-primary); }
+.quake-list .q-year { font-weight: 650; font-variant-numeric: tabular-nums; }
+.quake-list .q-mag { font-weight: 600; font-variant-numeric: tabular-nums; }
+.quake-list .q-where { color: var(--text-secondary); min-width: 0; }
+.quake-list .q-where strong { color: var(--text-primary); font-weight: 500; }
+.quake-list .dot { width: 10px; height: 10px; border-radius: 50%; }
+.quake-list li.is-upcoming button { opacity: 0.5; }
+.quake-list .empty { padding: 10px; color: var(--text-secondary); font-size: 14px; }
+@media (max-width: 640px) {
+  .quake-list button { grid-template-columns: 44px 12px 52px minmax(0, 1fr); }
+  .quake-list .pill { display: none; }
+}
+.method ul { margin: 8px 0 0; padding-left: 20px; color: var(--text-secondary); }
+.method li { margin-bottom: 6px; }
+.method strong { color: var(--text-primary); }
+
+/* Source chips: obvious on/off state */
+#source-chips .chip .check { display: inline-block; width: 12px; font-weight: 700; }
+#source-chips .chip[aria-pressed="true"] .check::before { content: "✓"; }
+#source-chips .chip[aria-pressed="false"] { color: var(--text-muted); font-weight: 400; background: transparent; border-color: var(--border); }
+#source-chips .chip[aria-pressed="false"] .dot { background: transparent !important; box-shadow: inset 0 0 0 1.5px var(--text-muted); }
+#source-chips .chip[aria-pressed="false"] .label { text-decoration: line-through; }
+
+/* How-to steps */
+.map-steps { margin: 0 0 16px; padding-left: 22px; font-size: 14px; color: var(--text-secondary); display: grid; gap: 4px; }
+.map-steps strong { color: var(--text-primary); }
+

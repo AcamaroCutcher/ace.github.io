@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>What are the odds? · Cascadia earthquake probabilities</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 1 of 10</p>
+        <h1>What are the odds in the next 50 years?</h1>
+        <p class="lede">
+          The USGS turns <em>how often</em> earthquakes happen into <em>how likely</em> one is during
+          the life of a typical building (about 50 years). Pick an earthquake source, or move the sliders
+          to see how the math works.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <!-- 1. Explorer -->
+    <section class="card explorer" aria-labelledby="explorer-title">
+      <h2 id="explorer-title" class="visually-hidden">Probability explorer</h2>
+
+      <div class="chips" role="group" aria-label="Earthquake source">
+        <!-- filled by app.js -->
+      </div>
+
+      <div class="explorer-grid">
+        <div class="readout">
+          <div class="hero" aria-live="polite">
+            <span id="hero-value" class="hero-value">85%</span>
+            <p id="hero-text" class="hero-text"></p>
+          </div>
+
+          <div class="formula" aria-label="Formula with current values">
+            <p class="formula-generic">P = 1 − e<sup>−t / τ</sup></p>
+            <p id="formula-filled" class="formula-filled"></p>
+          </div>
+
+          <dl class="facts">
+            <div><dt>In any single year</dt><dd id="fact-annual"></dd></div>
+            <div><dt>Chance of <em>no</em> such quake</dt><dd id="fact-none"></dd></div>
+          </dl>
+
+          <div class="control">
+            <label for="tau-slider">
+              <span>Average years between quakes <span class="sym">τ</span></span>
+              <output id="tau-out" for="tau-slider"></output>
+            </label>
+            <input id="tau-slider" type="range" min="0" max="1000" step="1">
+            <div class="range-ends"><span>5 yr</span><span>log scale</span><span>5,000 yr</span></div>
+          </div>
+
+          <div class="control">
+            <label for="t-slider">
+              <span>Time window <span class="sym">t</span></span>
+              <output id="t-out" for="t-slider"></output>
+            </label>
+            <input id="t-slider" type="range" min="1" max="200" step="1" value="50">
+            <div class="range-ends"><span>1 yr</span><button type="button" id="t-reset" class="link-btn">Reset to 50 yr</button><span>200 yr</span></div>
+          </div>
+
+          <p id="basis" class="basis"></p>
+        </div>
+
+        <figure class="chart-figure">
+          <figcaption>
+            <span class="chart-title">Chance of at least one quake, by years from now</span>
+            <span class="legend" id="curve-legend"></span>
+          </figcaption>
+          <div class="chart-wrap" id="chart-wrap">
+            <svg id="chart" role="img" aria-label="Probability curve"></svg>
+            <div class="tooltip" id="chart-tip" hidden></div>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2. Comparison -->
+    <section class="card compare" aria-labelledby="compare-title">
+      <div class="section-head">
+        <div>
+          <h2 id="compare-title">All seven 50-year probabilities in the report</h2>
+          <p class="secondary">Click a bar to load it into the explorer above.</p>
+        </div>
+        <div class="legend" id="type-legend"></div>
+      </div>
+
+      <div class="bars" id="bars"></div>
+      <div class="tooltip" id="bar-tip" hidden></div>
+
+      <p class="note">
+        <span class="pill">time-dependent</span>
+        These two values can't be reproduced with the formula above. They also account for <strong>when the last
+        great Cascadia earthquake happened (January 26, 1700)</strong>, and that time since the last quake raises
+        the odds. The formula alone gives 10% for the same ~500-year recurrence. Project 5 will explore this.
+      </p>
+
+      <details class="table-view">
+        <summary>Show the numbers as a table</summary>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Earthquake source</th>
+                <th scope="col">Type</th>
+                <th scope="col">Magnitude</th>
+                <th scope="col">Avg. recurrence (τ)</th>
+                <th scope="col" class="num">Report's 50-yr chance</th>
+                <th scope="col" class="num">Formula 1 − e<sup>−50/τ</sup></th>
+                <th scope="col">Model</th>
+                <th scope="col" class="num">Page</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- 3. Takeaways -->
+    <section class="takeaways" aria-label="Key takeaways">
+      <article class="card">
+        <h3>The "Big One" isn't the most likely one</h3>
+        <p>A damaging <strong>deep quake under Puget Sound (85%)</strong> is far more likely in the next 50 years
+          than a Cascadia M9 (10–15%). These deep quakes have hit in 1949, 1965 and 2001.</p>
+      </article>
+      <article class="card">
+        <h3>Probability, not prediction</h3>
+        <p>The numbers say how likely a quake is over decades, not <em>when</em> it will happen. This model
+          assumes quakes have <strong>no memory</strong>: one is equally likely on any day. The report notes that
+          this is probably wrong for a single fault, but simple and reasonable when dates are uncertain.</p>
+      </article>
+      <article class="card">
+        <h3>Doubling the window doesn't double the odds</h3>
+        <p>The curve bends toward 100% but never reaches it. Try τ = 26 years: 50 years gives 85%, while
+          100 years gives 98%, not 170%. For rare events (large τ) the curve is nearly straight, so the odds
+          grow almost in proportion.</p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      Source: Wirth, E., Frankel, A., Sherrod, B., Grant, A., Dunham, A., Stone, I., and Grossman, J., 2025,
+      <em>Earthquake probabilities and hazards in the U.S. Pacific Northwest</em>: U.S. Geological Survey
+      Fact Sheet 2025–3050, ver. 1.1. <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>
+    </footer>
+  </main>
+
+  <script src="../shared/quake-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

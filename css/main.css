@@ -1006,3 +1006,10 @@ body {
     justify-content: center;
   }
 }
+
+/* Link from the homepage Research section to the full projects library */
+.research-more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--spacing-2xl);
+}

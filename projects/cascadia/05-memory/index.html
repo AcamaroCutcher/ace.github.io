@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Memory or no memory? · Cascadia M9 odds since 1700</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 5 of 10</p>
+        <h1>Memory or no memory?</h1>
+        <p class="lede">
+          The report gives two answers for a Cascadia M9 in the next 50 years: <strong>10%</strong> if earthquakes have
+          no memory, and <strong>15%</strong> if the fault "remembers" that its last great quake was on
+          <strong>January 26, 1700</strong> (p. 4). The difference comes down to one question: does waiting make a quake more likely?
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <!-- 1. Two models -->
+    <section class="models" aria-label="The two models">
+      <article class="card model">
+        <span class="model-key"><span class="key-line" style="background: var(--text-secondary)"></span> No memory (Poisson)</span>
+        <h2>Like rolling a die every year</h2>
+        <p>The chance is the same every year, whether the last quake was yesterday or 300 years ago. With one M9 every
+          ~500 years on average, that's a <strong>0.2% chance each year</strong>.</p>
+        <div class="chart-wrap mini" id="mini-poisson"><svg role="img" aria-label="Flat yearly chance under the no-memory model"></svg></div>
+      </article>
+      <article class="card model">
+        <span class="model-key"><span class="key-line" style="background: var(--megathrust)"></span> Memory (Brownian passage time)</span>
+        <h2>Like a spring being loaded</h2>
+        <p>Strain builds up after each rupture, so a new great quake is very unlikely right after the last one and becomes
+          more likely as time passes. <strong><span data-elapsed>326</span> years have passed since 1700.</strong></p>
+        <div class="chart-wrap mini" id="mini-bpt"><svg role="img" aria-label="Yearly chance rising with time since the last quake under the memory model"></svg></div>
+      </article>
+    </section>
+
+    <!-- 2. Controls + main chart -->
+    <section class="card controls" aria-label="Settings">
+      <div class="control-row">
+        <div class="control-group">
+          <span class="control-label" id="src-label">Which earthquake</span>
+          <div class="segmented" role="group" aria-labelledby="src-label" id="src-buttons">
+            <button type="button" data-src="full">Cascadia M9 (whole coast)</button>
+            <button type="button" data-src="south">Southern Cascadia M8+</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label" id="win-label">Time window</span>
+          <div class="segmented" role="group" aria-labelledby="win-label" id="win-buttons">
+            <button type="button" data-win="30">30 years</button>
+            <button type="button" data-win="50">50 years</button>
+            <button type="button" data-win="100">100 years</button>
+          </div>
+        </div>
+        <button type="button" class="btn" id="match-btn">Match the report</button>
+      </div>
+      <div class="sliders">
+        <div class="control">
+          <label for="mu-slider"><span>Average years between quakes <span class="sym">μ</span></span><output id="mu-out" for="mu-slider"></output></label>
+          <input id="mu-slider" type="range" min="250" max="800" step="5">
+          <div class="range-ends"><span>250</span><span>800 yr</span></div>
+        </div>
+        <div class="control">
+          <label for="alpha-slider"><span>How irregular <span class="sym">α</span></span><output id="alpha-out" for="alpha-slider"></output></label>
+          <input id="alpha-slider" type="range" min="0.2" max="0.9" step="0.01">
+          <div class="range-ends"><span>0.2 clockwork</span><span>0.9 very irregular</span></div>
+        </div>
+        <div class="control">
+          <label for="year-slider"><span>Ask the question in year</span><output id="year-out" for="year-slider"></output></label>
+          <input id="year-slider" type="range" min="1700" max="2700" step="1">
+          <div class="range-ends"><span>1700</span><button type="button" class="link-btn" id="today-btn">Back to today</button><span>2700</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="odds-title">
+      <div class="section-head">
+        <div>
+          <h2 id="odds-title">The odds depend on when you ask</h2>
+          <p class="secondary" id="odds-sub"></p>
+        </div>
+        <span class="legend" id="odds-legend"></span>
+      </div>
+      <div class="tiles" id="tiles"></div>
+      <div class="chart-wrap" id="odds-wrap">
+        <svg id="odds-chart" role="img"></svg>
+        <div class="tooltip" id="odds-tip" hidden></div>
+      </div>
+      <p class="hint">Hover to compare the two models in any year; click to ask the question in that year.</p>
+      <p class="note" id="match-note"></p>
+    </section>
+
+    <!-- 3. Why: the gap distribution -->
+    <section class="card" aria-labelledby="why-title">
+      <div class="section-head">
+        <div>
+          <h2 id="why-title">Why waiting matters: how long are the gaps between great quakes?</h2>
+          <p class="secondary" id="why-sub"></p>
+        </div>
+        <span class="legend" id="why-legend"></span>
+      </div>
+      <div class="chart-wrap" id="why-wrap">
+        <svg id="why-chart" role="img"></svg>
+        <div class="tooltip" id="why-tip" hidden></div>
+      </div>
+      <div class="why-explain" id="why-explain"></div>
+    </section>
+
+    <!-- 4. Simulated histories -->
+    <section class="card" aria-labelledby="hist-title">
+      <div class="section-head">
+        <div>
+          <h2 id="hist-title">Clockwork, random, or in between?</h2>
+          <p class="secondary">Each row is a made-up 5,000-year history with the same average gap (<span id="hist-mu">500</span> years). Only the
+            regularity differs. Real great quakes on Cascadia look more like the middle row than the bottom one.</p>
+        </div>
+        <button type="button" class="btn" id="shuffle-btn">&#8634; New histories</button>
+      </div>
+      <div class="chart-wrap" id="hist-wrap">
+        <svg id="hist-chart" role="img"></svg>
+        <div class="tooltip" id="hist-tip" hidden></div>
+      </div>
+    </section>
+
+    <!-- 5. Southern Cascadia grid -->
+    <section class="card" aria-labelledby="south-title">
+      <div class="section-head">
+        <div>
+          <h2 id="south-title">Southern Cascadia: ~30% in 50 years</h2>
+          <p class="secondary">
+            In the south, partial ruptures (M~8) add to full-margin M9s, giving one great quake every ~300–350 years
+            (Figure 4 uses 330). The report's ~30% is a memory model. It adds that it is "not entirely clear how to apply a
+            time-dependent rupture model in a region of the subduction zone that may host a range of earthquake magnitudes" (p. 4).
+            The table shows how the 50-year chance depends on both settings. Click a cell to load it.
+          </p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="south-grid" id="south-grid"></table>
+      </div>
+    </section>
+
+    <section class="takeaways" aria-label="Key takeaways">
+      <article class="card">
+        <h3>Memory raises today's odds</h3>
+        <p>Because <span data-elapsed>326</span> years have already passed, a memory model puts the next 50 years at <strong>~14–15%</strong> instead
+          of 10%. Right after 1700, the same model would have said almost 0%.</p>
+      </article>
+      <article class="card">
+        <h3>Neither model predicts a date</h3>
+        <p>Even with memory, 85% of the time the next 50 years pass without an M9. The gaps between past great quakes
+          ranged from a few centuries to about a thousand years.</p>
+      </article>
+      <article class="card">
+        <h3>The settings are uncertain</h3>
+        <p>The average gap and the regularity come from geological records with large error bars. That's why the report
+          gives a range, <strong>10–15%</strong>, rather than one number.</p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      Model: Brownian passage time (inverse Gaussian), Matthews, M.V., Ellsworth, W.L., and Reasenberg, P.A., 2002,
+      <a href="https://doi.org/10.1785/0120010267">BSSA v. 92, p. 2233–2250</a>. Report: Wirth, E., and others, 2025,
+      USGS Fact Sheet 2025–3050, <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/bpt.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

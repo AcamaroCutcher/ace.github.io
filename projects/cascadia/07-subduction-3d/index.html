@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Inside the subduction zone · 3D view of Cascadia earthquakes</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 7 of 10</p>
+        <h1>Inside the subduction zone</h1>
+        <p class="lede">
+          The Juan de Fuca Plate dives east beneath North America. Here is that plate in 3D, from the USGS Slab2 model, with every
+          recorded M4+ earthquake since 1980 placed at its true depth. Each one is colored by where it happened: in the
+          <strong>crust above</strong>, <strong>inside the sinking plate</strong>, or <strong>on the boundary between them</strong>.
+          These are the report's three kinds of earthquakes.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <section class="card" aria-labelledby="view-title">
+      <h2 id="view-title" class="visually-hidden">3D view</h2>
+      <div class="control-row view-controls">
+        <div class="control-group">
+          <span class="control-label" id="preset-label">View</span>
+          <div class="segmented" role="group" aria-labelledby="preset-label" id="preset-buttons">
+            <button type="button" data-preset="oblique">3D</button>
+            <button type="button" data-preset="south">From the south</button>
+            <button type="button" data-preset="top">From above</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label" id="band-label">Latitude band</span>
+          <div class="segmented wrap" role="group" aria-labelledby="band-label" id="band-buttons">
+            <button type="button" data-band="all">All</button>
+            <button type="button" data-band="puget">Puget Sound</button>
+            <button type="button" data-band="oregon">Oregon</button>
+            <button type="button" data-band="ncal">N. California</button>
+          </div>
+        </div>
+        <div class="control ve-control">
+          <label for="ve-slider"><span>Depth stretched</span><output id="ve-out" for="ve-slider"></output></label>
+          <input id="ve-slider" type="range" min="1" max="8" step="0.5" value="4">
+        </div>
+        <label class="check"><input type="checkbox" id="spin"> Spin</label>
+        <label class="check"><input type="checkbox" id="small"> Add M2.5+ under Puget Sound</label>
+      </div>
+
+      <div class="chips layer-toggles" role="group" aria-label="Earthquake types" id="class-toggles"></div>
+
+      <div class="scene-wrap" id="scene-wrap">
+        <canvas id="scene" tabindex="0" role="img" aria-label="3D view of the subducting plate and earthquakes"></canvas>
+        <div class="map-zoom" role="group" aria-label="Zoom">
+          <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+          <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="zoom-reset" aria-label="Reset view">&#8634;</button>
+        </div>
+        <div class="compass" id="compass" aria-hidden="true"></div>
+        <div class="tooltip" id="scene-tip" hidden></div>
+      </div>
+      <p class="hint">Drag to rotate · pinch or Ctrl/&#8984; + scroll to zoom · arrow keys rotate · hover a dot for details.
+        The orange surface is the top of the sinking plate (Slab2), darker where it is deeper; brighter orange marks the approximate
+        M9 rupture zone.</p>
+    </section>
+
+    <section class="kinds" aria-label="Three kinds of earthquakes" id="kinds"></section>
+
+    <section class="card" aria-labelledby="method-title">
+      <h2 id="method-title">How each earthquake is classified</h2>
+      <p class="secondary">Each quake's depth is compared with the depth of the plate surface directly beneath it (Slab2, interpolated):</p>
+      <ul class="method-list">
+        <li><strong>Inside the sinking plate (intraslab):</strong> at or below 5 km above the plate's top surface, where the plate has
+          already sunk at least 20 km. The 5 km allows for earthquake-depth uncertainty. Quakes inside the still-shallow plate near
+          the trench count as offshore instead.</li>
+        <li><strong>Near the plate boundary (megathrust):</strong> 5–12 km above the plate top, where the plate is shallower than 35 km.</li>
+        <li><strong>In the crust above (North American Plate):</strong> shallower than that.</li>
+        <li><strong>Offshore plates and faults:</strong> west of the trench, where Slab2 has no subducting plate, or inside the plate
+          before it has sunk 20 km. This includes the busy Gorda Plate and Mendocino fault zone off northern California, such as the
+          1980 M7.2 Eureka earthquake.</li>
+      </ul>
+      <p class="note">This is a simple geometric rule for illustration. Depths of offshore quakes are poorly constrained, and some
+        "near the boundary" quakes near Cape Mendocino may belong to other faults in that complex area.</p>
+    </section>
+
+    <footer class="site-footer">
+      Plate geometry: Hayes, G.P., and others, 2018, Slab2 (Cascadia),
+      <a href="https://www.sciencebase.gov/catalog/item/5aa312cde4b0b1c392ea3ef5">USGS ScienceBase</a>. Earthquakes: USGS ANSS ComCat,
+      <a href="https://doi.org/10.5066/F7MS3QZH">doi.org/10.5066/F7MS3QZH</a>. Coastline: Natural Earth. Report: Wirth, E., and others, 2025,
+      USGS Fact Sheet 2025–3050, <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/data/pnw-map.js"></script>
+  <script src="../shared/data/pnw-catalog.js"></script>
+  <script src="../shared/data/cascadia-slab.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

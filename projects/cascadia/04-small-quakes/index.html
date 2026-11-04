@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Small quakes predict big ones · Gutenberg–Richter explainer</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 4 of 10</p>
+        <h1>Small quakes predict big ones</h1>
+        <p class="lede">
+          Large crustal earthquakes under Puget Sound are too rare to count directly, but small ones are not.
+          The report counts <strong>20 small crustal quakes (M4.0–5.4) from 1960 to 2024</strong>, then uses the
+          Gutenberg–Richter rule to estimate an M6.5+ crustal quake about <strong>every 280 years</strong>
+          (p. 5). That's close to the ~265 years found from geological evidence. Here's how it works.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <!-- 1. The rule -->
+    <section class="card" aria-labelledby="rule-title">
+      <div class="rule-grid">
+        <div>
+          <h2 id="rule-title">The rule: every step up in magnitude is several times rarer</h2>
+          <p class="secondary">
+            Around the world, earthquake counts follow the <strong>Gutenberg–Richter law</strong>:
+            log<sub>10</sub>N = a − b·M. N is the number of quakes of magnitude M or larger, and
+            <em>b</em>, the "b-value", sets how fast big quakes get rarer.
+            The report uses <strong>b = 0.8</strong>, typical of the western United States.
+          </p>
+          <div class="control b-control">
+            <label for="b-slider">
+              <span>b-value</span>
+              <output id="b-out" for="b-slider">0.80</output>
+            </label>
+            <input id="b-slider" type="range" min="0.6" max="1.2" step="0.01" value="0.8">
+            <div class="range-ends"><span>0.6</span><span>1.2</span></div>
+            <div class="run-buttons b-presets">
+              <button type="button" class="btn" data-b="0.8">Report's value (0.80)</button>
+              <button type="button" class="btn" id="b-fit">Fit to these quakes (<span id="b-fit-val">0.96</span>)</button>
+            </div>
+          </div>
+          <p class="rule-fact" id="rule-fact"></p>
+        </div>
+        <figure class="chart-figure pictograph-figure">
+          <figcaption><span class="chart-title" id="picto-title">For every M6.5+ quake…</span></figcaption>
+          <div id="pictograph" class="pictograph" role="img"></div>
+          <p class="hint" id="picto-note"></p>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2. Data -> line -> answer -->
+    <section class="card" aria-labelledby="fit-title">
+      <div class="section-head">
+        <div>
+          <h2 id="fit-title">From <span id="n-title">20</span> small quakes to one big one</h2>
+          <p class="secondary">These are the recorded M4+ earthquakes under the Puget Sound area (USGS catalog). Only shallow
+            <strong>crustal</strong> quakes count, because the deeper ones are a different source with their own rate.</p>
+        </div>
+      </div>
+      <div class="controls-row">
+        <div class="control depth-control">
+          <label for="depth-slider">
+            <span>Count as crustal if shallower than</span>
+            <output id="depth-out" for="depth-slider">30 km</output>
+          </label>
+          <input id="depth-slider" type="range" min="15" max="45" step="1" value="30">
+        </div>
+        <div class="control-group">
+          <span class="control-label" id="start-label">Catalog starts in</span>
+          <div class="segmented" role="group" aria-labelledby="start-label" id="start-buttons">
+            <button type="button" data-start="1960">1960 (report)</button>
+            <button type="button" data-start="1980">1980</button>
+            <button type="button" data-start="2000">2000</button>
+          </div>
+        </div>
+        <button type="button" class="btn" id="reset-btn">Use the report's setup</button>
+      </div>
+
+      <div class="tiles" id="tiles"></div>
+
+      <div class="fit-grid">
+        <figure class="chart-figure">
+          <figcaption>
+            <span class="chart-title">Which quakes count</span>
+            <span class="legend" id="map-legend"></span>
+          </figcaption>
+          <div class="map-wrap" id="map-wrap">
+            <canvas id="map" tabindex="0" role="img" aria-label="Map of Puget Sound M4+ earthquakes since 1960"></canvas>
+            <div class="map-zoom" role="group" aria-label="Zoom">
+              <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+              <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+              <button type="button" id="zoom-reset" aria-label="Reset view">&#8634;</button>
+            </div>
+            <div class="tooltip" id="map-tip" hidden></div>
+          </div>
+        </figure>
+        <figure class="chart-figure">
+          <figcaption>
+            <span class="chart-title">How often quakes of each size happen</span>
+            <span class="legend" id="gr-legend"></span>
+          </figcaption>
+          <div class="chart-wrap" id="gr-wrap">
+            <svg id="gr-chart" role="img"></svg>
+            <div class="tooltip" id="gr-tip" hidden></div>
+          </div>
+          <div class="run-buttons gr-buttons">
+            <button type="button" class="btn" id="extend-btn">&#9654; Extend the line to M6.5</button>
+          </div>
+        </figure>
+      </div>
+      <p class="note" id="reproduce-note"></p>
+    </section>
+
+    <!-- 3. Sensitivity -->
+    <section class="card" aria-labelledby="sens-title">
+      <div class="section-head">
+        <div>
+          <h2 id="sens-title">How sure can we be? The answer hinges on b</h2>
+          <p class="secondary" id="sens-text"></p>
+        </div>
+        <span class="legend" id="sens-legend"></span>
+      </div>
+      <div class="chart-wrap" id="sens-wrap">
+        <svg id="sens-chart" role="img"></svg>
+        <div class="tooltip" id="sens-tip" hidden></div>
+      </div>
+    </section>
+
+    <!-- 4. Estimates compared -->
+    <section class="card" aria-labelledby="cmp-title">
+      <div class="section-head">
+        <div>
+          <h2 id="cmp-title">Different methods, similar answers</h2>
+          <p class="secondary">Average years between M6.5+ crustal quakes in the Puget Sound region, and the chance of one in the next 50 years
+            (1 − e<sup>−50/τ</sup>).</p>
+        </div>
+      </div>
+      <div class="chart-wrap" id="cmp-wrap">
+        <svg id="cmp-chart" role="img"></svg>
+        <div class="tooltip" id="cmp-tip" hidden></div>
+      </div>
+      <details class="table-view">
+        <summary>Show the quakes counted as a table</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th scope="col">Date</th><th scope="col" class="num">Magnitude</th><th scope="col" class="num">Depth</th>
+              <th scope="col">Where</th><th scope="col">Counted?</th>
+            </tr></thead>
+            <tbody id="quake-table"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="takeaways" aria-label="Key takeaways">
+      <article class="card">
+        <h3>Small quakes are a census</h3>
+        <p>We can't wait centuries to count M6.5s, but a few decades of M4s are enough to estimate their rate,
+          <strong>if</strong> big and small quakes follow the same rule.</p>
+      </article>
+      <article class="card">
+        <h3>Two independent methods agree</h3>
+        <p>Small-quake counting (~280–320 years) and geological evidence of past ruptures (~265 years) give similar answers.
+          That agreement is why the report trusts the <strong>17% chance in 50 years</strong>.</p>
+      </article>
+      <article class="card">
+        <h3>The b-value is the weak spot</h3>
+        <p>Twenty quakes can't pin down b precisely. The report borrows the western-U.S. value (0.8). With b = 1.0, the
+          same 20 quakes would imply an M6.5+ only about every 1,000 years.</p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      Earthquakes: U.S. Geological Survey ANSS Comprehensive Catalog (ComCat), M ≥ 4, 1960–2024, Puget Sound area
+      (46.75–48.65°N, 121.55–123.7°W), <a href="https://doi.org/10.5066/F7MS3QZH">doi.org/10.5066/F7MS3QZH</a>.
+      b-value fit: Aki (1965) maximum likelihood. Report: Wirth, E., and others, 2025, USGS Fact Sheet 2025–3050,
+      <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/data/pnw-map.js"></script>
+  <script src="../shared/data/pnw-catalog.js"></script>
+  <script src="../shared/quake-geo.js"></script>
+  <script src="../shared/quake-map.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

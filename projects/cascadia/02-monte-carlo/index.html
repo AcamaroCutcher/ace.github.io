@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roll the next 50 years · Cascadia earthquake simulator</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 2 of 10</p>
+        <h1>Roll the next 50 years</h1>
+        <p class="lede">
+          What does an "85% chance" actually look like? This page plays out many possible futures for the
+          Pacific Northwest, with quakes arriving at random at the rates in the USGS report. Each square is
+          one future, and it lights up when that future gets its first earthquake.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <!-- Controls: one row, above everything they scope -->
+    <section class="card controls" aria-label="Simulation settings">
+      <div class="control-group">
+        <span class="control-label" id="src-label">Earthquake sources <span class="muted">(click to turn on or off)</span></span>
+        <div class="chips" role="group" aria-labelledby="src-label" id="source-chips"></div>
+      </div>
+      <div class="control-row">
+        <div class="control-group">
+          <span class="control-label" id="n-label">Number of futures</span>
+          <div class="segmented" role="group" aria-labelledby="n-label" id="n-buttons">
+            <button type="button" data-n="100">100</button>
+            <button type="button" data-n="1000">1,000</button>
+            <button type="button" data-n="10000">10,000</button>
+          </div>
+        </div>
+        <div class="control years-control">
+          <label for="t-slider">
+            <span>Years to simulate</span>
+            <output id="t-out" for="t-slider"></output>
+          </label>
+          <input id="t-slider" type="range" min="10" max="100" step="5" value="50">
+        </div>
+        <div class="control-group">
+          <span class="control-label" id="speed-label">Speed</span>
+          <div class="segmented" role="group" aria-labelledby="speed-label" id="speed-buttons">
+            <button type="button" data-speed="25000">Slow</button>
+            <button type="button" data-speed="12000">Normal</button>
+            <button type="button" data-speed="5000">Fast</button>
+          </div>
+        </div>
+        <div class="run-buttons">
+          <button type="button" class="btn primary" id="run-btn">Roll new futures</button>
+          <button type="button" class="btn" id="replay-btn">Replay</button>
+          <button type="button" class="btn" id="skip-btn">Skip to end</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main view: grid of futures + running total -->
+    <section class="card main-view" aria-labelledby="grid-title">
+      <div class="main-grid">
+        <div class="grid-col">
+          <div class="section-head">
+            <h2 id="grid-title">Each square is one possible future</h2>
+            <div class="legend" id="type-legend"></div>
+          </div>
+          <div class="canvas-wrap" id="canvas-wrap">
+            <canvas id="futures" tabindex="0" role="img"
+              aria-label="Grid of simulated futures. Use arrow keys to move between futures."></canvas>
+            <div class="tooltip" id="grid-tip" hidden></div>
+          </div>
+          <p class="hint">Hover a square to see that future. Click it (or use the arrow keys) to examine it below.</p>
+        </div>
+
+        <div class="side-col">
+          <p class="year-readout"><span class="muted">Year</span> <span id="year-now">2026</span></p>
+          <div class="hero" aria-live="polite">
+            <span id="hero-value" class="hero-value">0%</span>
+            <p id="hero-text" class="hero-text"></p>
+          </div>
+          <p class="formula-compare" id="formula-compare"></p>
+
+          <figure class="chart-figure">
+            <figcaption>
+              <span class="chart-title">Futures hit so far</span>
+              <span class="legend" id="line-legend"></span>
+            </figcaption>
+            <div class="chart-wrap" id="line-wrap">
+              <svg id="line-chart" role="img"></svg>
+              <div class="tooltip" id="line-tip" hidden></div>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="card map-section" aria-labelledby="map-title">
+      <div class="section-head">
+        <div>
+          <h2 id="map-title">Where the quakes strike: <span id="map-future">Future #1</span></h2>
+          <p class="secondary" id="map-summary"></p>
+        </div>
+        <div class="segmented" role="group" aria-label="What the map shows" id="map-mode">
+          <button type="button" data-mode="all">All futures</button>
+          <button type="button" data-mode="one">One future</button>
+        </div>
+      </div>
+
+      <ol class="map-steps">
+        <li><strong>Watch:</strong> press <em>Play</em> below the map (or <em>Roll new futures</em> above). Quakes from every future appear year by year.</li>
+        <li><strong>Follow one future:</strong> click a dot on the map or a square in the grid, or use the buttons below.</li>
+        <li><strong>Explore:</strong> drag the year slider, hover dots for details, zoom into Puget Sound or Portland.</li>
+      </ol>
+
+      <div class="map-toolbar">
+        <div class="run-buttons" id="future-picker" role="group" aria-label="Choose a future">
+          <button type="button" class="btn" data-step="-1" aria-label="Previous future">&larr;</button>
+          <button type="button" class="btn" data-step="1" aria-label="Next future">&rarr;</button>
+          <button type="button" class="btn" data-pick="random">Random</button>
+          <button type="button" class="btn" data-pick="m9">Show a future with a Cascadia M9</button>
+          <button type="button" class="btn" data-pick="none">With no quakes</button>
+          <button type="button" class="btn" data-pick="most">Busiest</button>
+        </div>
+        <div class="segmented" role="group" aria-label="Map view" id="map-views">
+          <button type="button" data-view="region">Whole region</button>
+          <button type="button" data-view="puget">Puget Sound</button>
+          <button type="button" data-view="portland">Portland</button>
+        </div>
+      </div>
+
+      <p class="status-note" id="map-note" hidden></p>
+      <div class="map-legend" id="map-legend"></div>
+
+      <div class="map-wrap" id="map-wrap">
+        <canvas id="map" tabindex="0" role="img" aria-label="Map of simulated earthquakes"></canvas>
+        <div class="map-banner" id="map-banner" aria-live="polite">
+          <span class="banner-year" id="banner-year">2026</span>
+          <span class="banner-text" id="banner-text"></span>
+        </div>
+        <div class="map-zoom" role="group" aria-label="Zoom">
+          <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+          <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="zoom-reset" aria-label="Reset view">&#8634;</button>
+        </div>
+        <div class="tooltip" id="map-tip" hidden></div>
+      </div>
+      <p class="hint">Drag to pan · pinch or Ctrl/&#8984; + scroll to zoom · hover a circle for details · click one to select it
+        (in "All futures", clicking opens that future).</p>
+
+      <div class="chips layer-toggles" role="group" aria-label="Map layers" id="layer-toggles"></div>
+
+      <div class="scrubber">
+        <button type="button" class="btn" id="map-play">Pause</button>
+        <button type="button" class="btn" id="map-restart" aria-label="Play from the start">&#8634; From the start</button>
+        <label for="year-scrub" class="visually-hidden">Year</label>
+        <input type="range" id="year-scrub" min="0" max="50" step="0.1" value="0">
+        <output id="scrub-out" for="year-scrub">2026</output>
+      </div>
+
+      <div class="chart-wrap strip-wrap" id="strip-wrap">
+        <svg id="strip" role="img"></svg>
+        <div class="tooltip" id="strip-tip" hidden></div>
+      </div>
+      <ol class="quake-list" id="quake-list" aria-label="Quakes in this future"></ol>
+
+      <details class="table-view method">
+        <summary>How quakes are placed on the map</summary>
+        <ul>
+          <li><strong>Deep quakes</strong> reuse the locations and depths of 411 real earthquakes recorded 35–70 km beneath
+            Puget Sound since 1970 (USGS ComCat), shifted by about 3 km.</li>
+          <li><strong>Crustal quakes</strong> land on mapped faults from the USGS Quaternary Fault Database, chosen in
+            proportion to fault length: Puget Sound faults (Tacoma, southern Whidbey Island, Devils Mountain, …), the
+            Seattle Fault Zone for Seattle Fault quakes, and Portland-area faults (Portland Hills, Gales Creek, Mount Angel, …).</li>
+          <li><strong>Cascadia M9</strong> quakes rupture the whole subduction zone (shaded when one happens). The circle marks
+            a random epicenter inside the zone. The zone is traced approximately from the report's Figure 1.</li>
+          <li><strong>Magnitudes:</strong> the report only gives thresholds (M ≥ 6.5, M ~9), so sizes follow a
+            Gutenberg–Richter distribution with the report's b-value of 0.8, capped at M7.5 (deep), M7.8 (Puget Sound
+            crustal, after the 923 C.E. Seattle Fault quake) and M7.2 (Portland). M9s range from 8.7 to 9.2, like the 1700
+            quake. The caps are illustrative assumptions. Circle sizes are scaled for readability, not to physical size.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Per-source tallies -->
+    <section class="card" aria-labelledby="tally-title">
+      <div class="section-head">
+        <div>
+          <h2 id="tally-title">Simulation vs. the report's formula</h2>
+          <p class="secondary">Share of futures with at least one quake of each kind, <span id="tally-by">by 2076</span>.</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="key-rect" style="background: var(--text-secondary)"></span>Simulated</span>
+          <span class="legend-item"><span class="key-tick"></span>Formula 1 − e<sup>−t/τ</sup></span>
+        </div>
+      </div>
+      <div class="tallies" id="tallies"></div>
+      <p class="note">
+        A <strong>Seattle Fault</strong> quake is one kind of Puget Sound crustal quake, so it is simulated as a
+        subset of those events (about 265 ÷ 1,000 = 26.5% of them). The simulation uses the report's
+        <strong>no-memory</strong> model, so the Cascadia M9 matches the 10% figure, not the 15% time-dependent one.
+      </p>
+    </section>
+
+    <!-- Histogram -->
+    <section class="card" aria-labelledby="hist-title">
+      <div class="section-head">
+        <div>
+          <h2 id="hist-title">How many quakes does a future get?</h2>
+          <p class="secondary">"85% chance of at least one" hides a spread: some futures get several.</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="key-rect" id="hist-key" style="background: var(--deep)"></span>Simulated futures</span>
+          <span class="legend-item"><span class="key-tick"></span>Expected from the formula</span>
+        </div>
+      </div>
+      <div class="segmented wrap" role="group" aria-label="Earthquake source for histogram" id="hist-buttons"></div>
+      <div class="chart-wrap" id="hist-wrap">
+        <svg id="hist-chart" role="img"></svg>
+        <div class="tooltip" id="hist-tip" hidden></div>
+      </div>
+      <details class="table-view">
+        <summary>Show the numbers as a table</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th scope="col">Quakes in the period</th>
+              <th scope="col" class="num">Futures</th>
+              <th scope="col" class="num">Simulated share</th>
+              <th scope="col" class="num">Expected (Poisson)</th>
+            </tr></thead>
+            <tbody id="hist-table"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="takeaways" aria-label="Key takeaways">
+      <article class="card">
+        <h3>85% is not a guarantee</h3>
+        <p id="take-1">Roughly <strong>15 in every 100 futures</strong> get no deep Puget Sound quake at all in 50 years.
+          Likely is not the same as certain.</p>
+      </article>
+      <article class="card">
+        <h3>"At least one" often means several</h3>
+        <p>Deep quakes average about <strong>1.9 per 50 years</strong> (50 ÷ 26). Many futures get two or three,
+          just as 1949, 1965 and 2001 came in quick succession.</p>
+      </article>
+      <article class="card">
+        <h3>More futures, steadier answer</h3>
+        <p>With 100 futures the share wobbles by several points from run to run. With 10,000 it lands within
+          about 1 point of the formula every time. That is why the formula works: it is the average of
+          endless futures.</p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      Rates from Wirth, E., and others, 2025, U.S. Geological Survey Fact Sheet 2025–3050, ver. 1.1.
+      <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+      Each future is drawn with a seeded random generator, so <span id="seed-note">a seed</span> always reproduces the same futures.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/quake-data.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/data/pnw-map.js"></script>
+  <script src="../shared/quake-geo.js"></script>
+  <script src="../shared/quake-map.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

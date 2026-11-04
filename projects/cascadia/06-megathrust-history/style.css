@@ -1,0 +1,28 @@
+/* Project 6 specific styles. Generic components live in ../shared/components.css. */
+
+.st-controls { margin-bottom: 12px; align-items: center; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer; }
+.check input { accent-color: var(--text-primary); width: 16px; height: 16px; }
+#st-chart { cursor: pointer; }
+.st-counter {
+  position: absolute; left: 50%; top: 8px; transform: translateX(-50%);
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+  font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; pointer-events: none;
+}
+
+.selected { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-top: 12px; padding: 10px 14px; border-radius: 8px; background: var(--wash); font-size: 14px; }
+.selected .s-title { font-weight: 650; }
+.selected .s-meta { color: var(--text-secondary); }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 860px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.tile .t-label { font-size: 13px; color: var(--text-secondary); }
+.tile .t-value { font-size: 28px; font-weight: 650; line-height: 1.2; }
+.tile .t-sub { font-size: 12px; color: var(--text-secondary); }
+
+.evidence { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 8px; }
+@media (max-width: 900px) { .evidence { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .evidence { grid-template-columns: minmax(0, 1fr); } }
+.evidence h3 { font-size: 15px; margin: 0 0 4px; }
+.evidence p { margin: 0; font-size: 14px; color: var(--text-secondary); }

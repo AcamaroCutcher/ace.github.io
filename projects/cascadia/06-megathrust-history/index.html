@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>10,000 years of great Cascadia earthquakes</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 6 of 10</p>
+        <h1>10,000 years of great Cascadia earthquakes</h1>
+        <p class="lede">
+          Nobody has recorded a Cascadia megathrust earthquake with instruments, yet it is "the most paleoseismically
+          well-constrained subduction zone in the world" (p. 3). Each great quake shook loose underwater landslides that
+          left layers of sediment (<strong>turbidites</strong>) on the sea floor. Dating those layers in cores from Vancouver
+          Island to northern California reveals the quakes below.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <section class="card" aria-labelledby="st-title">
+      <div class="section-head">
+        <div>
+          <h2 id="st-title">Every dated great earthquake, by time and place</h2>
+          <p class="secondary">Each bar is one earthquake, drawn where along the coast its turbidites were dated. Long bars ruptured
+            (nearly) the whole margin; short ones only part of it, mostly in the south.</p>
+        </div>
+        <span class="legend" id="st-legend"></span>
+      </div>
+      <div class="control-row st-controls">
+        <div class="segmented" role="group" aria-label="Time span" id="span-buttons">
+          <button type="button" data-span="10000">All 10,000 years</button>
+          <button type="button" data-span="3000">Last 3,000 years</button>
+        </div>
+        <label class="check"><input type="checkbox" id="show-partial" checked> Partial ruptures</label>
+        <label class="check"><input type="checkbox" id="show-ranges" checked> 95% age ranges</label>
+        <div class="run-buttons">
+          <button type="button" class="btn primary" id="play-btn">&#9654; Play 10,000 years</button>
+        </div>
+      </div>
+      <div class="chart-wrap" id="st-wrap">
+        <svg id="st-chart" role="img"></svg>
+        <div class="st-counter" id="st-counter" hidden></div>
+        <div class="tooltip" id="st-tip" hidden></div>
+      </div>
+      <div class="selected" id="selected" hidden></div>
+    </section>
+
+    <section class="tiles" id="tiles" aria-label="Summary numbers"></section>
+
+    <section class="card" aria-labelledby="gap-title">
+      <div class="section-head">
+        <div>
+          <h2 id="gap-title">How long between great quakes?</h2>
+          <p class="secondary" id="gap-sub"></p>
+        </div>
+        <div class="segmented" role="group" aria-label="Which events" id="gap-buttons">
+          <button type="button" data-gap="full">Whole coast</button>
+          <button type="button" data-gap="south">Southern Cascadia (all events)</button>
+        </div>
+      </div>
+      <div class="chart-wrap" id="gap-wrap">
+        <svg id="gap-chart" role="img"></svg>
+        <div class="tooltip" id="gap-tip" hidden></div>
+      </div>
+      <details class="table-view">
+        <summary>Show all 30 events as a table</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th scope="col">Event</th><th scope="col">Type</th><th scope="col">Median age</th>
+              <th scope="col">95% range</th><th scope="col">Dated at</th>
+            </tr></thead>
+            <tbody id="event-table"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="card" aria-labelledby="how-title">
+      <h2 id="how-title">How we know</h2>
+      <div class="evidence">
+        <article>
+          <h3>Turbidites</h3>
+          <p>Strong shaking sends sediment avalanches down submarine canyons. When the same layers show up in canyons hundreds of
+            kilometers apart at the same time, a single great quake is the likely cause. These are the bars above.</p>
+        </article>
+        <article>
+          <h3>Ghost forests</h3>
+          <p>In 1700 the coast dropped and seawater killed whole forests. Tree rings show the trees at Copalis, Washington, died in the
+            winter of 1699–1700.</p>
+        </article>
+        <article>
+          <h3>Tsunami sand</h3>
+          <p>Sheets of ocean sand buried in coastal marshes and lakes record tsunamis, often right above suddenly sunken soils.</p>
+        </article>
+        <article>
+          <h3>Written and oral records</h3>
+          <p>A tsunami with no local earthquake reached Japan on January 27–28, 1700: the "orphan tsunami". Indigenous oral histories
+            also describe great earthquakes. <a href="../index.html">Project 10</a> will tell this story.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="takeaways" aria-label="Key takeaways">
+      <article class="card">
+        <h3>It has happened again and again</h3>
+        <p>Great earthquakes have struck Cascadia <strong>dozens of times</strong> in 10,000 years. The next one is a question of when, not if.</p>
+      </article>
+      <article class="card">
+        <h3>The gaps are irregular</h3>
+        <p id="take-gaps">Gaps between whole-coast ruptures ranged from about two centuries to over a thousand years. That's why
+          the report gives probabilities, not dates.</p>
+      </article>
+      <article class="card">
+        <h3>The south shakes more often</h3>
+        <p>Partial ruptures add to the whole-coast ones in southern Cascadia, so it averages <strong>one great quake every
+          ~300–350 years</strong>, not ~500.</p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      Event ages: Goldfinger, C., and others, 2012, Turbidite event history: USGS Professional Paper 1661-F, Appendix 8 (OxCal
+      modeled ages, 95.4% ranges), <a href="https://doi.org/10.3133/pp1661F">doi.org/10.3133/pp1661F</a>. Core-site latitudes are
+      approximate. Sites shown are those with dated samples in that appendix; the paper correlates many events across more sites.
+      Report: Wirth, E., and others, 2025, USGS Fact Sheet 2025–3050, <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/data/cascadia-turbidites.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

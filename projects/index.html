@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Projects, papers and interactive tools by Acamaro Cutcher, organized by field: Earth science, physics, mathematics and machine learning."
+    />
+    <meta name="author" content="Acamaro Cutcher" />
+    <title>Projects &amp; Papers - Acamaro Cutcher</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="library.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+      <div class="container nav-container">
+        <a href="../index.html" class="logo">Acamaro Cutcher</a>
+
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="../index.html#home" class="nav-link">Home</a></li>
+          <li><a href="../index.html#about" class="nav-link">About</a></li>
+          <li><a href="../index.html#research" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active">Projects</a></li>
+          <li><a href="../index.html#blog" class="nav-link">Blog</a></li>
+          <li><a href="../index.html#gallery" class="nav-link">Gallery</a></li>
+          <li><a href="../cv.html" class="nav-link">CV</a></li>
+          <li><a href="../index.html#contact" class="nav-link">Contact</a></li>
+        </ul>
+
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </nav>
+
+    <header class="lib-header">
+      <div class="container">
+        <p class="lib-eyebrow">Library</p>
+        <h1>Projects &amp; Papers</h1>
+        <p class="lib-lede">
+          Research, publications and interactive tools, organized by field. Use the filters to find
+          papers, code or hands-on visualizations.
+        </p>
+        <p class="lib-stats" id="libStats"></p>
+      </div>
+    </header>
+
+    <main class="lib-main">
+      <div class="container">
+        <div class="lib-controls" role="search">
+          <div class="lib-filter-row">
+            <span class="lib-filter-label" id="fieldLabel">Field</span>
+            <div class="lib-chips" id="fieldChips" role="group" aria-labelledby="fieldLabel"></div>
+          </div>
+          <div class="lib-filter-row">
+            <span class="lib-filter-label" id="typeLabel">Type</span>
+            <div class="lib-chips" id="typeChips" role="group" aria-labelledby="typeLabel"></div>
+            <label class="lib-search">
+              <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+              <span class="visually-hidden">Search projects</span>
+              <input type="search" id="libSearch" placeholder="Search titles, tags…" autocomplete="off" />
+            </label>
+          </div>
+        </div>
+
+        <p class="lib-result-count" id="resultCount" aria-live="polite"></p>
+        <div id="libContent"></div>
+
+        <noscript>
+          <p class="lib-empty">This page needs JavaScript to list projects.
+            The <a href="cascadia/index.html">Cascadia earthquake visualizations</a> are here.</p>
+        </noscript>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-bottom">
+          <p>&copy; 2026 Acamaro Cutcher. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script src="catalog.js"></script>
+    <script src="library.js"></script>
+  </body>
+</html>

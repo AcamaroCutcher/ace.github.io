@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What the record shows · Real Pacific Northwest earthquakes</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 3 of 10</p>
+        <h1>What the record shows</h1>
+        <p class="lede">
+          Every magnitude 4 or larger earthquake recorded in the Pacific Northwest from 1980 to 2024: the same data
+          as Figure 1 of the USGS report, but live. Colors show <strong>depth</strong> and circle sizes show
+          <strong>magnitude</strong>. Play the time-lapse, filter by depth, and check the report's claims against the record.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <!-- Filters: one row, scoping everything below -->
+    <section class="card controls" aria-label="Filters">
+      <div class="control-group">
+        <span class="control-label" id="region-label">Region <span class="muted">(zooms the map; charts and tables count only this region)</span></span>
+        <div class="segmented wrap" role="group" aria-labelledby="region-label" id="region-buttons">
+          <button type="button" data-region="region">Whole region</button>
+          <button type="button" data-region="puget">Puget Sound</button>
+          <button type="button" data-region="portland">Portland</button>
+          <button type="button" data-region="oregon">Northern &amp; central Oregon</button>
+          <button type="button" data-region="mendocino">Northern California coast</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <div class="control-group">
+          <span class="control-label" id="depth-label">Depth</span>
+          <div class="segmented" role="group" aria-labelledby="depth-label" id="depth-buttons">
+            <button type="button" data-depth="all">All</button>
+            <button type="button" data-depth="shallow">Shallow (&lt; 30 km)</button>
+            <button type="button" data-depth="deep">Deep (&ge; 30 km)</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label" id="mag-label">Minimum magnitude</span>
+          <div class="segmented" role="group" aria-labelledby="mag-label" id="mag-buttons">
+            <button type="button" data-mag="4">4.0</button>
+            <button type="button" data-mag="5">5.0</button>
+            <button type="button" data-mag="6">6.0</button>
+            <button type="button" data-mag="6.5">6.5</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label" id="from-label">Starting year</span>
+          <div class="segmented" role="group" aria-labelledby="from-label" id="from-buttons">
+            <button type="button" data-from="1980">1980</button>
+            <button type="button" data-from="1990">1990</button>
+            <button type="button" data-from="2001">2001</button>
+          </div>
+        </div>
+        <button type="button" class="btn" id="reset-filters">Reset filters</button>
+      </div>
+    </section>
+
+    <!-- Map + stats -->
+    <section class="card map-section" aria-labelledby="map-title">
+      <div class="map-grid">
+        <div class="map-col">
+          <div class="section-head">
+            <div>
+              <h2 id="map-title">Earthquakes M<span id="title-mag">4.0</span>+ since <span id="title-from">1980</span></h2>
+              <p class="secondary" id="map-summary"></p>
+            </div>
+          </div>
+          <div class="map-legend" id="map-legend"></div>
+          <div class="map-wrap" id="map-wrap">
+            <canvas id="map" tabindex="0" role="img" aria-label="Map of recorded earthquakes"></canvas>
+            <div class="map-banner" id="map-banner" aria-live="polite">
+              <span class="banner-year" id="banner-year">2024</span>
+              <span class="banner-text" id="banner-text"></span>
+            </div>
+            <div class="map-zoom" role="group" aria-label="Zoom">
+              <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+              <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+              <button type="button" id="zoom-reset" aria-label="Reset view">&#8634;</button>
+            </div>
+            <div class="tooltip" id="map-tip" hidden></div>
+          </div>
+          <p class="hint">Drag to pan · pinch or Ctrl/&#8984; + scroll to zoom · hover a circle for details · click it to select</p>
+          <div class="chips layer-toggles" role="group" aria-label="Map layers" id="layer-toggles"></div>
+        </div>
+
+        <aside class="side-col" aria-label="Summary of the selected region">
+          <div class="tiles" id="tiles"></div>
+          <figure class="chart-figure">
+            <figcaption><span class="chart-title">How deep are they? <span class="muted" id="depth-region"></span></span></figcaption>
+            <div class="chart-wrap" id="depth-wrap">
+              <svg id="depth-chart" role="img"></svg>
+              <div class="tooltip" id="depth-tip" hidden></div>
+            </div>
+          </figure>
+        </aside>
+      </div>
+
+      <div class="selected" id="selected" hidden></div>
+
+      <!-- Time controls -->
+      <div class="scrubber">
+        <button type="button" class="btn" id="play-btn">Play</button>
+        <button type="button" class="btn" id="restart-btn">&#8634; From the start</button>
+        <label for="year-scrub" class="visually-hidden">Show earthquakes up to year</label>
+        <input type="range" id="year-scrub" min="0" max="45" step="0.05" value="45">
+        <output id="scrub-out" for="year-scrub">2024</output>
+      </div>
+      <div class="time-options">
+        <div class="segmented" role="group" aria-label="Playback speed" id="speed-buttons">
+          <button type="button" data-speed="30000">Slow</button>
+          <button type="button" data-speed="15000">Normal</button>
+          <button type="button" data-speed="6000">Fast</button>
+        </div>
+        <label class="check"><input type="checkbox" id="trail"> Fade quakes older than 5 years</label>
+      </div>
+      <figure class="chart-figure timeline-figure">
+        <figcaption>
+          <span class="chart-title">Magnitude over time</span>
+          <span class="muted">Click or drag to move through time · click a dot to select it</span>
+        </figcaption>
+        <div class="chart-wrap" id="time-wrap">
+          <svg id="time-chart" role="img"></svg>
+          <div class="tooltip" id="time-tip" hidden></div>
+        </div>
+      </figure>
+    </section>
+
+    <!-- Claims -->
+    <section class="card" aria-labelledby="claims-title">
+      <div class="section-head">
+        <div>
+          <h2 id="claims-title">Check the report against the record</h2>
+          <p class="secondary">Each statement from the report is tested live against the USGS catalog (M ≥ 4, 1980–2024).</p>
+        </div>
+      </div>
+      <div class="claims" id="claims"></div>
+    </section>
+
+    <!-- Cross-section -->
+    <section class="card" aria-labelledby="xs-title">
+      <div class="section-head">
+        <div>
+          <h2 id="xs-title">Beneath Puget Sound: two layers of earthquakes</h2>
+          <p class="secondary">
+            A west-to-east slice of the ground, seen from the side. It shows all <span id="xs-count">990</span> earthquakes M ≥ 2.5 recorded between
+            46.5°N and 48.8°N since 1980, with quarry blasts removed. Shallow quakes break the North American crust.
+            Deeper ones are inside the Juan de Fuca Plate as it sinks eastward, where the 1949, 1965 and 2001 quakes struck.
+          </p>
+        </div>
+      </div>
+      <div class="chart-wrap" id="xs-wrap">
+        <svg id="xs-chart" role="img"></svg>
+        <div class="tooltip" id="xs-tip" hidden></div>
+      </div>
+    </section>
+
+    <!-- Largest quakes -->
+    <section class="card" aria-labelledby="table-title">
+      <div class="section-head">
+        <div>
+          <h2 id="table-title">Largest earthquakes in <span id="table-region">the whole region</span></h2>
+          <p class="secondary">Uses the filters above. Click a row to find the quake on the map.</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="quake-table">
+          <thead><tr>
+            <th scope="col">Date</th>
+            <th scope="col" class="num">Magnitude</th>
+            <th scope="col" class="num">Depth</th>
+            <th scope="col">Location (USGS)</th>
+            <th scope="col"><span class="visually-hidden">Link</span></th>
+          </tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      Earthquakes: U.S. Geological Survey ANSS Comprehensive Catalog (ComCat),
+      <a href="https://doi.org/10.5066/F7MS3QZH">doi.org/10.5066/F7MS3QZH</a>, downloaded <span id="data-date"></span>.
+      Faults: USGS Quaternary Fault and Fold Database. Basemap: Natural Earth. Claims from Wirth, E., and others, 2025,
+      U.S. Geological Survey Fact Sheet 2025–3050, <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="../shared/data/pnw-map.js"></script>
+  <script src="../shared/data/pnw-catalog.js"></script>
+  <script src="../shared/quake-map.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

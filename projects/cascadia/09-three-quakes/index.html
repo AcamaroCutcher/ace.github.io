@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Three kinds of earthquakes · Animated explainer</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · 9 of 10</p>
+        <h1>Three kinds of earthquakes</h1>
+        <p class="lede">A one-minute animated explainer of how the Cascadia Subduction Zone produces the report's three kinds of
+          earthquakes. It's schematic, not to scale. Press play, or jump to a chapter.</p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <section class="card player" aria-labelledby="player-title">
+      <h2 id="player-title" class="visually-hidden">Animation</h2>
+      <div class="stage" id="stage">
+        <svg id="anim" viewBox="0 0 900 500" role="img" aria-label="Animated cross-section of the Cascadia Subduction Zone"></svg>
+        <div class="chapter-badge" id="chapter-badge"></div>
+      </div>
+      <p class="caption" id="caption" aria-live="polite"></p>
+
+      <div class="transport">
+        <button type="button" class="btn primary" id="play-btn" aria-label="Play">&#9654; Play</button>
+        <button type="button" class="btn" id="restart-btn" aria-label="Restart">&#8634;</button>
+        <label for="scrub" class="visually-hidden">Position in the animation</label>
+        <input type="range" id="scrub" min="0" max="60" step="0.05" value="0">
+        <output id="time-out" for="scrub">0:00 / 1:00</output>
+        <div class="segmented" role="group" aria-label="Speed" id="speed-buttons">
+          <button type="button" data-speed="0.5">0.5×</button>
+          <button type="button" data-speed="1">1×</button>
+          <button type="button" data-speed="2">2×</button>
+        </div>
+      </div>
+      <ol class="chapters" id="chapters" aria-label="Chapters"></ol>
+      <p class="hint">Keyboard: Space plays or pauses, ← → jump between chapters.</p>
+    </section>
+
+    <section class="card" aria-labelledby="facts-title">
+      <h2 id="facts-title">The three kinds at a glance</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Kind</th><th scope="col">Where</th><th scope="col">Past examples</th><th scope="col" class="num">Chance in 50 years</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background: var(--megathrust)"></span>Megathrust (subduction zone)</td><td>The plate boundary, offshore</td><td>January 26, 1700 (M8.7–9.2)</td><td class="num">10–15% (M~9)</td></tr>
+            <tr><td><span class="dot" style="background: var(--deep)"></span>Deep (intraslab)</td><td>Inside the sinking plate, 40–60 km down</td><td>1949 Olympia M6.8, 1965 Seattle M6.5, 2001 Nisqually M6.8</td><td class="num">85% (M≥6.5, Puget Sound)</td></tr>
+            <tr><td><span class="dot" style="background: var(--crustal)"></span>Crustal (shallow)</td><td>Faults in the upper plate, &lt;~30 km</td><td>~923 C.E. Seattle Fault M7.5–7.8, 1993 Scotts Mills M5.6</td><td class="num">17% (M≥6.5, Puget Sound)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      Schematic animation based on Wirth, E., and others, 2025, USGS Fact Sheet 2025–3050 (Figure 2 and pp. 2–5),
+      <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>. Not to scale.
+    </footer>
+  </main>
+
+  <script src="../vendor/d3.min.js"></script>
+  <script src="../shared/viz-utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+/* Project 3 specific styles. Generic components live in ../shared/components.css. */
+
+/*
+ * Depth is a sequential (one-hue) scale: blue, light -> dark with depth in light mode.
+ * In dark mode the ramp flips (deeper = lighter) so "more" stays the most visible.
+ * Water is neutral here so pale-blue shallow quakes offshore stay visible.
+ */
+:root {
+  --depth-0: #86b6ef; --depth-1: #5598e7; --depth-2: #2a78d6;
+  --depth-3: #1c5cab; --depth-4: #104281; --depth-5: #0d366b;
+  --map-water: #ecebe6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --depth-0: #184f95; --depth-1: #256abf; --depth-2: #3987e5;
+    --depth-3: #6da7ec; --depth-4: #9ec5f4; --depth-5: #cde2fb;
+    --map-water: #121212;
+  }
+}
+:root[data-theme="dark"] {
+  --depth-0: #184f95; --depth-1: #256abf; --depth-2: #3987e5;
+  --depth-3: #6da7ec; --depth-4: #9ec5f4; --depth-5: #cde2fb;
+  --map-water: #121212;
+}
+
+.controls .segmented.wrap { margin-bottom: 0; }
+
+/* Map + side column */
+.map-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); gap: 28px; }
+@media (max-width: 1000px) { .map-grid { grid-template-columns: minmax(0, 1fr); } }
+.map-col, .side-col { min-width: 0; }
+.depth-key { display: inline-flex; align-items: center; gap: 2px; }
+.depth-key .sw { width: 22px; height: 10px; display: inline-block; }
+.depth-key .sw:first-child { border-radius: 3px 0 0 3px; }
+.depth-key .sw:last-child { border-radius: 0 3px 3px 0; }
+.depth-key-labels { display: inline-flex; gap: 0; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.depth-key-labels span { width: 24px; text-align: left; }
+.hollow { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--text-secondary); display: inline-block; }
+
+/* Stat tiles */
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.tile { background: var(--wash); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.tile .t-label { font-size: 12px; color: var(--text-secondary); }
+.tile .t-value { font-size: 24px; font-weight: 650; line-height: 1.2; }
+.tile .t-sub { font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile.wide { grid-column: 1 / -1; }
+
+/* Selected quake */
+.selected {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 14px;
+  padding: 10px 14px; border-radius: 8px; background: var(--wash); font-size: 14px;
+}
+.selected .s-title { font-weight: 650; }
+.selected .s-meta { color: var(--text-secondary); }
+.selected .link-btn { font-size: 14px; }
+
+.time-options { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin: 10px 0 16px; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer; }
+.check input { accent-color: var(--text-primary); width: 16px; height: 16px; }
+.timeline-figure figcaption .muted { font-size: 13px; }
+#time-chart, #xs-chart { cursor: crosshair; }
+
+/* Claims */
+.claims { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.claim { border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.claim h3 { font-size: 16px; margin: 0; }
+.claim .c-label { font-size: 12px; font-weight: 650; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-muted); }
+.claim p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+.claim .c-data { color: var(--text-primary); }
+.claim .c-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 6px; }
+.verdict { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; }
+.verdict .icon {
+  width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center;
+  font-size: 12px; color: #fff; background: #0ca30c;
+}
+.verdict.differs .icon { background: #d03b3b; }
+
+/* Largest-quake table */
+.quake-table tbody tr { cursor: pointer; }
+.quake-table tbody tr:hover, .quake-table tbody tr:focus-visible { background: var(--wash); }
+.quake-table tbody tr[aria-selected="true"] { background: var(--wash); box-shadow: inset 3px 0 0 var(--text-primary); }
+.quake-table .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.quake-table a { white-space: nowrap; }
+
+/* Compact banner at the bottom-left so it never hides the north of the map */
+.map-section .map-banner { top: auto; bottom: 10px; padding: 6px 10px; gap: 8px; }
+.map-section .banner-year { font-size: 18px; }
+.map-section .banner-text { font-size: 13px; }
+.chart-title .muted { font-weight: 400; font-size: 13px; }
