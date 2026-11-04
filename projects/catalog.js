@@ -38,7 +38,8 @@ window.PROJECT_LIBRARY = {
       summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? The first section ' +
         'builds a 30 m wildland–urban fuel map: LANDFIRE fuels inside the park, and stand-in surface fuels for the city ' +
         'from land-cover imperviousness, tree canopy, roads and 142,596 building footprints. The second sets up nested ' +
-        'WRF-SFIRE model grids and builds their terrain from USGS lidar. Fire-spread simulations come next.',
+        'WRF-SFIRE model grids and builds their terrain from USGS lidar. The third finds the dangerous fire weather: ' +
+        '26 years of airport records show dry, windy hours come from the east. Fire-spread simulations come next.',
       disciplines: ['earth'],
       types: ['research'],
       status: 'current',
@@ -50,6 +51,7 @@ window.PROJECT_LIBRARY = {
         { label: 'Explore', href: 'forest-park-wildfires/index.html', icon: 'fa-arrow-right', primary: true },
         { label: 'Fuel maps', href: 'forest-park-wildfires/index.html#fuel-maps', icon: 'fa-map' },
         { label: 'Terrain', href: 'forest-park-wildfires/index.html#terrain', icon: 'fa-mountain' },
+        { label: 'Fire weather', href: 'forest-park-wildfires/index.html#fire-weather', icon: 'fa-wind' },
       ],
     },
     {
