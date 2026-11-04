@@ -209,3 +209,10 @@ code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; background: var(--
   .log-list li { grid-template-columns: auto 1fr; }
   .log-list p { grid-column: 1 / -1; }
 }
+
+/* ---------- v3: section spacing, wrapping table notes ---------- */
+main { display: grid; gap: 56px; }
+.block + .block { border-top: 1px solid var(--grid); padding-top: 40px; }
+td[colspan] { white-space: normal; color: var(--text-secondary); }
+td { vertical-align: top; }
+.fig-notes td:last-child { white-space: normal; min-width: 14em; }

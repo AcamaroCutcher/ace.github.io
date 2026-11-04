@@ -30,12 +30,43 @@
           <span class="section-name">Fuel maps</span>
           <span class="pill done">Available</span>
         </a>
-        <div class="section-link upcoming" aria-disabled="true">
+        <a class="section-link" href="#terrain">
           <span class="num">02</span>
+          <span class="section-name">Terrain for WRF-SFIRE</span>
+          <span class="pill done">New</span>
+        </a>
+        <div class="section-link upcoming" aria-disabled="true">
+          <span class="num">03</span>
           <span class="section-name">Fire-spread simulations</span>
           <span class="pill">In progress</span>
         </div>
       </nav>
+      <div class="log" aria-labelledby="log-title">
+          <h3 id="log-title">Progress log</h3>
+          <ol class="log-list">
+            <li>
+              <span class="log-tag new">v3</span>
+              <time datetime="2026-11-04">4 Nov 2026</time>
+              <p><strong>Terrain for WRF-SFIRE.</strong> Proposed three nested model grids around the park and built
+                their terrain from USGS 3DEP instead of the model's default 1 km data (<a href="#terrain">Section 02</a>).
+                The study area grew about 2 km south and 1 km east so the innermost grid has room around the park, so
+                every fuel-map number below was recomputed.</p>
+            </li>
+            <li>
+              <span class="log-tag">v2</span>
+              <time datetime="2026-11-04">4 Nov 2026</time>
+              <p><strong>Roads and terrain.</strong> Open road cells are now firebreaks instead of grass corridors
+                (<a href="#fig-roads">Figure 4</a>), which removed 1,848 ha of false fuel at the time. Added 10 m USGS terrain,
+                slope and the elevation layer WRF-SFIRE needs for its fire grid (<a href="#fig-terrain">Figure 8</a>).</p>
+            </li>
+            <li>
+              <span class="log-tag">v1</span>
+              <time datetime="2026-11-04">4 Nov 2026</time>
+              <p><strong>First combined fuel map.</strong> LANDFIRE fuels in the park, stand-in fuels for the city from
+                pavement and tree canopy, building footprints, and the WRF-SFIRE fuel export.</p>
+            </li>
+          </ol>
+      </div>
     </header>
 
     <main>
@@ -48,24 +79,6 @@
             how dry it has to be to burn. Before any fire can be simulated, the park and the city need that grid.</p>
         </div>
 
-        <div class="log" aria-labelledby="log-title">
-          <h3 id="log-title">Progress log</h3>
-          <ol class="log-list">
-            <li>
-              <span class="log-tag new">v2</span>
-              <time datetime="2026-11-04">4 Nov 2026</time>
-              <p><strong>Roads and terrain.</strong> Open road cells are now firebreaks instead of grass corridors
-                (<a href="#fig-roads">Figure 4</a>), which removed 1,848 ha of false fuel. Added 10 m USGS terrain,
-                slope and the elevation layer WRF-SFIRE needs for its fire grid (<a href="#fig-terrain">Figure 7</a>).</p>
-            </li>
-            <li>
-              <span class="log-tag">v1</span>
-              <time datetime="2026-11-04">4 Nov 2026</time>
-              <p><strong>First combined fuel map.</strong> LANDFIRE fuels in the park, stand-in fuels for the city from
-                pavement and tree canopy, building footprints, and the WRF-SFIRE fuel export.</p>
-            </li>
-          </ol>
-        </div>
 
         <div class="prose two-col">
           <div>
@@ -76,23 +89,23 @@
           </div>
           <div>
             <h3>What I built</h3>
-            <p>A combined map at 30 m resolution. Inside the park, LANDFIRE is used as published. Outside it, each
+            <p>A combined map at 30 m resolution over about 19 × 20 km. Inside the park, LANDFIRE is used as published. Outside it, each
               developed cell gets a stand-in surface fuel based on how much of it is paved and how much tree canopy
               it has. Cells that are mostly buildings stay non-burnable.</p>
           </div>
         </div>
 
         <ul class="stats" aria-label="Summary figures">
-          <li><strong>12,216 → 17,696 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
-          <li><strong>5,484 ha</strong><span>City cells given stand-in fuels</span></li>
-          <li><strong>1,848 ha</strong><span>Open road cells made firebreaks (v2)</span></li>
-          <li><strong>101,211</strong><span>Building footprints mapped at 3 m</span></li>
+          <li><strong>13,007 → 20,633 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
+          <li><strong>7,631 ha</strong><span>City cells given stand-in fuels</span></li>
+          <li><strong>2,551 ha</strong><span>Open road cells made firebreaks</span></li>
+          <li><strong>142,596</strong><span>Building footprints mapped at 3 m</span></li>
         </ul>
 
         <article class="fig" id="fig-fuel-map">
           <figure>
             <button type="button" class="zoom" data-full="img/fuel_map_wui.png" aria-label="Enlarge: the combined fuel map">
-              <img src="img/fuel_map_wui.png" width="1955" height="1522" alt="Fuel map of Forest Park and surrounding Portland, colored by fuel group: grass, shrub and timber-understory, timber litter, pavement, structures and water.">
+              <img src="img/fuel_map_wui.png" width="1922" height="1525" alt="Fuel map of Forest Park and surrounding Portland, colored by fuel group: grass, shrub and timber-understory, timber litter, pavement, structures and water.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -113,7 +126,7 @@
         <article class="fig wide" id="fig-before-after">
           <figure>
             <button type="button" class="zoom" data-full="img/fuel_map_before_after.png" aria-label="Enlarge: before and after">
-              <img src="img/fuel_map_before_after.png" width="1791" height="1046" loading="lazy" alt="Two maps side by side. Left: LANDFIRE as published, where most of the city is non-burnable. Right: the adjusted map with fuels in urban areas.">
+              <img src="img/fuel_map_before_after.png" width="1791" height="1068" loading="lazy" alt="Two maps side by side. Left: LANDFIRE as published, where most of the city is non-burnable. Right: the adjusted map with fuels in urban areas.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -127,7 +140,7 @@
         <article class="fig" id="fig-reassigned">
           <figure>
             <button type="button" class="zoom" data-full="img/urban_reassignment.png" aria-label="Enlarge: cells changed by the urban rules">
-              <img src="img/urban_reassignment.png" width="1853" height="1418" loading="lazy" alt="Map highlighting only the cells changed by the urban fuel rules, colored by new fuel group; all other cells are grey.">
+              <img src="img/urban_reassignment.png" width="1790" height="1423" loading="lazy" alt="Map highlighting only the cells changed by the urban fuel rules, colored by new fuel group; all other cells are grey.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -170,14 +183,14 @@
         <article class="fig wide" id="fig-families">
           <figure>
             <button type="button" class="zoom" data-full="img/fuel_families_small_multiples.png" aria-label="Enlarge: fuel-model families">
-              <img src="img/fuel_families_small_multiples.png" width="1911" height="1355" loading="lazy" alt="Six small maps, one per fuel-model family (grass, grass-shrub, shrub, timber-understory, timber litter, slash-blowdown), each showing where that family occurs.">
+              <img src="img/fuel_families_small_multiples.png" width="1889" height="1358" loading="lazy" alt="Six small maps, one per fuel-model family (grass, grass-shrub, shrub, timber-understory, timber litter, slash-blowdown), each showing where that family occurs.">
             </button>
           </figure>
           <div class="fig-notes">
             <p class="fig-num">Figure 5</p>
             <h3>Fuel-model families</h3>
-            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Timber litter (38%),
-              grass (30%) and timber-understory (27%) make up most of the burnable area, with grass-shrub at 5%.
+            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Timber litter (39%),
+              grass (31%) and timber-understory (26%) make up most of the burnable area, with grass-shrub at 4%.
               Shrub and slash fuels are almost absent.</p>
           </div>
         </article>
@@ -185,7 +198,7 @@
         <article class="fig wide" id="fig-inputs">
           <figure>
             <button type="button" class="zoom" data-full="img/inputs_impervious_canopy_buildings.png" aria-label="Enlarge: rule inputs">
-              <img src="img/inputs_impervious_canopy_buildings.png" width="2405" height="977" loading="lazy" alt="Three maps: NLCD 2021 imperviousness, NLCD 2021 tree canopy, and building footprint cover per 30 m cell.">
+              <img src="img/inputs_impervious_canopy_buildings.png" width="2415" height="978" loading="lazy" alt="Three maps: NLCD 2021 imperviousness, NLCD 2021 tree canopy, and building footprint cover per 30 m cell.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -196,34 +209,18 @@
           </div>
         </article>
 
-        <article class="fig wide" id="fig-terrain">
-          <figure>
-            <button type="button" class="zoom" data-full="img/terrain_elevation_slope.png" aria-label="Enlarge: terrain">
-              <img src="img/terrain_elevation_slope.png" width="1990" height="1042" loading="lazy" alt="Two maps: elevation with shaded relief, and slope in degrees. The Tualatin Mountains ridge runs northwest to southeast through Forest Park, with steep ravines on the river side.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 7 · new in v2</p>
-            <h3>Terrain</h3>
-            <p>Fire runs faster uphill, so the model needs the ground shape as well as the fuel. Forest Park sits on the
-              ridge of the Tualatin Mountains, from 12 m at the river to 339 m at the crest. Slopes inside the park have
-              a median of 19°, and the steepest 10% exceed 29°, mostly in the ravines facing the Willamette.</p>
-            <p>Elevation comes from the USGS 3DEP 10 m dataset and is exported as WRF-SFIRE's fire-grid terrain
-              layer (<code>ZSF</code>).</p>
-          </div>
-        </article>
 
         <article class="fig" id="fig-anderson">
           <figure>
             <button type="button" class="zoom" data-full="img/anderson13_area.png" aria-label="Enlarge: WRF-SFIRE fuel categories">
-              <img src="img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 14,487 ha; closed timber litter 6,388; hardwood litter 2,906; timber grass and understory 2,791; short grass 2,780; timber litter and understory 1,966; brush 865.">
+              <img src="img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 17,901 ha; closed timber litter 7,839; short grass 3,724; hardwood litter 3,094; timber grass and understory 3,069; timber litter and understory 2,009; brush 898.">
             </button>
           </figure>
           <div class="fig-notes">
-            <p class="fig-num">Figure 8</p>
+            <p class="fig-num">Figure 7</p>
             <h3>Ready for WRF-SFIRE</h3>
             <p>WRF-SFIRE uses the older 13 Anderson fuel models, so the map is also exported in that system,
-              in the binary format its preprocessing step (WPS geogrid) reads, together with the 10 m terrain.
+              in the binary format its preprocessing step (WPS geogrid) reads, together with the 10 m terrain (<a href="#terrain">Section 02</a>).
               Category 14 means "no fuel".</p>
           </div>
         </article>
@@ -238,14 +235,14 @@
                   <tr><th scope="col">Paved</th><th scope="col">Canopy</th><th scope="col">Fuel model</th><th scope="col" class="r">Area (ha)</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="3">Open road cell (freeway, or ≥ 30% paved with &lt; 40% canopy) → non-burnable</td><td class="r">1,848.1</td></tr>
-                  <tr><td>≥ 60%</td><td>any</td><td>Non-burnable (NB1)</td><td class="r">7,928.9</td></tr>
-                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,269.9</td></tr>
-                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">2,250.1</td></tr>
-                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">730.6</td></tr>
-                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">703.4</td></tr>
-                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">530.3</td></tr>
-                  <tr><td colspan="3">Building cover ≥ 50% → non-burnable</td><td class="r">1,130.4</td></tr>
+                  <tr><td colspan="3">Open road cell (freeway, or ≥ 30% paved with &lt; 40% canopy) → non-burnable</td><td class="r">2,550.9</td></tr>
+                  <tr><td>≥ 60%</td><td>any</td><td>Non-burnable (NB1)</td><td class="r">9,988.2</td></tr>
+                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,981.7</td></tr>
+                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">3,083.2</td></tr>
+                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">983.0</td></tr>
+                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">941.4</td></tr>
+                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">641.2</td></tr>
+                  <tr><td colspan="3">Building cover ≥ 50% → non-burnable</td><td class="r">1,463.3</td></tr>
                 </tbody>
               </table>
             </div>
@@ -264,11 +261,130 @@
           </div>
         </div>
       </section>
+
+      <section class="block" id="terrain" aria-labelledby="terrain-title">
+        <div class="block-head">
+          <p class="eyebrow">Section 02 · new in v3</p>
+          <h2 id="terrain-title">Terrain for WRF-SFIRE</h2>
+          <p class="lede">WRF-SFIRE needs the shape of the ground twice: once for the atmosphere, where hills steer
+            the wind, and once for the fire, which runs faster uphill. Out of the box, the model's preprocessor uses
+            global terrain at about 1 km, which can't see the park's ravines. I replaced it with USGS 3DEP lidar
+            elevation for both, so the wind and the fire stand on the same ground.</p>
+        </div>
+
+        <article class="fig wide" id="fig-terrain">
+          <figure>
+            <button type="button" class="zoom" data-full="img/terrain_elevation_slope.png" aria-label="Enlarge: terrain">
+              <img src="img/terrain_elevation_slope.png" width="1944" height="1042" loading="lazy" alt="Two maps: elevation with shaded relief, and slope in degrees. The Tualatin Mountains ridge runs northwest to southeast through Forest Park, with steep ravines on the river side.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 8</p>
+            <h3>The ground under the park</h3>
+            <p>Fire runs faster uphill, so the model needs the ground shape as well as the fuel. Forest Park sits on the
+              ridge of the Tualatin Mountains, from 12 m at the river to 339 m at the crest. Slopes inside the park have
+              a median of 19°, and the steepest 10% exceed 29°, mostly in the ravines facing the Willamette.</p>
+            <p>This 10 m USGS 3DEP elevation becomes the fire mesh's terrain (<code>ZSF</code>). Rivers in 3DEP are
+              flattened at the water surface (about 2.8 m here), so riverbanks don't get fake cliffs. Four bad cells
+              below sea level at the domain edge were filled from their neighbors.</p>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-domains">
+          <figure>
+            <button type="button" class="zoom" data-full="img/wrf_domains.png" aria-label="Enlarge: nested WRF domains">
+              <img src="img/wrf_domains.png" width="1694" height="939" loading="lazy" alt="Two maps. Left: three nested square model domains on shaded terrain around Portland, from 135 km wide down to 16 km, with Mount St. Helens near the top. Right: zoom showing the 16 km inner domain around Forest Park, inside the fuel-data box.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 9</p>
+            <h3>Three nested model grids</h3>
+            <p>Weather models zoom in through nested grids, each three times finer than the one around it. The
+              outermost takes weather from a forecast model at 3 km; the innermost runs the fire.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Grid</th><th scope="col" class="r">Spacing</th><th scope="col" class="r">Cells</th><th scope="col" class="r">Width</th><th scope="col">Role</th></tr></thead>
+                <tbody>
+                  <tr><td>d01</td><td class="r">1,350 m</td><td class="r">100 × 100</td><td class="r">135 km</td><td>Regional wind, including east winds leaving the Columbia Gorge</td></tr>
+                  <tr><td>d02</td><td class="r">450 m</td><td class="r">132 × 132</td><td class="r">59.4 km</td><td>Tualatin Mountains and the Portland basin</td></tr>
+                  <tr><td>d03</td><td class="r">150 m</td><td class="r">108 × 108</td><td class="r">16.2 km</td><td>Wind over the park; hosts the fire</td></tr>
+                  <tr><td>Fire mesh</td><td class="r">30 m</td><td class="r">540 × 540</td><td class="r">16.2 km</td><td>Fire spread, on the fuel map and 10 m terrain</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>The inner grid is centered on the park, with 2.7 km between the park and its edge, and sits 1.3 km
+              inside the fuel and terrain data. With the original data box, a grid that size would have run off the
+              data's southern edge, past the park's south tip in NW Portland, so I extended the box.</p>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-ridge">
+          <figure>
+            <button type="button" class="zoom" data-full="img/terrain_ridge_profile.png" aria-label="Enlarge: ridge profile at each resolution">
+              <img src="img/terrain_ridge_profile.png" width="1800" height="936" loading="lazy" alt="Line chart of elevation along a 9 km profile across Forest Park, from Washington County over the ridge to the Willamette River and St. Johns. The 10 m and 30 m lines follow every ravine; the 150 m grid keeps the main shape; the 450 m and 1,350 m grids turn the slope into a few large steps and put the river about 80 m up.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 10</p>
+            <h3>The same ridge, as each grid sees it</h3>
+            <p>A 9 km cross-section through the middle of the park, perpendicular to the ridge. Each grid averages the
+              ground over its cells:</p>
+            <ul>
+              <li>The <strong>30 m fire mesh</strong> follows the 10 m lidar almost exactly, including the 195 m
+                ravine at 4.1 km.</li>
+              <li>The <strong>150 m</strong> inner atmosphere keeps the main ridge and the river-facing slope.</li>
+              <li>At <strong>1,350 m</strong> the slope becomes a few large steps; the ravine disappears and the
+                Willamette sits about 80 m up, averaged with the hillside.</li>
+            </ul>
+            <p>That's why the fire needs its own fine terrain, and why the wind near the park comes from the 150 m grid.</p>
+          </div>
+        </article>
+
+        <div class="two-col">
+          <div class="prose">
+            <h3>Slopes each grid can resolve</h3>
+            <p>Inside the 16.2 km inner domain. Coarse grids smooth the steep ravine walls away.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Grid</th><th scope="col" class="r">Relief</th><th scope="col" class="r">Steepest 1%</th><th scope="col" class="r">Max slope</th></tr></thead>
+                <tbody>
+                  <tr><td>Lidar DEM, 10 m</td><td class="r">390 m</td><td class="r">35°</td><td class="r">70°</td></tr>
+                  <tr><td>Fire mesh, 30 m</td><td class="r">389 m</td><td class="r">30°</td><td class="r">56°</td></tr>
+                  <tr><td>d03, 150 m</td><td class="r">378 m</td><td class="r">18°</td><td class="r">29°</td></tr>
+                  <tr><td>d02, 450 m</td><td class="r">352 m</td><td class="r">12°</td><td class="r">16°</td></tr>
+                  <tr><td>d01, 1,350 m</td><td class="r">294 m</td><td class="r">7°</td><td class="r">7°</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="prose">
+            <h3>What's exported for the model</h3>
+            <ul>
+              <li><strong>Atmosphere terrain</strong>: 3DEP at 1 arc-second (about 30 m) over all of d01,
+                6,890 × 4,960 cells from sea level to Mount St. Helens (2,531 m). It agrees with the 10 m data
+                to within 0.06 m on average.</li>
+              <li><strong>Fire terrain</strong>: 3DEP at 10 m over the fuel-map area.</li>
+              <li><strong>Setup files</strong>: a domain configuration and the lookup-table entries that point the
+                model at these files.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="prose limits">
+          <h3>Limitations</h3>
+          <ul>
+            <li><strong>Not yet run.</strong> The grids are a proposal. They still need to pass through the model's
+              preprocessor and a test simulation, which may call for terrain smoothing on the 150 m grid.</li>
+            <li><strong>Approximate averaging.</strong> The resolution comparison uses simple block averages; the
+              preprocessor's own averaging will differ slightly.</li>
+          </ul>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
       Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
-      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 arc-second
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
       elevation; City of Portland Open Data building footprints and park
       boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Maps and analysis by Acamaro Cutcher.
     </footer>
