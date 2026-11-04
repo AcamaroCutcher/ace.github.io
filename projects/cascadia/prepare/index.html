@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Be prepared · Cascadia earthquake visualizations</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <p class="eyebrow"><a href="../index.html" class="back">Cascadia earthquake visualizations</a> · Be prepared</p>
+        <h1>The odds are real. Being ready is up to you.</h1>
+        <p class="lede">
+          Nobody can say when the next big Pacific Northwest earthquake will happen. The report's numbers say one
+          will happen, and probably within our lifetimes. Here is what to do before, during and after the shaking,
+          following the five steps the USGS report recommends.
+        </p>
+      </div>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </header>
+
+    <!-- Why it matters -->
+    <section class="why card" aria-labelledby="why-title">
+      <h2 id="why-title">Why prepare? Chance of each earthquake in the next 50 years</h2>
+      <ul class="why-stats" id="why-stats"><!-- filled by app.js from shared/quake-data.js --></ul>
+      <p class="secondary why-note">A damaging deep quake under Puget Sound is <strong>more likely than not</strong>
+        in the next 50 years. The last ones were in 1949, 1965 and 2001.</p>
+    </section>
+
+    <!-- The report's five steps -->
+    <nav class="steps-nav" aria-label="The report's five steps">
+      <p class="steps-title">The USGS report's five steps (p. 6)</p>
+      <ol>
+        <li><a href="#secure"><span class="n">1</span>Secure your space</a></li>
+        <li><a href="#kit"><span class="n">2</span>Make a plan and a kit</a></li>
+        <li><a href="#during"><span class="n">3</span>Drop, Cover, and Hold On</a></li>
+        <li><a href="#tsunami"><span class="n">4</span>Know your tsunami routes</a></li>
+        <li><a href="#practice"><span class="n">5</span>Practice in a drill</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. Secure your space -->
+    <section class="card" id="secure" aria-labelledby="secure-title">
+      <p class="step-tag"><span class="n">1</span> Before</p>
+      <h2 id="secure-title">Secure your space</h2>
+      <p class="secondary section-lede">Look around each room and ask: <em>what would fall, break or slide if the room shook
+        hard for a minute or more?</em> A Cascadia M9 could shake for <strong>several minutes</strong>.</p>
+      <ul class="tiles">
+        <li><h3>Tall furniture</h3><p>Strap bookcases, dressers and cabinets to wall studs.</p></li>
+        <li><h3>TVs and computers</h3><p>Use safety straps or brackets so screens can't tip over.</p></li>
+        <li><h3>Water heater</h3><p>Strap it to the wall at the top and bottom. In an emergency, its tank is also a source of drinking water.</p></li>
+        <li><h3>Heavy things low</h3><p>Move heavy items and breakables to lower shelves. Nothing heavy above beds or couches.</p></li>
+        <li><h3>Cabinet latches</h3><p>Childproof latches stop dishes and jars from spilling out.</p></li>
+        <li><h3>Gas shutoff</h3><p>Know where it is and keep a wrench next to it. Turn it off only if you smell gas or hear a hiss. The gas company has to turn it back on.</p></li>
+        <li><h3>Shoes by the bed</h3><p>Keep sturdy shoes and a flashlight next to your bed. After a quake at night, the floor may be covered in glass.</p></li>
+        <li><h3>Older houses</h3><p>If your house was built before about 1980, ask whether it is bolted to its foundation. A seismic retrofit is one of the best ways to protect it.</p></li>
+      </ul>
+    </section>
+
+    <!-- 2. Plan + kit -->
+    <section class="card kit" id="kit" aria-labelledby="kit-title">
+      <p class="step-tag"><span class="n">2</span> Before</p>
+      <h2 id="kit-title">Be <span class="hl">2 Weeks Ready</span></h2>
+      <p class="secondary section-lede">After a major quake, roads, bridges, power and water could be out for a long time. Washington
+        and Oregon emergency managers ask every household to be ready to look after itself for <strong>two weeks</strong>.</p>
+
+      <div class="split">
+        <figure class="photo">
+          <img src="img/food-supplies-1600.jpg" srcset="img/food-supplies-800.jpg 800w, img/food-supplies-1600.jpg 1600w"
+               sizes="(max-width: 900px) 100vw, 50vw" width="1600" height="1200" loading="lazy"
+               alt="A shelf with instant ramen, a can of soup, hot cocoa mix, a boxed snack, a bag of snacks and a large white water bottle.">
+          <figcaption>My starter shelf: instant ramen, canned soup, hot cocoa, snacks and a refillable water bottle.</figcaption>
+        </figure>
+        <div class="shelf-review">
+          <h3>Grading my shelf</h3>
+          <ul class="grade good">
+            <li><strong>Shelf-stable food.</strong> Nothing here needs a fridge, and it keeps for months.</li>
+            <li><strong>Food you'll actually eat.</strong> Familiar comfort food matters when things are stressful.</li>
+            <li><strong>A refillable bottle.</strong> Handy for carrying water from a distribution point.</li>
+          </ul>
+          <ul class="grade add">
+            <li><strong>Far more water.</strong> One bottle lasts less than a day. Use the calculator below.</li>
+            <li><strong>No-cook food.</strong> Ramen and cocoa need hot water. Add food you can eat cold, like peanut butter, crackers,
+              canned fruit, tuna and granola bars.</li>
+            <li><strong>A manual can opener</strong> and a way to heat water, such as a camp stove. Use it <em>outdoors only</em>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="calc" aria-labelledby="calc-title">
+        <h3 id="calc-title">How much water and food do you need?</h3>
+        <div class="calc-grid">
+          <div class="calc-inputs">
+            <div class="stepper"><span>People</span>
+              <span class="stepper-ctl"><button type="button" data-step="people" data-d="-1" aria-label="One fewer person">−</button>
+                <output id="people-out">2</output>
+                <button type="button" data-step="people" data-d="1" aria-label="One more person">+</button></span></div>
+            <div class="stepper"><span>Pets, total weight (lb)</span>
+              <span class="stepper-ctl"><button type="button" data-step="petlb" data-d="-10" aria-label="10 pounds less">−</button>
+                <output id="petlb-out">0</output>
+                <button type="button" data-step="petlb" data-d="10" aria-label="10 pounds more">+</button></span></div>
+            <div class="control-group">
+              <span class="control-label">Days</span>
+              <div class="segmented" role="group" aria-label="Days" id="days-buttons">
+                <button type="button" data-days="3">3 days</button>
+                <button type="button" data-days="7">1 week</button>
+                <button type="button" data-days="14" aria-pressed="true">2 weeks</button>
+              </div>
+            </div>
+          </div>
+          <div class="calc-out" aria-live="polite">
+            <p class="calc-big"><span id="water-gal">28</span> <span class="unit">gallons of water</span></p>
+            <p class="calc-sub" id="water-sub"></p>
+            <div class="jugs" id="jugs" role="img"></div>
+            <p class="calc-big small"><span id="meals">84</span> <span class="unit">meals</span></p>
+            <p class="calc-sub" id="meals-sub"></p>
+          </div>
+        </div>
+        <p class="hint">Guidelines: 1 gallon of water per person per day for drinking and basic hygiene, and about 1 ounce of water
+          per pound of body weight per day for pets. Hot weather, nursing, and illness raise the need.</p>
+      </div>
+
+      <div class="checklist" aria-labelledby="check-title">
+        <div class="check-head">
+          <div>
+            <h3 id="check-title">Your kit checklist</h3>
+            <p class="secondary">Tick things off as you collect them. Your ticks are saved only in this browser.</p>
+          </div>
+          <div class="check-progress">
+            <span id="check-count">0 of 0</span>
+            <div class="bar-track-sm"><div class="bar-fill" id="check-bar"></div></div>
+          </div>
+        </div>
+        <div class="check-groups" id="check-groups"><!-- filled by app.js --></div>
+        <div class="run-buttons">
+          <button type="button" class="btn" id="check-print">Print checklist</button>
+          <button type="button" class="btn" id="check-reset">Clear all ticks</button>
+        </div>
+      </div>
+
+      <div class="plan">
+        <h3>Make a family plan</h3>
+        <ul class="tiles">
+          <li><h3>Out-of-area contact</h3><p>Pick one friend or relative far away. Everyone checks in with them. After a disaster,
+            long-distance calls often get through when local ones don't.</p></li>
+          <li><h3>Text, don't call</h3><p>Texts use far less network capacity and can get through when calls fail. Keep calls for emergencies.</p></li>
+          <li><h3>Meeting places</h3><p>Pick one spot right outside your home and one outside your neighborhood in case you can't get home.</p></li>
+          <li><h3>School and work</h3><p>Find out the earthquake plans where your family spends the day, and who can pick up your kids.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. During: Drop, Cover, Hold On -->
+    <section class="card during" id="during" aria-labelledby="during-title">
+      <div class="split">
+        <figure class="photo">
+          <img src="img/drop-cover-hold-on-1600.jpg" srcset="img/drop-cover-hold-on-800.jpg 800w, img/drop-cover-hold-on-1600.jpg 1600w"
+               sizes="(max-width: 900px) 100vw, 50vw" width="1600" height="1200"
+               alt="Acamaro kneeling under a sturdy wooden dining table, giving a thumbs up.">
+          <figcaption>Me practicing <strong>Drop, Cover, and Hold On</strong> under our dining table. In a real quake,
+            hold on to a table leg with one hand and protect your head and neck with the other.</figcaption>
+        </figure>
+        <div>
+          <p class="step-tag"><span class="n">3</span> During the shaking</p>
+          <h2 id="during-title">Drop, Cover, and Hold On</h2>
+          <ol class="dch">
+            <li>
+              <span class="dch-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="10" r="4"/><path d="M24 15v10l-8 6M24 25l8 6M14 40h20"/></svg></span>
+              <div><h3>Drop</h3><p>Get down on your hands and knees <strong>before</strong> the shaking knocks you down. This position
+                protects you and still lets you crawl.</p></div>
+            </li>
+            <li>
+              <span class="dch-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M6 18h36M10 18v22M38 18v22"/><circle cx="22" cy="29" r="3.5"/><path d="M26 31l8 4M18 36h14"/></svg></span>
+              <div><h3>Cover</h3><p>Cover your head and neck with one arm. Crawl under a sturdy table or desk. If there is none, get
+                down next to an inside wall, away from windows.</p></div>
+            </li>
+            <li>
+              <span class="dch-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M6 18h36M10 18v22M38 18v22"/><path d="M33 24c2 0 3 2 3 4v6"/><circle cx="22" cy="29" r="3.5"/></svg></span>
+              <div><h3>Hold On</h3><p>Hold on to your shelter until the shaking stops. If it moves, move with it.</p></div>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="where">
+        <h3 id="where-title">Where are you when it starts?</h3>
+        <div class="segmented wrap" role="group" aria-labelledby="where-title" id="where-buttons"><!-- filled by app.js --></div>
+        <div class="where-panel" id="where-panel" aria-live="polite"></div>
+      </div>
+
+      <details class="myths">
+        <summary>Three common myths</summary>
+        <dl>
+          <div><dt>“Run outside.”</dt><dd>Most injuries happen when people try to move during shaking and are hit by falling objects or
+            glass. Stay where you are, Drop, Cover, and Hold On.</dd></div>
+          <div><dt>“Stand in a doorway.”</dt><dd>In modern houses, doorways are no stronger than the rest of the house, and a swinging
+            door can hurt you. Get under a table instead.</dd></div>
+          <div><dt>“Use the triangle of life.”</dt><dd>Lying next to furniture is <em>not</em> recommended by U.S. safety agencies.
+            You can't predict how things will fall, and you're exposed to flying objects.</dd></div>
+        </dl>
+      </details>
+    </section>
+
+    <!-- Early warning -->
+    <section class="card alert" aria-labelledby="alert-title">
+      <div class="alert-grid">
+        <div class="phone" aria-hidden="true">
+          <div class="phone-screen">
+            <p class="phone-app">Emergency alert</p>
+            <p class="phone-msg">Earthquake detected! Drop, Cover, Hold On. Protect yourself.</p>
+            <p class="phone-src">USGS ShakeAlert</p>
+          </div>
+        </div>
+        <div>
+          <p class="step-tag">Seconds of warning</p>
+          <h2 id="alert-title">Turn on ShakeAlert</h2>
+          <p>The USGS <strong>ShakeAlert</strong> system detects an earthquake as it starts and sends alerts to phones in Washington,
+            Oregon and California before the strongest shaking arrives. Depending on how far you are from the quake, that is a few seconds
+            to about a minute: enough to Drop, Cover, and Hold On.</p>
+          <ul class="checks">
+            <li>Make sure <strong>Emergency Alerts</strong> are turned on in your phone settings (they are on by default).</li>
+            <li>Android phones also have Android Earthquake Alerts built in.</li>
+            <li>The free <strong>MyShake</strong> app gives alerts for smaller quakes too.</li>
+          </ul>
+          <p class="hint">If you are very close to the epicenter, the shaking may arrive before the alert. Don't wait for one; if you feel shaking, act.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Tsunami -->
+    <section class="card tsunami" id="tsunami" aria-labelledby="tsunami-title">
+      <p class="step-tag"><span class="n">4</span> On the coast</p>
+      <h2 id="tsunami-title">Feel the shaking? Go to high ground.</h2>
+      <div class="split">
+        <div>
+          <p>A Cascadia M9 would send a tsunami onto the Oregon and Washington coast, as it did in 1700. The first waves could arrive in
+            <strong>as little as 15 to 20 minutes</strong>, faster than any official warning.</p>
+          <ol class="tsu-steps">
+            <li><strong>Drop, Cover, and Hold On</strong> until the shaking stops.</li>
+            <li><strong>Then go right away.</strong> Long or strong shaking is your warning. Don't wait for a siren or alert.</li>
+            <li><strong>Go on foot</strong> to high ground or inland, following the blue tsunami route signs. Roads may be damaged or jammed.</li>
+            <li><strong>Stay there</strong> until officials say it's safe. Tsunamis come in a series of waves that can last for hours, and the first is often not the largest.</li>
+          </ol>
+          <p>Visiting the coast? Look up the evacuation route from where you're staying when you arrive.
+            <a href="https://nvs.nanoos.org/TsunamiEvac" target="_blank" rel="noopener">Tsunami evacuation maps for WA, OR and CA (NANOOS) ↗</a></p>
+        </div>
+        <div class="race" aria-labelledby="race-title">
+          <h3 id="race-title">The 15-minute race</h3>
+          <p class="secondary">How far can you get on foot before the first wave? A brisk walk covers about 1 mile in 20 minutes.</p>
+          <label class="control" for="race-min">
+            <span class="race-label"><span>Minutes until the first wave</span><output id="race-min-out">15 min</output></span>
+            <input id="race-min" type="range" min="5" max="40" step="1" value="15">
+          </label>
+          <div class="race-bars" id="race-bars"></div>
+          <p class="hint">Distances are on flat ground. Hills are slower. A common rule of thumb is to get 100 feet (30 m) above sea level or 2 miles inland, but your
+            local evacuation map is the real guide.</p>
+        </div>
+      </div>
+      <p class="links-line">Also see the <a href="../10-orphan-tsunami/index.html">orphan tsunami of 1700</a> visualization.</p>
+    </section>
+
+    <!-- After -->
+    <section class="card after" aria-labelledby="after-title">
+      <p class="step-tag">After the shaking</p>
+      <h2 id="after-title">The first minutes, hours and days</h2>
+      <ol class="timeline">
+        <li><h3>First minutes</h3>
+          <ul>
+            <li>Expect <strong>aftershocks</strong>. Drop, Cover, and Hold On again each time.</li>
+            <li>Check yourself and others for injuries. Put on shoes.</li>
+            <li>On the coast: go to high ground <em>now</em>.</li>
+            <li>If you smell gas, leave and shut off the gas if you can. Don't use flames or light switches.</li>
+          </ul></li>
+        <li><h3>First hours</h3>
+          <ul>
+            <li>Get out of damaged buildings and stay out.</li>
+            <li>Stay away from downed power lines.</li>
+            <li>Text your out-of-area contact.</li>
+            <li>Listen to a battery or hand-crank radio for news.</li>
+          </ul></li>
+        <li><h3>First days</h3>
+          <ul>
+            <li>Check on neighbors, especially older adults and people living alone.</li>
+            <li>Use your kit. Eat food from the fridge first, then the freezer, then your shelf.</li>
+            <li>Don't drink tap water until officials say it's safe.</li>
+            <li>Take photos of damage for insurance.</li>
+          </ul></li>
+      </ol>
+    </section>
+
+    <!-- 5. Practice -->
+    <section class="card practice" id="practice" aria-labelledby="practice-title">
+      <div class="split">
+        <div>
+          <p class="step-tag"><span class="n">5</span> Practice</p>
+          <h2 id="practice-title">Join the Great ShakeOut</h2>
+          <p>Every year on the <strong>third Thursday of October</strong>, millions of people practice Drop, Cover, and Hold On at the same
+            moment. Schools, offices and families all take part, and you can join on your own. Practice makes it a reflex: in a real quake,
+            you'll have only seconds to react.</p>
+          <p>Next time, try a drill at home: say “Earthquake!”, everyone drops and covers for one minute, then talk about what you'd do next.</p>
+          <a class="btn primary" href="https://www.shakeout.org" target="_blank" rel="noopener">Register at shakeout.org ↗</a>
+        </div>
+        <div class="drill" aria-labelledby="drill-title">
+          <h3 id="drill-title">Try a one-minute drill now</h3>
+          <p class="secondary">A real Cascadia quake could last several minutes. See how long one minute feels under a table.</p>
+          <div class="drill-ring" id="drill-ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52"/><circle class="prog" id="drill-prog" cx="60" cy="60" r="52"/></svg>
+            <div class="drill-center"><span id="drill-word">Ready?</span><span id="drill-time">60</span></div>
+          </div>
+          <div class="run-buttons"><button type="button" class="btn primary" id="drill-start">Start drill</button>
+            <button type="button" class="btn" id="drill-stop" disabled>Stop</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resources -->
+    <section class="card resources" aria-labelledby="res-title">
+      <h2 id="res-title">Official resources</h2>
+      <ul class="res-list">
+        <li><a href="https://www.shakeout.org/dropcoverholdon/" target="_blank" rel="noopener">Great ShakeOut: Drop, Cover, and Hold On ↗</a><span>What to do in every situation, including if you use a wheelchair</span></li>
+        <li><a href="https://www.earthquakecountry.org/sevensteps/" target="_blank" rel="noopener">Earthquake Country Alliance: Seven Steps to Earthquake Safety ↗</a><span>Step-by-step home preparedness</span></li>
+        <li><a href="https://mil.wa.gov/preparedness" target="_blank" rel="noopener">Washington Emergency Management: Preparedness ↗</a><span>Washington's 2 Weeks Ready guides</span></li>
+        <li><a href="https://www.oregon.gov/oem/hazardsprep/Pages/2-Weeks-Ready.aspx" target="_blank" rel="noopener">Oregon Emergency Management: 2 Weeks Ready ↗</a><span>Oregon's kit and planning guide</span></li>
+        <li><a href="https://www.shakealert.org" target="_blank" rel="noopener">ShakeAlert ↗</a><span>Earthquake early warning for the West Coast</span></li>
+        <li><a href="https://www.ready.gov/earthquakes" target="_blank" rel="noopener">Ready.gov: Earthquakes ↗</a><span>FEMA's earthquake guide and kit list</span></li>
+        <li><a href="https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/earthquake.html" target="_blank" rel="noopener">American Red Cross: Earthquake safety ↗</a><span>Before, during and after</span></li>
+        <li><a href="https://nvs.nanoos.org/TsunamiEvac" target="_blank" rel="noopener">NANOOS tsunami evacuation maps ↗</a><span>Zones and routes for the Pacific coast</span></li>
+      </ul>
+      <p class="hint">This page is a summary for learning. Always follow the instructions of your local emergency managers.</p>
+    </section>
+
+    <footer class="site-footer">
+      The five steps are from Wirth, E., and others, 2025, <em>Earthquake probabilities and hazards in the U.S. Pacific Northwest</em>:
+      U.S. Geological Survey Fact Sheet 2025–3050, ver. 1.1, p. 6. <a href="https://doi.org/10.3133/fs20253050">doi.org/10.3133/fs20253050</a>.
+      Safety guidance follows the Great ShakeOut, FEMA Ready.gov, and the Washington and Oregon emergency management agencies.
+      Photos by Acamaro Cutcher.
+    </footer>
+  </main>
+
+  <script src="../shared/quake-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
