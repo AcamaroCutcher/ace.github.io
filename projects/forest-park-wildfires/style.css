@@ -186,3 +186,26 @@ dialog img { display: block; max-width: 96vw; max-height: 86vh; width: auto; hei
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 }
+
+/* ---------- progress log ---------- */
+.log {
+  display: grid; gap: 12px; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+}
+.log-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.log-list li {
+  display: grid; grid-template-columns: auto auto 1fr; gap: 4px 12px; align-items: baseline;
+}
+.log-list p { grid-column: 3; max-width: 70ch; color: var(--text-secondary); }
+.log-list p strong { color: var(--text-primary); }
+.log-list time { font-size: 13px; color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.log-tag {
+  font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px;
+  background: var(--wash); color: var(--text-secondary);
+}
+.log-tag.new { background: var(--done-bg); color: var(--accent); }
+code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; background: var(--wash); padding: 1px 5px; border-radius: 4px; }
+@media (max-width: 600px) {
+  .log-list li { grid-template-columns: auto 1fr; }
+  .log-list p { grid-column: 1 / -1; }
+}

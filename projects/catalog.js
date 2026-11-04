@@ -37,8 +37,8 @@ window.PROJECT_LIBRARY = {
       title: 'Forest Park Wildfires',
       summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? The first section ' +
         'builds a 30 m wildland–urban fuel map: LANDFIRE fuels inside the park, and stand-in surface fuels for the city ' +
-        'from land-cover imperviousness, tree canopy and 101,211 building footprints, exported for the WRF-SFIRE ' +
-        'fire–atmosphere model. Fire-spread simulations come next.',
+        'from land-cover imperviousness, tree canopy, roads and 101,211 building footprints, plus 10 m terrain, ' +
+        'exported for the WRF-SFIRE fire–atmosphere model. Fire-spread simulations come next.',
       disciplines: ['earth'],
       types: ['research'],
       status: 'current',

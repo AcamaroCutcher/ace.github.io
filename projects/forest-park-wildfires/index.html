@@ -48,6 +48,25 @@
             how dry it has to be to burn. Before any fire can be simulated, the park and the city need that grid.</p>
         </div>
 
+        <div class="log" aria-labelledby="log-title">
+          <h3 id="log-title">Progress log</h3>
+          <ol class="log-list">
+            <li>
+              <span class="log-tag new">v2</span>
+              <time datetime="2026-11-04">4 Nov 2026</time>
+              <p><strong>Roads and terrain.</strong> Open road cells are now firebreaks instead of grass corridors
+                (<a href="#fig-roads">Figure 4</a>), which removed 1,848 ha of false fuel. Added 10 m USGS terrain,
+                slope and the elevation layer WRF-SFIRE needs for its fire grid (<a href="#fig-terrain">Figure 7</a>).</p>
+            </li>
+            <li>
+              <span class="log-tag">v1</span>
+              <time datetime="2026-11-04">4 Nov 2026</time>
+              <p><strong>First combined fuel map.</strong> LANDFIRE fuels in the park, stand-in fuels for the city from
+                pavement and tree canopy, building footprints, and the WRF-SFIRE fuel export.</p>
+            </li>
+          </ol>
+        </div>
+
         <div class="prose two-col">
           <div>
             <h3>The problem at the park's edge</h3>
@@ -64,10 +83,10 @@
         </div>
 
         <ul class="stats" aria-label="Summary figures">
-          <li><strong>12,216 → 19,544 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
-          <li><strong>7,332 ha</strong><span>City cells given stand-in fuels</span></li>
+          <li><strong>12,216 → 17,696 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
+          <li><strong>5,484 ha</strong><span>City cells given stand-in fuels</span></li>
+          <li><strong>1,848 ha</strong><span>Open road cells made firebreaks (v2)</span></li>
           <li><strong>101,211</strong><span>Building footprints mapped at 3 m</span></li>
-          <li><strong>601 × 595</strong><span>Grid cells at 30 m, about 18 × 18 km</span></li>
         </ul>
 
         <article class="fig" id="fig-fuel-map">
@@ -116,11 +135,35 @@
             <h3>What the urban rules changed</h3>
             <p>Only the cells that received a stand-in fuel are colored.</p>
             <ul>
-              <li>The thin yellow lines across the rural west are road cells that became grass. Roads should act more
-                like firebreaks, so this is the next thing to fix.</li>
+              <li>Green lines in the rural west are roads under tree canopy, which keep timber litter. Open, paved
+                road cells are firebreaks since v2 (Figure 4).</li>
+              <li>A few yellow lines remain where roads are less than 30% paved, such as gravel roads.</li>
               <li>Industrial land with little canopy, in Rivergate and the NW industrial district, also became grass.</li>
               <li>Dark grey blocks are cells that are mostly buildings.</li>
             </ul>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-roads">
+          <figure>
+            <button type="button" class="zoom" data-full="img/roads_v1_vs_v2.png" aria-label="Enlarge: road fix, v1 and v2">
+              <img src="img/roads_v1_vs_v2.png" width="1615" height="1014" loading="lazy" alt="Two zoomed maps of the hills southwest of Forest Park. In v1 a network of road cells is grass; in v2 open road cells are non-burnable and roads under canopy stay timber litter.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 4 · new in v2</p>
+            <h3>Fixing the roads</h3>
+            <p>A 4 × 4 km window southwest of the park, where the fix changed the most cells. In v1, partly paved road
+              cells with little canopy fell into the "open lots" rule and became a connected network of grass corridors
+              (yellow), which would carry fire along every street. The NLCD road layer now identifies them first:</p>
+            <ul>
+              <li><strong>Freeways</strong> (US-26, I-405) are always non-burnable.</li>
+              <li><strong>Other roads</strong> are non-burnable when at least 30% paved with under 40% tree canopy.</li>
+              <li><strong>Roads under canopy</strong> keep their stand-in fuel, because overhanging trees and yards in
+                the same 30 m cell still carry fire.</li>
+            </ul>
+            <p>A first attempt made every paved street a firebreak. That turned 6,605 ha of the residential grid
+              non-burnable and isolated every block, so I narrowed it to open roads.</p>
           </div>
         </article>
 
@@ -131,11 +174,11 @@
             </button>
           </figure>
           <div class="fig-notes">
-            <p class="fig-num">Figure 4</p>
+            <p class="fig-num">Figure 5</p>
             <h3>Fuel-model families</h3>
-            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Grass (36%),
-              timber litter (34%) and timber-understory (25%) make up nearly all the burnable area. Shrub and slash
-              fuels are almost absent.</p>
+            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Timber litter (38%),
+              grass (30%) and timber-understory (27%) make up most of the burnable area, with grass-shrub at 5%.
+              Shrub and slash fuels are almost absent.</p>
           </div>
         </article>
 
@@ -146,43 +189,62 @@
             </button>
           </figure>
           <div class="fig-notes">
-            <p class="fig-num">Figure 5</p>
+            <p class="fig-num">Figure 6</p>
             <h3>What the rules are based on</h3>
             <p>Pavement and tree canopy from the National Land Cover Database decide each city cell's stand-in fuel.
               Building cover, from City of Portland footprints, decides which cells stay non-burnable.</p>
           </div>
         </article>
 
-        <article class="fig" id="fig-anderson">
+        <article class="fig wide" id="fig-terrain">
           <figure>
-            <button type="button" class="zoom" data-full="img/anderson13_area.png" aria-label="Enlarge: WRF-SFIRE fuel categories">
-              <img src="img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 12,639 ha; closed timber litter 6,394; short grass 4,621; hardwood litter 2,906; timber grass and understory 2,793; timber litter and understory 1,966; brush 865.">
+            <button type="button" class="zoom" data-full="img/terrain_elevation_slope.png" aria-label="Enlarge: terrain">
+              <img src="img/terrain_elevation_slope.png" width="1990" height="1042" loading="lazy" alt="Two maps: elevation with shaded relief, and slope in degrees. The Tualatin Mountains ridge runs northwest to southeast through Forest Park, with steep ravines on the river side.">
             </button>
           </figure>
           <div class="fig-notes">
-            <p class="fig-num">Figure 6</p>
+            <p class="fig-num">Figure 7 · new in v2</p>
+            <h3>Terrain</h3>
+            <p>Fire runs faster uphill, so the model needs the ground shape as well as the fuel. Forest Park sits on the
+              ridge of the Tualatin Mountains, from 12 m at the river to 339 m at the crest. Slopes inside the park have
+              a median of 19°, and the steepest 10% exceed 29°, mostly in the ravines facing the Willamette.</p>
+            <p>Elevation comes from the USGS 3DEP 10 m dataset and is exported as WRF-SFIRE's fire-grid terrain
+              layer (<code>ZSF</code>).</p>
+          </div>
+        </article>
+
+        <article class="fig" id="fig-anderson">
+          <figure>
+            <button type="button" class="zoom" data-full="img/anderson13_area.png" aria-label="Enlarge: WRF-SFIRE fuel categories">
+              <img src="img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 14,487 ha; closed timber litter 6,388; hardwood litter 2,906; timber grass and understory 2,791; short grass 2,780; timber litter and understory 1,966; brush 865.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 8</p>
             <h3>Ready for WRF-SFIRE</h3>
             <p>WRF-SFIRE uses the older 13 Anderson fuel models, so the map is also exported in that system,
-              in the binary format its preprocessing step (WPS geogrid) reads. Category 14 means "no fuel".</p>
+              in the binary format its preprocessing step (WPS geogrid) reads, together with the 10 m terrain.
+              Category 14 means "no fuel".</p>
           </div>
         </article>
 
         <div class="two-col">
           <div class="prose">
             <h3>How city cells were assigned</h3>
-            <p>Each developed cell outside the park takes the first rule it matches.</p>
+            <p>Each developed cell outside the park takes the first rule it matches. Road cells are checked first (v2).</p>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr><th scope="col">Paved</th><th scope="col">Canopy</th><th scope="col">Fuel model</th><th scope="col" class="r">Area (ha)</th></tr>
                 </thead>
                 <tbody>
+                  <tr><td colspan="3">Open road cell (freeway, or ≥ 30% paved with &lt; 40% canopy) → non-burnable</td><td class="r">1,848.1</td></tr>
                   <tr><td>≥ 60%</td><td>any</td><td>Non-burnable (NB1)</td><td class="r">7,928.9</td></tr>
-                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,274.2</td></tr>
-                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">4,089.3</td></tr>
-                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">732.3</td></tr>
-                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">705.0</td></tr>
-                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">531.5</td></tr>
+                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,269.9</td></tr>
+                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">2,250.1</td></tr>
+                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">730.6</td></tr>
+                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">703.4</td></tr>
+                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">530.3</td></tr>
                   <tr><td colspan="3">Building cover ≥ 50% → non-burnable</td><td class="r">1,130.4</td></tr>
                 </tbody>
               </table>
@@ -193,10 +255,11 @@
             <ul>
               <li><strong>The urban rules are a first pass.</strong> The thresholds are working assumptions and still
                 need to be calibrated against field data and published WUI fuel studies.</li>
-              <li><strong>Roads become grass.</strong> Road cells will be separated out and treated as firebreaks.</li>
+              <li><strong>Roads as firebreaks are an assumption.</strong> A paved road stops a surface fire, but
+                wind-driven fires throw embers across roads, which this map can't represent.</li>
+              <li><strong>Gravel and narrow roads</strong> (under 30% paved) still follow the yard rules.</li>
               <li><strong>Surface fuels only.</strong> WRF-SFIRE spreads fire through vegetation. It doesn't model
                 houses igniting each other or embers, which cause most home losses in urban fires.</li>
-              <li><strong>No terrain yet.</strong> High-resolution elevation for the fire grid is the next layer to add.</li>
             </ul>
           </div>
         </div>
@@ -205,7 +268,8 @@
 
     <footer class="site-footer">
       Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
-      2021 land cover, imperviousness and tree canopy (MRLC); City of Portland Open Data building footprints and park
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 arc-second
+      elevation; City of Portland Open Data building footprints and park
       boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Maps and analysis by Acamaro Cutcher.
     </footer>
   </div>
