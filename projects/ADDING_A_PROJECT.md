@@ -39,7 +39,7 @@ newest first.
   title: 'Visualizing the Heat Equation',
   summary: 'One or two sentences on what it is and why it matters.',
   disciplines: ['math', 'physics'],          // first one = the section it appears in
-  types: ['interactive', 'code'],            // any of: interactive, paper, research, code
+  types: ['interactive', 'code'],            // any of: interactive, paper, research, code, video
   status: 'completed',                       // 'completed' or 'current' (optional)
   year: 2026,                                // optional
   featured: false,                           // true = wide card with the image beside the text

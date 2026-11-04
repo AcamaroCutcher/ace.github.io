@@ -26,6 +26,7 @@ window.PROJECT_LIBRARY = {
     { id: 'paper', name: 'Paper', icon: 'fa-file-lines' },
     { id: 'research', name: 'Research', icon: 'fa-flask' },
     { id: 'code', name: 'Code', icon: 'fa-code' },
+    { id: 'video', name: 'Video', icon: 'fa-circle-play' },
   ],
 
   // Newest first. The first discipline listed is the section the card appears in;
@@ -37,9 +38,9 @@ window.PROJECT_LIBRARY = {
       summary: 'Ten interactive explainers for USGS Fact Sheet 2025–3050. Reproduce the 50-year odds of deep, shallow and ' +
         'M9 megathrust earthquakes, roll thousands of Monte Carlo futures on a Pacific Northwest map, test the ' +
         'Gutenberg–Richter rule against 45 years of USGS data, rotate a 3D model of the subducting Juan de Fuca plate, ' +
-        'and trace 10,000 years of great Cascadia earthquakes.',
+        'and trace 10,000 years of great Cascadia earthquakes. Includes a companion video.',
       disciplines: ['earth', 'math'],
-      types: ['interactive'],
+      types: ['interactive', 'video'],
       status: 'completed',
       year: 2026,
       featured: true,
@@ -48,6 +49,7 @@ window.PROJECT_LIBRARY = {
       links: [
         { label: 'Explore', href: 'cascadia/index.html', icon: 'fa-arrow-right', primary: true },
         { label: 'The story', href: 'cascadia/08-story/index.html', icon: 'fa-book-open' },
+        { label: 'Video', href: 'https://www.youtube.com/watch?v=mfdwMcyq9Q4', icon: 'fa-youtube', brand: true },
         { label: 'USGS report', href: 'https://doi.org/10.3133/fs20253050', icon: 'fa-file-pdf' },
       ],
     },

@@ -306,12 +306,29 @@
   });
 
   // Smooth scroll for "Browse all 10"
-  document.querySelectorAll('a[href="#projects"]').forEach(function (a) {
+  document.querySelectorAll('a[href="#projects"], a[href="#video"]').forEach(function (a) {
     a.addEventListener('click', function (ev) {
       ev.preventDefault();
-      document.getElementById('projects').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+      var target = document.getElementById(a.getAttribute('href').slice(1));
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: target.id === 'video' ? 'center' : 'start' });
     });
   });
+
+  // ---------- Video: swap the preview for the YouTube player on click ----------
+  var play = document.getElementById('video-play');
+  if (play) {
+    play.addEventListener('click', function () {
+      var id = play.getAttribute('data-video-id');
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&modestbranding=1';
+      f.title = 'Earthquakes in the Pacific Northwest (YouTube video)';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+      play.replaceWith(f);
+      f.focus();
+    });
+  }
 
   // Expose for tests
   window.__hub = { events: events, state: function () { return { clock: clock, shown: next, paused: paused, kinds: kindCounts() }; } };
