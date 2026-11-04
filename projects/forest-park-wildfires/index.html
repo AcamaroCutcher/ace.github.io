@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires: fuel maps and fire-spread modeling for Portland's Forest Park and the neighborhoods around it. By Acamaro Cutcher.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="theme.js"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <a class="home-link" href="../index.html">← All projects</a>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="intro">
+      <p class="eyebrow">Wildland–urban interface · Portland, Oregon · In progress</p>
+      <h1>Forest Park Wildfires</h1>
+      <p class="lede">Forest Park covers about 5,100 acres of forest along Portland's West Hills, with homes,
+        industry and the Willamette River along its edges. This project models how a fire that starts in the
+        park could spread into the neighborhoods around it, using the coupled fire–atmosphere model WRF-SFIRE
+        and probabilistic fire-spread maps.</p>
+      <nav class="sections" aria-label="Project sections">
+        <a class="section-link" href="#fuel-maps">
+          <span class="num">01</span>
+          <span class="section-name">Fuel maps</span>
+          <span class="pill done">Available</span>
+        </a>
+        <div class="section-link upcoming" aria-disabled="true">
+          <span class="num">02</span>
+          <span class="section-name">Fire-spread simulations</span>
+          <span class="pill">In progress</span>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="block" id="fuel-maps" aria-labelledby="fuel-maps-title">
+        <div class="block-head">
+          <p class="eyebrow">Section 01</p>
+          <h2 id="fuel-maps-title">Fuel maps</h2>
+          <p class="lede">A fire model doesn't see trees, lawns or houses. It sees a grid, and every cell holds a
+            <em>fuel model</em>: a standard description of how much fuel is there, how deep the fuel bed is and
+            how dry it has to be to burn. Before any fire can be simulated, the park and the city need that grid.</p>
+        </div>
+
+        <div class="prose two-col">
+          <div>
+            <h3>The problem at the park's edge</h3>
+            <p>The standard U.S. fuel map, LANDFIRE, marks developed land as <strong>non-burnable</strong>.
+              That makes sense for a forest-scale study. For a city edge, it means a simulated fire stops at the park
+              boundary every time, so the question this project asks can't be answered.</p>
+          </div>
+          <div>
+            <h3>What I built</h3>
+            <p>A combined map at 30 m resolution. Inside the park, LANDFIRE is used as published. Outside it, each
+              developed cell gets a stand-in surface fuel based on how much of it is paved and how much tree canopy
+              it has. Cells that are mostly buildings stay non-burnable.</p>
+          </div>
+        </div>
+
+        <ul class="stats" aria-label="Summary figures">
+          <li><strong>12,216 → 19,544 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
+          <li><strong>7,332 ha</strong><span>City cells given stand-in fuels</span></li>
+          <li><strong>101,211</strong><span>Building footprints mapped at 3 m</span></li>
+          <li><strong>601 × 595</strong><span>Grid cells at 30 m, about 18 × 18 km</span></li>
+        </ul>
+
+        <article class="fig" id="fig-fuel-map">
+          <figure>
+            <button type="button" class="zoom" data-full="img/fuel_map_wui.png" aria-label="Enlarge: the combined fuel map">
+              <img src="img/fuel_map_wui.png" width="1955" height="1522" alt="Fuel map of Forest Park and surrounding Portland, colored by fuel group: grass, shrub and timber-understory, timber litter, pavement, structures and water.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 1</p>
+            <h3>The combined fuel map</h3>
+            <p>Three colorblind-safe colors carry the burnable fuel groups. Greys are non-burnable, pale blue is water,
+              and the black outline is Forest Park.</p>
+            <ul>
+              <li>The park is mostly <strong>timber-understory</strong> (violet) and <strong>timber litter</strong>
+                (green). The heaviest model, TU5 (very high load, dry timber-shrub), covers about 846 ha inside the park.</li>
+              <li>Treed neighborhoods south and west of the park, in the NW Hills and Forest Heights, form continuous
+                timber litter joined to the park.</li>
+              <li>Open, lightly paved areas such as St. Johns become grass (yellow).</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-before-after">
+          <figure>
+            <button type="button" class="zoom" data-full="img/fuel_map_before_after.png" aria-label="Enlarge: before and after">
+              <img src="img/fuel_map_before_after.png" width="1791" height="1046" loading="lazy" alt="Two maps side by side. Left: LANDFIRE as published, where most of the city is non-burnable. Right: the adjusted map with fuels in urban areas.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 2</p>
+            <h3>Before and after</h3>
+            <p>On the left, fuel ends at the park boundary. On the right, the city's vegetated cells carry fuel, so a
+              model can move fire from the park edge into yards and street trees.</p>
+          </div>
+        </article>
+
+        <article class="fig" id="fig-reassigned">
+          <figure>
+            <button type="button" class="zoom" data-full="img/urban_reassignment.png" aria-label="Enlarge: cells changed by the urban rules">
+              <img src="img/urban_reassignment.png" width="1853" height="1418" loading="lazy" alt="Map highlighting only the cells changed by the urban fuel rules, colored by new fuel group; all other cells are grey.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 3</p>
+            <h3>What the urban rules changed</h3>
+            <p>Only the cells that received a stand-in fuel are colored.</p>
+            <ul>
+              <li>The thin yellow lines across the rural west are road cells that became grass. Roads should act more
+                like firebreaks, so this is the next thing to fix.</li>
+              <li>Industrial land with little canopy, in Rivergate and the NW industrial district, also became grass.</li>
+              <li>Dark grey blocks are cells that are mostly buildings.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-families">
+          <figure>
+            <button type="button" class="zoom" data-full="img/fuel_families_small_multiples.png" aria-label="Enlarge: fuel-model families">
+              <img src="img/fuel_families_small_multiples.png" width="1911" height="1355" loading="lazy" alt="Six small maps, one per fuel-model family (grass, grass-shrub, shrub, timber-understory, timber litter, slash-blowdown), each showing where that family occurs.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 4</p>
+            <h3>Fuel-model families</h3>
+            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Grass (36%),
+              timber litter (34%) and timber-understory (25%) make up nearly all the burnable area. Shrub and slash
+              fuels are almost absent.</p>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-inputs">
+          <figure>
+            <button type="button" class="zoom" data-full="img/inputs_impervious_canopy_buildings.png" aria-label="Enlarge: rule inputs">
+              <img src="img/inputs_impervious_canopy_buildings.png" width="2405" height="977" loading="lazy" alt="Three maps: NLCD 2021 imperviousness, NLCD 2021 tree canopy, and building footprint cover per 30 m cell.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 5</p>
+            <h3>What the rules are based on</h3>
+            <p>Pavement and tree canopy from the National Land Cover Database decide each city cell's stand-in fuel.
+              Building cover, from City of Portland footprints, decides which cells stay non-burnable.</p>
+          </div>
+        </article>
+
+        <article class="fig" id="fig-anderson">
+          <figure>
+            <button type="button" class="zoom" data-full="img/anderson13_area.png" aria-label="Enlarge: WRF-SFIRE fuel categories">
+              <img src="img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 12,639 ha; closed timber litter 6,394; short grass 4,621; hardwood litter 2,906; timber grass and understory 2,793; timber litter and understory 1,966; brush 865.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 6</p>
+            <h3>Ready for WRF-SFIRE</h3>
+            <p>WRF-SFIRE uses the older 13 Anderson fuel models, so the map is also exported in that system,
+              in the binary format its preprocessing step (WPS geogrid) reads. Category 14 means "no fuel".</p>
+          </div>
+        </article>
+
+        <div class="two-col">
+          <div class="prose">
+            <h3>How city cells were assigned</h3>
+            <p>Each developed cell outside the park takes the first rule it matches.</p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th scope="col">Paved</th><th scope="col">Canopy</th><th scope="col">Fuel model</th><th scope="col" class="r">Area (ha)</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>≥ 60%</td><td>any</td><td>Non-burnable (NB1)</td><td class="r">7,928.9</td></tr>
+                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,274.2</td></tr>
+                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">4,089.3</td></tr>
+                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">732.3</td></tr>
+                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">705.0</td></tr>
+                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">531.5</td></tr>
+                  <tr><td colspan="3">Building cover ≥ 50% → non-burnable</td><td class="r">1,130.4</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="prose limits">
+            <h3>Limitations</h3>
+            <ul>
+              <li><strong>The urban rules are a first pass.</strong> The thresholds are working assumptions and still
+                need to be calibrated against field data and published WUI fuel studies.</li>
+              <li><strong>Roads become grass.</strong> Road cells will be separated out and treated as firebreaks.</li>
+              <li><strong>Surface fuels only.</strong> WRF-SFIRE spreads fire through vegetation. It doesn't model
+                houses igniting each other or embers, which cause most home losses in urban fires.</li>
+              <li><strong>No terrain yet.</strong> High-resolution elevation for the fire grid is the next layer to add.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness and tree canopy (MRLC); City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Maps and analysis by Acamaro Cutcher.
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

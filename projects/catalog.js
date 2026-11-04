@@ -33,6 +33,25 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'forest-park-wildfires',
+      title: 'Forest Park Wildfires',
+      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? The first section ' +
+        'builds a 30 m wildland–urban fuel map: LANDFIRE fuels inside the park, and stand-in surface fuels for the city ' +
+        'from land-cover imperviousness, tree canopy and 101,211 building footprints, exported for the WRF-SFIRE ' +
+        'fire–atmosphere model. Fire-spread simulations come next.',
+      disciplines: ['earth'],
+      types: ['research'],
+      status: 'current',
+      year: 2026,
+      featured: false,
+      thumb: 'thumbs/forest-park-wildfires.jpg',
+      tags: ['Wildfire', 'Wildland–Urban Interface', 'LANDFIRE', 'WRF-SFIRE', 'Python / GIS'],
+      links: [
+        { label: 'Explore', href: 'forest-park-wildfires/index.html', icon: 'fa-arrow-right', primary: true },
+        { label: 'Fuel maps', href: 'forest-park-wildfires/index.html#fuel-maps', icon: 'fa-map' },
+      ],
+    },
+    {
       id: 'cascadia',
       title: 'Cascadia Earthquake Probabilities: Interactive Visualizations',
       summary: 'Ten interactive explainers for USGS Fact Sheet 2025–3050. Reproduce the 50-year odds of deep, shallow and ' +
