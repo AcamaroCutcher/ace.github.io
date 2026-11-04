@@ -169,3 +169,55 @@ th { font-weight: 600; color: var(--text-secondary); font-size: 13px; }
 .banner-text strong { color: var(--text-primary); }
 .map-banner.is-alert { border-color: var(--megathrust); box-shadow: 0 0 0 2px var(--megathrust); }
 .status-note { font-size: 14px; color: var(--text-primary); background: var(--wash); border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; }
+
+/* Floating page navigation (shared/page-nav.js) */
+body.has-fnav { padding-bottom: 88px; }
+/* Anything scrolled into view (keyboard focus, links, scripts) stops above the bar instead of behind it */
+html.has-fnav { scroll-padding-bottom: 96px; }
+.fnav {
+  position: fixed; z-index: 50; left: 50%; bottom: 14px; transform: translateX(-50%);
+  width: min(760px, calc(100% - 24px)); box-sizing: border-box;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 8px; border-radius: 16px; overflow: hidden;
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid var(--border); box-shadow: 0 12px 32px -12px rgba(0, 0, 0, .35), 0 2px 6px rgba(0, 0, 0, .06);
+  animation: fnav-in .5s cubic-bezier(.2, .7, .2, 1) both;
+}
+@keyframes fnav-in { from { opacity: 0; transform: translate(-50%, 24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.fnav-progress { position: absolute; left: 0; top: 0; height: 3px; width: var(--fnav-progress); background: var(--focus); border-radius: 0 3px 3px 0; }
+
+.fnav-btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 11px;
+  font-size: 15px; font-weight: 650; text-decoration: none; white-space: nowrap;
+  transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.fnav-arrow { font-size: 11px; transition: transform .2s ease; }
+.fnav-back { color: var(--text-primary); border: 1px solid var(--border); background: var(--surface-1); }
+.fnav-back:hover { background: var(--wash); }
+.fnav-back:hover .fnav-arrow { transform: translateX(-3px); }
+.fnav-next { color: var(--page); background: var(--text-primary); }
+.fnav-next:hover { box-shadow: 0 6px 16px -6px rgba(0, 0, 0, .5); transform: translateY(-1px); }
+.fnav-next:hover .fnav-arrow { transform: translateX(3px); }
+.fnav-btn:active { transform: scale(.96); }
+.fnav-btn:focus-visible, .fnav-mid:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.fnav-mid {
+  display: flex; align-items: baseline; justify-content: center; gap: 8px; min-width: 0; padding: 6px 8px; border-radius: 10px;
+  color: var(--text-primary); text-decoration: none; font-size: 15px;
+}
+.fnav-mid:hover { background: var(--wash); }
+.fnav-pos { color: var(--text-muted); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fnav-dot { color: var(--text-muted); }
+.fnav-title { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .fnav { gap: 6px; padding: 6px; bottom: 10px; }
+  .fnav-btn { padding: 0 12px; height: 40px; font-size: 14px; }
+  .fnav-mid { flex-direction: column; align-items: center; gap: 0; padding: 2px 4px; }
+  .fnav-dot { display: none; }
+  .fnav-pos { font-size: 11px; }
+  .fnav-title { font-size: 13px; max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .fnav { animation: none; } }
+@media print { .fnav { display: none; } body.has-fnav { padding-bottom: 0; } }
