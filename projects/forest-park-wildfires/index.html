@@ -38,19 +38,31 @@
         <a class="section-link" href="#fire-weather">
           <span class="num">03</span>
           <span class="section-name">Fire weather</span>
-          <span class="pill done">New</span>
+          <span class="pill done">Available</span>
         </a>
-        <div class="section-link upcoming" aria-disabled="true">
+        <a class="section-link" href="#fire-spread">
           <span class="num">04</span>
           <span class="section-name">Fire-spread simulations</span>
-          <span class="pill">In progress</span>
+          <span class="pill done">New: prototype</span>
+        </a>
+        <div class="section-link upcoming" aria-disabled="true">
+          <span class="num">05</span>
+          <span class="section-name">WRF-SFIRE runs</span>
+          <span class="pill">Next</span>
         </div>
       </nav>
       <div class="log" aria-labelledby="log-title">
           <h3 id="log-title">Progress log</h3>
           <ol class="log-list">
             <li>
-              <span class="log-tag new">v4</span>
+              <span class="log-tag new">v5</span>
+              <time datetime="2026-11-04">4 Nov 2026</time>
+              <p><strong>First fire-spread maps.</strong> Wrote a fire-spread model in Python on the 30 m fuel map and
+                burned 2,000 simulated fires under each wind scenario (<a href="#fire-spread">Section 04</a>). In an east
+                wind, 37% of fires leave the park and 29% reach buildings, more than twice the northwest-wind numbers.</p>
+            </li>
+            <li>
+              <span class="log-tag">v4</span>
               <time datetime="2026-11-04">4 Nov 2026</time>
               <p><strong>Fire weather.</strong> Analysed 26 years of hourly weather from four airports around the park
                 (<a href="#fire-weather">Section 03</a>). Dangerous dry, windy hours come almost only from the east, mostly
@@ -396,7 +408,7 @@
 
       <section class="block" id="fire-weather" aria-labelledby="fire-weather-title">
         <div class="block-head">
-          <p class="eyebrow">Section 03 · new in v4</p>
+          <p class="eyebrow">Section 03 · v4</p>
           <h2 id="fire-weather-title">Fire weather</h2>
           <p class="lede">A fuel map and terrain say where fire <em>can</em> go; the weather decides where it <em>does</em>.
             To choose realistic wind and dryness for the simulations, and real dates to run WRF-SFIRE on, I analysed hourly
@@ -532,13 +544,136 @@
           </ul>
         </div>
       </section>
+
+      <section class="block" id="fire-spread" aria-labelledby="fire-spread-title">
+        <div class="block-head">
+          <p class="eyebrow">Section 04 · new in v5 · prototype</p>
+          <h2 id="fire-spread-title">Fire-spread simulations</h2>
+          <p class="lede">Before running the full WRF-SFIRE model, I built a fast fire-spread model to see what the fuel
+            map, terrain and weather add up to. It uses the same spread equations (Rothermel's) and the same 13 fuel types
+            as WRF-SFIRE, but holds the wind steady instead of simulating the atmosphere. That makes each fire take a
+            fraction of a second, so I could start 2,000 random fires inside Forest Park for each of the two wind
+            scenarios from <a href="#fire-weather">Section 03</a> and let each burn for 8 hours.</p>
+        </div>
+
+        <article class="fig wide" id="fig-burn-probability">
+          <figure>
+            <button type="button" class="zoom" data-full="img/spread_burn_probability.png" aria-label="Enlarge: burn probability">
+              <img src="img/spread_burn_probability.png" width="1998" height="1201" loading="lazy" alt="Two maps of Forest Park on shaded relief, coloured by how many of 1,000 simulated fires reach each cell. Left, east wind: darker orange throughout the park, highest on the east-facing ravine slopes, with fire spilling out of the park's west and northwest edges. Right, northwest wind: lighter colours, mostly inside the park.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 15</p>
+            <h3>Burn probability</h3>
+            <p>Each cell shows how many of every 1,000 fires started in the park reach it within 8 hours. Single fires
+              are small compared with the park (the median east-wind fire covers 11 ha), so no cell burns often. The map
+              shows <em>where</em> fire tends to go.</p>
+            <p>In the <strong>east wind</strong>, fires run uphill and west across the ravines and spill over the park's west
+              edge toward the Skyline side. In the <strong>northwest wind</strong> they stay small (median 3 ha) and mostly
+              inside the park.</p>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-ignition-danger">
+          <figure>
+            <button type="button" class="zoom" data-full="img/spread_ignition_danger.png" aria-label="Enlarge: ignition danger">
+              <img src="img/spread_ignition_danger.png" width="2015" height="1200" loading="lazy" alt="Two maps with one dot per simulated ignition. Ignitions deep in the park reach no buildings. Ignitions near the park's edges, especially its west edge and northwest end in the east wind and the southeast end in both winds, reach 10 to 70 buildings.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 16</p>
+            <h3>Where a fire start matters</h3>
+            <p>The reverse view: each dot is a simulated ignition, coloured by how many buildings its fire reached (fire
+              within about 30 m of the footprint).</p>
+            <p>Fires that start deep in the park rarely get out within 8 hours: litter under the forest canopy burns
+              slowly, about 25 m an hour. The dangerous starts are within a few hundred metres of the edge. In an east wind
+              those are the west edge and the northwest end; in both winds, the southeast end, where the park meets the
+              hillside streets of NW Portland.</p>
+          </div>
+        </article>
+
+        <article class="fig wide" id="fig-example-fire">
+          <figure>
+            <button type="button" class="zoom" data-full="img/spread_example_fire.png" aria-label="Enlarge: example fire">
+              <img src="img/spread_example_fire.png" width="2097" height="1139" loading="lazy" alt="Two zoomed maps of the same ignition point at the park's southeast end over the faded fuel map, with shaded areas the fire reaches within 1, 2, 4 and 8 hours. With the east wind the fire spreads about 800 metres west, 26 hectares; with the northwest wind it covers 3 hectares.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 17</p>
+            <h3>One fire, two winds</h3>
+            <p>The east-wind fire that reached the most buildings, re-run under both winds. The east wind stretches it
+              about 800 m west through the forest in 8 hours (26 ha). With the northwest wind the same start burns 3 ha.</p>
+            <p>Roads and buildings stop the fire in this model, so it moves through the city only along unbroken
+              vegetation. Real fires also jump gaps with embers, so treat the city spread here as a minimum.</p>
+          </div>
+        </article>
+
+        <article class="fig" id="fig-validation">
+          <figure>
+            <button type="button" class="zoom" data-full="img/spread_validation.png" aria-label="Enlarge: validation">
+              <img src="img/spread_validation.png" width="1620" height="756" loading="lazy" alt="Dot plot comparing this model's rate of spread to Anderson's 1982 published values for 13 fuel models. Most pairs nearly overlap; model 5 is about 20% slower and model 7 about 30% faster.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 18</p>
+            <h3>Checking the spread model</h3>
+            <p>Before trusting the maps, I checked my implementation against the spread rates Anderson (1982)
+              published for the 13 fuel models. It matches within 10% for 11 of them. Two shrub models are further off:
+              model 5 (−19%, 4% of the map) and model 7 (+30%, not on the map).</p>
+          </div>
+        </article>
+
+        <div class="two-col">
+          <div class="prose">
+            <h3>Results</h3>
+            <p>2,000 fires per scenario, 8 hours each.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col"></th><th scope="col" class="r">East wind</th><th scope="col" class="r">NW afternoon</th></tr></thead>
+                <tbody>
+                  <tr><td>Fires that leave the park</td><td class="r">37%</td><td class="r">17%</td></tr>
+                  <tr><td>Fires that reach buildings</td><td class="r">29%</td><td class="r">13%</td></tr>
+                  <tr><td>Buildings reached, average per fire</td><td class="r">3.0</td><td class="r">1.0</td></tr>
+                  <tr><td>Most buildings, single fire</td><td class="r">71</td><td class="r">55</td></tr>
+                  <tr><td>Area burned, median / 90th percentile</td><td class="r">11 / 22 ha</td><td class="r">3 / 7 ha</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="prose">
+            <h3>How it works</h3>
+            <ul>
+              <li><strong>Spread rate</strong>: Rothermel's equations give each 30 m cell a head-fire speed from its fuel
+                type, its slope, the wind and the fuel moisture of the scenario.</li>
+              <li><strong>Shape</strong>: fire spreads fastest downwind and upslope and slower to the sides and back,
+                as an ellipse that stretches with wind speed.</li>
+              <li><strong>Path</strong>: arrival time at every cell is the fastest route from the ignition through the
+                grid, in 16 directions. Roads, buildings and water can't be crossed, even diagonally.</li>
+              <li><strong>Shelter</strong>: wind at flame height is reduced under tree canopy.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="prose limits">
+          <h3>Limitations</h3>
+          <ul>
+            <li><strong>Steady, uniform wind.</strong> One wind speed and direction everywhere, for 8 hours. In reality the
+              terrain channels the wind and the fire makes its own. That is what WRF-SFIRE adds.</li>
+            <li><strong>No embers, no house-to-house spread, no crown fire.</strong> These drive most home losses in
+              wildland–urban fires, so building counts here are a lower bound on exposure, not a loss estimate.</li>
+            <li><strong>No firefighting.</strong> Fires near the park's edges are usually reached quickly.</li>
+            <li><strong>Uncalibrated city fuels.</strong> The stand-in fuels for yards and street trees from
+              <a href="#fuel-maps">Section 01</a> are assumptions; the city results depend on them.</li>
+          </ul>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
       Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
       2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
       elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
-      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Maps and analysis by Acamaro Cutcher.
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.
     </footer>
   </div>
 
