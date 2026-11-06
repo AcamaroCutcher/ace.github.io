@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 07: Installing WRF-SFIRE on an HPC cluster. Compilers, MPI, NetCDF, HDF5 and JasPer; building WRF-SFIRE and WPS; the first test; Slurm and PBS job scripts; common errors.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Installing WRF-SFIRE on an HPC cluster · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">07 · Installing WRF-SFIRE on an HPC cluster</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/photos/leif-erikson.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 07 · WRF-SFIRE handbook · setup</p>
+        <h1>Installing WRF-SFIRE on an HPC cluster</h1>
+        <p class="lede">Everything needed to build and run WRF-SFIRE on a Linux cluster, from the NetCDF libraries to the first test run and a Slurm job script.</p>
+      </div>
+      <span class="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Leif_Erikson_Drive,_Forest_Park,_Portland_Oregon_01.jpg">Joe Mabel</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons</span>
+    </header>
+
+    <main>
+      <section class="block" id="install" aria-label="Installing WRF-SFIRE on an HPC cluster">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#what">What to install</a><a href="#libs">Libraries</a><a href="#wrf">WRF-SFIRE</a><a href="#wps">WPS</a><a href="#test">First test</a><a href="#jobs">Batch jobs</a><a href="#trouble">Errors</a><a href="#refs">References</a></nav><section id="what" aria-labelledby="what-h"><h2 id="what-h">What you are installing</h2>
+<p>A WRF-SFIRE simulation with real weather needs three things built with the <strong>same compiler and MPI</strong>:
+the libraries (NetCDF for all input and output, and GRIB2 support for the weather data), <strong>WRF-SFIRE</strong> itself
+(WRF with the fire model, from OpenWFM), and <strong>WPS</strong>, the preprocessor that builds the domains and interpolates weather
+and static data onto them. On a cluster you build once on a login node and run through the batch system.</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Piece</th><th>Needed for</th><th>Notes</th></tr></thead><tbody><tr><td>Fortran + C compilers</td><td>everything</td><td>GNU (gfortran/gcc) or Intel (ifort/ifx, icc/icx). Use one family for all pieces.</td></tr><tr><td>MPI</td><td>parallel wrf.exe / real.exe</td><td>OpenMPI, MPICH or Intel MPI; use the cluster's module.</td></tr><tr><td>zlib, HDF5</td><td>NetCDF-4 files</td><td>HDF5 with the high-level API (<code>--enable-hl</code>).</td></tr><tr><td>NetCDF-C + NetCDF-Fortran</td><td>all model I/O</td><td>Installed into the <em>same</em> prefix, which <code>$NETCDF</code> points to.</td></tr><tr><td>libpng, JasPer</td><td>WPS ungrib (GRIB2: HRRR, GFS, NAM)</td><td>Set <code>JASPERLIB</code> / <code>JASPERINC</code>.</td></tr><tr><td>WRF-SFIRE</td><td>the model</td><td><a href="https://github.com/openwfm/WRF-SFIRE">github.com/openwfm/WRF-SFIRE</a> (current release W4.4-S0.1: WRF 4.4 + SFIRE 0.1).</td></tr><tr><td>WPS</td><td>preprocessing</td><td><a href="https://github.com/openwfm/WPS">github.com/openwfm/WPS</a>, plus the WPS_GEOG static data (~30 GB).</td></tr><tr><td>Python 3 (optional)</td><td>pre/post-processing</td><td>netCDF4, numpy, matplotlib, scipy, simplekml for the scripts on Sections 10–13.</td></tr></tbody></table></div>
+<div class="callout tip reveal"><b>First try the modules your cluster already has</b><p>Most HPC centres provide <code>netcdf-c</code>, <code>netcdf-fortran</code>, <code>hdf5</code> and <code>jasper</code> as modules, often built per compiler and MPI. Run <code>module avail netcdf</code>. If NetCDF-C and NetCDF-Fortran are in different directories, either make a directory of symlinks with both <code>include/</code> and <code>lib/</code> contents and point <code>$NETCDF</code> at it, or use the Spack view below.</p></div>
+</section><section id="libs" aria-labelledby="libs-h"><h2 id="libs-h">Step 1 · Libraries</h2>
+<h3>Option A: build them yourself</h3>
+<p>This script builds everything into <code>$HOME/wrf-libs</code>, in dependency order. It takes 20–40 minutes; run it on a build or
+login node your centre allows compiling on.</p>
+<div class="code reveal"><div class="code-head"><span>build_libs.sh</span><button type="button" class="copy">Copy</button></div><pre><code>#!/usr/bin/env bash
+<span class="c"># build_libs.sh: zlib, HDF5, NetCDF-C, NetCDF-Fortran, libpng, JasPer into one prefix.</span>
+<span class="c"># Run on a login/build node with the compilers you will build WRF with (here GNU).</span>
+<span class="c"># Check each project's download page for newer releases; these URLs were checked in Nov 2026.</span>
+set -euo pipefail
+export PREFIX=$HOME/wrf-libs                <span class="c"> # everything goes here</span>
+export CC=gcc CXX=g++ FC=gfortran F77=gfortran
+export CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib"
+export LD_LIBRARY_PATH=$PREFIX/lib:${LD_LIBRARY_PATH:-}
+mkdir -p $PREFIX/src &amp;&amp; cd $PREFIX/src
+get() { [ -f "$(basename $1)" ] || curl -fLO "$1"; tar xzf "$(basename $1)"; }
+
+get https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
+(cd zlib-1.3.1 &amp;&amp; ./configure --prefix=$PREFIX &amp;&amp; make -j8 &amp;&amp; make install)
+
+get https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
+(cd hdf5-1.14.3 &amp;&amp; ./configure --prefix=$PREFIX --with-zlib=$PREFIX --enable-hl --enable-fortran \
+   &amp;&amp; make -j8 &amp;&amp; make install)
+
+get https://downloads.unidata.ucar.edu/netcdf-c/4.9.2/netcdf-c-4.9.2.tar.gz
+(cd netcdf-c-4.9.2 &amp;&amp; ./configure --prefix=$PREFIX --enable-netcdf-4 --disable-dap --disable-byterange \
+   &amp;&amp; make -j8 &amp;&amp; make install)
+
+get https://downloads.unidata.ucar.edu/netcdf-fortran/4.6.1/netcdf-fortran-4.6.1.tar.gz
+(cd netcdf-fortran-4.6.1 &amp;&amp; LIBS="$(${PREFIX}/bin/nc-config --libs)" ./configure --prefix=$PREFIX \
+   &amp;&amp; make -j8 &amp;&amp; make install)         <span class="c"> # same prefix as NetCDF-C: WRF expects both in $NETCDF</span>
+
+get https://download.sourceforge.net/libpng/libpng-1.6.43.tar.gz
+(cd libpng-1.6.43 &amp;&amp; ./configure --prefix=$PREFIX &amp;&amp; make -j8 &amp;&amp; make install)
+
+<span class="c"># JasPer 1.900.1 is the version the WRF compile tutorial uses for WPS's GRIB2 support</span>
+get https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz
+(cd jasper-1.900.1 &amp;&amp; ./configure --prefix=$PREFIX &amp;&amp; make -j8 &amp;&amp; make install)
+
+$PREFIX/bin/nc-config --all | head -20
+$PREFIX/bin/nf-config --all | head -20
+echo "done: libraries in $PREFIX"</code></pre></div>
+<h3>Option B: Spack</h3>
+<div class="code reveal"><div class="code-head"><span>spack</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># Alternative: let Spack build the libraries (and MPI) for you</span>
+git clone --depth=100 https://github.com/spack/spack.git ~/spack
+. ~/spack/share/spack/setup-env.sh
+spack compiler find
+spack install netcdf-fortran ^netcdf-c+mpi ^hdf5+mpi+hl+fortran ^openmpi
+spack install jasper libpng zlib
+<span class="c"># WRF wants NetCDF-C and NetCDF-Fortran in ONE directory: make a view that merges them</span>
+spack view symlink ~/wrf-view netcdf-c netcdf-fortran hdf5 jasper libpng zlib
+export NETCDF=~/wrf-view HDF5=~/wrf-view JASPERLIB=~/wrf-view/lib JASPERINC=~/wrf-view/include
+spack load openmpi</code></pre></div>
+<h3>The environment file</h3>
+<p>Source the same file before every build and inside every job script, so the run uses the libraries the build used.</p>
+<div class="code reveal"><div class="code-head"><span>~/wrf-env.sh</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># wrf-env.sh: source this before building or running (". ~/wrf-env.sh")</span>
+module purge
+module load gcc/13 openmpi/4.1           <span class="c"> # names differ on every cluster: "module avail gcc openmpi"</span>
+export WRF_LIBS=$HOME/wrf-libs
+export NETCDF=$WRF_LIBS                  <span class="c"> # must contain include/netcdf.inc and lib/libnetcdff.*</span>
+export HDF5=$WRF_LIBS
+export JASPERLIB=$WRF_LIBS/lib JASPERINC=$WRF_LIBS/include
+export PATH=$WRF_LIBS/bin:$PATH
+export LD_LIBRARY_PATH=$WRF_LIBS/lib:${LD_LIBRARY_PATH:-}
+export WRFIO_NCD_LARGE_FILE_SUPPORT=1    <span class="c"> # history files &gt; 2 GB</span>
+ulimit -s unlimited                      <span class="c"> # WRF needs a large stack</span></code></pre></div>
+</section><section id="wrf" aria-labelledby="wrf-h"><h2 id="wrf-h">Step 2 · Build WRF-SFIRE</h2>
+<ol class="steps">
+<li><p>Clone, configure and compile. <code>em_fire</code> builds the idealized fire cases (handy for a first test),
+<code>em_real</code> the real-data executables.</p><div class="code reveal"><div class="code-head"><span>build WRF-SFIRE</span><button type="button" class="copy">Copy</button></div><pre><code>. ~/wrf-env.sh
+cd $HOME &amp;&amp; git clone https://github.com/openwfm/WRF-SFIRE.git
+cd WRF-SFIRE
+git log -1 --oneline                     <span class="c"> # record the version you build (e.g. the W4.4-S0.1 tag)</span>
+./configure
+<span class="c">#   pick the "dmpar" line for your compiler, e.g.</span>
+<span class="c">#     34. (dmpar)  GNU (gfortran/gcc)        or   15. (dmpar)  INTEL (ifort/icc)</span>
+<span class="c">#   then nesting: 1 = basic</span>
+./compile -j 8 em_fire &gt;&amp; compile_em_fire.log   <span class="c"> # idealized fire test cases (ideal.exe)</span>
+grep -i -E "error|abort" compile_em_fire.log | head
+./clean                                    <span class="c"> # keep configure.wrf, rebuild for real data</span>
+./compile -j 8 em_real &gt;&amp; compile_em_real.log   <span class="c"> # real.exe, wrf.exe, ndown.exe</span>
+ls -l main/*.exe                           <span class="c"> # wrf.exe and real.exe must be there</span></code></pre></div></li>
+<li><p>A full build takes 20–60 minutes. If <code>main/wrf.exe</code> is missing, search the log from the top for the first error, not the last.</p></li>
+<li><p>The same executable runs SFIRE and the NCAR WRF-Fire code: <code>ifire = 1</code> in <code>namelist.input</code> selects SFIRE and
+<code>ifire = 2</code> the NCAR fire code (confirmed in <code>dyn_em/module_first_rk_step_part1.F</code>). Several options exist in only one of
+them (Section 06 and 08 list which).</p></li>
+</ol>
+</section><section id="wps" aria-labelledby="wps-h"><h2 id="wps-h">Step 3 · Build WPS and get the static data</h2>
+<div class="code reveal"><div class="code-head"><span>build WPS</span><button type="button" class="copy">Copy</button></div><pre><code>. ~/wrf-env.sh
+cd $HOME &amp;&amp; git clone https://github.com/openwfm/WPS.git
+cd WPS
+export WRF_DIR=$HOME/WRF-SFIRE
+./configure                                <span class="c"> # a "serial" option is fine for WPS, e.g. "Linux x86_64, gfortran (serial)"</span>
+./compile &gt;&amp; compile_wps.log
+ls -l geogrid.exe ungrib.exe metgrid.exe   <span class="c"> # all three must exist</span>
+<span class="c"># static geography (terrain, land use, ...): the standard WPS_GEOG data set, ~30 GB unpacked</span>
+<span class="c">#   https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html</span>
+<span class="c"># OpenWFM also hosts a WPS_GEOG bundle with fire fuel/topography data:</span>
+<span class="c">#   wget https://demo.openwfm.org/web/wrfx/WPS_GEOG.tbz &amp;&amp; tar xjf WPS_GEOG.tbz</span></code></pre></div>
+<p>For WRF-SFIRE, geogrid also writes the fire-mesh fields <code>NFUEL_CAT</code> (fuel category) and <code>ZSF</code> (terrain) at the
+refined resolution (entries with <code>subgrid = yes</code> in <code>GEOGRID.TBL</code>). This project ships its own Forest Park versions:
+the 30 m WUI fuel map and 10 m 3DEP terrain as geogrid tiles, plus a <code>GEOGRID.TBL</code> snippet and a <code>namelist.wps</code> for the
+three nested domains (<a href="../terrain/index.html">Section 03</a>; files in <code>wrf/</code> and <code>data/processed/geogrid_*</code> of the project).</p>
+</section><section id="test" aria-labelledby="test-h"><h2 id="test-h">Step 4 · First test: the idealized hill</h2>
+<div class="code reveal"><div class="code-head"><span>run the em_fire test</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># smallest test: the idealized hill case (no WPS, no input data)</span>
+cd $HOME/WRF-SFIRE/test/em_fire
+ls                                       <span class="c"> # namelist.input, namelist.fire, input_sounding, ideal.exe, wrf.exe</span>
+grep -n "ibeh" namelist.fire             <span class="c"> # ibeh = 2 (Balbi) in this file: set ibeh = 1 for Rothermel</span>
+./ideal.exe                              <span class="c"> # writes wrfinput_d01</span>
+mpirun -np 4 ./wrf.exe                   <span class="c"> # or srun inside a job, see below</span>
+tail -n 3 rsl.out.0000                   <span class="c"> # must end with "SUCCESS COMPLETE WRF"</span>
+ncdump -h wrfout_d01_* | grep -E "LFN|TIGN_G|FGRNHFX|FXLONG"</code></pre></div>
+<p>If this works, the compiler, MPI and NetCDF are all good. Sections 08–11 then set up real Forest Park runs.</p>
+</section><section id="jobs" aria-labelledby="jobs-h"><h2 id="jobs-h">Step 5 · Running through the batch system</h2>
+<p>Never run <code>wrf.exe</code> on a login node. A Slurm script for the real case:</p>
+<div class="code reveal"><div class="code-head"><span>run_wrf.slurm</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
+#SBATCH --job-name=sfire-forestpark
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=64             <span class="c"> # cores per node on your cluster</span>
+#SBATCH --time=08:00:00
+#SBATCH --partition=compute              <span class="c"> # ask your admins</span>
+#SBATCH --output=sfire_%j.log
+. ~/wrf-env.sh
+cd $SLURM_SUBMIT_DIR                      <span class="c"> # the run directory (see Section 08)</span>
+srun ./real.exe                           <span class="c"> # or run real.exe in a separate, smaller job</span>
+grep -q "SUCCESS COMPLETE REAL" rsl.error.0000 || { echo "real.exe failed"; exit 1; }
+mv rsl.out.0000 rsl.real.out.0000
+srun ./wrf.exe
+tail -n 2 rsl.error.0000</code></pre></div>
+<p>Submit with <code>sbatch run_wrf.slurm</code>, follow with <code>squeue -u $USER</code> and <code>tail -f rsl.error.0000</code>. On PBS systems:</p>
+<div class="code reveal"><div class="code-head"><span>run_wrf.pbs</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
+<span class="c">#PBS -N sfire-forestpark</span>
+<span class="c">#PBS -l select=2:ncpus=36:mpiprocs=36</span>
+<span class="c">#PBS -l walltime=08:00:00</span>
+<span class="c">#PBS -j oe</span>
+. ~/wrf-env.sh
+cd $PBS_O_WORKDIR
+mpiexec ./wrf.exe</code></pre></div>
+<ul>
+<li><strong>How many cores?</strong> WRF splits each domain into patches; each MPI rank needs at least ~10 × 10 atmospheric cells on the
+smallest domain it computes. For the Forest Park nests (d03 is 108 × 108 cells) that means up to about 100 ranks are useful.
+Measure: run 10 simulated minutes with 32, 64 and 128 ranks and compare the "Timing for main" lines in <code>rsl.error.0000</code>.</li>
+<li><strong>Storage.</strong> A 9-hour run with 15-minute history on d03 and the fire mesh writes several GB. Run in <code>$SCRATCH</code>, not <code>$HOME</code>.</li>
+<li><strong>Logs.</strong> Every rank writes <code>rsl.out.NNNN</code> and <code>rsl.error.NNNN</code>; rank 0 has the summary. Fire messages
+(ignitions, burned area, max spread rate) appear there when <code>fire_print_msg ≥ 1</code>.</li>
+</ul>
+</section><section id="trouble" aria-labelledby="trouble-h"><h2 id="trouble-h">Common build and run errors</h2><div class="table-wrap reveal"><table class=""><thead><tr><th>Symptom</th><th>Likely cause and fix</th></tr></thead><tbody><tr><td><code>configure</code> says NetCDF not found, or <code>netcdf.inc</code> missing</td><td><code>$NETCDF</code> must hold both C and Fortran libraries: <code>ls $NETCDF/include/netcdf.inc $NETCDF/lib/libnetcdff*</code>.</td></tr><tr><td>Undefined references to <code>nf_</code> or <code>H5</code> symbols</td><td>Libraries built with a different compiler, or HDF5 missing from the link. Rebuild the libraries with the same compilers; check <code>nf-config --flibs</code>.</td></tr><tr><td>gfortran 10+: <em>Rank mismatch</em> / <em>Type mismatch</em> errors (mostly in WPS)</td><td>Add <code>-fallow-argument-mismatch</code> to the Fortran flags (<code>FFLAGS</code>/<code>F77FLAGS</code>) in <code>configure.wps</code> (recent WRF configure scripts add it themselves).</td></tr><tr><td>Preprocessor errors on comment lines</td><td>From the OpenWFM wiki: run <code>./clean -a</code>, <code>./configure</code>, add <code>-nostdinc</code> to the CPP line in <code>configure.wrf</code> (or <code>configure.wps</code>), recompile.</td></tr><tr><td><code>ungrib.exe</code> not built</td><td>JasPer/libpng/zlib not found: set <code>JASPERLIB</code>/<code>JASPERINC</code> before <code>./configure</code> in WPS.</td></tr><tr><td>Segmentation fault at start of <code>wrf.exe</code></td><td>Stack too small: <code>ulimit -s unlimited</code> in the job script; also try fewer ranks for a small domain.</td></tr><tr><td>“fire mesh refinement ratio must be positive”</td><td><code>sr_x</code>/<code>sr_y</code> must be &gt; 0 on the domain with <code>ifire</code> ≠ 0.</td></tr><tr><td>“fire_upwinding value not supported, 3 recommended”</td><td>With <code>ifire = 1</code> only values 0–4 (and 9, mapped to 3) are allowed.</td></tr><tr><td>“fmoist_run=T requires fire_fmc_read=0”</td><td>Set <code>fire_fmc_read = 0</code> when the moisture model is on.</td></tr><tr><td>CFL errors / NaNs after the fire starts</td><td>Atmospheric time step too long for d03, or very steep terrain: shorten <code>time_step</code>, keep <code>w_damping = 1</code>, smooth the terrain.</td></tr></tbody></table></div></section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">References and further reading</h2><ol class="refs"><li>OpenWFM wiki: <a href="https://wiki.openwfm.org/wiki/Running_WRF-SFIRE_with_real_data_in_the_WRFx_system">Running WRF-SFIRE with real data in the WRFx system</a> and the <a href="https://wiki.openwfm.org/wiki/WRF-SFIRE_user_guide">WRF-SFIRE user guide</a>.</li><li>WRF compilation tutorial (library versions, tests): <a href="https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compilation_tutorial.php">www2.mmm.ucar.edu/wrf/OnLineTutorial/compilation_tutorial.php</a></li><li>WPS static geography data: <a href="https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html">get_sources_wps_geog</a></li><li>WRF-SFIRE source: <a href="https://github.com/openwfm/WRF-SFIRE">github.com/openwfm/WRF-SFIRE</a>; WPS: <a href="https://github.com/openwfm/WPS">github.com/openwfm/WPS</a></li></ol></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../wrf-sfire-math/index.html"><small>← Previous</small><b>06 · The math of WRF-SFIRE</b></a>
+      <a class="next" href="../single-ignition/index.html"><small>Next →</small><b>08 · A single point of ignition</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Leif_Erikson_Drive,_Forest_Park,_Portland_Oregon_01.jpg">“Leif Erikson Drive, Forest Park, Portland Oregon 01”</a> by Joe Mabel, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+</body>
+</html>

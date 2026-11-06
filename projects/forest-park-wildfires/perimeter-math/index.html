@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 09: Ignition from a perimeter: the math. Building a fire history from an observed perimeter and replaying it so the atmosphere spins up. With an interactive replay lab.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Ignition from a perimeter: the math · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../vendor/katex/katex.min.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">09 · Ignition from a perimeter: the math</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/bg/banner-isochrones.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="spread" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 09 · WRF-SFIRE handbook · theory</p>
+        <h1>Ignition from a perimeter: the math</h1>
+        <p class="lede">Starting a simulation from a fire that is already burning: build a fire-arrival history that ends at the observed perimeter and replay it so the atmosphere spins up.</p>
+      </div>
+      <span class="credit">Background: Forest Park terrain from USGS 3DEP, tinted with this project's data</span>
+    </header>
+
+    <main>
+      <section class="block" id="perimeter-math" aria-label="Ignition from a perimeter: the math">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#problem">The problem</a><a href="#history">Fire history</a><a href="#replay">Replay + lab</a><a href="#forest3d">3-D</a><a href="#variants">Two code paths</a><a href="#refs">References</a></nav><section id="problem" aria-labelledby="problem-h"><h2 id="problem-h">The problem: starting from a fire that is already burning</h2>
+<p>Point ignitions are fine for "what if" studies, but a forecast for a real fire starts hours or days after ignition, when all you have is
+an <strong>observed perimeter</strong>: a polygon from an infrared flight, a satellite, or crews on the ground. Two things make "just ignite the
+whole polygon" wrong:</p>
+<ul>
+<li>The <strong>atmosphere has not seen the fire</strong>. A real fire has built a plume, an in-draft and its own local winds over hours. Starting
+cold, the model's first minutes would have the right fire in the wrong air.</li>
+<li>Igniting a large area at once releases the heat of hours of burning in a few minutes: an unrealistic burst that triggers a spurious
+convective bubble. (The lab below shows how large that burst is.)</li>
+</ul>
+<p>The approach developed for WRF-SFIRE (Mandel et al., 2012, 2014; used for the 2007 Santa Ana fires by Kochanski et al., 2013) is to
+<strong>build an artificial fire history</strong> that ends exactly at the observed perimeter, and to <strong>replay</strong> it in the coupled
+model: during a spin-up period the fire area is prescribed, but its heat goes into the atmosphere normally, so the air develops the fire's
+circulation. When the replay ends at the perimeter time, the model takes over and spreads the fire on its own.</p>
+</section><section id="history" aria-labelledby="history-h"><h2 id="history-h">Building a fire history from a perimeter</h2>
+<p>The history is a fire-arrival-time field \(T(\mathbf x)\) on the fire mesh. Given an ignition point \(\mathbf x_{ig}\) at time
+\(t_{ig}\) and the perimeter \(\Gamma\) observed at \(t_p\), it must satisfy</p>
+<div class="eq reveal" id="eq-1">$$\begin{aligned} T(\mathbf x_{ig}) &= t_{ig} && \text{the history starts at the ignition} \\ T(\mathbf x) &= t_p && \text{on the observed perimeter } \Gamma \\ t_{ig} \le T(\mathbf x) &\le t_p && \text{inside } \Gamma\text{, increasing away from } \mathbf x_{ig} \end{aligned} \tag{1}$$</div>
+<p>Between the ignition and the perimeter there is no data, so \(T\) has to be interpolated. The construction used in the lab and in
+the script of <a href="../perimeter-setup/index.html">Section 10</a> walks along rays from the ignition point: a point a fraction of the way
+from the ignition to the perimeter (along its ray) burned that fraction of the way through the time window,</p>
+<div class="eq reveal" id="eq-2">$$T(\mathbf x) = t_{ig} + (t_p - t_{ig})\,\underbrace{\frac{r(\mathbf x)}{R(\mathbf x)}}_{\text{fraction of the way along the ray}}, \qquad r = \lVert\mathbf x - \mathbf x_{ig}\rVert \tag{2}$$<p class="eq-caption"><span class="eq-n">Eq. (2)</span>R = distance from the ignition to where the ray through x first crosses the perimeter beyond x. The isochrones are scaled copies of the perimeter, so for a star-shaped fire the burned area grows like (t − t_ig)², as for a fire spreading at constant speed.</p></div>
+<p>A first version of this page used the distance to the <em>nearest</em> point of the perimeter instead of the distance along the ray. In an
+elongated fire that pushes most of the interior close to \(t_p\) (about 45% of the area igniting in the last ten minutes of an hour), so the
+heat arrives in a late burst, which is the thing the spin-up is meant to avoid. The ray version spreads it out.</p>
+<p>The papers construct the history in the same spirit. Better choices weight the interpolation by the expected spread rate, so that
+\(S\,\lVert\nabla T\rVert \approx 1\) as the level-set solution would give (faster up-slope and down-wind), and later work estimates \(T\)
+directly from satellite active-fire detections (Farguell et al., 2021). Any of these gives a field that can be replayed the same way.</p>
+<p>Outside the perimeter the history continues past \(t_p\). This script extends it as \(T = t_p + d/S_{ext}\) with a nominal speed
+\(S_{ext}\) (0.3 m/s). That keeps the level-set function below smooth and distance-like across \(\Gamma\) at the hand-over; the model
+never uses those times, because the replay stops at \(t_p\).</p>
+</section><section id="replay" aria-labelledby="replay-h"><h2 id="replay-h">Replaying it in the model</h2>
+<p>During the replay, SFIRE does not solve the level-set equation. It sets the level-set function directly from the history, every time step:</p>
+<div class="eq reveal" id="eq-3">$$\psi(\mathbf x, t) = T(\mathbf x) - t, \qquad t \le t_p \tag{3}$$<p class="eq-caption"><span class="eq-n">Eq. (3)</span>module_fr_sfire_model.F: “replay, setting the level set function”: lfn(i,j) = tign(i,j) − time_start, and the fuel fraction is recomputed from tign.</p></div>
+<p>So the burning region \(\{\psi \le 0\} = \{T \le t\}\) grows along the history, the fuel burns out behind it with the usual
+\(F = e^{-(t-T)/T_f}\), and the heat fluxes \(\phi_h, \phi_q\) of Section 06 heat the air. At \(t = t_p\) the state is exactly the observed
+perimeter, \(\psi(\cdot, t_p) = T - t_p\), negative inside and positive outside; from then on the level-set equation runs with the model's winds.</p>
+<dl class="where"><dt>\(t_{ig}\)</dt><dd>ignition time (from reports, or the first satellite detection), seconds after the run starts</dd><dt>\(t_p\)</dt><dd>perimeter time = <code>fire_perimeter_time</code></dd><dt>\(T(\mathbf x)\)</dt><dd>the arrival-time field written into <code>TIGN_G</code> in <code>wrfinput</code></dd></dl>
+<h3>Try it: perimeter replay</h3>
+<p class="lead-note">Drag the ignition star or the perimeter's white vertices. The colours show the replay (fuel burning out behind the growing
+front), the level-set function \(T - t\), or the arrival time with 10-minute isochrones. The chart compares the heat released into the
+atmosphere by the replay with simply igniting the whole perimeter at \(t_p\).</p>
+<div class="lab reveal" data-lab="perimeter"></div>
+</section><section id="forest3d" aria-labelledby="forest3d-h"><h2 id="forest3d-h">The replay on Forest Park, in 3-D</h2><div class="sim3d reveal" data-sim3d data-root="../" data-preset="perimeter" data-lock></div><p class="lead-note">A 51 ha perimeter near Skyline is replayed for two hours from its fire-arrival history (ψ = T − t), then the level-set equation takes over under the east wind. The full simulator with every scenario is in <a href="../fire-3d/index.html">Section 14</a>.</p></section><section id="variants" aria-labelledby="variants-h"><h2 id="variants-h">Two code paths, two ways to start from a perimeter</h2><div class="table-wrap reveal"><table class=""><thead><tr><th></th><th>SFIRE (ifire = 1)</th><th>NCAR WRF-Fire (ifire = 2)</th></tr></thead><tbody><tr><td>Input</td><td><code>TIGN_G</code> in wrfinput (arrival time, s)</td><td><code>LFN_HIST</code> in wrfinput (level-set function of the perimeter)</td></tr><tr><td>Switch</td><td><code>fire_perimeter_time</code> &gt; 0</td><td><code>fire_is_real_perim = .true.</code></td></tr><tr><td>What happens</td><td>Replay of the history until <code>fire_perimeter_time</code>, with heat release (atmospheric spin-up), then normal spread</td><td>At the start time of ignition 1, LFN is set to LFN_HIST and spread continues (no replay)</td></tr><tr><td>Spin-up</td><td>Yes, built in</td><td>Do it yourself, e.g. a separate earlier run</td></tr></tbody></table></div></section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">References</h2><ol class="refs"><li>Mandel, J., Beezley, J. D., Kochanski, A. K., Kondratenko, V. Y., &amp; Kim, M. (2012). Assimilation of perimeter data and coupling with fuel moisture in a wildland fire–atmosphere DDDAS. <em>Procedia Computer Science</em>, 9, 1100–1109 (ICCS 2012).</li><li>Mandel, J., et al. (2014). Recent advances and applications of WRF–SFIRE. <em>Natural Hazards and Earth System Sciences</em>, 14, 2829–2845. <a href="https://doi.org/10.5194/nhess-14-2829-2014">doi:10.5194/nhess-14-2829-2014</a></li><li>Kochanski, A. K., Jenkins, M. A., Mandel, J., Beezley, J. D., &amp; Krueger, S. K. (2013). Real time simulation of 2007 Santa Ana fires. <em>Forest Ecology and Management</em>, 294, 136–149.</li><li>Farguell, A., Mandel, J., Haley, J., Mallia, D. V., Kochanski, A., &amp; Hilburn, K. (2021). Machine learning estimation of fire arrival time from Level-2 Active Fires satellite data. <em>Remote Sensing</em>, 13(11), 2203.</li><li>Jiménez, P. A., Muñoz-Esparza, D., &amp; Kosović, B. (2018). A high resolution coupled fire–atmosphere forecasting system to minimize the impacts of wildland fires: applications to the Chimney Tops II wildland event. <em>Atmosphere</em>, 9(5), 197.</li></ol></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../single-ignition/index.html"><small>← Previous</small><b>08 · A single point of ignition</b></a>
+      <a class="next" href="../perimeter-setup/index.html"><small>Next →</small><b>10 · Ignition from a perimeter: setup and code</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+  <script src="../perimeter.js"></script>
+  <script src="../forest3d.js"></script>
+  <script defer src="../vendor/katex/katex.min.js"></script>
+  <script defer src="../vendor/katex/contrib/auto-render.min.js"></script>
+  <script defer src="../math.js"></script>
+</body>
+</html>

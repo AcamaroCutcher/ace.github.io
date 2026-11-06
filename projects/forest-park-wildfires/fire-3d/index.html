@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 14: 3-D Forest Park fire simulator. The level-set fire model running on your GPU over the real Forest Park terrain and fuel map: single, multiple, line and perimeter ignitions, or click to start your own.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>3-D Forest Park fire simulator · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../vendor/katex/katex.min.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">14 · 3-D Forest Park fire simulator</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner live">
+      <div class="firemap " data-root="../" role="img" aria-label="Animation: 60 simulated fires igniting one after another in Forest Park and spreading west under a 20 mph east wind, drawn on the WUI fuel map."><canvas></canvas><span class="hud" data-hud aria-live="off"></span><button type="button" class="play" data-play>Pause</button></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 14 · WRF-SFIRE handbook · interactive</p>
+        <h1>3-D Forest Park fire simulator</h1>
+        <p class="lede">A fire spreading over the real Forest Park in 3-D, computed live by the level-set equation with SFIRE's spread formula on the park's terrain and fuel map.</p>
+      </div>
+      <span class="credit">Background: 60 fires from this project's spread model on the WUI fuel map. It switches with light/dark mode.</span>
+    </header>
+
+    <main>
+      <section class="block" id="fire-3d" aria-label="3-D Forest Park fire simulator">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#sim">Simulator</a><a href="#scenarios">Scenarios</a><a href="#what">What it solves</a><a href="#controls">Controls</a><a href="#refs">Data</a></nav><section id="sim" aria-labelledby="sim-h"><h2 id="sim-h">Forest Park in 3-D</h2>
+<p>The fire below spreads over the real Forest Park: USGS 3DEP terrain at 30 m, draped with this project's wildland–urban fuel map
+(<a href="../fuel-maps/index.html">Section 02</a>). Your graphics card solves the level-set equation of
+<a href="../wrf-sfire-math/index.html">Section 06</a> on all 428,160 cells of the fire mesh, with SFIRE's spread formula and the Anderson-13
+coefficients for the chosen weather. Pick a scenario, change the wind, drag to fly around, and click anywhere on the terrain to start a new fire.</p>
+<div class="sim3d reveal" data-sim3d data-root="../" data-preset="single"></div>
+</section><section id="scenarios" aria-labelledby="scenarios-h"><h2 id="scenarios-h">The scenarios</h2><div class="table-wrap reveal"><table class=""><thead><tr><th>Scenario</th><th>What it shows</th><th>Where it is explained</th></tr></thead><tbody><tr><td>Single ignition</td><td>The Section 08 point at the park's south-east end, above NW Portland, the start that reached the most buildings in the 2,000-fire ensemble.</td><td><a href="../single-ignition/index.html">Section 08</a></td></tr><tr><td>Five ignitions, 10 min apart</td><td>The five highest-impact starts from Section 05, ignited one after another; fronts that meet merge.</td><td><a href="../multiple-ignitions/index.html">Section 11</a></td></tr><tr><td>Line ignition</td><td>1.2 km of fire edge lit progressively at 0.5 m/s along the park's east side above US-30.</td><td><a href="../multiple-ignitions/index.html#five">Section 11</a></td></tr><tr><td>Perimeter replay</td><td>A 51 ha perimeter near Skyline replayed for 2 hours (ψ = T − t, Eq. 3 of Section 09), then the model spreads it on its own.</td><td><a href="../perimeter-math/index.html">Sections 09–10</a></td></tr><tr><td>Your own</td><td>An empty park: click to ignite, as many times as you like (up to 24 ignitions).</td><td>–</td></tr></tbody></table></div></section><section id="what" aria-labelledby="what-h"><h2 id="what-h">What is being solved</h2>
+<div class="eq reveal" id="eq-1">$$\begin{aligned} \frac{\partial\psi}{\partial t} + S(\mathbf x,\mathbf n)\,\lVert\nabla\psi\rVert &= 0 \\[4pt] S(\mathbf x,\mathbf n) &= R_0 + \phi_W\!\left(\lVert\mathbf U\rVert\right)\max(0,\cos\theta_U) + \phi_S\!\left(\lVert\nabla z\rVert\right)\max(0,\cos\theta_z) \end{aligned} \tag{1}$$<p class="eq-caption"><span class="eq-n">Eq. (1)</span>The level-set equation with SFIRE's default spread rate (fire_advection = 1), as in Section 06. Upwind differences (fire_upwinding = 4), Heun time steps (fire_back_weight = 0.5) at the CFL limit 0.45 Δx / S_max, ψ only decreasing (fire_grows_only = 1).</p></div>
+<ul>
+<li><strong>Grid.</strong> 640 × 669 cells of 30 m (19.2 × 20.1 km), the fire mesh of the planned WRF-SFIRE domain d03. The fire state lives in two
+floating-point textures (ψ and arrival time), updated by two shader passes per time step.</li>
+<li><strong>Fuel and terrain.</strong> Anderson-13 categories from the WUI fuel map; category 14 (roads, buildings, water) does not burn and acts as a
+wall. Slope from the 30 m DEM. The 3-D surface is drawn at 60 m with 1–4× vertical exaggeration.</li>
+<li><strong>Weather.</strong> The two scenarios of <a href="../fire-weather/index.html">Section 04</a>: the dry east wind (20 mph from 84°, 1-h fuel moisture 4%)
+and a northwest summer afternoon (9 mph from 317°, 7%). With "mid-flame wind" on, the 6.1 m wind is multiplied by each fuel's <code>windrf</code>,
+as SFIRE does with <code>fire_use_windrf = 1</code>.</li>
+<li><strong>Burnout, glow and smoke.</strong> Behind the front the colour follows the fuel left, \(e^{-(t-T)/T_f}\) (Eq. 11 of Section 06), slowed to
+at least 90 s so grass fires stay visible. Glow and smoke are drawn from the burning cells; smoke drifts with the wind for the picture, it is not
+a dispersion model.</li>
+</ul>
+<div class="callout warn reveal"><b>What it is not</b><p>This is the fire half of WRF-SFIRE only, with a steady, uniform wind. It has no atmosphere: no fire-induced winds, no plume, no terrain-channelled flow, no spotting and no crown fire. A real WRF-SFIRE run (Section 08) adds all of the atmospheric feedback. Treat the shapes and speeds as a way to see the model's fire physics on Forest Park, not as a forecast.</p></div>
+</section><section id="controls" aria-labelledby="controls-h"><h2 id="controls-h">Controls and tips</h2>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Action</th><th>Mouse / trackpad</th><th>Touch</th></tr></thead><tbody><tr><td>Orbit</td><td>drag</td><td>drag with one finger</td></tr><tr><td>Zoom</td><td>scroll</td><td>pinch</td></tr><tr><td>Pan</td><td>right-drag or shift-drag</td><td>–</td></tr><tr><td>Ignite</td><td>click the terrain</td><td>tap the terrain</td></tr><tr><td>Jump straight down</td><td>Top view button</td><td>Top view button</td></tr></tbody></table></div>
+<ul>
+<li>Raise the playback speed (simulated minutes per second) to watch hours of spread; lower it to see the front move cell by cell.</li>
+<li>Turn the vertical exaggeration up to see how fires run up the ravines on the park's east face in the east wind.</li>
+<li>Try the northwest breeze: most fires barely spread through the closed timber litter of the park, the reason the east-wind days matter.</li>
+<li>The simulation needs WebGL 2 with floating-point render targets (any recent desktop browser, and most phones). Performance depends on the GPU;
+on integrated graphics keep the playback at 10–20 min/s.</li>
+</ul>
+</section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">Data and method</h2><ol class="refs"><li>Terrain: USGS 3DEP, resampled to the 30 m fuel grid (Section 03). Fuel: LANDFIRE LF2025 FBFM13 inside the park, NLCD-based stand-in fuels outside it (Section 02).</li><li>Spread: Rothermel (1972) with the Anderson (1982) fuel models, in the form of WRF-SFIRE's <code>fire_ros_cawfe</code>; coefficients computed with this project's <code>rothermel.py</code>.</li><li>Level-set method: Osher &amp; Sethian (1988); WRF-SFIRE: Mandel, Beezley &amp; Kochanski (2011), <em>Geoscientific Model Development</em> 4, 591–610.</li></ol></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../kml-3d/index.html"><small>← Previous</small><b>13 · From NetCDF to KML/KMZ and 3-D animation</b></a>
+      <a class="next" href="../index.html"><small>Next →</small><b>Back to project home</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+  <script src="../fire-map.js"></script>
+  <script src="../forest3d.js"></script>
+  <script defer src="../vendor/katex/katex.min.js"></script>
+  <script defer src="../vendor/katex/contrib/auto-render.min.js"></script>
+  <script defer src="../math.js"></script>
+</body>
+</html>

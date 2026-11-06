@@ -1,0 +1,16 @@
+{
+ "bbox": {
+  "north": 45.6605110168457,
+  "south": 45.47963333129883,
+  "east": -122.64385986328125,
+  "west": -122.8902816772461
+ },
+ "width": 641,
+ "height": 672,
+ "pixel_m": 30.0,
+ "simulation_start": "2020-09-08T00:00:00Z",
+ "arrival_seconds_per_count": 1.372878725165563,
+ "arrival_note": "pixel = 1 + arrival_s / arrival_seconds_per_count; 0 = never burns",
+ "terrain_min_m": 1.131554365158081,
+ "terrain_max_m": 390.2663269042969
+}

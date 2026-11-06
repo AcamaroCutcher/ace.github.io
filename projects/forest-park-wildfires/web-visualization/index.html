@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 12: Web visualization with WRFx. wrfxpy, wrfxweb and wrfxctrl: run jobs, post-process wrfout and show fires in the browser, or build a small viewer of your own.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Web visualization with WRFx · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">12 · Web visualization with WRFx</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/photos/wildwood.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 12 · WRF-SFIRE handbook · visualize</p>
+        <h1>Web visualization with WRFx</h1>
+        <p class="lede">The WRFx system that runs and shows WRF-SFIRE forecasts in a browser, and a minimal viewer you can host yourself.</p>
+      </div>
+      <span class="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Forest_park_wildwood_trail_lazy_bend_P3861.jpeg">EncMstr</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons</span>
+    </header>
+
+    <main>
+      <section class="block" id="web-visualization" aria-label="Web visualization with WRFx">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#wrfx">WRFx</a><a href="#install">wrfxpy</a><a href="#post">Post-processing</a><a href="#web">wrfxweb</a><a href="#own">Own viewer</a><a href="#refs">References</a></nav><section id="wrfx" aria-labelledby="wrfx-h"><h2 id="wrfx-h">WRFx: the OpenWFM web system</h2>
+<p>WRFx is the system the WRF-SFIRE developers use to run forecasts for real fires and show them in a browser. It has three parts
+(OpenWFM wiki, <em>Running WRF-SFIRE with real data in the WRFx system</em>):</p>
+<div class="diagram reveal"><svg viewBox="0 0 900 200" role="img" aria-label="WRFx: wrfxctrl submits jobs to wrfxpy on the cluster, wrfxpy runs WPS and WRF-SFIRE, post-processes and uploads to wrfxweb, which users view in a browser.">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--text-secondary)"/></marker></defs>
+<rect class="box" x="20" y="50" width="230" height="100" rx="12"/><text x="40" y="82" style="font-weight:700">wrfxctrl</text><text class="muted" x="40" y="106">web form: ignition point,</text><text class="muted" x="40" y="126">time, domains → "Ignite"</text>
+<rect class="box atm" x="335" y="50" width="230" height="100" rx="12"/><text x="355" y="82" style="font-weight:700">wrfxpy (on the cluster)</text><text class="muted" x="355" y="106">downloads GRIB, runs WPS,</text><text class="muted" x="355" y="126">WRF-SFIRE, post-processes</text>
+<rect class="box fire" x="650" y="50" width="230" height="100" rx="12"/><text x="670" y="82" style="font-weight:700">wrfxweb (web server)</text><text class="muted" x="670" y="106">map viewer with time slider,</text><text class="muted" x="670" y="126">layers, colour bars</text>
+<path class="arrow flow" d="M252 100 L333 100"/><path class="arrow flow" d="M567 100 L648 100"/>
+<text class="muted" x="580" y="176">ssh / rsync "shuttle"</text><text class="muted" x="262" y="176">job JSON</text>
+</svg></div>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Part</th><th>What it is</th><th>Repository</th></tr></thead><tbody><tr><td>wrfxpy</td><td>Python system on the cluster: fetches weather (HRRR, NAM, GFS, NARR, CFSR), builds namelists, runs WPS / real / WRF-SFIRE through the queue, post-processes wrfout to geolocated PNG/KMZ and uploads them.</td><td><a href="https://github.com/openwfm/wrfxpy">openwfm/wrfxpy</a></td></tr><tr><td>wrfxweb</td><td>Static web viewer for the uploaded products (a public demo runs at <a href="https://demo.openwfm.org">demo.openwfm.org</a>).</td><td><a href="https://github.com/openwfm/wrfxweb">openwfm/wrfxweb</a></td></tr><tr><td>wrfxctrl</td><td>Flask web app to submit and monitor jobs (start a fire from a map click).</td><td><a href="https://github.com/openwfm/wrfxctrl">openwfm/wrfxctrl</a></td></tr></tbody></table></div>
+</section><section id="install" aria-labelledby="install-h"><h2 id="install-h">Install wrfxpy and run a job</h2>
+<div class="code reveal"><div class="code-head"><span>wrfxpy</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># on the cluster, in your home directory</span>
+git clone https://github.com/openwfm/wrfxpy &amp;&amp; cd wrfxpy
+conda create -n wrfx python=3.8 &amp;&amp; conda activate wrfx
+conda install -c conda-forge gdal -y
+conda install -c conda-forge netcdf4 h5py pyhdf pygrib f90nml lxml simplekml pytz pandas scipy -y
+conda install -c conda-forge basemap paramiko dill psutil flask wgrib2 -y
+pip install MesoPy python-cmr shapely==2
+cp etc/conf.json.initial etc/conf.json       <span class="c"> # paths to WPS, WRF-SFIRE, WPS_GEOG, workspace, "qsys"</span>
+cp etc/tokens.json.initial etc/tokens.json   <span class="c"> # API tokens (MesoWest, NASA Earthdata) if you use those sources</span>
+<span class="c">#   etc/clusters.json: how to submit jobs on your cluster (qsub/sbatch command, script template)</span>
+./simple_forecast.sh                         <span class="c"> # answers questions, writes jobs/experiment.json</span>
+./forecast.sh jobs/experiment.json &gt;&amp; logs/experiment.log &amp;</code></pre></div>
+<p>A job is a JSON file. This one reproduces Section 08's Forest Park case (keys as in wrfxpy's <code>tests/input-HRRR.json</code>; wrfxpy writes the
+namelists itself from its templates in <code>etc/nlists/</code>, so put Forest Park specifics such as the fuel source into those templates or
+<code>etc/vtables/geo_vars.json</code>):</p>
+<div class="code reveal"><div class="code-head"><span>jobs/forestpark.json</span><button type="button" class="copy">Copy</button></div><pre><code>{
+  "job_id": "forestpark-2020-09-08",
+  "grib_source": "HRRR",
+  "start_utc": "2020-09-08_00:00:00",
+  "end_utc": "2020-09-08_09:00:00",
+  "num_nodes": 2, "ppn": 64, "wall_time_hrs": 8,
+  "wps_namelist_path": "etc/nlists/default.wps",
+  "wrf_namelist_path": "etc/nlists/default.input",
+  "fire_namelist_path": "etc/nlists/default.fire",
+  "emissions_namelist_path": "etc/nlists/default.fire_emissions",
+  "domains": {
+    "1": {"cell_size": [1350, 1350], "domain_size": [101, 101], "center_latlon": [45.5692, -122.7697],
+          "truelats": [45.57, 45.57], "stand_lon": -122.7697, "time_step": 6, "history_interval": 60,
+          "geog_res": "30s", "subgrid_ratio": [0, 0]},
+    "2": {"parent_id": 1, "parent_cell_size_ratio": 3, "parent_time_step_ratio": 3,
+          "parent_start": [29, 29], "parent_end": [73, 73], "history_interval": 30,
+          "geog_res": ".3s", "subgrid_ratio": [0, 0]},
+    "3": {"parent_id": 2, "parent_cell_size_ratio": 3, "parent_time_step_ratio": 3,
+          "parent_start": [49, 49], "parent_end": [85, 85], "history_interval": 15,
+          "geog_res": ".3s", "subgrid_ratio": [5, 5]}
+  },
+  "ignitions": {"3": [{"time_utc": "2020-09-08_01:00:00", "latlon": [45.53356, -122.71382], "duration_s": 30}]},
+  "postproc": {"3": ["T2", "WINDSPD", "WINDVEC", "FIRE_AREA", "FGRNHFX", "F_ROS", "SMOKE_INT"],
+               "description": "Forest Park, Labor Day 2020 east wind", "shuttle": "incremental"}
+}</code></pre></div>
+</section><section id="post" aria-labelledby="post-h"><h2 id="post-h">Post-process an existing run for the viewer</h2>
+<div class="code reveal"><div class="code-head"><span>postprocess.sh</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># turn an existing wrfout into the web viewer's products (PNG + KMZ + a JSON catalog)</span>
+cd wrfxpy &amp;&amp; conda activate wrfx
+./postprocess.sh /path/to/wrfout_d03_2020-09-08_00:00:00 FGRNHFX,FIRE_AREA,F_ROS,T2,WINDVEC products/forestpark
+<span class="c">#  usage (src/vis/postprocess.py): &lt;wrfout_path&gt; &lt;var_instr&gt; &lt;prefix&gt; [skip]</span>
+<span class="c">#  var_instr: comma-separated variable names, or @file.json with per-variable options</span></code></pre></div>
+<p>Variables wrfxpy knows (from <code>src/vis/var_wisdom.py</code>) include <code>T2</code>, <code>PSFC</code>, <code>WINDSPD</code>, <code>WINDVEC</code>,
+<code>FIRE_AREA</code>, <code>FGRNHFX</code> (log heat flux), <code>F_ROS</code>, <code>FLINEINT</code>, <code>FMC_G</code>, <code>NFUEL_CAT</code>, <code>ZSF</code> and
+<code>SMOKE_INT</code> (vertically integrated smoke). Each is rendered as a transparent PNG with a colour bar and packed into KMZ, plus a
+JSON manifest that wrfxweb reads.</p>
+</section><section id="web" aria-labelledby="web-h"><h2 id="web-h">Set up wrfxweb</h2>
+<div class="code reveal"><div class="code-head"><span>wrfxweb and the shuttle</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># on the web server (passwordless ssh from the cluster)</span>
+git clone https://github.com/openwfm/wrfxweb.git
+cp wrfxweb/etc/conf.json.template wrfxweb/etc/conf.json
+<span class="c">#   "url_root": "https://your.server/your_id", "organization": "...", "flags": []</span>
+mkdir wrfxweb/fdds/simulations               <span class="c"> # serve wrfxweb/fdds over https (nginx)</span>
+<span class="c"># back on the cluster, in wrfxpy/etc/conf.json, tell wrfxpy where to upload:</span>
+<span class="c">#   "shuttle_ssh_key": "/path/to/id_rsa", "shuttle_remote_user": "your_id",</span>
+<span class="c">#   "shuttle_remote_host": "your.server",</span>
+<span class="c">#   "shuttle_remote_root": "/home/your_id/wrfxweb/fdds/simulations",</span>
+<span class="c">#   "shuttle_lock_path": "/tmp/your_id"</span></code></pre></div>
+<p>The OpenWFM team hosts accounts on <code>demo.openwfm.org</code> on request (see the wiki); otherwise any Linux server with nginx and https works.
+2 cores and 4 GB RAM are enough; simulations take several GB each.</p>
+</section><section id="own" aria-labelledby="own-h"><h2 id="own-h">Or: a small viewer of your own</h2>
+<p>If you only need to show a finished run, the converter of <a href="../kml-3d/index.html">Section 13</a> writes <code>perimeters.geojson</code>;
+a dozen lines of Leaflet give a web map with a time slider, hostable on GitHub Pages like this site:</p>
+<div class="code reveal"><div class="code-head"><span>viewer.html</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;!-- a minimal time-slider viewer for perimeters.geojson (from Section 13's converter) --&gt;
+&lt;div id="map" style="height:70vh"&gt;&lt;/div&gt;&lt;input id="t" type="range" min="0" value="0" style="width:100%"&gt;
+&lt;link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"&gt;
+&lt;script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+const map = L.map('map').setView([45.57, -122.77], 12);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap'}).addTo(map);
+fetch('perimeters.geojson').then(r =&gt; r.json()).then(g =&gt; {
+  const times = [...new Set(g.features.map(f =&gt; f.properties.time))].sort();
+  const slider = document.getElementById('t'); slider.max = times.length - 1;
+  let layer = null;
+  const show = i =&gt; {
+    if (layer) layer.remove();
+    layer = L.geoJSON(g, {filter: f =&gt; f.properties.time === times[i],
+                          style: {color: '#d95926', weight: 2, fillOpacity: 0.3}}).addTo(map);
+  };
+  slider.oninput = () =&gt; show(+slider.value); show(0);
+});
+&lt;/script&gt;</code></pre></div>
+</section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">References</h2><ol class="refs"><li>OpenWFM wiki: <a href="https://wiki.openwfm.org/wiki/Running_WRF-SFIRE_with_real_data_in_the_WRFx_system">Running WRF-SFIRE with real data in the WRFx system</a> (installation, configuration, wrfxweb, wrfxctrl).</li><li>wrfxpy source: <code>forecast.sh</code>, <code>postprocess.sh</code>, <code>src/vis/postprocess.py</code>, <code>src/vis/var_wisdom.py</code>, <code>tests/input-HRRR.json</code>.</li><li>Leaflet: <a href="https://leafletjs.com">leafletjs.com</a></li></ol></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../multiple-ignitions/index.html"><small>← Previous</small><b>11 · Multiple ignitions</b></a>
+      <a class="next" href="../kml-3d/index.html"><small>Next →</small><b>13 · From NetCDF to KML/KMZ and 3-D animation</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Forest_park_wildwood_trail_lazy_bend_P3861.jpeg">“Forest park wildwood trail lazy bend P3861”</a> by EncMstr, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+</body>
+</html>

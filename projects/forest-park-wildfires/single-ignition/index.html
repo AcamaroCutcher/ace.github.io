@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 08: A single point of ignition. A complete Forest Park case: Labor Day 2020 east wind, HRRR data, three nested domains, the full namelist and a reference for every fire option.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>A single point of ignition · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">08 · A single point of ignition</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner live">
+      <div class="firemap " data-root="../" role="img" aria-label="Animation: 60 simulated fires igniting one after another in Forest Park and spreading west under a 20 mph east wind, drawn on the WUI fuel map."><canvas></canvas><span class="hud" data-hud aria-live="off"></span><button type="button" class="play" data-play>Pause</button></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 08 · WRF-SFIRE handbook · run</p>
+        <h1>A single point of ignition</h1>
+        <p class="lede">A real-data run with one ignition in Forest Park during the Labor Day 2020 east wind: WPS, the complete namelist, running and reading the output.</p>
+      </div>
+      <span class="credit">Background: 60 fires from this project's spread model on the WUI fuel map. It switches with light/dark mode.</span>
+    </header>
+
+    <main>
+      <section class="block" id="single-ignition" aria-label="A single point of ignition">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#plan">The case</a><a href="#see">3-D</a><a href="#wps">WPS</a><a href="#namelist">namelist.input</a><a href="#run">Run</a><a href="#check">Output</a><a href="#options">&fire reference</a><a href="#refs">References</a></nav><section id="plan" aria-labelledby="plan-h"><h2 id="plan-h">The case</h2>
+<p>One ignition at the south-east end of Forest Park, above NW Portland, during the Labor Day 2020 east-wind event, the
+second-worst episode in 26 years of fire weather and one with HRRR analyses available (<a href="../fire-weather/index.html">Section 04</a>).
+The point, 45.53356° N, 122.71382° W, is the start of the ensemble fire that reached the most buildings in
+<a href="../fire-spread/index.html">Section 05</a> (71). The run starts at 00 UTC on 8 September (5 pm PDT, 7 Sept.), spins the atmosphere up
+for one hour, ignites at 01 UTC and follows the fire for 8 hours.</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Domain</th><th>Cells</th><th>Δx</th><th>Time step</th><th>Role</th></tr></thead><tbody><tr><td>d01</td><td>100 × 100</td><td>1350 m</td><td>6 s</td><td>Regional flow: the Columbia Gorge east wind</td></tr><tr><td>d02</td><td>132 × 132</td><td>450 m</td><td>2 s</td><td>Terrain-channelled wind over the West Hills</td></tr><tr><td>d03</td><td>108 × 108</td><td>150 m</td><td>0.67 s</td><td>Fire-resolving atmosphere; fire mesh 30 m (540 × 540)</td></tr></tbody></table></div>
+</section><section id="see" aria-labelledby="see-h"><h2 id="see-h">See it in 3-D first</h2><div class="sim3d reveal" data-sim3d data-root="../" data-preset="single" data-lock></div><p class="lead-note">The same ignition point on the real Forest Park terrain and fuel map, solved with SFIRE's fire-spread equations under the east wind (no atmosphere: that is what the WRF run below adds). The full simulator with every scenario is in <a href="../fire-3d/index.html">Section 14</a>.</p></section><section id="wps" aria-labelledby="wps-h"><h2 id="wps-h">Step 1 · Preprocess with WPS</h2><div class="code reveal"><div class="code-head"><span>WPS: geogrid, ungrib, metgrid</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 1. geogrid: domains + static data (fuel map and terrain on the 30 m fire mesh)</span>
+cd $HOME/WPS
+cp /path/to/Wildfires_forest_park/wrf/namelist.wps.forest_park namelist.wps
+<span class="c">#    edit geog_data_path = '/path/to/WPS_GEOG'</span>
+<span class="c">#    edit geogrid/GEOGRID.TBL as in wrf/GEOGRID.TBL.forest_park_additions (NFUEL_CAT, ZSF, HGT_M abs_path)</span>
+./geogrid.exe                                <span class="c"> # -&gt; geo_em.d01.nc, geo_em.d02.nc, geo_em.d03.nc</span>
+ncdump -h geo_em.d03.nc | grep -E "NFUEL_CAT|ZSF"   <span class="c"> # both must be there, on the *_subgrid dimensions</span>
+
+<span class="c"># 2. ungrib: HRRR 3 km analyses, hourly, 2020-09-08 00-09 UTC (NOAA open data on AWS)</span>
+mkdir -p hrrr &amp;&amp; cd hrrr
+for h in 00 01 02 03 04 05 06 07 08 09; do
+  curl -fLO https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.20200908/conus/hrrr.t${h}z.wrfprsf00.grib2
+done
+cd ..
+./link_grib.csh hrrr/hrrr.t*z.wrfprsf00.grib2
+ln -sf ungrib/Variable_Tables/Vtable.raphrrr Vtable
+./ungrib.exe                                 <span class="c"> # -&gt; HRRR:2020-09-08_00 ... _09</span>
+
+<span class="c"># 3. metgrid: weather on the model grids</span>
+./metgrid.exe                                <span class="c"> # -&gt; met_em.d0{1,2,3}.2020-09-08_*.nc</span>
+ncdump -h met_em.d01.2020-09-08_00:00:00.nc | grep -E "num_metgrid_levels|num_metgrid_soil_levels"</code></pre></div></section><section id="namelist" aria-labelledby="namelist-h"><h2 id="namelist-h">Step 2 · namelist.input</h2>
+<p>The full file for this case. The <code>&amp;fire</code> block is per domain: values for d01, d02, d03.</p>
+<div class="code reveal"><div class="code-head"><span>namelist.input</span><button type="button" class="copy">Copy</button></div><pre><code>&amp;time_control
+ run_hours              = 9,
+ start_year             = 2020, 2020, 2020,
+ start_month            = 09,   09,   09,
+ start_day              = 08,   08,   08,
+ start_hour             = 00,   00,   00,
+ end_year               = 2020, 2020, 2020,
+ end_month              = 09,   09,   09,
+ end_day                = 08,   08,   08,
+ end_hour               = 09,   09,   09,
+ interval_seconds       = 3600,
+ input_from_file        = .true., .true., .true.,
+ history_interval       = 60,   30,   15,    <span class="c"> ! minutes; d03 holds the fire fields</span>
+ frames_per_outfile     = 1000, 1000, 1000,
+ restart                = .false.,
+ io_form_history        = 2, io_form_restart = 2, io_form_input = 2, io_form_boundary = 2,
+/
+
+&amp;domains
+ time_step              = 6,                 <span class="c"> ! s on d01; d02 = 2 s, d03 = 0.67 s</span>
+ max_dom                = 3,
+ e_we                   = 101,  133,  109,
+ e_sn                   = 101,  133,  109,
+ e_vert                 = 45,   45,   45,
+ p_top_requested        = 5000,
+ num_metgrid_levels     = 41,                <span class="c"> ! from ncdump of met_em (HRRR pressure levels)</span>
+ num_metgrid_soil_levels= 9,
+ dx                     = 1350, 450,  150,
+ dy                     = 1350, 450,  150,
+ grid_id                = 1,    2,    3,
+ parent_id              = 0,    1,    2,
+ i_parent_start         = 1,    29,   49,
+ j_parent_start         = 1,    29,   49,
+ parent_grid_ratio      = 1,    3,    3,
+ parent_time_step_ratio = 1,    3,    3,
+ feedback               = 0,                 <span class="c"> ! one-way nests: keep the fire's local winds in d03</span>
+ sr_x                   = 5,    5,    5,     <span class="c"> ! fire mesh refinement; same as subgrid_ratio_x in namelist.wps</span>
+ sr_y                   = 5,    5,    5,     <span class="c"> ! 150 m / 5 = 30 m on d03</span>
+/
+
+&amp;physics
+ mp_physics             = 8,    8,    8,     <span class="c"> ! Thompson</span>
+ ra_lw_physics          = 4,    4,    4,     <span class="c"> ! RRTMG</span>
+ ra_sw_physics          = 4,    4,    4,
+ radt                   = 5,    5,    5,
+ sf_sfclay_physics      = 5,    5,    5,     <span class="c"> ! MYNN surface layer</span>
+ sf_surface_physics     = 3,    3,    3,     <span class="c"> ! RUC land surface (matches HRRR soil levels)</span>
+ num_soil_layers        = 9,
+ bl_pbl_physics         = 5,    5,    5,     <span class="c"> ! MYNN PBL (or 0 on d03 for LES, see notes)</span>
+ cu_physics             = 0,    0,    0,     <span class="c"> ! no cumulus scheme at 1.35 km and finer</span>
+ isfflx                 = 1,
+/
+
+&amp;dynamics
+ rk_ord                 = 3,
+ w_damping              = 1,
+ diff_opt               = 1,    1,    1,
+ km_opt                 = 4,    4,    4,
+ damp_opt               = 3,
+ zdamp                  = 5000., 5000., 5000.,
+ dampcoef               = 0.2,  0.2,  0.2,
+ khdif                  = 0,    0,    0,
+ kvdif                  = 0,    0,    0,
+ non_hydrostatic        = .true., .true., .true.,
+ h_mom_adv_order        = 5,    5,    5,
+ v_mom_adv_order        = 3,    3,    3,
+ h_sca_adv_order        = 5,    5,    5,
+ v_sca_adv_order        = 3,    3,    3,
+/
+
+&amp;bdy_control
+ spec_bdy_width         = 5,
+ specified              = .true., .false., .false.,
+ nested                 = .false., .true., .true.,
+/
+
+&amp;fire                                         <span class="c"> ! one value per domain; the fire runs on d03 only</span>
+ ifire                  = 0, 0, 1,           <span class="c"> ! 1 = SFIRE, 2 = NCAR WRF-Fire code</span>
+ fire_fuel_read         = 0, 0, -1,          <span class="c"> ! -1 = NFUEL_CAT from WPS (the Forest Park WUI map)</span>
+ fire_fuel_cat          = 1, 1, 1,           <span class="c"> ! only used when fire_fuel_read = 0</span>
+ fire_topo_from_atm     = 0, 0, 0,           <span class="c"> ! 0 = use ZSF (10 m 3DEP) from WPS, not atm. terrain</span>
+ fire_num_ignitions     = 0, 0, 1,
+ fire_ignition_start_lat1 = 0, 0, 45.53356,    <span class="c"> ! a point: start = end</span>
+ fire_ignition_start_lon1 = 0, 0, -122.71382,
+ fire_ignition_end_lat1   = 0, 0, 45.53356,
+ fire_ignition_end_lon1   = 0, 0, -122.71382,
+ fire_ignition_radius1    = 0, 0, 50.,       <span class="c"> ! m; cells within 50 m ignite (&gt; fire mesh step)</span>
+ fire_ignition_ros1       = 0, 0, 0.05,      <span class="c"> ! m/s along a line; irrelevant for a point</span>
+ fire_ignition_start_time1= 0, 0, 3600.,     <span class="c"> ! s after start: 1 h of atmospheric spin-up first</span>
+ fire_ignition_end_time1  = 0, 0, 3630.,
+ fire_upwinding         = 0, 0, 3,           <span class="c"> ! ENO (SFIRE accepts 0-4)</span>
+ fire_viscosity         = 0.4, 0.4, 0.4,
+ fire_lfn_ext_up        = 1.0, 1.0, 1.0,
+ fire_atm_feedback      = 1.0, 1.0, 1.0,     <span class="c"> ! 0 = fire does not heat the air (uncoupled test)</span>
+ fire_ext_grnd          = 50., 50., 50.,
+ fire_wind_height       = 6.096, 6.096, 6.096,
+ fire_boundary_guard    = 8, 8, 8,
+ fire_print_msg         = 1, 1, 1,
+ fmoist_run             = .false., .false., .true., <span class="c"> ! fuel moisture from the model's weather</span>
+ fmoist_interp          = .false., .false., .true.,
+ fire_fmc_read          = 0, 0, 0,           <span class="c"> ! required when fmoist_run = .true.</span>
+ fmoist_dt              = 600, 600, 600,
+/</code></pre></div>
+<div class="callout note reveal"><b>Choices worth knowing about</b><ul>
+<li><strong>Same <code>sr</code> on every domain.</strong> geogrid writes the subgrid fields with one ratio; keeping <code>sr_x = sr_y = 5</code> everywhere avoids mismatched array sizes, and the fire only runs where <code>ifire</code> ≠ 0.</li>
+<li><strong>Spin-up before ignition.</strong> The atmosphere starts from interpolated HRRR fields; an hour lets the boundary layer and terrain flow adjust before the fire starts heating it.</li>
+<li><strong>PBL scheme or LES on d03.</strong> At 150 m the boundary layer is partly resolved (the "grey zone"). Keeping MYNN everywhere is robust; the alternative is <code>bl_pbl_physics = 0</code> with <code>diff_opt = 2, km_opt = 2</code> on d03 (large-eddy simulation). Try both on a short run.</li>
+<li><strong>Time step.</strong> 6 s on 1.35 km is below WRF's usual 6 × Δx(km) rule; steep terrain and the fire's updrafts can still need less. The fire CFL (S·Δt &lt; 30 m) is far from limiting.</li>
+</ul></div>
+</section><section id="run" aria-labelledby="run-h"><h2 id="run-h">Step 3 · Run</h2>
+<div class="code reveal"><div class="code-head"><span>set up and submit</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># run directory on scratch</span>
+mkdir -p $SCRATCH/fp-single &amp;&amp; cd $SCRATCH/fp-single
+ln -sf $HOME/WRF-SFIRE/run/* .               <span class="c"> # tables, real.exe, wrf.exe</span>
+rm -f namelist.input
+cp /path/to/namelist.input .                 <span class="c"> # the one below</span>
+cp $HOME/WRF-SFIRE/test/em_fire/namelist.fire .
+sed -i 's/^ *ibeh *= *2/ibeh = 1/' namelist.fire         <span class="c"> # Rothermel, not Balbi</span>
+ln -sf $HOME/WPS/met_em.d0*.nc .
+sbatch run_wrf.slurm                         <span class="c"> # real.exe then wrf.exe (Section 07)</span></code></pre></div>
+<p>Look in <code>rsl.out.0000</code> for the fire's messages: the ignition at 3600 s, then the burned area and the maximum spread rate every
+step. <code>rsl.error.0000</code> must end with <code>SUCCESS COMPLETE WRF</code>.</p>
+</section><section id="check" aria-labelledby="check-h"><h2 id="check-h">Step 4 · Look at the output</h2>
+<p>The fire fields are on the fire mesh in <code>wrfout_d03_*</code>: <code>LFN</code> (level-set function, ≤ 0 = burning or burned),
+<code>TIGN_G</code> (arrival time, s; only meaningful where LFN ≤ 0), <code>FIRE_AREA</code>, <code>FGRNHFX</code> / <code>FGRNQFX</code>
+(heat and moisture fluxes, W/m²), <code>F_ROS</code>, <code>ROS</code>, <code>FLINEINT</code> (fireline intensity), <code>FUEL_FRAC</code>,
+<code>FXLONG</code>/<code>FXLAT</code>, <code>ZSF</code>, <code>NFUEL_CAT</code>. The fire-mesh arrays carry <code>sr</code> padding cells at the far edges.</p>
+<div class="code reveal"><div class="code-head"><span>check_run.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># quick look at the result (Python, netCDF4 + matplotlib)</span>
+from netCDF4 import Dataset
+import numpy as np, matplotlib.pyplot as plt
+d = Dataset("wrfout_d03_2020-09-08_00:00:00")
+lon, lat = d["FXLONG"][0], d["FXLAT"][0]
+ok = (lon != 0) | (lat != 0)                         <span class="c"> # drop the sr padding at the far edges</span>
+ny, nx = np.where(ok.any(1))[0][-1] + 1, np.where(ok.any(0))[0][-1] + 1
+dxf = d.DX / 5                                       <span class="c"> # fire cell = atmospheric dx / sr = 30 m</span>
+for k, t in enumerate(d["Times"][:]):
+    area = (d["LFN"][k][:ny, :nx] &lt;= 0).sum() * dxf**2 / 1e4
+    print(b"".join(t).decode(), f"burned {area:8.1f} ha   max heat flux {d['FGRNHFX'][k].max()/1e3:7.0f} kW/m2")
+k = -1
+plt.contour(lon[:ny, :nx], lat[:ny, :nx], d["LFN"][k][:ny, :nx], levels=[0], colors="r")
+plt.quiver(d["XLONG"][0][::6, ::6], d["XLAT"][0][::6, ::6], d["U10"][k][::6, ::6], d["V10"][k][::6, ::6])
+plt.title("Fire perimeter and 10 m wind, last output"); plt.savefig("perimeter.png", dpi=150)</code></pre></div>
+<p>For maps, animation and Google Earth, see <a href="../web-visualization/index.html">Section 12</a> and <a href="../kml-3d/index.html">Section 13</a>.</p>
+</section><section id="options" aria-labelledby="options-h"><h2 id="options-h">Namelist reference: &amp;fire</h2>
+<p>Defaults are from <code>Registry/registry.fire</code>. Where a behaviour depends on the code path, it says so.</p>
+<div class="table-wrap reveal"><table class="nl"><thead><tr><th>Option</th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code>ifire</code></td><td>0 / 1 / 2</td><td>Per domain. 1 = SFIRE (OpenWFM), 2 = NCAR WRF-Fire code, both in this build. Needs <code>sr_x, sr_y</code> &gt; 0 on that domain.</td></tr><tr><td><code>sr_x, sr_y</code> (&amp;domains)</td><td>5</td><td>Fire-mesh refinement. Must equal <code>subgrid_ratio_x/y</code> used by geogrid for NFUEL_CAT and ZSF.</td></tr><tr><td><code>fire_fuel_read</code></td><td>−1</td><td>−1 = fuel categories from WPS (NFUEL_CAT); 0 = uniform <code>fire_fuel_cat</code>; 1 = by altitude (ideal cases).</td></tr><tr><td><code>fire_topo_from_atm</code></td><td>1</td><td>1 = fill the fire-mesh terrain by interpolating the atmospheric terrain; set 0 to keep the high-resolution ZSF from WPS.</td></tr><tr><td><code>fire_num_ignitions</code></td><td>0</td><td>Number of ignition lines used, up to 5 (suffixes 1–5). Points are lines with start = end.</td></tr><tr><td><code>fire_ignition_start/end_lat/lon N</code></td><td>0</td><td>Line end points (degrees). Ideal cases use <code>…_x N / …_y N</code> in metres from the lower-left corner.</td></tr><tr><td><code>fire_ignition_radius N</code></td><td>0 m</td><td>Everything within this distance of the line ignites. Use more than one fire cell (here 30 m).</td></tr><tr><td><code>fire_ignition_ros N</code></td><td>0.01 m/s</td><td>Speed at which ignition travels along the line between start and end times.</td></tr><tr><td><code>fire_ignition_start/end_time N</code></td><td>0 s</td><td>Seconds after the start of the run.</td></tr><tr><td><code>fire_ignition_clamp</code></td><td>0</td><td>1 = snap ignition points to fire-mesh nodes.</td></tr><tr><td><code>fire_perimeter_time</code></td><td>0 s</td><td>SFIRE: if &gt; 0, replay the given arrival time TIGN_G until this time (Sections 09–10).</td></tr><tr><td><code>fire_tign_in_time</code></td><td>0 s</td><td>SFIRE: if &gt; 0, ignite cells from the given TIGN_G until this time (Section 11). Not with ignition lines, not with perimeter time.</td></tr><tr><td><code>fire_upwinding</code></td><td>9</td><td>Spatial scheme; see Section 06 (SFIRE: 0–4, 9 means 3).</td></tr><tr><td><code>fire_viscosity</code></td><td>0.4</td><td>Artificial viscosity in the level-set equation.</td></tr><tr><td><code>fire_grows_only</code></td><td>1</td><td>The fire area can only grow.</td></tr><tr><td><code>fire_atm_feedback</code></td><td>1.0</td><td>Multiplier on the heat fluxes to the atmosphere; 0 turns the coupling off (one-way run for comparison).</td></tr><tr><td><code>fire_ext_grnd</code>, <code>fire_ext_crwn</code></td><td>50 m</td><td>Extinction depths for inserting surface and crown fire heat.</td></tr><tr><td><code>fire_crwn_hgt</code></td><td>15 m</td><td>Height where crown-fire heat is released.</td></tr><tr><td><code>fire_wind_height</code></td><td>6.096 m</td><td>Height of the wind used in the spread formula.</td></tr><tr><td><code>fire_wind_log_interp</code>, <code>fire_use_windrf</code></td><td>1, 0</td><td>How the wind is brought to that height and whether the fuel's wind reduction factor is applied.</td></tr><tr><td><code>fire_boundary_guard</code></td><td>8</td><td>Stop the fire this many cells from the domain edge; −1 = off.</td></tr><tr><td><code>fmoist_run</code>, <code>fmoist_interp</code>, <code>fmoist_dt</code></td><td>.false., .false., 600 s</td><td>Fuel moisture model on the atmospheric grid and its interpolation to the fire mesh (needs <code>fire_fmc_read = 0</code>).</td></tr><tr><td><code>fire_fmc_read</code></td><td>1</td><td>Ground fuel moisture: 0 = from wrfinput / moisture model; 1 = from <code>fuelmc_g</code> in namelist.fire.</td></tr><tr><td><code>fire_print_msg</code>, <code>fire_print_file</code></td><td>0</td><td>Fire diagnostics in rsl files; text files for debugging.</td></tr><tr><td><code>fire_lsm_reinit</code>, <code>fire_lsm_zcoupling</code></td><td>.true., .false.</td><td>NCAR path (ifire = 2) only: level-set reinitialization; wind from a reference height with a log profile.</td></tr><tr><td><code>fire_is_real_perim</code></td><td>.false.</td><td>NCAR path only: initialize from an observed perimeter in LFN_HIST (Section 10).</td></tr><tr><td><code>tracer_opt</code> (&amp;dynamics), <code>fire_tracer_smoke</code></td><td>0, 0.02</td><td>Smoke tracer; in this version the emission is in the NCAR code path.</td></tr></tbody></table></div>
+<h3>namelist.fire</h3>
+<p>A separate file in the run directory with the fuel table (one value per fuel category). The 13 Anderson models plus “no fuel” match the
+Anderson-13 fuel map of this project.</p>
+<div class="table-wrap reveal"><table class="nl"><thead><tr><th>Entry</th><th>Meaning</th></tr></thead><tbody><tr><td><code>ibeh</code></td><td>Spread formula: 0 MacArthur, 1 Rothermel (code default), 2 Balbi. The test file sets 2.</td></tr><tr><td><code>fuelmc_g</code>, <code>fuelmc_c</code></td><td>Surface and canopy fuel moisture when the moisture model is off (0.08, 1.0).</td></tr><tr><td><code>cmbcnst</code>, <code>hfgl</code></td><td>Heat of combustion (17.433 MJ/kg); surface flux that ignites the canopy (170 kW/m²).</td></tr><tr><td><code>nfuelcats</code>, <code>no_fuel_cat</code></td><td>13 Anderson categories; category 14 = no fuel (roads, buildings and water in the Forest Park map).</td></tr><tr><td><code>fgi, fueldepthm, savr, fuelmce, fueldens, st, se</code></td><td>Rothermel fuel properties per category: load (kg/m²), depth (m), surface-to-volume (1/ft), moisture of extinction, particle density, mineral contents.</td></tr><tr><td><code>weight</code></td><td>Burn-time parameter, T_f = weight/0.85 s (7 for grass, 900 for timber litter).</td></tr><tr><td><code>windrf</code></td><td>Wind reduction factor from 6.1 m to mid-flame, per category.</td></tr><tr><td><code>fci_d, fct, fci, fcbr, ichap</code></td><td>Canopy fuel load, burn time, ignition, and the chaparral switch.</td></tr><tr><td><code>fmc_gw01 … fmc_gw06</code></td><td>Weights of the moisture classes for each category (default: all on the 1-h class).</td></tr></tbody></table></div>
+</section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">References</h2><ol class="refs"><li><code>Registry/registry.fire</code>, <code>test/em_fire/namelist.input*</code> and <code>namelist.fire</code> in <a href="https://github.com/openwfm/WRF-SFIRE">openwfm/WRF-SFIRE</a>.</li><li>NOAA High-Resolution Rapid Refresh on AWS: <a href="https://registry.opendata.aws/noaa-hrrr-pds/">registry.opendata.aws/noaa-hrrr-pds</a></li><li>WRF user guide, namelist variables: <a href="https://www2.mmm.ucar.edu/wrf/users/wrf_users_guide/build/html/namelist_variables.html">WRF namelist documentation</a></li></ol></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../install/index.html"><small>← Previous</small><b>07 · Installing WRF-SFIRE on an HPC cluster</b></a>
+      <a class="next" href="../perimeter-math/index.html"><small>Next →</small><b>09 · Ignition from a perimeter: the math</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+  <script src="../fire-map.js"></script>
+  <script src="../forest3d.js"></script>
+</body>
+</html>

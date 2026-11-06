@@ -35,14 +35,14 @@ window.PROJECT_LIBRARY = {
     {
       id: 'forest-park-wildfires',
       title: 'Forest Park Wildfires',
-      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? A group project (with Andrea Baeza and Alex Bentley) on wildfire risk, community concerns and the CEI Hub. Sections: our partner proposal; a 30 m wildland–urban fuel map with 142,596 building footprints; nested WRF-SFIRE grids on USGS lidar terrain; 26 years of fire weather showing dry, windy hours come from the east; and 4,000 simulated fires that map where a park fire is likely to reach homes.',
+      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? A group project (with Andrea Baeza and Alex Bentley) on wildfire risk, community concerns and the CEI Hub. Part I: our partner proposal, a 30 m wildland–urban fuel map, WRF-SFIRE terrain, 26 years of fire weather and 4,000 simulated fires. Part II: a WRF-SFIRE handbook with the model’s math and interactive level-set labs, HPC installation, single, perimeter and multiple ignitions, the WRFx web viewer, converting output to KML/KMZ and 3-D animation, and a live 3-D fire simulator of Forest Park.',
       disciplines: ['earth'],
       types: ['research'],
       status: 'current',
       year: 2026,
       featured: false,
       thumb: 'thumbs/forest-park-wildfires.jpg',
-      tags: ['Wildfire', 'Wildland–Urban Interface', 'LANDFIRE', 'WRF-SFIRE', 'Python / GIS'],
+      tags: ['Wildfire', 'Wildland–Urban Interface', 'LANDFIRE', 'WRF-SFIRE', 'Level-set method', 'HPC', 'Python / GIS'],
       links: [
         { label: 'Explore', href: 'forest-park-wildfires/index.html', icon: 'fa-arrow-right', primary: true },
         { label: 'Proposal', href: 'forest-park-wildfires/proposal/index.html', icon: 'fa-file-lines' },
@@ -50,6 +50,10 @@ window.PROJECT_LIBRARY = {
         { label: 'Terrain', href: 'forest-park-wildfires/terrain/index.html', icon: 'fa-mountain' },
         { label: 'Fire weather', href: 'forest-park-wildfires/fire-weather/index.html', icon: 'fa-wind' },
         { label: 'Fire spread', href: 'forest-park-wildfires/fire-spread/index.html', icon: 'fa-fire' },
+        { label: 'WRF-SFIRE handbook', href: 'forest-park-wildfires/wrf-sfire-math/index.html', icon: 'fa-square-root-variable' },
+        { label: '3-D simulator', href: 'forest-park-wildfires/fire-3d/index.html', icon: 'fa-mountain-sun' },
+        { label: 'Install on HPC', href: 'forest-park-wildfires/install/index.html', icon: 'fa-server' },
+        { label: 'KML & 3-D', href: 'forest-park-wildfires/kml-3d/index.html', icon: 'fa-cube' },
       ],
     },
     {

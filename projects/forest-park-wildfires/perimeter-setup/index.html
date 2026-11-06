@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 10: Ignition from a perimeter: setup and code. write_tign.py, the namelist switches, idealized cases and the NCAR LFN_HIST variant, step by step.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Ignition from a perimeter: setup and code · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../vendor/katex/katex.min.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">10 · Ignition from a perimeter: setup and code</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/photos/fallen-alder.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 10 · WRF-SFIRE handbook · code</p>
+        <h1>Ignition from a perimeter: setup and code</h1>
+        <p class="lede">How to do it in practice: write the arrival-time history into wrfinput with a script, set the namelist, and check that the replay worked.</p>
+      </div>
+      <span class="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Forest_park_second_growth_bowed_fallen_alder_P3910.jpeg">EncMstr</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons</span>
+    </header>
+
+    <main>
+      <section class="block" id="perimeter-setup" aria-label="Ignition from a perimeter: setup and code">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#inputs">Inputs</a><a href="#script">write_tign.py</a><a href="#ideal">Ideal cases</a><a href="#ncar">LFN_HIST</a><a href="#validate">After the run</a></nav><section id="inputs" aria-labelledby="inputs-h"><h2 id="inputs-h">What you need</h2><div class="table-wrap reveal"><table class=""><thead><tr><th>Input</th><th>Where to get it</th><th>Notes</th></tr></thead><tbody><tr><td>Perimeter polygon</td><td>NIFC open data (WFIGS interagency perimeters), IR mapping flights, or digitize your own in Google Earth / QGIS</td><td>GeoJSON or KML, lon/lat. Note the time it was observed.</td></tr><tr><td>Ignition point and time</td><td>Incident reports, the first VIIRS/MODIS active-fire detection (NASA FIRMS)</td><td>Any reasonable point inside the perimeter; the history only has to be plausible.</td></tr><tr><td>A run that starts before the ignition</td><td>WPS + real.exe as in Section 08</td><td>Times in the namelist and the script are seconds after the run start.</td></tr><tr><td>Python with netCDF4, numpy, scipy, matplotlib</td><td>pip or conda</td><td>For <code>write_tign.py</code>.</td></tr></tbody></table></div></section><section id="script" aria-labelledby="script-h"><h2 id="script-h">The script: write_tign.py</h2>
+<p><a href="../data/write_tign.py" download>Download write_tign.py</a>. It reads the fire-mesh coordinates from the wrfinput file
+(<code>FXLONG</code>/<code>FXLAT</code>, or interpolates them from <code>XLONG</code>/<code>XLAT</code> with <code>--sr</code> when those are not yet filled),
+rasterizes the perimeter, casts a ray from the ignition through every cell inside it to find where the ray leaves the perimeter, builds
+\(T\) as on the previous page, extends it outside, and writes <code>TIGN_G</code>. It prints the namelist lines to use.</p>
+<div class="code reveal"><div class="code-head"><span>perimeter ignition, step by step</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 1. an observed perimeter as GeoJSON or KML (lon, lat), e.g. from NIFC's open WFIGS perimeters,</span>
+<span class="c">#    an IR flight, or drawn in Google Earth (Add &gt; Polygon, then Save Place As... .kml)</span>
+<span class="c"># 2. the usual WPS + real.exe for a run that STARTS BEFORE the ignition time</span>
+<span class="c"># 3. write the arrival-time history into the fire domain's wrfinput</span>
+cp wrfinput_d03 wrfinput_d03.orig
+python write_tign.py perimeter wrfinput_d03 perimeter.geojson \
+       --ign 45.5336,-122.7138 --t-ign 1800 --t-perim 12600 --sr 5
+<span class="c">#   fire mesh 540 x 540 cells, about 30.0 x 30.0 m</span>
+<span class="c">#   perimeter area ... ha, T from 1800 to 12600 s</span>
+<span class="c">#   namelist.input &amp;fire:</span>
+<span class="c">#     fire_num_ignitions  = 0,</span>
+<span class="c">#     fire_perimeter_time = 12600,</span>
+<span class="c"># 4. namelist.input, &amp;fire (d03 column): ifire = 1, fire_num_ignitions = 0, fire_perimeter_time = 12600</span>
+<span class="c"># 5. run wrf.exe and check rsl.out.0000 for:</span>
+<span class="c">#   init_no_fire: using given ignition time to replay history to fire_perimeter_time=  12600.0</span>
+<span class="c">#   replay, setting the level set function</span></code></pre></div>
+<div class="code reveal"><div class="code-head"><span>namelist.input (&amp;fire part)</span><button type="button" class="copy">Copy</button></div><pre><code>&amp;fire
+ ifire                  = 0, 0, 1,
+ fire_fuel_read         = 0, 0, -1,
+ fire_topo_from_atm     = 0, 0, 0,
+ fire_num_ignitions     = 0, 0, 0,            <span class="c"> ! no ignition lines with a replay</span>
+ fire_perimeter_time    = 0, 0, 12600.,       <span class="c"> ! replay TIGN_G until 3.5 h into the run</span>
+ fire_tign_in_time      = 0, 0, 0.,           <span class="c"> ! must stay 0: the two options exclude each other</span>
+ fire_upwinding         = 0, 0, 3,
+ fire_print_msg         = 1, 1, 1,
+/</code></pre></div>
+<div class="callout warn reveal"><b>Checks the code makes</b><ul><li><code>fire_perimeter_time</code> and <code>fire_tign_in_time</code> cannot both be &gt; 0: the run stops with “fire_perimeter_time &gt; 0 and fire_tign_in_time &gt; 0”.</li><li>Arrival times are seconds after the simulation start, so <code>--t-ign</code> must be ≥ 0: start the run before the ignition.</li><li>Keep a copy of the original wrfinput; the script edits it in place.</li></ul></div>
+<div class="callout src reveal"><b>Tested how</b><p>Both modes of write_tign.py were run on a synthetic wrfout-style file with this project's 30 m Forest Park mesh (40 ignition cells from 5 points; a 51 ha, 216-vertex perimeter: 17% of its area burned at half time and 83% by 3,500 s, in 1.5 s of run time). They have not been run on a wrfinput from real.exe here; check the printed mesh size against your <code>e_we × sr_x</code> before running wrf.exe.</p></div>
+</section><section id="ideal" aria-labelledby="ideal-h"><h2 id="ideal-h">Idealized cases</h2>
+<p>For a test with <code>ideal.exe</code> (no WPS), the history comes from a text file, as in the <code>hill</code> test's
+<code>namelist.input.tign</code>:</p>
+<div class="code reveal"><div class="code-head"><span>make input_tign_g (Python version of create_tign.m)</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># idealized cases (ideal.exe) read the history from a text file instead of wrfinput:</span>
+<span class="c"># input_tign_g = m, n, then the m*n values row by row (test/em_fire/hill/create_tign.m)</span>
+import numpy as np
+ii, jj = np.meshgrid(np.arange(1, 421), np.arange(1, 421), indexing="ij")
+tign = np.sqrt(2 * (ii - 200) ** 2 + (jj - 171) ** 2) + 1     <span class="c"> # an elliptical history, in s</span>
+with open("input_tign_g", "w") as f:
+    f.write(f"{tign.shape[0]}\n{tign.shape[1]}\n")
+    np.savetxt(f, tign.ravel(), fmt="%.7g")
+<span class="c"># namelist.input (hill/namelist.input.tign): fire_perimeter_time = 20, fire_num_ignitions = 0</span></code></pre></div>
+</section><section id="ncar" aria-labelledby="ncar-h"><h2 id="ncar-h">The NCAR code path: LFN_HIST</h2>
+<p>With <code>ifire = 2</code> the perimeter is given as a level-set function in <code>LFN_HIST</code> and switched on by
+<code>fire_is_real_perim = .true.</code> at the start time of ignition 1 (<code>module_fr_fire_model.F</code>). There is no replay, so the
+atmosphere does not get the fire's history.</p>
+<div class="code reveal"><div class="code-head"><span>perimeter to LFN_HIST</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># NCAR path (ifire = 2): put the perimeter's signed distance into LFN_HIST (negative inside)</span>
+from netCDF4 import Dataset
+import numpy as np
+from matplotlib.path import Path
+from scipy.ndimage import distance_transform_edt
+d = Dataset("wrfinput_d03", "r+")
+lon, lat = np.asarray(d["FXLONG"][0]), np.asarray(d["FXLAT"][0])  <span class="c"> # if zero, derive from XLONG/XLAT (write_tign.py)</span>
+ring = np.loadtxt("perimeter_lonlat.txt")                          <span class="c"> # two columns: lon lat</span>
+inside = Path(ring).contains_points(np.c_[lon.ravel(), lat.ravel()]).reshape(lon.shape)
+dx = 30.0                                                          <span class="c"> # fire-mesh step (m)</span>
+sd = distance_transform_edt(~inside) * dx - distance_transform_edt(inside) * dx
+d["LFN_HIST"][0] = sd.astype("float32")
+d.close()
+<span class="c"># namelist.input &amp;fire (d03): ifire = 2, fire_is_real_perim = .true., fire_num_ignitions = 1,</span>
+<span class="c">#   fire_ignition_start_time1 = &lt;time to switch the perimeter on&gt;  (the code reads ignition 1's start time)</span></code></pre></div>
+</section><section id="validate" aria-labelledby="validate-h"><h2 id="validate-h">After the run</h2>
+<ul>
+<li>At \(t_p\) the modelled perimeter (LFN = 0) must coincide with the observed one: overlay both in Google Earth with the converter of <a href="../kml-3d/index.html">Section 13</a>.</li>
+<li>Look at the wind and vertical velocity on d03 during the replay: an in-draft toward the fire and a plume should have formed by \(t_p\).</li>
+<li>When the next perimeter arrives, compare it with the forecast at that time, then restart from the new one (cycling, as WRFx does operationally).</li>
+</ul>
+</section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../perimeter-math/index.html"><small>← Previous</small><b>09 · Ignition from a perimeter: the math</b></a>
+      <a class="next" href="../multiple-ignitions/index.html"><small>Next →</small><b>11 · Multiple ignitions</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Forest_park_second_growth_bowed_fallen_alder_P3910.jpeg">“Forest park second growth bowed fallen alder P3910”</a> by EncMstr, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+  <script defer src="../vendor/katex/katex.min.js"></script>
+  <script defer src="../vendor/katex/contrib/auto-render.min.js"></script>
+  <script defer src="../math.js"></script>
+</body>
+</html>

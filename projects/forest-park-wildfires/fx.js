@@ -113,7 +113,7 @@
       rev.forEach(function (el) { el.classList.add('in'); });
     }
 
-    var links = document.querySelectorAll('.subnav a[href^="#"], .doc-toc a[href^="#"]');
+    var links = document.querySelectorAll('.subnav a[href^="#"], .doc-toc a[href^="#"], .toc-inline a[href^="#"]');
     if (links.length && 'IntersectionObserver' in window) {
       var map = {};
       links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
@@ -163,6 +163,20 @@
     document.querySelectorAll('[data-print]').forEach(function (b) { b.addEventListener('click', function () { window.print(); }); });
   }
 
-  function boot() { init(); slideshow(); printButton(); }
+  /* Copy buttons on code blocks. */
+  function copyButtons() {
+    document.querySelectorAll('.code').forEach(function (box) {
+      var btn = box.querySelector('.copy'), pre = box.querySelector('pre');
+      if (!btn || !pre) return;
+      btn.addEventListener('click', function () {
+        var text = pre.innerText;
+        var done = function () { btn.textContent = 'Copied'; btn.classList.add('done'); setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, function () {});
+        else { var r = document.createRange(); r.selectNodeContents(pre); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); try { document.execCommand('copy'); done(); } catch (e) {} sel.removeAllRanges(); }
+      });
+    });
+  }
+
+  function boot() { init(); slideshow(); printButton(); copyButtons(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

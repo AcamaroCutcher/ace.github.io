@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 13: From NetCDF to KML/KMZ and 3-D animation. A tested converter to KML, KMZ, GeoJSON and textures, then Google Earth, Cesium, Unity, Blender, Unreal and VAPOR.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>From NetCDF to KML/KMZ and 3-D animation · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">13 · From NetCDF to KML/KMZ and 3-D animation</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/photos/ravine.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 13 · WRF-SFIRE handbook · visualize</p>
+        <h1>From NetCDF to KML/KMZ and 3-D animation</h1>
+        <p class="lede">Convert wrfout files to KML, KMZ, GeoJSON and textures, then build realistic animations in Google Earth, Cesium, Unity, Blender, Unreal or VAPOR.</p>
+      </div>
+      <span class="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(24012149446).jpg">Tony Webster from Half Moon Bay, California</a>, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons</span>
+    </header>
+
+    <main>
+      <section class="block" id="kml-3d" aria-label="From NetCDF to KML/KMZ and 3-D animation">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#convert">Converter</a><a href="#earth">Google Earth, QGIS, Cesium</a><a href="#realistic">Realistic animation</a><a href="#unity">Unity</a><a href="#blender">Blender</a><a href="#other">Unreal, VAPOR, ParaView</a></nav><section id="convert" aria-labelledby="convert-h"><h2 id="convert-h">From wrfout to KML, KMZ, GeoJSON and textures</h2>
+<p><a href="../data/wrfsfire_to_kml.py" download>Download wrfsfire_to_kml.py</a>. It reads the fire-mesh variables of a <code>wrfout_d0X</code> file and
+writes everything the tools below need:</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>File</th><th>Contents</th><th>Open with</th></tr></thead><tbody><tr><td><code>perimeters.kml</code> / <code>.kmz</code></td><td>Fire perimeter (LFN = 0) at each output time, with KML TimeSpans</td><td>Google Earth (time slider), CesiumJS, QGIS</td></tr><tr><td><code>fire_heat.kmz</code></td><td>Ground heat flux FGRNHFX as time-stamped image overlays + colour bar</td><td>Google Earth, CesiumJS</td></tr><tr><td><code>perimeters.geojson</code></td><td>The same perimeters with <code>time</code>, <code>end</code>, <code>burned_ha</code> properties</td><td>Leaflet, Mapbox, QGIS Temporal Controller, three.js</td></tr><tr><td><code>arrival_time.png</code></td><td>16-bit arrival time on a regular lat/lon grid (0 = never)</td><td>Unity, Blender, Unreal (as a data texture)</td></tr><tr><td><code>terrain.png</code></td><td>16-bit fire-mesh terrain (ZSF)</td><td>Heightmap / displacement</td></tr><tr><td><code>textures.json</code></td><td>Bounding box, pixel size, time and height scales</td><td>Your import scripts</td></tr></tbody></table></div>
+<div class="code reveal"><div class="code-head"><span>run the converter</span><button type="button" class="copy">Copy</button></div><pre><code>pip install netCDF4 numpy scipy matplotlib simplekml
+python wrfsfire_to_kml.py wrfout_d03_2020-09-08_00:00:00 --out fire_viz --step 15
+<span class="c">#   perimeters: ... rings over 37 times</span>
+<span class="c">#   heat overlays: 37</span>
+<span class="c">#   textures: (H, W) arrival up to 8.00 h</span>
+ls fire_viz
+<span class="c">#   perimeters.kml  perimeters.kmz  perimeters.geojson  fire_heat.kmz</span>
+<span class="c">#   arrival_time.png  terrain.png  textures.json  colorbar.png</span></code></pre></div>
+<div class="callout warn reveal"><b>Three details of WRF-SFIRE output the script handles</b><ul><li><strong>Padding.</strong> Fire-mesh arrays have <code>sr</code> extra cells at the far edges that are not part of the domain (zeros in FXLONG/FXLAT); they are cropped.</li><li><strong>TIGN_G is only valid where LFN ≤ 0.</strong> Unburned cells keep a placeholder time near the start of the run (<code>init_no_fire</code>), so <code>TIGN_G ≤ t</code> alone marks the whole domain burned. Perimeters come from LFN = 0 instead, as in wrfxpy.</li><li><strong>Projection.</strong> The fire mesh is on WRF's Lambert grid. KML image overlays need a lat/lon box, so rasters are resampled first.</li></ul></div>
+<h3>Sample output</h3>
+<p>Files made by the converter from a <strong>synthetic</strong> wrfout-style file (its fire arrival times are this project's 60 east-wind fires,
+its heat flux SFIRE's burnout formula; <a href="../data/make_synthetic_wrfout.py" download>the script that made it</a>). They are for trying
+the pipeline, not WRF-SFIRE results.</p>
+<div class="res reveal">
+<a href="../data/sample/perimeters.kmz" download><b>perimeters.kmz</b><small>Time-stamped perimeters, every 2 h · 330 KB</small></a>
+<a href="../data/sample/fire_heat.kmz" download><b>fire_heat.kmz</b><small>Heat-flux overlays, every 2 h · 75 KB</small></a>
+<a href="../data/sample/arrival_time.png" download><b>arrival_time.png</b><small>16-bit arrival texture + <a href="../data/sample/textures.json">textures.json</a></small></a>
+<a href="../data/sample/README.txt"><b>README.txt</b><small>What the sample is and is not</small></a>
+</div>
+</section><section id="earth" aria-labelledby="earth-h"><h2 id="earth-h">Google Earth, QGIS and CesiumJS</h2>
+<ul>
+<li><strong>Google Earth</strong> (desktop or web): open <code>perimeters.kmz</code> and <code>fire_heat.kmz</code>; the time slider appears because every
+feature has a TimeSpan. Tilt the view to see the fire on the 3-D terrain of the West Hills.</li>
+<li><strong>QGIS</strong>: drag in <code>perimeters.geojson</code>, then Layer Properties → Temporal → "Single field with date/time" = <code>time</code>, and play it
+with the Temporal Controller; export frames to make a video.</li>
+<li><strong>CesiumJS</strong> gives the same thing on a web page, with world terrain and the KML clock driving the animation:</li>
+</ul>
+<div class="code reveal"><div class="code-head"><span>cesium.js</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">// CesiumJS (browser 3-D globe with terrain): load the time-stamped KMZ and play it</span>
+const viewer = new Cesium.Viewer("cesium", { terrain: Cesium.Terrain.fromWorldTerrain() });
+const ds = await Cesium.KmlDataSource.load("perimeters.kmz",
+  { camera: viewer.scene.camera, canvas: viewer.scene.canvas, clampToGround: true });
+viewer.dataSources.add(ds);
+viewer.clock.shouldAnimate = true;            // KML TimeSpans drive Cesium's clock and timeline
+viewer.clock.multiplier = 600;                // 10 simulated minutes per second
+viewer.flyTo(ds);</code></pre></div>
+</section><section id="realistic" aria-labelledby="realistic-h"><h2 id="realistic-h">Toward a realistic animation</h2>
+<p>Perimeters every 15 minutes look like contour maps. A realistic animation needs three things the model already has:</p>
+<ol>
+<li><strong>Continuous time.</strong> The arrival time \(T(\mathbf x)\) is known everywhere on the 30 m mesh, so the front can be drawn at any
+instant by comparing \(T\) with the current time in a shader, with no interpolation between frames. (The fire maps on this site's hub and
+fuel-map pages are drawn exactly this way.)</li>
+<li><strong>Burn-out.</strong> Behind the front the fuel burns as \(e^{-(t-T)/T_f}\) with \(T_f\) from 8 s (grass) to 18 min (timber), which sets how
+long each place glows and smokes.</li>
+<li><strong>Smoke and wind in 3-D.</strong> The smoke tracer and the 3-D wind from the atmosphere turn into volumes and particle forces.</li>
+</ol>
+<div class="code reveal"><div class="code-head"><span>the shader logic, for any engine</span><button type="button" class="copy">Copy</button></div><pre><code>Shader Graph (Unity) or a material node tree (Blender, Unreal) - the same logic:
+  a      = sample(arrival_time.png) * 65535            // counts; 0 = never burns   (import as R16, linear, no compression)
+  now    = _SimTimeCounts
+  age    = (now - a) * secondsPerCount                  // seconds since the fire arrived
+  burned = (a &gt; 0) &amp;&amp; (age &gt; 0)
+  front  = burned * (1 - smoothstep(0, 120, age))       // glowing band: first 2 minutes
+  ember  = burned * exp(-age / 900)                     // smouldering for ~15 min (timber T_f is ~18 min)
+  albedo = lerp(fuelColour, charColour, burned)
+  emission = front * flameColour * 40 + ember * emberColour * 4
+Use the same age to spawn particles: VFX Graph / Niagara "sample texture" at random points, keep those with 0 &lt; age &lt; 120 s.</code></pre></div>
+</section><section id="unity" aria-labelledby="unity-h"><h2 id="unity-h">Unity</h2>
+<ol class="steps">
+<li><p><strong>Terrain.</strong> Either <strong>Cesium for Unity</strong> (streams real-world terrain and imagery; place the fire with a
+georeference at the bounding box in <code>textures.json</code>), or a plain Unity Terrain: resample <code>terrain.png</code> to a square heightmap
+of 513, 1025 or 2049 pixels, save as 16-bit RAW, import it in Terrain Settings, and set the terrain size to the box size and the height to the relief in
+<code>textures.json</code>.</p></li>
+<li><p><strong>Fire texture.</strong> Import <code>arrival_time.png</code> with sRGB off, compression None, filter Point, format R16.</p></li>
+<li><p><strong>Shader Graph.</strong> Build the logic above (Sample Texture 2D → Subtract → Smoothstep → Emission), with a float property
+<code>_SimTimeCounts</code>.</p></li>
+<li><p><strong>Clock.</strong> Attach this script and drag in the material:</p><div class="code reveal"><div class="code-head"><span>FireClock.cs</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">// FireClock.cs: drives the fire shader from the arrival-time texture (Unity, URP/HDRP)</span>
+using UnityEngine;
+public class FireClock : MonoBehaviour {
+    public Material terrainMaterial;          // uses the shader graph described below
+    public float secondsPerCount = 1.0f;      // arrival_seconds_per_count from textures.json
+    public float simSecondsPerRealSecond = 600f;
+    public float simTime;                     // seconds since the WRF run started
+    void Update() {
+        simTime += Time.deltaTime * simSecondsPerRealSecond;
+<span class="c">        // the shader compares arrival (in counts) with the current time (in counts)</span>
+        terrainMaterial.SetFloat("_SimTimeCounts", 1f + simTime / secondsPerCount);
+    }
+}</code></pre></div></li>
+<li><p><strong>Flames and smoke.</strong> A VFX Graph that samples the arrival texture at random positions and spawns flame particles where
+0 &lt; age &lt; 120 s and smoke where age &lt; 15 min; drive the smoke with a 3-D vector field exported from the WRF wind (U, V, W) at a few heights.</p></li>
+<li><p><strong>Film it.</strong> Timeline + Cinemachine for the camera, the Recorder package for frames or MP4.</p></li>
+</ol>
+</section><section id="blender" aria-labelledby="blender-h"><h2 id="blender-h">Blender</h2>
+<p>Blender gives the most realistic stills and flyovers (Cycles path tracing, volumetric smoke). The script builds the terrain from
+<code>terrain.png</code> and an emission material whose fire front is driven by a keyframed clock:</p>
+<div class="code reveal"><div class="code-head"><span>blender_fire.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># blender_fire.py: terrain + animated fire material from the converter's textures.</span>
+<span class="c"># Run inside Blender (Scripting tab, or: blender --python blender_fire.py). Written for Blender 4.x.</span>
+import bpy, json, os
+D = "/path/to/fire_viz"                           <span class="c"> # output folder of wrfsfire_to_kml.py</span>
+meta = json.load(open(os.path.join(D, "textures.json")))
+size_x = meta["width"] * meta["pixel_m"]; size_y = meta["height"] * meta["pixel_m"]
+relief = meta["terrain_max_m"] - meta["terrain_min_m"]
+
+bpy.ops.mesh.primitive_grid_add(x_subdivisions=meta["width"] // 2, y_subdivisions=meta["height"] // 2, size=1)
+ob = bpy.context.active_object; ob.scale = (size_x, size_y, 1)
+img_z = bpy.data.images.load(os.path.join(D, "terrain.png")); img_z.colorspace_settings.name = "Non-Color"
+tex = bpy.data.textures.new("terrain", "IMAGE"); tex.image = img_z; tex.extension = "EXTEND"
+mod = ob.modifiers.new("relief", "DISPLACE"); mod.texture = tex; mod.texture_coords = "UV"
+mod.strength = relief; mod.mid_level = 0.0
+
+mat = bpy.data.materials.new("fire"); mat.use_nodes = True; ob.data.materials.append(mat)
+nt = mat.node_tree; N = nt.nodes; L = nt.links
+arr = N.new("ShaderNodeTexImage"); arr.image = bpy.data.images.load(os.path.join(D, "arrival_time.png"))
+arr.image.colorspace_settings.name = "Non-Color"; arr.interpolation = "Closest"
+now = N.new("ShaderNodeValue"); now.label = "sim time (counts / 65535)"
+age = N.new("ShaderNodeMath"); age.operation = "SUBTRACT"         <span class="c"> # now - arrival</span>
+L.new(now.outputs[0], age.inputs[0]); L.new(arr.outputs["Color"], age.inputs[1])
+front = N.new("ShaderNodeMapRange")                               <span class="c"> # 1 just after arrival, 0 after ~2 min</span>
+front.inputs["From Min"].default_value = 0.0
+front.inputs["From Max"].default_value = 120.0 / (meta["arrival_seconds_per_count"] * 65535)
+front.inputs["To Min"].default_value = 1.0; front.inputs["To Max"].default_value = 0.0
+L.new(age.outputs[0], front.inputs["Value"])
+bsdf = N["Principled BSDF"]
+L.new(front.outputs["Result"], bsdf.inputs["Emission Strength"])
+bsdf.inputs["Emission Color"].default_value = (1.0, 0.35, 0.05, 1)
+<span class="c"># animate the clock: frame 1 = run start, 250 frames = whole run</span>
+fc = now.outputs[0]; fc.default_value = 0.0; fc.keyframe_insert("default_value", frame=1)
+fc.default_value = 1.0; fc.keyframe_insert("default_value", frame=250)
+<span class="c"># (cells that never burn have arrival 0, so mask them: add a Greater Than on arrival &gt; 0 and multiply)</span></code></pre></div>
+<ul>
+<li><strong>Real terrain and imagery:</strong> the BlenderGIS add-on imports DEMs (for example this project's 10 m 3DEP GeoTIFF) and basemaps in the right place.</li>
+<li><strong>Smoke:</strong> either Mantaflow (a smoke domain over the fire with the burning area as an emitter whose density follows the front mask), or, closer to
+the model, WRF's own smoke tracer as OpenVDB volumes, imported with Add → Volume → Import OpenVDB, one per frame:</li>
+</ul>
+<div class="code reveal"><div class="code-head"><span>wrf_smoke_to_vdb.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 3-D smoke for Blender/Houdini/Unreal: one OpenVDB volume per output time from WRF's smoke tracer.</span>
+<span class="c"># Needs the OpenVDB Python bindings (e.g. "pip install openvdb" where available, or Blender's bundled module).</span>
+from netCDF4 import Dataset
+import numpy as np, openvdb as vdb
+d = Dataset("wrfout_d03_2020-09-08_00:00:00")
+for k in range(len(d["Times"])):
+    smoke = np.asarray(d["fire_smoke"][k], dtype="float32")     <span class="c"> # (bottom_top, south_north, west_east), g/kg</span>
+    grid = vdb.FloatGrid(); grid.copyFromArray(np.transpose(smoke, (2, 1, 0)))  <span class="c"> # x, y, z order</span>
+    grid.name = "density"; grid.transform = vdb.createLinearTransform(voxelSize=150.0)
+    vdb.write(f"smoke_{k:03d}.vdb", grids=[grid])
+<span class="c"># Note: model levels are not equally spaced in height; resample to a regular z grid (from PH/PHB) for accuracy.</span></code></pre></div>
+</section><section id="other" aria-labelledby="other-h"><h2 id="other-h">Unreal Engine, VAPOR and ParaView</h2>
+<ul>
+<li><strong>Unreal Engine</strong>: Cesium for Unreal for the globe and terrain, a material with the same arrival-time logic, Niagara for flames and
+embers, and the VDB smoke through Unreal's Sparse Volume Textures. Movie Render Queue for the film.</li>
+<li><strong>VAPOR</strong> (NCAR, free): reads WRF-ARW output directly, including the terrain-following grid, and renders the smoke tracer,
+temperature and wind in 3-D: the fastest way to see the plume the coupled model produced. Fire-mesh fields are not on the atmospheric grid,
+so overlay the perimeters as an image or use the atmospheric <code>AVG_FUEL_FRAC</code> / heat-flux fields.</li>
+<li><strong>ParaView</strong>: open the NetCDF with the CF reader, or convert to VTK with Python; good for slices and isosurfaces of vertical velocity
+above the fire.</li>
+</ul>
+<div class="callout src reveal"><b>What was tested</b><p>The converter was run end to end on the synthetic file: the KML parses with 608 time-stamped polygons, the KMZ holds 13 overlays plus a colour bar with matching paths (a path bug was found and fixed this way), and the perimeters and texture land on Forest Park with north up. The Unity, Blender, Cesium and VDB snippets were written against those programs' documented APIs but not run here.</p></div>
+</section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../web-visualization/index.html"><small>← Previous</small><b>12 · Web visualization with WRFx</b></a>
+      <a class="next" href="../fire-3d/index.html"><small>Next →</small><b>14 · 3-D Forest Park fire simulator</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(24012149446).jpg">“Forest Park, Portland, Oregon (24012149446)”</a> by Tony Webster from Half Moon Bay, California, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+</body>
+</html>

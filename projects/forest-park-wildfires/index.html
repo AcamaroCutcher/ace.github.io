@@ -66,12 +66,12 @@
 
       <section class="block" aria-labelledby="chapters-h">
         <div class="block-head">
-          <p class="eyebrow">Sections</p>
-          <h2 id="chapters-h">Explore the project</h2>
+          <p class="eyebrow">Part I · Sections 01–05</p>
+          <h2 id="chapters-h">The Forest Park study</h2>
           <p class="lede">Each section is its own page. Start with the proposal, or jump straight to the maps and
             simulations.</p>
         </div>
-        <nav class="chapters" aria-label="Project sections">
+        <nav class="chapters" aria-label="Part I sections">
         <a class="chapter reveal" href="proposal/index.html">
           <div class="chapter-img" style="background-image: url('img/photos/river-view-sm.jpg')" aria-hidden="true"></div>
           <div class="chapter-body">
@@ -117,12 +117,104 @@
             <span class="go">Open section →</span>
           </div>
         </a>
+        </nav>
+      </section>
+
+      <section class="block" aria-labelledby="handbook-h">
+        <div class="block-head">
+          <p class="eyebrow">Part II · Sections 06–14</p>
+          <h2 id="handbook-h">WRF-SFIRE handbook</h2>
+          <p class="lede">How the coupled fire–atmosphere model works and how to run it: the math, installing it on a cluster,
+            single, perimeter and multiple ignitions, and turning the output into web maps and 3-D animations.</p>
+        </div>
+        <nav class="chapters" aria-label="Part II sections">
+        <a class="chapter reveal" href="wrf-sfire-math/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-levelset.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">06</span><span class="pill done">Theory</span></div>
+            <h3>The math of WRF-SFIRE</h3>
+            <p>The coupled equations: atmosphere, wind at the flames, Rothermel spread, the level-set method, fuel burnout and heat release. With an interactive level-set lab.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="install/index.html">
+          <div class="chapter-img" style="background-image: url('img/photos/leif-erikson-sm.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">07</span><span class="pill done">Setup</span></div>
+            <h3>Installing WRF-SFIRE on an HPC cluster</h3>
+            <p>Compilers, MPI, NetCDF, HDF5 and JasPer; building WRF-SFIRE and WPS; the first test; Slurm and PBS job scripts; common errors.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="single-ignition/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-fire-spread.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">08</span><span class="pill done">Run</span></div>
+            <h3>A single point of ignition</h3>
+            <p>A complete Forest Park case: Labor Day 2020 east wind, HRRR data, three nested domains, the full namelist and a reference for every fire option.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="perimeter-math/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-isochrones.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">09</span><span class="pill done">Theory</span></div>
+            <h3>Ignition from a perimeter: the math</h3>
+            <p>Building a fire history from an observed perimeter and replaying it so the atmosphere spins up. With an interactive replay lab.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="perimeter-setup/index.html">
+          <div class="chapter-img" style="background-image: url('img/photos/fallen-alder-sm.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">10</span><span class="pill done">Code</span></div>
+            <h3>Ignition from a perimeter: setup and code</h3>
+            <p>write_tign.py, the namelist switches, idealized cases and the NCAR LFN_HIST variant, step by step.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="multiple-ignitions/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-fuel-maps.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">11</span><span class="pill done">Run</span></div>
+            <h3>Multiple ignitions</h3>
+            <p>Up to five ignition lines in the namelist, any number from an arrival-time field, and ensembles as job arrays.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="web-visualization/index.html">
+          <div class="chapter-img" style="background-image: url('img/photos/wildwood-sm.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">12</span><span class="pill done">Visualize</span></div>
+            <h3>Web visualization with WRFx</h3>
+            <p>wrfxpy, wrfxweb and wrfxctrl: run jobs, post-process wrfout and show fires in the browser, or build a small viewer of your own.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="kml-3d/index.html">
+          <div class="chapter-img" style="background-image: url('img/photos/ravine-sm.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">13</span><span class="pill done">Visualize</span></div>
+            <h3>From NetCDF to KML/KMZ and 3-D animation</h3>
+            <p>A tested converter to KML, KMZ, GeoJSON and textures, then Google Earth, Cesium, Unity, Blender, Unreal and VAPOR.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="fire-3d/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-3d.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">14</span><span class="pill done">Interactive</span></div>
+            <h3>3-D Forest Park fire simulator</h3>
+            <p>The level-set fire model running on your GPU over the real Forest Park terrain and fuel map: single, multiple, line and perimeter ignitions, or click to start your own.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
         <div class="chapter upcoming reveal" aria-disabled="true">
           <div class="chapter-img" style="background-image: url('img/bg/banner-terrain.jpg')" aria-hidden="true"></div>
           <div class="chapter-body">
-            <div class="chapter-top"><span class="num">06</span><span class="pill">Next</span></div>
-            <h3>WRF-SFIRE runs</h3>
-            <p>Coupled fire–atmosphere runs on the worst east-wind episodes from the fire-weather analysis.</p>
+            <div class="chapter-top"><span class="num">15</span><span class="pill">Next</span></div>
+            <h3>Forest Park WRF-SFIRE runs</h3>
+            <p>The first coupled runs on the worst east-wind episodes, using this handbook's setup.</p>
           </div>
         </div>
         </nav>
@@ -133,7 +225,15 @@
           <h3 id="log-title">Progress log</h3>
           <ol class="log-list">
             <li>
-              <span class="log-tag new">v6</span>
+              <span class="log-tag new">v7</span>
+              <time datetime="2026-11-05">5 Nov 2026</time>
+              <p><strong>WRF-SFIRE handbook.</strong> Eight new sections (<a href="wrf-sfire-math/index.html">06</a>–<a href="kml-3d/index.html">13</a>):
+                the model's equations with interactive level-set and perimeter labs, installing it on a cluster, a complete
+                Forest Park run, perimeter and multiple ignitions, the WRFx web viewer, and converting output to KML/KMZ and
+                3-D animation. Also fixed the layout on phones.</p>
+            </li>
+            <li>
+              <span class="log-tag">v6</span>
               <time datetime="2026-11-05">5 Nov 2026</time>
               <p><strong>Proposal, photos and a new layout.</strong> Added our group's partner proposal
                 (<a href="proposal/index.html">Section 01</a>), split the project into one page per section, added
