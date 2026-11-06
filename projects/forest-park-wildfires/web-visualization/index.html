@@ -18,7 +18,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">12 · Web visualization with WRFx</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner ">
@@ -47,7 +47,7 @@
 </svg></div>
 <div class="table-wrap reveal"><table class=""><thead><tr><th>Part</th><th>What it is</th><th>Repository</th></tr></thead><tbody><tr><td>wrfxpy</td><td>Python system on the cluster: fetches weather (HRRR, NAM, GFS, NARR, CFSR), builds namelists, runs WPS / real / WRF-SFIRE through the queue, post-processes wrfout to geolocated PNG/KMZ and uploads them.</td><td><a href="https://github.com/openwfm/wrfxpy">openwfm/wrfxpy</a></td></tr><tr><td>wrfxweb</td><td>Static web viewer for the uploaded products (a public demo runs at <a href="https://demo.openwfm.org">demo.openwfm.org</a>).</td><td><a href="https://github.com/openwfm/wrfxweb">openwfm/wrfxweb</a></td></tr><tr><td>wrfxctrl</td><td>Flask web app to submit and monitor jobs (start a fire from a map click).</td><td><a href="https://github.com/openwfm/wrfxctrl">openwfm/wrfxctrl</a></td></tr></tbody></table></div>
 </section><section id="install" aria-labelledby="install-h"><h2 id="install-h">Install wrfxpy and run a job</h2>
-<div class="code reveal"><div class="code-head"><span>wrfxpy</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># on the cluster, in your home directory</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>wrfxpy</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># on the cluster, in your home directory</span>
 git clone https://github.com/openwfm/wrfxpy &amp;&amp; cd wrfxpy
 conda create -n wrfx python=3.8 &amp;&amp; conda activate wrfx
 conda install -c conda-forge gdal -y
@@ -62,7 +62,7 @@ cp etc/tokens.json.initial etc/tokens.json   <span class="c"> # API tokens (Meso
 <p>A job is a JSON file. This one reproduces Section 08's Forest Park case (keys as in wrfxpy's <code>tests/input-HRRR.json</code>; wrfxpy writes the
 namelists itself from its templates in <code>etc/nlists/</code>, so put Forest Park specifics such as the fuel source into those templates or
 <code>etc/vtables/geo_vars.json</code>):</p>
-<div class="code reveal"><div class="code-head"><span>jobs/forestpark.json</span><button type="button" class="copy">Copy</button></div><pre><code>{
+<div class="code reveal" translate="no"><div class="code-head"><span>jobs/forestpark.json</span><button type="button" class="copy">Copy</button></div><pre><code>{
   "job_id": "forestpark-2020-09-08",
   "grib_source": "HRRR",
   "start_utc": "2020-09-08_00:00:00",
@@ -88,7 +88,7 @@ namelists itself from its templates in <code>etc/nlists/</code>, so put Forest P
                "description": "Forest Park, Labor Day 2020 east wind", "shuttle": "incremental"}
 }</code></pre></div>
 </section><section id="post" aria-labelledby="post-h"><h2 id="post-h">Post-process an existing run for the viewer</h2>
-<div class="code reveal"><div class="code-head"><span>postprocess.sh</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># turn an existing wrfout into the web viewer's products (PNG + KMZ + a JSON catalog)</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>postprocess.sh</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># turn an existing wrfout into the web viewer's products (PNG + KMZ + a JSON catalog)</span>
 cd wrfxpy &amp;&amp; conda activate wrfx
 ./postprocess.sh /path/to/wrfout_d03_2020-09-08_00:00:00 FGRNHFX,FIRE_AREA,F_ROS,T2,WINDVEC products/forestpark
 <span class="c">#  usage (src/vis/postprocess.py): &lt;wrfout_path&gt; &lt;var_instr&gt; &lt;prefix&gt; [skip]</span>
@@ -98,7 +98,7 @@ cd wrfxpy &amp;&amp; conda activate wrfx
 <code>SMOKE_INT</code> (vertically integrated smoke). Each is rendered as a transparent PNG with a colour bar and packed into KMZ, plus a
 JSON manifest that wrfxweb reads.</p>
 </section><section id="web" aria-labelledby="web-h"><h2 id="web-h">Set up wrfxweb</h2>
-<div class="code reveal"><div class="code-head"><span>wrfxweb and the shuttle</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># on the web server (passwordless ssh from the cluster)</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>wrfxweb and the shuttle</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># on the web server (passwordless ssh from the cluster)</span>
 git clone https://github.com/openwfm/wrfxweb.git
 cp wrfxweb/etc/conf.json.template wrfxweb/etc/conf.json
 <span class="c">#   "url_root": "https://your.server/your_id", "organization": "...", "flags": []</span>
@@ -113,7 +113,7 @@ mkdir wrfxweb/fdds/simulations               <span class="c"> # serve wrfxweb/fd
 </section><section id="own" aria-labelledby="own-h"><h2 id="own-h">Or: a small viewer of your own</h2>
 <p>If you only need to show a finished run, the converter of <a href="../kml-3d/index.html">Section 13</a> writes <code>perimeters.geojson</code>;
 a dozen lines of Leaflet give a web map with a time slider, hostable on GitHub Pages like this site:</p>
-<div class="code reveal"><div class="code-head"><span>viewer.html</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;!-- a minimal time-slider viewer for perimeters.geojson (from Section 13's converter) --&gt;
+<div class="code reveal" translate="no"><div class="code-head"><span>viewer.html</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;!-- a minimal time-slider viewer for perimeters.geojson (from Section 13's converter) --&gt;
 &lt;div id="map" style="height:70vh"&gt;&lt;/div&gt;&lt;input id="t" type="range" min="0" value="0" style="width:100%"&gt;
 &lt;link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"&gt;
 &lt;script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"&gt;&lt;/script&gt;
@@ -160,5 +160,6 @@ fetch('perimeters.geojson').then(r =&gt; r.json()).then(g =&gt; {
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
 </body>
 </html>

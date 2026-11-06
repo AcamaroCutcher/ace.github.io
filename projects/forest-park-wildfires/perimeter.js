@@ -250,6 +250,6 @@
     compute(); draw(); requestAnimationFrame(loop);
   }
 
-  function init() { document.querySelectorAll('[data-lab="perimeter"]').forEach(function (el) { Lab(el); }); }
+  function init() { if (window.FIRELAB_GPU) return; document.querySelectorAll('[data-lab="perimeter"]').forEach(function (el) { Lab(el); }); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

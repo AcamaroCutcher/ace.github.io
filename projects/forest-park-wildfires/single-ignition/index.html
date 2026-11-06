@@ -18,7 +18,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">08 · A single point of ignition</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner live">
@@ -40,7 +40,7 @@ The point, 45.53356° N, 122.71382° W, is the start of the ensemble fire that r
 <a href="../fire-spread/index.html">Section 05</a> (71). The run starts at 00 UTC on 8 September (5 pm PDT, 7 Sept.), spins the atmosphere up
 for one hour, ignites at 01 UTC and follows the fire for 8 hours.</p>
 <div class="table-wrap reveal"><table class=""><thead><tr><th>Domain</th><th>Cells</th><th>Δx</th><th>Time step</th><th>Role</th></tr></thead><tbody><tr><td>d01</td><td>100 × 100</td><td>1350 m</td><td>6 s</td><td>Regional flow: the Columbia Gorge east wind</td></tr><tr><td>d02</td><td>132 × 132</td><td>450 m</td><td>2 s</td><td>Terrain-channelled wind over the West Hills</td></tr><tr><td>d03</td><td>108 × 108</td><td>150 m</td><td>0.67 s</td><td>Fire-resolving atmosphere; fire mesh 30 m (540 × 540)</td></tr></tbody></table></div>
-</section><section id="see" aria-labelledby="see-h"><h2 id="see-h">See it in 3-D first</h2><div class="sim3d reveal" data-sim3d data-root="../" data-preset="single" data-lock></div><p class="lead-note">The same ignition point on the real Forest Park terrain and fuel map, solved with SFIRE's fire-spread equations under the east wind (no atmosphere: that is what the WRF run below adds). The full simulator with every scenario is in <a href="../fire-3d/index.html">Section 14</a>.</p></section><section id="wps" aria-labelledby="wps-h"><h2 id="wps-h">Step 1 · Preprocess with WPS</h2><div class="code reveal"><div class="code-head"><span>WPS: geogrid, ungrib, metgrid</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 1. geogrid: domains + static data (fuel map and terrain on the 30 m fire mesh)</span>
+</section><section id="see" aria-labelledby="see-h"><h2 id="see-h">See it in 3-D first</h2><div class="sim3d reveal" data-sim3d data-root="../" data-preset="single" data-lock></div><p class="lead-note">The same ignition point on the real Forest Park terrain and fuel map, solved with SFIRE's fire-spread equations under the east wind (no atmosphere: that is what the WRF run below adds). The full simulator with every scenario is in <a href="../fire-3d/index.html">Section 14</a>.</p></section><section id="wps" aria-labelledby="wps-h"><h2 id="wps-h">Step 1 · Preprocess with WPS</h2><div class="code reveal" translate="no"><div class="code-head"><span>WPS: geogrid, ungrib, metgrid</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 1. geogrid: domains + static data (fuel map and terrain on the 30 m fire mesh)</span>
 cd $HOME/WPS
 cp /path/to/Wildfires_forest_park/wrf/namelist.wps.forest_park namelist.wps
 <span class="c">#    edit geog_data_path = '/path/to/WPS_GEOG'</span>
@@ -62,7 +62,7 @@ ln -sf ungrib/Variable_Tables/Vtable.raphrrr Vtable
 ./metgrid.exe                                <span class="c"> # -&gt; met_em.d0{1,2,3}.2020-09-08_*.nc</span>
 ncdump -h met_em.d01.2020-09-08_00:00:00.nc | grep -E "num_metgrid_levels|num_metgrid_soil_levels"</code></pre></div></section><section id="namelist" aria-labelledby="namelist-h"><h2 id="namelist-h">Step 2 · namelist.input</h2>
 <p>The full file for this case. The <code>&amp;fire</code> block is per domain: values for d01, d02, d03.</p>
-<div class="code reveal"><div class="code-head"><span>namelist.input</span><button type="button" class="copy">Copy</button></div><pre><code>&amp;time_control
+<div class="code reveal" translate="no"><div class="code-head"><span>namelist.input</span><button type="button" class="copy">Copy</button></div><pre><code>&amp;time_control
  run_hours              = 9,
  start_year             = 2020, 2020, 2020,
  start_month            = 09,   09,   09,
@@ -172,7 +172,7 @@ ncdump -h met_em.d01.2020-09-08_00:00:00.nc | grep -E "num_metgrid_levels|num_me
 <li><strong>Time step.</strong> 6 s on 1.35 km is below WRF's usual 6 × Δx(km) rule; steep terrain and the fire's updrafts can still need less. The fire CFL (S·Δt &lt; 30 m) is far from limiting.</li>
 </ul></div>
 </section><section id="run" aria-labelledby="run-h"><h2 id="run-h">Step 3 · Run</h2>
-<div class="code reveal"><div class="code-head"><span>set up and submit</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># run directory on scratch</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>set up and submit</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># run directory on scratch</span>
 mkdir -p $SCRATCH/fp-single &amp;&amp; cd $SCRATCH/fp-single
 ln -sf $HOME/WRF-SFIRE/run/* .               <span class="c"> # tables, real.exe, wrf.exe</span>
 rm -f namelist.input
@@ -188,7 +188,7 @@ step. <code>rsl.error.0000</code> must end with <code>SUCCESS COMPLETE WRF</code
 <code>TIGN_G</code> (arrival time, s; only meaningful where LFN ≤ 0), <code>FIRE_AREA</code>, <code>FGRNHFX</code> / <code>FGRNQFX</code>
 (heat and moisture fluxes, W/m²), <code>F_ROS</code>, <code>ROS</code>, <code>FLINEINT</code> (fireline intensity), <code>FUEL_FRAC</code>,
 <code>FXLONG</code>/<code>FXLAT</code>, <code>ZSF</code>, <code>NFUEL_CAT</code>. The fire-mesh arrays carry <code>sr</code> padding cells at the far edges.</p>
-<div class="code reveal"><div class="code-head"><span>check_run.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># quick look at the result (Python, netCDF4 + matplotlib)</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>check_run.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># quick look at the result (Python, netCDF4 + matplotlib)</span>
 from netCDF4 import Dataset
 import numpy as np, matplotlib.pyplot as plt
 d = Dataset("wrfout_d03_2020-09-08_00:00:00")
@@ -239,6 +239,7 @@ Anderson-13 fuel map of this project.</p>
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
   <script src="../fire-map.js"></script>
   <script src="../forest3d.js"></script>
 </body>

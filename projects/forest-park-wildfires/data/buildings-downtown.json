@@ -1,0 +1,16 @@
+{
+ "buildings": 7811,
+ "vertices": 248285,
+ "indices": 400047,
+ "vertex_bytes": 12,
+ "index_offset": 2979420,
+ "source": "City of Portland Building Footprints (AVG_HEIGHT, lidar-derived); Downtown, Old Town, Pearl, Goose Hollow and NW Portland",
+ "bbox_lonlat": [
+  -122.716,
+  45.503,
+  -122.662,
+  45.546
+ ],
+ "tallest_m": 192.5,
+ "median_m": 6.6
+}

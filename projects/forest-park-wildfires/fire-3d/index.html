@@ -19,7 +19,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">14 · 3-D Forest Park fire simulator</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner live">
@@ -34,13 +34,33 @@
 
     <main>
       <section class="block" id="fire-3d" aria-label="3-D Forest Park fire simulator">
-<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#sim">Simulator</a><a href="#scenarios">Scenarios</a><a href="#what">What it solves</a><a href="#controls">Controls</a><a href="#refs">Data</a></nav><section id="sim" aria-labelledby="sim-h"><h2 id="sim-h">Forest Park in 3-D</h2>
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#sim">Simulator</a><a href="#scenarios">Scenarios</a><a href="#sources">Ignition sources</a><a href="#buildings">Buildings</a><a href="#what">What it solves</a><a href="#controls">Controls</a><a href="#refs">Data</a></nav><section id="sim" aria-labelledby="sim-h"><h2 id="sim-h">Forest Park in 3-D</h2>
 <p>The fire below spreads over the real Forest Park: USGS 3DEP terrain at 30 m, draped with this project's wildland–urban fuel map
 (<a href="../fuel-maps/index.html">Section 02</a>). Your graphics card solves the level-set equation of
 <a href="../wrf-sfire-math/index.html">Section 06</a> on all 428,160 cells of the fire mesh, with SFIRE's spread formula and the Anderson-13
 coefficients for the chosen weather. Pick a scenario, change the wind, drag to fly around, and click anywhere on the terrain to start a new fire.</p>
 <div class="sim3d reveal" data-sim3d data-root="../" data-preset="single"></div>
-</section><section id="scenarios" aria-labelledby="scenarios-h"><h2 id="scenarios-h">The scenarios</h2><div class="table-wrap reveal"><table class=""><thead><tr><th>Scenario</th><th>What it shows</th><th>Where it is explained</th></tr></thead><tbody><tr><td>Single ignition</td><td>The Section 08 point at the park's south-east end, above NW Portland, the start that reached the most buildings in the 2,000-fire ensemble.</td><td><a href="../single-ignition/index.html">Section 08</a></td></tr><tr><td>Five ignitions, 10 min apart</td><td>The five highest-impact starts from Section 05, ignited one after another; fronts that meet merge.</td><td><a href="../multiple-ignitions/index.html">Section 11</a></td></tr><tr><td>Line ignition</td><td>1.2 km of fire edge lit progressively at 0.5 m/s along the park's east side above US-30.</td><td><a href="../multiple-ignitions/index.html#five">Section 11</a></td></tr><tr><td>Perimeter replay</td><td>A 51 ha perimeter near Skyline replayed for 2 hours (ψ = T − t, Eq. 3 of Section 09), then the model spreads it on its own.</td><td><a href="../perimeter-math/index.html">Sections 09–10</a></td></tr><tr><td>Your own</td><td>An empty park: click to ignite, as many times as you like (up to 24 ignitions).</td><td>–</td></tr></tbody></table></div></section><section id="what" aria-labelledby="what-h"><h2 id="what-h">What is being solved</h2>
+</section><section id="scenarios" aria-labelledby="scenarios-h"><h2 id="scenarios-h">The scenarios</h2><div class="table-wrap reveal"><table class=""><thead><tr><th>Scenario</th><th>What it shows</th><th>Where it is explained</th></tr></thead><tbody><tr><td>Single ignition</td><td>The Section 08 point at the park's south-east end, above NW Portland, the start that reached the most buildings in the 2,000-fire ensemble.</td><td><a href="../single-ignition/index.html">Section 08</a></td></tr><tr><td>Five ignitions, 10 min apart</td><td>The five highest-impact starts from Section 05, ignited one after another; fronts that meet merge.</td><td><a href="../multiple-ignitions/index.html">Section 11</a></td></tr><tr><td>Line ignition</td><td>1.2 km of fire edge lit progressively at 0.5 m/s along the park's east side above US-30.</td><td><a href="../multiple-ignitions/index.html#five">Section 11</a></td></tr><tr><td>Perimeter replay</td><td>A 51 ha perimeter near Skyline replayed for 2 hours (ψ = T − t, Eq. 3 of Section 09), then the model spreads it on its own.</td><td><a href="../perimeter-math/index.html">Sections 09–10</a></td></tr><tr><td>Your own</td><td>An empty park: click to ignite, as many times as you like.</td><td>–</td></tr></tbody></table></div></section><section id="sources" aria-labelledby="sources-h"><h2 id="sources-h">Ignition sources</h2>
+<p>Besides the scenarios, the <strong>Add an ignition source</strong> menu starts fires where real ignitions happen, placed on real
+infrastructure and terrain:</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Source</th><th>Where the fires start</th><th>Data</th></tr></thead><tbody><tr><td>Lightning storm</td><td>8 strikes over 30 minutes on ridge-top cells (the highest 20% of the park's burnable ground)</td><td>USGS 3DEP</td></tr><tr><td>Power-line failure</td><td>Three ignitions along a transmission line where it crosses burnable fuel in or near the park</td><td>BPA and PGE lines (115 and 230 kV) from OpenStreetMap</td></tr><tr><td>Roadside / vehicle</td><td>A road-edge cell next to burnable fuel, then neighbours a few minutes later</td><td>NLCD 2021 road classes (US-30, Skyline, streets)</td></tr><tr><td>Campfire on a trail</td><td>One point on a named trail inside the park</td><td>Wildwood Trail, Leif Erikson Drive, firelanes (OpenStreetMap)</td></tr><tr><td>Arson</td><td>Four simultaneous starts near one trail point</td><td>OpenStreetMap trails</td></tr></tbody></table></div>
+<p><strong>Ember spotting</strong> (optional) adds a simple stochastic model: burning areas throw firebrands downwind with a lognormal
+distance (median about 60 m at 4 m/s wind, growing with wind speed) and ±12° scatter, and a brand that lands on unburned fuel starts a
+new fire after its flight time. This is <em>not</em> part of SFIRE's <code>ifire = 1</code> code (the NCAR path has a Lagrangian firebrand
+module, Section 06); it is here to show how spotting lets fire jump roads and fuel-free gaps that stop a surface fire.</p>
+<p><strong>Longer runs.</strong> Fires now run for 24 hours. The <strong>24-hour time-lapse</strong> button replays a full day at 30 simulated
+minutes per second while the camera slowly circles the park.</p>
+</section><section id="buildings" aria-labelledby="buildings-h"><h2 id="buildings-h">Every building, and the St. Johns Bridge</h2>
+<p>All 134,000 buildings inside the 19 × 20 km domain stand on the terrain at their real heights, from Downtown, the Pearl and NW Portland to
+Linnton, Forest Heights, Cedar Mill and St. Johns (City of Portland Building Footprints with lidar-derived heights). The 7,811 buildings of Downtown, Old Town, the Pearl, Goose Hollow and NW Portland are drawn as their true footprints
+(Wells Fargo Center comes out at 163 m against its real 166 m); the other 126,600 are drawn as boxes that keep each footprint's
+orientation and area, which keeps all of them in a 1.5 MB download. The same simulator, with the same buildings, runs in Sections 08, 09 and 11.</p>
+<p>The <strong>St. Johns Bridge</strong> crosses the Willamette next to the park's north end: its deck follows the OpenStreetMap line, with the
+368 m main span hung from two Gothic towers 124 m above the river and the deck about 62 m above the water.</p>
+<p>A building glows when fire is burning in its 30 m cell or the cells next to it and darkens once the ground around it has burned. Buildings
+are drawn for context: as in WRF-SFIRE, they are fuel-free cells and do not ignite one another. Use <strong>Fly to…</strong> to visit
+Downtown, NW Portland, Linnton, St. Johns or the bridge.</p>
+</section><section id="what" aria-labelledby="what-h"><h2 id="what-h">What is being solved</h2>
 <div class="eq reveal" id="eq-1">$$\begin{aligned} \frac{\partial\psi}{\partial t} + S(\mathbf x,\mathbf n)\,\lVert\nabla\psi\rVert &= 0 \\[4pt] S(\mathbf x,\mathbf n) &= R_0 + \phi_W\!\left(\lVert\mathbf U\rVert\right)\max(0,\cos\theta_U) + \phi_S\!\left(\lVert\nabla z\rVert\right)\max(0,\cos\theta_z) \end{aligned} \tag{1}$$<p class="eq-caption"><span class="eq-n">Eq. (1)</span>The level-set equation with SFIRE's default spread rate (fire_advection = 1), as in Section 06. Upwind differences (fire_upwinding = 4), Heun time steps (fire_back_weight = 0.5) at the CFL limit 0.45 Δx / S_max, ψ only decreasing (fire_grows_only = 1).</p></div>
 <ul>
 <li><strong>Grid.</strong> 640 × 669 cells of 30 m (19.2 × 20.1 km), the fire mesh of the planned WRF-SFIRE domain d03. The fire state lives in two
@@ -56,7 +76,9 @@ a dispersion model.</li>
 </ul>
 <div class="callout warn reveal"><b>What it is not</b><p>This is the fire half of WRF-SFIRE only, with a steady, uniform wind. It has no atmosphere: no fire-induced winds, no plume, no terrain-channelled flow, no spotting and no crown fire. A real WRF-SFIRE run (Section 08) adds all of the atmospheric feedback. Treat the shapes and speeds as a way to see the model's fire physics on Forest Park, not as a forecast.</p></div>
 </section><section id="controls" aria-labelledby="controls-h"><h2 id="controls-h">Controls and tips</h2>
-<div class="table-wrap reveal"><table class=""><thead><tr><th>Action</th><th>Mouse / trackpad</th><th>Touch</th></tr></thead><tbody><tr><td>Orbit</td><td>drag</td><td>drag with one finger</td></tr><tr><td>Zoom</td><td>scroll</td><td>pinch</td></tr><tr><td>Pan</td><td>right-drag or shift-drag</td><td>–</td></tr><tr><td>Ignite</td><td>click the terrain</td><td>tap the terrain</td></tr><tr><td>Jump straight down</td><td>Top view button</td><td>Top view button</td></tr></tbody></table></div>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Action</th><th>Mouse / trackpad</th><th>Touch</th><th>Keyboard (click the view first)</th></tr></thead><tbody><tr><td>Orbit</td><td>drag</td><td>drag with one finger</td><td>Q / E rotate, R / F tilt</td></tr><tr><td>Zoom</td><td>scroll or trackpad pinch: zooms toward the point under the cursor</td><td>pinch</td><td>+ / −</td></tr><tr><td>Pan</td><td>right-drag, middle-drag or shift-drag: the ground follows the cursor</td><td>drag with two fingers</td><td>arrow keys or W A S D</td></tr><tr><td>Rotate</td><td>drag sideways</td><td>twist two fingers</td><td>Q / E</td></tr><tr><td>Fly in</td><td>double-click a point</td><td>–</td><td>–</td></tr><tr><td>Ignite</td><td>click the terrain</td><td>tap the terrain</td><td>–</td></tr><tr><td>North up / reset</td><td>click the compass · Reset view</td><td>tap the compass</td><td>N · 0</td></tr><tr><td>Go somewhere</td><td>Fly to… menu</td><td>Fly to… menu</td><td>–</td></tr></tbody></table></div>
+<p>The camera glides: movements ease in and out, a quick drag keeps spinning for a moment, and the camera never goes below the ground.
+The buttons at the top right zoom, rotate and tilt: tap for a step, hold to keep moving.</p>
 <ul>
 <li>Raise the playback speed (simulated minutes per second) to watch hours of spread; lower it to see the front move cell by cell.</li>
 <li>Turn the vertical exaggeration up to see how fires run up the ravines on the park's east face in the east wind.</li>
@@ -64,7 +86,7 @@ a dispersion model.</li>
 <li>The simulation needs WebGL 2 with floating-point render targets (any recent desktop browser, and most phones). Performance depends on the GPU;
 on integrated graphics keep the playback at 10–20 min/s.</li>
 </ul>
-</section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">Data and method</h2><ol class="refs"><li>Terrain: USGS 3DEP, resampled to the 30 m fuel grid (Section 03). Fuel: LANDFIRE LF2025 FBFM13 inside the park, NLCD-based stand-in fuels outside it (Section 02).</li><li>Spread: Rothermel (1972) with the Anderson (1982) fuel models, in the form of WRF-SFIRE's <code>fire_ros_cawfe</code>; coefficients computed with this project's <code>rothermel.py</code>.</li><li>Level-set method: Osher &amp; Sethian (1988); WRF-SFIRE: Mandel, Beezley &amp; Kochanski (2011), <em>Geoscientific Model Development</em> 4, 591–610.</li></ol></section></div>
+</section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">Data and method</h2><ol class="refs"><li>Terrain: USGS 3DEP, resampled to the 30 m fuel grid (Section 03). Fuel: LANDFIRE LF2025 FBFM13 inside the park, NLCD-based stand-in fuels outside it (Section 02).</li><li>Spread: Rothermel (1972) with the Anderson (1982) fuel models, in the form of WRF-SFIRE's <code>fire_ros_cawfe</code>; coefficients computed with this project's <code>rothermel.py</code>.</li><li>Level-set method: Osher &amp; Sethian (1988); WRF-SFIRE: Mandel, Beezley &amp; Kochanski (2011), <em>Geoscientific Model Development</em> 4, 591–610.</li><li>Buildings: City of Portland Building Footprints (portlandmaps.com open data), heights from the AVG_HEIGHT field.</li><li>Power lines, trails and the St. Johns Bridge alignment: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, available under the Open Database License.</li></ol></section></div>
       </section>
     </main>
 
@@ -92,6 +114,7 @@ on integrated graphics keep the playback at 10–20 min/s.</li>
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
   <script src="../fire-map.js"></script>
   <script src="../forest3d.js"></script>
   <script defer src="../vendor/katex/katex.min.js"></script>

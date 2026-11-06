@@ -18,7 +18,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">07 · Installing WRF-SFIRE on an HPC cluster</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner ">
@@ -45,7 +45,7 @@ and static data onto them. On a cluster you build once on a login node and run t
 <h3>Option A: build them yourself</h3>
 <p>This script builds everything into <code>$HOME/wrf-libs</code>, in dependency order. It takes 20–40 minutes; run it on a build or
 login node your centre allows compiling on.</p>
-<div class="code reveal"><div class="code-head"><span>build_libs.sh</span><button type="button" class="copy">Copy</button></div><pre><code>#!/usr/bin/env bash
+<div class="code reveal" translate="no"><div class="code-head"><span>build_libs.sh</span><button type="button" class="copy">Copy</button></div><pre><code>#!/usr/bin/env bash
 <span class="c"># build_libs.sh: zlib, HDF5, NetCDF-C, NetCDF-Fortran, libpng, JasPer into one prefix.</span>
 <span class="c"># Run on a login/build node with the compilers you will build WRF with (here GNU).</span>
 <span class="c"># Check each project's download page for newer releases; these URLs were checked in Nov 2026.</span>
@@ -83,7 +83,7 @@ $PREFIX/bin/nc-config --all | head -20
 $PREFIX/bin/nf-config --all | head -20
 echo "done: libraries in $PREFIX"</code></pre></div>
 <h3>Option B: Spack</h3>
-<div class="code reveal"><div class="code-head"><span>spack</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># Alternative: let Spack build the libraries (and MPI) for you</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>spack</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># Alternative: let Spack build the libraries (and MPI) for you</span>
 git clone --depth=100 https://github.com/spack/spack.git ~/spack
 . ~/spack/share/spack/setup-env.sh
 spack compiler find
@@ -95,7 +95,7 @@ export NETCDF=~/wrf-view HDF5=~/wrf-view JASPERLIB=~/wrf-view/lib JASPERINC=~/wr
 spack load openmpi</code></pre></div>
 <h3>The environment file</h3>
 <p>Source the same file before every build and inside every job script, so the run uses the libraries the build used.</p>
-<div class="code reveal"><div class="code-head"><span>~/wrf-env.sh</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># wrf-env.sh: source this before building or running (". ~/wrf-env.sh")</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>~/wrf-env.sh</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># wrf-env.sh: source this before building or running (". ~/wrf-env.sh")</span>
 module purge
 module load gcc/13 openmpi/4.1           <span class="c"> # names differ on every cluster: "module avail gcc openmpi"</span>
 export WRF_LIBS=$HOME/wrf-libs
@@ -109,7 +109,7 @@ ulimit -s unlimited                      <span class="c"> # WRF needs a large st
 </section><section id="wrf" aria-labelledby="wrf-h"><h2 id="wrf-h">Step 2 · Build WRF-SFIRE</h2>
 <ol class="steps">
 <li><p>Clone, configure and compile. <code>em_fire</code> builds the idealized fire cases (handy for a first test),
-<code>em_real</code> the real-data executables.</p><div class="code reveal"><div class="code-head"><span>build WRF-SFIRE</span><button type="button" class="copy">Copy</button></div><pre><code>. ~/wrf-env.sh
+<code>em_real</code> the real-data executables.</p><div class="code reveal" translate="no"><div class="code-head"><span>build WRF-SFIRE</span><button type="button" class="copy">Copy</button></div><pre><code>. ~/wrf-env.sh
 cd $HOME &amp;&amp; git clone https://github.com/openwfm/WRF-SFIRE.git
 cd WRF-SFIRE
 git log -1 --oneline                     <span class="c"> # record the version you build (e.g. the W4.4-S0.1 tag)</span>
@@ -128,7 +128,7 @@ ls -l main/*.exe                           <span class="c"> # wrf.exe and real.e
 them (Section 06 and 08 list which).</p></li>
 </ol>
 </section><section id="wps" aria-labelledby="wps-h"><h2 id="wps-h">Step 3 · Build WPS and get the static data</h2>
-<div class="code reveal"><div class="code-head"><span>build WPS</span><button type="button" class="copy">Copy</button></div><pre><code>. ~/wrf-env.sh
+<div class="code reveal" translate="no"><div class="code-head"><span>build WPS</span><button type="button" class="copy">Copy</button></div><pre><code>. ~/wrf-env.sh
 cd $HOME &amp;&amp; git clone https://github.com/openwfm/WPS.git
 cd WPS
 export WRF_DIR=$HOME/WRF-SFIRE
@@ -144,7 +144,7 @@ refined resolution (entries with <code>subgrid = yes</code> in <code>GEOGRID.TBL
 the 30 m WUI fuel map and 10 m 3DEP terrain as geogrid tiles, plus a <code>GEOGRID.TBL</code> snippet and a <code>namelist.wps</code> for the
 three nested domains (<a href="../terrain/index.html">Section 03</a>; files in <code>wrf/</code> and <code>data/processed/geogrid_*</code> of the project).</p>
 </section><section id="test" aria-labelledby="test-h"><h2 id="test-h">Step 4 · First test: the idealized hill</h2>
-<div class="code reveal"><div class="code-head"><span>run the em_fire test</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># smallest test: the idealized hill case (no WPS, no input data)</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>run the em_fire test</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># smallest test: the idealized hill case (no WPS, no input data)</span>
 cd $HOME/WRF-SFIRE/test/em_fire
 ls                                       <span class="c"> # namelist.input, namelist.fire, input_sounding, ideal.exe, wrf.exe</span>
 grep -n "ibeh" namelist.fire             <span class="c"> # ibeh = 2 (Balbi) in this file: set ibeh = 1 for Rothermel</span>
@@ -155,7 +155,7 @@ ncdump -h wrfout_d01_* | grep -E "LFN|TIGN_G|FGRNHFX|FXLONG"</code></pre></div>
 <p>If this works, the compiler, MPI and NetCDF are all good. Sections 08–11 then set up real Forest Park runs.</p>
 </section><section id="jobs" aria-labelledby="jobs-h"><h2 id="jobs-h">Step 5 · Running through the batch system</h2>
 <p>Never run <code>wrf.exe</code> on a login node. A Slurm script for the real case:</p>
-<div class="code reveal"><div class="code-head"><span>run_wrf.slurm</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
+<div class="code reveal" translate="no"><div class="code-head"><span>run_wrf.slurm</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
 #SBATCH --job-name=sfire-forestpark
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=64             <span class="c"> # cores per node on your cluster</span>
@@ -170,7 +170,7 @@ mv rsl.out.0000 rsl.real.out.0000
 srun ./wrf.exe
 tail -n 2 rsl.error.0000</code></pre></div>
 <p>Submit with <code>sbatch run_wrf.slurm</code>, follow with <code>squeue -u $USER</code> and <code>tail -f rsl.error.0000</code>. On PBS systems:</p>
-<div class="code reveal"><div class="code-head"><span>run_wrf.pbs</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
+<div class="code reveal" translate="no"><div class="code-head"><span>run_wrf.pbs</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
 <span class="c">#PBS -N sfire-forestpark</span>
 <span class="c">#PBS -l select=2:ncpus=36:mpiprocs=36</span>
 <span class="c">#PBS -l walltime=08:00:00</span>
@@ -214,5 +214,6 @@ Measure: run 10 simulated minutes with 32, 64 and 128 ranks and compare the "Tim
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
 </body>
 </html>

@@ -19,7 +19,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">10 · Ignition from a perimeter: setup and code</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner ">
@@ -40,7 +40,7 @@
 (<code>FXLONG</code>/<code>FXLAT</code>, or interpolates them from <code>XLONG</code>/<code>XLAT</code> with <code>--sr</code> when those are not yet filled),
 rasterizes the perimeter, casts a ray from the ignition through every cell inside it to find where the ray leaves the perimeter, builds
 \(T\) as on the previous page, extends it outside, and writes <code>TIGN_G</code>. It prints the namelist lines to use.</p>
-<div class="code reveal"><div class="code-head"><span>perimeter ignition, step by step</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 1. an observed perimeter as GeoJSON or KML (lon, lat), e.g. from NIFC's open WFIGS perimeters,</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>perimeter ignition, step by step</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 1. an observed perimeter as GeoJSON or KML (lon, lat), e.g. from NIFC's open WFIGS perimeters,</span>
 <span class="c">#    an IR flight, or drawn in Google Earth (Add &gt; Polygon, then Save Place As... .kml)</span>
 <span class="c"># 2. the usual WPS + real.exe for a run that STARTS BEFORE the ignition time</span>
 <span class="c"># 3. write the arrival-time history into the fire domain's wrfinput</span>
@@ -56,7 +56,7 @@ python write_tign.py perimeter wrfinput_d03 perimeter.geojson \
 <span class="c"># 5. run wrf.exe and check rsl.out.0000 for:</span>
 <span class="c">#   init_no_fire: using given ignition time to replay history to fire_perimeter_time=  12600.0</span>
 <span class="c">#   replay, setting the level set function</span></code></pre></div>
-<div class="code reveal"><div class="code-head"><span>namelist.input (&amp;fire part)</span><button type="button" class="copy">Copy</button></div><pre><code>&amp;fire
+<div class="code reveal" translate="no"><div class="code-head"><span>namelist.input (&amp;fire part)</span><button type="button" class="copy">Copy</button></div><pre><code>&amp;fire
  ifire                  = 0, 0, 1,
  fire_fuel_read         = 0, 0, -1,
  fire_topo_from_atm     = 0, 0, 0,
@@ -71,7 +71,7 @@ python write_tign.py perimeter wrfinput_d03 perimeter.geojson \
 </section><section id="ideal" aria-labelledby="ideal-h"><h2 id="ideal-h">Idealized cases</h2>
 <p>For a test with <code>ideal.exe</code> (no WPS), the history comes from a text file, as in the <code>hill</code> test's
 <code>namelist.input.tign</code>:</p>
-<div class="code reveal"><div class="code-head"><span>make input_tign_g (Python version of create_tign.m)</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># idealized cases (ideal.exe) read the history from a text file instead of wrfinput:</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>make input_tign_g (Python version of create_tign.m)</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># idealized cases (ideal.exe) read the history from a text file instead of wrfinput:</span>
 <span class="c"># input_tign_g = m, n, then the m*n values row by row (test/em_fire/hill/create_tign.m)</span>
 import numpy as np
 ii, jj = np.meshgrid(np.arange(1, 421), np.arange(1, 421), indexing="ij")
@@ -84,7 +84,7 @@ with open("input_tign_g", "w") as f:
 <p>With <code>ifire = 2</code> the perimeter is given as a level-set function in <code>LFN_HIST</code> and switched on by
 <code>fire_is_real_perim = .true.</code> at the start time of ignition 1 (<code>module_fr_fire_model.F</code>). There is no replay, so the
 atmosphere does not get the fire's history.</p>
-<div class="code reveal"><div class="code-head"><span>perimeter to LFN_HIST</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># NCAR path (ifire = 2): put the perimeter's signed distance into LFN_HIST (negative inside)</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>perimeter to LFN_HIST</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># NCAR path (ifire = 2): put the perimeter's signed distance into LFN_HIST (negative inside)</span>
 from netCDF4 import Dataset
 import numpy as np
 from matplotlib.path import Path
@@ -133,6 +133,7 @@ d.close()
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
   <script defer src="../vendor/katex/katex.min.js"></script>
   <script defer src="../vendor/katex/contrib/auto-render.min.js"></script>
   <script defer src="../math.js"></script>

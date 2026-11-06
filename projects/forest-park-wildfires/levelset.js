@@ -474,6 +474,7 @@
   }
 
   function init() {
+    if (window.FIRELAB_GPU) return;   // the WebGL lab (firelab.js) takes over
     var labs = document.querySelectorAll('[data-lab="levelset"]');
     if (!labs.length) return;
     var root = labs[0].getAttribute('data-root') || '';

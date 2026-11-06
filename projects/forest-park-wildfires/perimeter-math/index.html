@@ -19,7 +19,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">09 · Ignition from a perimeter: the math</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner ">
@@ -74,9 +74,9 @@ never uses those times, because the replay stops at \(t_p\).</p>
 perimeter, \(\psi(\cdot, t_p) = T - t_p\), negative inside and positive outside; from then on the level-set equation runs with the model's winds.</p>
 <dl class="where"><dt>\(t_{ig}\)</dt><dd>ignition time (from reports, or the first satellite detection), seconds after the run starts</dd><dt>\(t_p\)</dt><dd>perimeter time = <code>fire_perimeter_time</code></dd><dt>\(T(\mathbf x)\)</dt><dd>the arrival-time field written into <code>TIGN_G</code> in <code>wrfinput</code></dd></dl>
 <h3>Try it: perimeter replay</h3>
-<p class="lead-note">Drag the ignition star or the perimeter's white vertices. The colours show the replay (fuel burning out behind the growing
-front), the level-set function \(T - t\), or the arrival time with 10-minute isochrones. The chart compares the heat released into the
-atmosphere by the replay with simply igniting the whole perimeter at \(t_p\).</p>
+<p class="lead-note">A perimeter on real Forest Park terrain (10 m). Drag the ignition star or the white vertices. For the first hour the
+fire is replayed from its history (\(\psi = T - t\)), then SFIRE's level-set update takes over under the east wind, exactly as
+<code>fire_perimeter_time</code> does. The chart compares the heat released by the replay with igniting the whole perimeter at \(t_p\).</p>
 <div class="lab reveal" data-lab="perimeter"></div>
 </section><section id="forest3d" aria-labelledby="forest3d-h"><h2 id="forest3d-h">The replay on Forest Park, in 3-D</h2><div class="sim3d reveal" data-sim3d data-root="../" data-preset="perimeter" data-lock></div><p class="lead-note">A 51 ha perimeter near Skyline is replayed for two hours from its fire-arrival history (ψ = T − t), then the level-set equation takes over under the east wind. The full simulator with every scenario is in <a href="../fire-3d/index.html">Section 14</a>.</p></section><section id="variants" aria-labelledby="variants-h"><h2 id="variants-h">Two code paths, two ways to start from a perimeter</h2><div class="table-wrap reveal"><table class=""><thead><tr><th></th><th>SFIRE (ifire = 1)</th><th>NCAR WRF-Fire (ifire = 2)</th></tr></thead><tbody><tr><td>Input</td><td><code>TIGN_G</code> in wrfinput (arrival time, s)</td><td><code>LFN_HIST</code> in wrfinput (level-set function of the perimeter)</td></tr><tr><td>Switch</td><td><code>fire_perimeter_time</code> &gt; 0</td><td><code>fire_is_real_perim = .true.</code></td></tr><tr><td>What happens</td><td>Replay of the history until <code>fire_perimeter_time</code>, with heat release (atmospheric spin-up), then normal spread</td><td>At the start time of ignition 1, LFN is set to LFN_HIST and spread continues (no replay)</td></tr><tr><td>Spin-up</td><td>Yes, built in</td><td>Do it yourself, e.g. a separate earlier run</td></tr></tbody></table></div></section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">References</h2><ol class="refs"><li>Mandel, J., Beezley, J. D., Kochanski, A. K., Kondratenko, V. Y., &amp; Kim, M. (2012). Assimilation of perimeter data and coupling with fuel moisture in a wildland fire–atmosphere DDDAS. <em>Procedia Computer Science</em>, 9, 1100–1109 (ICCS 2012).</li><li>Mandel, J., et al. (2014). Recent advances and applications of WRF–SFIRE. <em>Natural Hazards and Earth System Sciences</em>, 14, 2829–2845. <a href="https://doi.org/10.5194/nhess-14-2829-2014">doi:10.5194/nhess-14-2829-2014</a></li><li>Kochanski, A. K., Jenkins, M. A., Mandel, J., Beezley, J. D., &amp; Krueger, S. K. (2013). Real time simulation of 2007 Santa Ana fires. <em>Forest Ecology and Management</em>, 294, 136–149.</li><li>Farguell, A., Mandel, J., Haley, J., Mallia, D. V., Kochanski, A., &amp; Hilburn, K. (2021). Machine learning estimation of fire arrival time from Level-2 Active Fires satellite data. <em>Remote Sensing</em>, 13(11), 2203.</li><li>Jiménez, P. A., Muñoz-Esparza, D., &amp; Kosović, B. (2018). A high resolution coupled fire–atmosphere forecasting system to minimize the impacts of wildland fires: applications to the Chimney Tops II wildland event. <em>Atmosphere</em>, 9(5), 197.</li></ol></section></div>
       </section>
@@ -106,6 +106,8 @@ atmosphere by the replay with simply igniting the whole perimeter at \(t_p\).</p
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
+  <script src="../firelab.js"></script>
   <script src="../perimeter.js"></script>
   <script src="../forest3d.js"></script>
   <script defer src="../vendor/katex/katex.min.js"></script>

@@ -19,7 +19,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">06 · The math of WRF-SFIRE</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner ">
@@ -94,6 +94,11 @@ With the default <code>fire_advection = 1</code> it uses the full wind speed and
 <div class="eq reveal" id="eq-5">$$\begin{aligned} \phi_W &= R_0\,C\left(\frac{\beta}{\beta_{op}}\right)^{-E} u^{B}, & u &= 196.85\,\min\!\left(\lVert\mathbf U\rVert,\,30\right)\ \text{ft/min} \\[2pt] \phi_S &= 5.275\,R_0\,\beta^{-0.3}\tan^2\varphi, & \tan\varphi &= \min\!\left(\lVert\nabla z\rVert,\,5\right) \end{aligned} \tag{5}$$<p class="eq-caption"><span class="eq-n">Eq. (5)</span>u is the wind in ft/min (Rothermel's units); R₀ is the no-wind, no-slope rate. The total is capped at 6 m/s.</p></div>
 <dl class="where"><dt>\(R_0\)</dt><dd>no-wind, no-slope (backing) spread rate of the fuel: reaction intensity × propagating flux ratio ÷ heat sink</dd><dt>\(C, B, E\)</dt><dd>wind coefficients from the fuel's surface-area-to-volume ratio σ</dd><dt>\(\beta/\beta_{op}\)</dt><dd>packing ratio relative to its optimum</dd><dt>\(\tan\varphi\)</dt><dd>terrain slope from the fire-mesh topography ZSF</dd></dl>
 <figure class="viz reveal"><script type="application/json">{"title": "Rate of spread vs wind (flat ground, 8% dead fuel moisture)", "sub": "SFIRE's Rothermel formula, wind capped at 30 m/s and spread at 6 m/s", "xLabel": "Wind at 6.1 m", "xUnit": "m/s", "yLabel": "Head-fire spread (m/s)", "yUnit": "m/s", "x": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0], "yMin": 0, "yDigits": 2, "xDigits": 1, "series": [{"name": "Short grass", "y": [0.0202, 0.0397, 0.102, 0.2097, 0.364, 0.5661, 0.8165, 1.116, 1.4652, 1.8644, 2.3142, 2.8148, 3.3667, 3.9701, 4.6254, 5.3329, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0]}, {"name": "Timber (grass & understory)", "y": [0.0116, 0.0226, 0.0506, 0.0935, 0.1503, 0.2203, 0.303, 0.398, 0.505, 0.6237, 0.754, 0.8955, 1.0481, 1.2116, 1.3859, 1.5709, 1.7665, 1.9724, 2.1887, 2.4152, 2.6518, 2.8984, 3.155, 3.4215, 3.6977, 3.9837, 4.2794, 4.5846, 4.8994, 5.2237, 5.5574]}, {"name": "Closed timber litter", "y": [0.0011, 0.0021, 0.0038, 0.0059, 0.0085, 0.0114, 0.0145, 0.018, 0.0217, 0.0256, 0.0297, 0.0341, 0.0386, 0.0434, 0.0483, 0.0533, 0.0586, 0.064, 0.0696, 0.0753, 0.0812, 0.0872, 0.0933, 0.0996, 0.106, 0.1126, 0.1193, 0.1261, 0.133, 0.1401, 0.1472]}]}</script></figure>
+<h3>Try it: spread rate in every direction</h3>
+<p class="lead-note">The rose on the left is \(S(\mathbf n)\) from Eq. (4) for every direction of the front's normal, with an east wind
+and terrain rising to the north. On the right is the fire it produces from a point after the chosen time: in uniform conditions the burned
+region is exactly the set of points \(\mathbf x\) with \(\mathbf x\cdot\mathbf n \le S(\mathbf n)\,t\) for every direction (its Wulff shape).</p>
+<div class="rose reveal" data-rose data-root="../"></div>
 <p>The chart uses this project's Rothermel code (it reproduces Anderson's published rates; see Section 05) with SFIRE's caps.
 Grass runs 20–200× faster than closed timber litter at the same wind, which is why the fuel map's grass corridors mattered so much.
 Other spread formulas are selectable with <code>ibeh</code> in <code>namelist.fire</code>: 0 MacArthur, 1 Rothermel (the default in the code),
@@ -111,9 +116,12 @@ unburned fuel can form, and nothing special has to happen at corners. The <stron
 change in time, \(T\) would satisfy the eikonal equation \(S\,\lVert\nabla T\rVert = 1\), the same quantity the minimum-travel-time
 prototype of Section 05 computed with Dijkstra's algorithm.</p>
 <h3>Try it: the level-set lab</h3>
-<p class="lead-note">The lab solves the equation above on a 1.8 × 1.2 km mesh with 10 m cells, using SFIRE's spread formula and Rothermel
-coefficients. Click or tap to ignite; change the wind, slope and fuel; switch the view to see \(\psi\) itself, the arrival time,
-or \(\psi\) as a surface whose intersection with the plane \(\psi = 0\) is the fire front. Try "No upwinding" to see why the scheme matters.</p>
+<p class="lead-note">The lab runs on your graphics card over a real 3.0 × 2.0 km piece of Forest Park at 10 m: USGS 3DEP terrain and this
+project's fuel map, from the park's south-east slopes down to the NW Portland streets. Its update is a line-by-line port of SFIRE's
+<code>tend_ls</code> and <code>prop_ls</code>: the five <code>fire_upwinding</code> schemes (ENO is the SFIRE default), the artificial viscosity term
+<code>fire_viscosity</code>, both <code>fire_advection</code> forms of the spread rate, Heun steps and "extend but never down" at the edges. Click to
+ignite; switch the view to \(\psi\) itself, the arrival time, or \(\psi\) as a 3-D surface whose intersection with the plane
+\(\psi = 0\) is the fire front. Try <code>fire_upwinding = 0</code> to see why upwinding matters.</p>
 <div class="lab reveal" data-lab="levelset" data-preset="single" data-root="../"></div>
 <div class="callout note reveal"><b>Why the fire comes out long and narrow</b><p>With the default formula the wind term is \(\phi_W\max(0,\cos\theta)\), and \(\cos\theta\,\lVert\nabla\psi\rVert = \mathbf w\cdot\nabla\psi\). The level-set equation becomes \(\psi_t + R_0\lVert\nabla\psi\rVert + \phi_W \max(0,\mathbf w\cdot\nabla\psi) = 0\): the downwind-facing part of the front is simply <em>advected</em> along the wind at the head-fire rate, while the flanks only creep at the backing rate \(R_0\). In a steady wind a point fire therefore grows into a strip about as wide as its ignition. The elliptical shapes of Section 05 came from Anderson's empirical length-to-breadth ratio, a different model. In the coupled model the fire's own in-draft adds cross-wind components and widens the fire; in the lab, try a hill, a lighter wind, or <code>fire_advection = 0</code>.</p></div>
 </section><section id="numerics" aria-labelledby="numerics-h"><h2 id="numerics-h">How SFIRE solves it numerically</h2>
@@ -188,8 +196,11 @@ fire mesh (30 m here). Fire-induced winds need atmospheric cells of order 100 m 
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
   <script src="../charts.js"></script>
+  <script src="../firelab.js"></script>
   <script src="../levelset.js"></script>
+  <script src="../rose.js"></script>
   <script defer src="../vendor/katex/katex.min.js"></script>
   <script defer src="../vendor/katex/contrib/auto-render.min.js"></script>
   <script defer src="../math.js"></script>

@@ -192,6 +192,65 @@
     ' float a=exp(-r*3.)*(.35+.65*vI); vec3 c=mix(vec3(1.,.35,.05),vec3(1.,.85,.45),exp(-r*8.)); o=vec4(c*a,a); }'
   ].join('\n');
 
+  var BLD_VS = [
+    '#version 300 es', 'precision highp float;', 'in vec4 aP; in vec3 aN; uniform mat4 uMVP; uniform float uExag; uniform vec2 uOrigin;',
+    'uniform sampler2D uState; uniform ivec2 uSize; uniform float uT; out vec3 vN; out float vFire, vBurnt, vH;',
+    'void main(){ float x=aP.x*.5, z=aP.y*.5; vec3 w=vec3(x-uOrigin.x, aP.z*.1*uExag+aP.w*.1, z-uOrigin.y);',
+    ' ivec2 c=ivec2(floor(x/30.+.5), floor(z/30.+.5)); float f=0., b=0.;',
+    ' for(int j=-1;j<=1;j++) for(int i=-1;i<=1;i++){ vec4 s=texelFetch(uState,clamp(c+ivec2(i,j),ivec2(0),uSize-1),0);',
+    '   if(s.r<=0.){ float age=uT-s.g; f=max(f,exp(-max(age,0.)/900.)); b=1.; } }',
+    ' vFire=f; vBurnt=b; vH=aP.w*.1; vN=aN; gl_Position=uMVP*vec4(w,1.); }'
+  ].join('\n');
+  var BLD_FS = [
+    '#version 300 es', 'precision highp float;', 'in vec3 vN; in float vFire, vBurnt, vH; uniform float uDark, uTime; out vec4 o;',
+    'void main(){ vec3 L=normalize(vec3(-.55,.75,-.38)); float d=.45+.6*max(dot(normalize(vN),L),0.);',
+    ' vec3 base=uDark>.5?vec3(.42,.42,.44):vec3(.86,.85,.82); vec3 c=base*d;',
+    ' c=mix(c,c*.35,vBurnt*.6*(1.-vFire)); float low=exp(-vH/25.);',
+    ' c+=vec3(1.,.42,.08)*vFire*(.6+.4*sin(uTime*9.+vH))*(.35+.9*low);',
+    ' o=vec4(c,1.); }'
+  ].join('\n');
+
+  // every other building in the domain: one instanced box per footprint (oriented minimum rectangle with the footprint's area)
+  var BOX_VS = [
+    '#version 300 es', 'precision highp float;', 'in vec3 aC; in vec4 aI0; in vec4 aI1;',
+    'uniform mat4 uMVP; uniform float uExag, uT; uniform vec2 uOrigin; uniform sampler2D uState; uniform ivec2 uSize;',
+    'out vec3 vW, vL; out float vFire, vBurnt, vH; flat out int vId;',
+    'void main(){ float x=aI0.x*.5, z=aI0.y*.5, g=aI0.z*.1, hh=aI0.w*.1, wd=max(aI1.x*.1,2.5), ln=max(aI1.y*.1,2.5), a=aI1.z/65535.*3.14159265;',
+    ' vec2 ax=vec2(cos(a),sin(a)), ay=vec2(-sin(a),cos(a)); vec2 p=vec2(x,z)+ax*aC.x*ln+ay*aC.z*wd;',
+    ' float y=mix(g*uExag-6.,g*uExag+hh,aC.y);',
+    ' ivec2 c=ivec2(floor(x/30.+.5),floor(z/30.+.5)); float f=0.,b=0.;',
+    ' for(int k=0;k<5;k++){ ivec2 o=k==0?ivec2(0):k==1?ivec2(1,0):k==2?ivec2(-1,0):k==3?ivec2(0,1):ivec2(0,-1);',
+    '   vec4 s=texelFetch(uState,clamp(c+o,ivec2(0),uSize-1),0); if(s.r<=0.){ f=max(f,exp(-max(uT-s.g,0.)/900.)); b=1.; } }',
+    ' vFire=f; vBurnt=b; vH=hh; vId=gl_InstanceID; vL=vec3(aC.x*ln,aC.y>.5?hh:-6.,aC.z*wd);',
+    ' vW=vec3(p.x-uOrigin.x,y,p.y-uOrigin.y); gl_Position=uMVP*vec4(vW,1.); }'
+  ].join('\n');
+  var BOX_FS = [
+    '#version 300 es', 'precision highp float;', 'in vec3 vW, vL; in float vFire, vBurnt, vH; flat in int vId;',
+    'uniform float uDark, uTime; uniform vec3 uEye, uFog; out vec4 o;',
+    'float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }',
+    'void main(){ vec3 n=normalize(cross(dFdx(vW),dFdy(vW))); if(dot(n,uEye-vW)<0.) n=-n;',
+    ' float d=.48+.55*max(dot(n,normalize(vec3(-.55,.75,-.38))),0.); bool roof=n.y>.6;',
+    ' vec3 base=uDark>.5?(roof?vec3(.33,.34,.37):vec3(.45,.46,.49)):(roof?vec3(.76,.74,.71):vec3(.91,.90,.87));',
+    ' base*=.92+.16*hash(vec2(float(vId),3.1)); vec3 c=base*d; float dist=length(uEye-vW);',
+    ' if(!roof){ c*=.70+.30*smoothstep(0.,9.,vL.y);',
+    '  if(vL.y>1.){ vec2 q=vec2((vL.x+vL.z)/3.6,(vL.y-1.)/3.4), cl=floor(q), fq=fract(q);',
+    '   float win=step(.22,fq.x)*step(fq.x,.78)*step(.30,fq.y)*step(fq.y,.80)*(1.-smoothstep(1500.,4500.,dist));',
+    '   if(uDark>.5){ float lit=step(.64,hash(cl+float(vId)*.37)); c=mix(c,mix(c*.55,vec3(1.,.80,.50),lit),win); } else c=mix(c,c*vec3(.70,.78,.86),win*.8); } }',
+    ' c=mix(c,c*.35,vBurnt*.6*(1.-vFire)); c+=vec3(1.,.42,.08)*vFire*(.6+.4*sin(uTime*9.+float(vId)))*(.35+.9*exp(-vH/25.));',
+    ' c=mix(c,uFog,clamp((dist-9000.)/45000.,0.,.75)); o=vec4(c,1.); }'
+  ].join('\n');
+  // St. Johns Bridge: y = ground * exaggeration + height above ground, so the bridge stays attached to the banks at any exaggeration
+  var BR_VS = [
+    '#version 300 es', 'precision highp float;', 'in vec4 aP; in vec3 aCol; uniform mat4 uMVP; uniform float uExag; out vec3 vW, vCol;',
+    'void main(){ vW=vec3(aP.x,aP.y*uExag+aP.w,aP.z); vCol=aCol; gl_Position=uMVP*vec4(vW,1.); }'
+  ].join('\n');
+  var BR_FS = [
+    '#version 300 es', 'precision highp float;', 'in vec3 vW, vCol; uniform vec3 uEye, uFog; uniform float uDark; out vec4 o;',
+    'void main(){ vec3 n=normalize(cross(dFdx(vW),dFdy(vW))); if(dot(n,uEye-vW)<0.) n=-n;',
+    ' float d=.42+.62*max(dot(n,normalize(vec3(-.55,.75,-.38))),0.); vec3 c=vCol*d*(uDark>.5?.8:1.);',
+    ' c=mix(c,uFog,clamp((length(uEye-vW)-9000.)/45000.,0.,.75)); o=vec4(c,1.); }'
+  ].join('\n');
+
   function Sim(host, meta, gridBmp, albD, albL) {
     var root = host.getAttribute('data-root') || '';
     var W = meta.W, H = meta.H, DX = meta.dx;
@@ -219,11 +278,12 @@
     }
 
     // ---------- DOM
-    var canvas = h('canvas', { class: 'sim3d-canvas', 'aria-label': '3-D view of Forest Park with a simulated fire. Drag to rotate, scroll or pinch to zoom, click to ignite.' });
-    var hud = h('div', { class: 'sim3d-hud' }), help = h('div', { class: 'sim3d-help', text: 'Drag to orbit · scroll / pinch to zoom · right-drag or shift-drag to pan · click to ignite' });
-    var compass = h('div', { class: 'sim3d-compass', 'aria-hidden': 'true' }, [h('span', { text: 'N' }), h('i')]);
+    var canvas = h('canvas', { class: 'sim3d-canvas', 'aria-label': '3-D view of Forest Park with a simulated fire. Drag to rotate, right-drag or two fingers to pan, scroll or pinch to zoom, double-click to zoom in, click to ignite. Arrow keys or WASD pan, Q and E rotate, R and F tilt, plus and minus zoom.', tabindex: '0' });
+    var hud = h('div', { class: 'sim3d-hud', translate: 'no' }), help = h('div', { class: 'sim3d-help', text: 'Drag to orbit · right-drag, shift-drag or two fingers to pan · scroll or pinch to zoom toward the cursor · double-click to fly in · click to ignite · keys: WASD / arrows, Q E, R F, + −' });
+    var compass = h('button', { type: 'button', class: 'sim3d-compass', title: 'Turn north up', 'aria-label': 'Turn the view north up' }, [h('span', { text: 'N' }), h('i')]);
+    var nav = h('div', { class: 'sim3d-nav', translate: 'no', role: 'group', 'aria-label': 'Camera' });
     var labels = h('div', { class: 'sim3d-labels', 'aria-hidden': 'true' });
-    var stage = h('div', { class: 'sim3d-stage' }, [canvas, labels, hud, compass, help]);
+    var stage = h('div', { class: 'sim3d-stage' }, [canvas, labels, hud, compass, nav, help]);
     host.appendChild(stage);
     var gl = canvas.getContext('webgl2', { antialias: true, premultipliedAlpha: false });
     if (!gl || !gl.getExtension('EXT_color_buffer_float')) {
@@ -233,7 +293,7 @@
     }
 
     var P = { preset: presetKey, weather: 'east', wind: meta.scenarios.east.wind, dir: meta.scenarios.east.dir,
-      wrf: true, speed: 12, exag: 2.0, smoke: true, playing: !reduceMotion };
+      wrf: true, speed: 12, exag: 2.0, smoke: true, playing: !reduceMotion, spot: false, bld: true, orbit: false };
     function sel(label, opts, val, on) {
       var s = h('select'); opts.forEach(function (o) { var op = h('option', { value: o[0], text: o[1] }); if (o[0] === val) op.selected = true; s.appendChild(op); });
       s.addEventListener('change', function () { on(s.value); }); return [h('label', {}, [document.createTextNode(label), s]), s];
@@ -244,7 +304,7 @@
       return [h('label', {}, [h('span', {}, [document.createTextNode(label + ' '), out]), r]), r, out];
     }
     var presetOpts = Object.keys(meta.presets).map(function (key) { return [key, meta.presets[key].label]; });
-    var cPreset = sel('Scenario', presetOpts, P.preset, function (v) { P.preset = v; reset(); focusOn(meta.presets[v]); cam0 = JSON.parse(JSON.stringify(cam)); });
+    var cPreset = sel('Scenario', presetOpts, P.preset, function (v) { P.preset = v; reset(); focusOn(meta.presets[v]); cam0 = JSON.parse(JSON.stringify(goal)); });
     var cWx = sel('Weather', [['east', meta.scenarios.east.label], ['nw', meta.scenarios.nw.label]], 'east', function (v) {
       P.weather = v; P.wind = meta.scenarios[v].wind; P.dir = meta.scenarios[v].dir;
       cWind[1].value = P.wind; cWind[2].textContent = (P.wind * 2.237).toFixed(0) + ' mph'; cDir[1].value = P.dir; cDir[2].textContent = P.dir + '°';
@@ -253,18 +313,31 @@
     var cWind = rng('Wind at 6.1 m', 0, 15, 0.1, P.wind, ' m/s', function (v) { P.wind = v; cWind[2].textContent = (v * 2.237).toFixed(0) + ' mph'; coefChanged(); });
     cWind[2].textContent = (P.wind * 2.237).toFixed(0) + ' mph';
     var cDir = rng('Wind from', 0, 359, 1, P.dir, '°', function (v) { P.dir = v; });
-    var cSpeed = rng('Playback', 1, 60, 1, P.speed, ' min/s', function (v) { P.speed = v; });
+    var cSpeed = rng('Playback', 1, 120, 1, P.speed, ' min/s', function (v) { P.speed = v; });
     var cExag = rng('Vertical exaggeration', 1, 4, 0.1, P.exag, '×', function (v) { P.exag = v; });
     var cWrf = h('input', { type: 'checkbox' }); cWrf.checked = true; cWrf.addEventListener('change', function () { P.wrf = cWrf.checked; coefChanged(); });
+    var SRC = [['lightning', 'Lightning storm: 8 strikes on ridge tops'], ['power', 'Power-line failure (real BPA/PGE lines, OpenStreetMap)'],
+      ['road', 'Roadside / vehicle fires (US-30, Skyline, streets)'], ['trail', 'Campfire on a trail (Wildwood, Leif Erikson, firelanes)'],
+      ['arson', 'Arson: 4 starts near trails at once']];
+    var cSrc = sel('Add an ignition source', SRC, 'lightning', function () {});
+    var bSrc = h('button', { type: 'button', text: 'Ignite source now' });
+    var cSpot = h('input', { type: 'checkbox' }); cSpot.addEventListener('change', function () { P.spot = cSpot.checked; });
+    var cBld = h('input', { type: 'checkbox' }); cBld.checked = true; cBld.addEventListener('change', function () { P.bld = cBld.checked; });
     var cSmoke = h('input', { type: 'checkbox' }); cSmoke.checked = true; cSmoke.addEventListener('change', function () { P.smoke = cSmoke.checked; });
     var controls = h('div', { class: 'lab-controls' }, [lockPreset ? h('span') : cPreset[0], cWx[0], cWind[0], cDir[0], cSpeed[0], cExag[0],
       h('div', { class: 'ctl' }, [h('label', { class: 'check' }, [cWrf, document.createTextNode('Mid-flame wind (fuel windrf, fire_use_windrf = 1)')]),
-                                  h('label', { class: 'check' }, [cSmoke, document.createTextNode('Smoke')])])]);
+                                  h('label', { class: 'check' }, [cSmoke, document.createTextNode('Smoke')]),
+                                  h('label', { class: 'check' }, [cSpot, document.createTextNode('Ember spotting (simple add-on, not in SFIRE ifire = 1)')]),
+                                  h('label', { class: 'check' }, [cBld, document.createTextNode('3-D buildings (all of Portland in the domain) and St. Johns Bridge')])]), cSrc[0]]);
     host.appendChild(controls);
     var bPlay = h('button', { type: 'button', class: 'primary', text: P.playing ? 'Pause' : 'Play' });
     var bReset = h('button', { type: 'button', text: 'Reset' }), bView = h('button', { type: 'button', text: 'Reset view' });
-    var bTop = h('button', { type: 'button', text: 'Top view' });
-    host.appendChild(h('div', { class: 'lab-buttons' }, [bPlay, bReset, bView, bTop]));
+    var bLapse = h('button', { type: 'button', text: '24-hour time-lapse' });
+    var FLY = [['', 'Fly to…'], ['fire', 'The fire'], ['park', 'All of Forest Park'], ['top', 'Top view (north up)'], ['downtown', 'Downtown Portland'],
+      ['nw', 'NW Portland & the Pearl'], ['linnton', 'Linnton'], ['bridge', 'St. Johns Bridge'], ['stjohns', 'St. Johns']];
+    var cFly = h('select', { class: 'fly', 'aria-label': 'Fly the camera to' });
+    FLY.forEach(function (o) { cFly.appendChild(h('option', { value: o[0], text: o[1] })); });
+    host.appendChild(h('div', { class: 'lab-buttons' }, [bPlay, bReset, bSrc, bLapse, bView, cFly]));
     var readout = h('div', { class: 'lab-readout', 'aria-live': 'off' }); host.appendChild(readout);
 
     // ---------- GL resources
@@ -291,7 +364,8 @@
     var progs;
     try {
       progs = { p1: program(FS_VERT, SIM_PASS1), p2: program(FS_VERT, SIM_PASS2), red: program(FS_VERT, REDUCE),
-        ter: program(TERRAIN_VS, TERRAIN_FS), smoke: program(SMOKE_VS, SMOKE_FS), glow: program(GLOW_VS, GLOW_FS) };
+        ter: program(TERRAIN_VS, TERRAIN_FS), smoke: program(SMOKE_VS, SMOKE_FS), glow: program(GLOW_VS, GLOW_FS), bld: program(BLD_VS, BLD_FS),
+        box: program(BOX_VS, BOX_FS), br: program(BR_VS, BR_FS) };
     } catch (err) {
       stage.innerHTML = ''; stage.appendChild(h('p', { class: 'sim3d-fallback', text: 'WebGL error: ' + err.message })); return;
     }
@@ -360,7 +434,7 @@
       var init = new Float32Array(W * H * 4);
       for (var kk = 0; kk < W * H; kk++) { init[4 * kk] = BIG; init[4 * kk + 1] = NEVER; }
       states.forEach(function (s) { gl.bindTexture(gl.TEXTURE_2D, s.t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, W, H, 0, gl.RGBA, gl.FLOAT, init); });
-      t = 0; tlo = -1; cur = 0; ign = []; line = null; replay = false;
+      t = 0; tlo = -1; cur = 0; ign = []; line = null; replay = false; spots = 0; fx = [];
       var pr = meta.presets[P.preset];
       (pr.ign && pr.ign.length && typeof pr.ign[0] === 'object' && pr.ign[0].length === 4 ? pr.ign : []).forEach(function (g) { ign.push(g.slice()); });
       if (pr.line) line = { a: pr.line[0], b: pr.line[1], ros: pr.ros, t: pr.t || 0, r: 30 };
@@ -394,8 +468,9 @@
         gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, B.t); gl.uniform1i(u.uStar, 2);
         gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, tRep); gl.uniform1i(u.uRep, 3);
         gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uT0, t); gl.uniform1f(u.uTlo, tlo); gl.uniform1f(u.uT1, t + dt);
-        var flat = []; for (var m = 0; m < 24; m++) { var g = ign[m] || [0, 0, 0, -1e9]; flat.push(g[0], g[1], g[2], g[3]); }
-        gl.uniform4fv(u.uIgn, flat); gl.uniform1i(u.uNIgn, Math.min(24, ign.length));
+        var due = ign.filter(function (g) { return g[3] > tlo && g[3] <= t + dt; }).slice(0, 24);
+        var flat = []; for (var m = 0; m < 24; m++) { var g = due[m] || [0, 0, 0, -1e9]; flat.push(g[0], g[1], g[2], g[3]); }
+        gl.uniform4fv(u.uIgn, flat); gl.uniform1i(u.uNIgn, due.length);
         if (line) { gl.uniform4f(u.uLine, line.a[0], line.a[1], line.b[0], line.b[1]); gl.uniform3f(u.uLineP, line.r, line.ros, line.t); }
         else { gl.uniform4f(u.uLine, 0, 0, 0, 0); gl.uniform3f(u.uLineP, 0, 0, 0); }
         gl.uniform1f(u.uReplay, replay ? 1 : 0); gl.uniform1f(u.uTp, tp);
@@ -425,9 +500,20 @@
       }
     }
 
-    // ---------- camera
-    var cam = { az: -0.78, el: 0.62, dist: 15500, tx: meta.park_center[0] * DX - origin[0], tz: meta.park_center[1] * DX - origin[1] };
-    function focusOn(pr) {
+    // ---------- camera: the inputs move a goal; the camera eases toward it (smooth zoom, fly-to and inertia)
+    var cam = { az: -0.78, el: 0.62, dist: 15500, tx: meta.park_center[0] * DX - origin[0], tz: meta.park_center[1] * DX - origin[1], ty: 0 };
+    var goal = JSON.parse(JSON.stringify(cam)), ease = 9, vel = { az: 0, el: 0, tx: 0, tz: 0 }, dragging = false, keys = {}, hold = null;
+    function clampGoal() {
+      goal.el = Math.max(0.06, Math.min(1.55, goal.el)); goal.dist = Math.max(300, Math.min(45000, goal.dist));
+      goal.tx = Math.max(-origin[0], Math.min((W - 1) * DX - origin[0], goal.tx)); goal.tz = Math.max(-origin[1], Math.min((H - 1) * DX - origin[1], goal.tz));
+    }
+    function setGoal(o, rate) {
+      if (o.az !== undefined) { var d = o.az - cam.az; d = Math.atan2(Math.sin(d), Math.cos(d)); o = Object.assign({}, o, { az: cam.az + d }); }
+      ['az', 'el', 'dist', 'tx', 'tz'].forEach(function (k) { if (o[k] !== undefined) goal[k] = o[k]; });
+      vel = { az: 0, el: 0, tx: 0, tz: 0 }; ease = rate || 9; clampGoal();
+    }
+    function cellGoal(c, dist, el, az) { var o = { tx: c[0] * DX - origin[0], tz: c[1] * DX - origin[1], dist: dist }; if (el !== undefined) o.el = el; if (az !== undefined) o.az = az; return o; }
+    function focusOn(pr, now) {
       var pts = [];
       if (pr.ign && pr.ign.length && typeof pr.ign[0] === 'object') pr.ign.forEach(function (g) { pts.push(g); });
       else if (pr.ign && pr.ign.length === 2) pts.push(pr.ign);
@@ -435,17 +521,41 @@
       if (!pts.length) return;
       var cx = 0, cy = 0; pts.forEach(function (p) { cx += p[0]; cy += p[1]; }); cx /= pts.length; cy /= pts.length;
       var spread = 0; pts.forEach(function (p) { spread = Math.max(spread, Math.hypot(p[0] - cx, p[1] - cy)); });
-      cam.tx = cx * DX - origin[0]; cam.tz = cy * DX - origin[1];
-      cam.dist = Math.max(3600, Math.min(16000, 3600 + spread * DX * 2.2)); cam.el = spread < 20 ? 0.85 : 0.72;
+      setGoal(cellGoal([cx, cy], Math.max(3600, Math.min(16000, 3600 + spread * DX * 2.2)), spread < 20 ? 0.85 : 0.72), 2.5);
+      if (now) { Object.assign(cam, goal); }
     }
-    focusOn(meta.presets[P.preset]);
-    var cam0 = JSON.parse(JSON.stringify(cam));
+    focusOn(meta.presets[P.preset], true);
+    cam.ty = heightAt((cam.tx + origin[0]) / DX, (cam.tz + origin[1]) / DX) * P.exag;
+    var cam0 = JSON.parse(JSON.stringify(goal));
     var view, proj, mvp, eye;
     function camera() {
       var asp = canvas.clientWidth / Math.max(1, canvas.clientHeight);
-      var ty = 160 * P.exag;
-      eye = [cam.tx + cam.dist * Math.cos(cam.el) * Math.sin(cam.az), ty + cam.dist * Math.sin(cam.el), cam.tz + cam.dist * Math.cos(cam.el) * Math.cos(cam.az)];
-      view = lookAt(eye, [cam.tx, ty, cam.tz], [0, 1, 0]); proj = persp(0.75, asp, 20, 90000); mvp = mul(proj, view);
+      eye = [cam.tx + cam.dist * Math.cos(cam.el) * Math.sin(cam.az), cam.ty + cam.dist * Math.sin(cam.el), cam.tz + cam.dist * Math.cos(cam.el) * Math.cos(cam.az)];
+      var ge = heightAt((eye[0] + origin[0]) / DX, (eye[2] + origin[1]) / DX) * P.exag + 30;   // never below the terrain
+      if (eye[1] < ge) eye[1] = ge;
+      var near = Math.max(1.5, Math.min(20, cam.dist * 0.004));
+      view = lookAt(eye, [cam.tx, cam.ty, cam.tz], [0, 1, 0]); proj = persp(0.75, asp, near, 90000); mvp = mul(proj, view);
+    }
+    function updateCam(dt) {
+      if (P.orbit) goal.az += dt * 0.05;
+      var kx = 0, kz = 0, ka = 0, ke = 0, kd = 0;
+      if (keys.arrowleft || keys.a) kx -= 1; if (keys.arrowright || keys.d) kx += 1;
+      if (keys.arrowup || keys.w) kz += 1; if (keys.arrowdown || keys.s) kz -= 1;
+      if (keys.q) ka -= 1; if (keys.e) ka += 1; if (keys.r) ke += 1; if (keys.f) ke -= 1;
+      if (keys['+'] || keys['=']) kd -= 1; if (keys['-'] || keys._) kd += 1;
+      if (hold) { ka += hold.a || 0; ke += hold.e || 0; kd += hold.d || 0; }
+      if (kx || kz) { var sp = goal.dist * 0.5 * dt, a = cam.az; goal.tx += (Math.cos(a) * kx - Math.sin(a) * kz) * sp; goal.tz += (-Math.sin(a) * kx - Math.cos(a) * kz) * sp; ease = 12; }
+      if (ka) { goal.az += ka * 1.1 * dt; ease = 12; } if (ke) { goal.el += ke * 0.7 * dt; ease = 12; } if (kd) { goal.dist *= Math.exp(kd * 1.4 * dt); ease = 12; }
+      if (!dragging) {
+        goal.az += vel.az * dt; goal.el += vel.el * dt; goal.tx += vel.tx * dt; goal.tz += vel.tz * dt;
+        var dmp = Math.exp(-dt * 4.5); vel.az *= dmp; vel.el *= dmp; vel.tx *= dmp; vel.tz *= dmp;
+      }
+      clampGoal();
+      var k = 1 - Math.exp(-dt * ease);
+      cam.az += (goal.az - cam.az) * k; cam.el += (goal.el - cam.el) * k; cam.tx += (goal.tx - cam.tx) * k; cam.tz += (goal.tz - cam.tz) * k;
+      cam.dist *= Math.pow(goal.dist / cam.dist, k);
+      var tyG = heightAt((cam.tx + origin[0]) / DX, (cam.tz + origin[1]) / DX) * P.exag; cam.ty += (tyG - cam.ty) * (1 - Math.exp(-dt * 4));
+      if (ease < 9 && Math.abs(goal.dist / cam.dist - 1) < 0.01 && Math.hypot(goal.tx - cam.tx, goal.tz - cam.tz) < 5) ease = 9;
     }
     function worldOfCell(cx, cy) { return [cx * DX - origin[0], heightAt(cx, cy) * P.exag, cy * DX - origin[1]]; }
     function project(wp) {
@@ -498,6 +608,8 @@
       gl.uniform1fv(pr.u.uTf, meta.weight.concat([7]).map(function (wt) { return wt / 0.85; }));
       gl.uniform3f(pr.u.uFog, bg[0], bg[1], bg[2]);
       gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_INT, 0);
+      drawBuildings(now, dark);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
       drawGlow(now);
       if (P.smoke) drawSmoke(dark);
       // labels and ignition markers
@@ -565,52 +677,348 @@
         if (P.playing) {
           var target = P.speed * 60 * dtReal, done = 0, dtMax = Math.min(10, 0.45 * DX / Smax), n = 0;
           while (done < target - 1e-6 && n < 60) { var d = Math.min(dtMax, target - done); step(d); done += d; n++; }
-          if (t > 12 * 3600) { P.playing = false; bPlay.textContent = 'Play'; }
+          if (t > 24 * 3600) { P.playing = false; P.orbit = false; bPlay.textContent = 'Play'; }
+          if (P.spot) spotting(dtReal * P.speed * 60);
         }
-        readBack(now); updateSmoke(dtReal); draw(now);
+        updateCam(dtReal); readBack(now); updateSmoke(dtReal); draw(now); overlay(now);
       }
       requestAnimationFrame(frame);
     }
 
+    // ---------- ignition sources (candidate cells precomputed from real data, see fp3d.json "sources")
+    var src = meta.sources || {}, fx = [];
+    function rnd(a) { return a[(Math.random() * a.length) | 0]; }
+    function addSource(kind) {
+      var t0 = t + 1, out = [];
+      if (kind === 'lightning' && src.ridge) {
+        for (var k = 0; k < 8; k++) { var p = rnd(src.ridge), tt = t0 + Math.random() * 1800; out.push([p[0], p[1], 20, tt]); fx.push({ kind: 'bolt', c: p, t: tt, life: 0 }); }
+      } else if (kind === 'power' && src.power && src.power.length) {
+        var ln = rnd(src.power), q = (Math.random() * ln.pts.length) | 0;
+        for (var k2 = 0; k2 < 3; k2++) { var p2 = ln.pts[Math.min(ln.pts.length - 1, q + k2 * 2)]; out.push([p2[0], p2[1], 25, t0 + k2 * 120]); }
+        fx.push({ kind: 'line', pts: ln.pts, t: t0, life: 0 });
+      } else if (kind === 'road' && src.roadside) {
+        var r0 = rnd(src.roadside); out.push([r0[0], r0[1], 25, t0]);
+        src.roadside.filter(function (p) { return Math.hypot(p[0] - r0[0], p[1] - r0[1]) < 40; }).slice(0, 2)
+          .forEach(function (p, n) { out.push([p[0], p[1], 25, t0 + 300 * (n + 1)]); });
+      } else if (kind === 'trail' && src.trails) {
+        var tp0 = rnd(src.trails); out.push([tp0[0], tp0[1], 15, t0]);
+      } else if (kind === 'arson' && src.trails) {
+        var a0 = rnd(src.trails); out.push([a0[0], a0[1], 20, t0]);
+        src.trails.filter(function (p) { return Math.hypot(p[0] - a0[0], p[1] - a0[1]) < 35; }).sort(function () { return Math.random() - 0.5; })
+          .slice(0, 3).forEach(function (p) { out.push([p[0], p[1], 20, t0]); });
+      }
+      out.forEach(function (g) { ign.push(g); });
+      if (!P.playing) { P.playing = true; bPlay.textContent = 'Pause'; }
+    }
+    bSrc.addEventListener('click', function () { addSource(cSrc[1].value); });
+    // simple ember spotting: burning 120 m blocks throw brands downwind, lognormal distance
+    var spots = 0;
+    function spotting(simDt) {
+      if (!hot.length || spots > 300) return;
+      var wv = windVec(), U = Math.max(P.wind, 0.5), med = 60 * Math.pow(U / 4, 1.3);
+      for (var m = 0; m < hot.length / 2; m++) {
+        var frac = hot[2 * m + 1] / 255, rate = 0.00025 * frac * Math.pow(U / 4, 1.5);   // brands per second per block
+        if (Math.random() > rate * simDt) continue;
+        var cell = hot[2 * m], cx = (cell % RW) * 4 + 2, cy = ((cell / RW) | 0) * 4 + 2;
+        var dist = med * Math.exp(0.6 * (Math.random() + Math.random() + Math.random() - 1.5) * 1.4);
+        var ang = Math.atan2(wv[0], wv[1]) + (Math.random() - 0.5) * 0.42;
+        var lx = cx + Math.sin(ang) * dist / DX, ly = cy - Math.cos(ang) * dist / DX;
+        var li = Math.round(lx), lj = Math.round(ly);
+        if (li < 0 || lj < 0 || li >= W || lj >= H) continue;
+        var f = code[lj * W + li] & 15; if (f < 1 || f > 13) continue;
+        ign.push([lx, ly, 15, t + dist / Math.max(U, 1)]); spots++;
+        fx.push({ kind: 'ember', a: [cx, cy], b: [lx, ly], t: t, life: 0 });
+      }
+    }
+    var ov = h('canvas', { class: 'sim3d-overlay', 'aria-hidden': 'true' }); stage.insertBefore(ov, labels);
+    var octx = ov.getContext('2d');
+    function overlay(now) {
+      var w = canvas.clientWidth, hh = canvas.clientHeight;
+      if (ov.width !== w || ov.height !== hh) { ov.width = w; ov.height = hh; }
+      octx.clearRect(0, 0, w, hh);
+      fx = fx.filter(function (e) { return e.life < 2.5; });
+      fx.forEach(function (e) {
+        if (e.kind === 'bolt') {
+          if (t < e.t) return; e.life += 1 / 60; var g = project(worldOfCell(e.c[0], e.c[1])); if (!g) return;
+          var a = Math.max(0, 1 - e.life / 0.6); if (a <= 0) return;
+          octx.strokeStyle = 'rgba(230,240,255,' + a + ')'; octx.lineWidth = 2.5; octx.beginPath();
+          var x = g[0], y = g[1] - 260; octx.moveTo(x, y);
+          for (var k = 1; k <= 8; k++) octx.lineTo(g[0] + (Math.random() - 0.5) * 30 * (1 - k / 8), y + 260 * k / 8);
+          octx.stroke();
+        } else if (e.kind === 'ember') {
+          e.life += 1 / 60; var p0 = project(worldOfCell(e.a[0], e.a[1])), p1 = project(worldOfCell(e.b[0], e.b[1])); if (!p0 || !p1) return;
+          var u = Math.min(1, e.life / 1.2), x2 = p0[0] + (p1[0] - p0[0]) * u, y2 = p0[1] + (p1[1] - p0[1]) * u - Math.sin(Math.PI * u) * 60;
+          octx.fillStyle = 'rgba(255,170,60,' + (1 - e.life / 2.5) + ')'; octx.beginPath(); octx.arc(x2, y2, 2.2, 0, 6.283); octx.fill();
+        } else if (e.kind === 'line') {
+          e.life += 1 / 240; octx.strokeStyle = 'rgba(255,220,120,' + Math.max(0, 0.9 - e.life / 2.5) + ')'; octx.lineWidth = 1.5; octx.beginPath();
+          e.pts.forEach(function (p, n) { var q = project(worldOfCell(p[0], p[1])); if (q) { q[1] -= 25; n ? octx.lineTo(q[0], q[1]) : octx.moveTo(q[0], q[1]); } });
+          octx.stroke();
+        }
+      });
+    }
+    // buildings: the detailed downtown mesh (7,811 footprints) and every other building in the domain as instanced boxes;
+    // both are City of Portland Building Footprints with lidar heights; loaded after the simulator starts
+    var bld = null, boxes = null, bridge = null;
+    function gunzip(url) { return get(url).then(function (r) { return new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); }); }
+    (function loadBuildings() {
+      if (!window.DecompressionStream) return;
+      var a = Promise.all([get(root + 'data/buildings-downtown.json').then(function (r) { return r.json(); }), gunzip(root + 'data/buildings-downtown.bin.gz')])
+        .then(function (r) {
+          var m = r[0], buf = r[1], vb = gl.createBuffer(), ib = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(buf, 0, m.index_offset), gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(buf, m.index_offset, m.indices), gl.STATIC_DRAW);
+          bld = { vb: vb, ib: ib, n: m.indices, meta: m }; return m.buildings;
+        });
+      var b = Promise.all([get(root + 'data/buildings-all.json').then(function (r) { return r.json(); }), gunzip(root + 'data/buildings-all.bin.gz')])
+        .then(function (r) {
+          var m = r[0], pr = progs.box, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+          var cube = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cube);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-.5, 0, -.5, .5, 0, -.5, .5, 0, .5, -.5, 0, .5, -.5, 1, -.5, .5, 1, -.5, .5, 1, .5, -.5, 1, .5]), gl.STATIC_DRAW);
+          var lc = gl.getAttribLocation(pr.p, 'aC'); gl.enableVertexAttribArray(lc); gl.vertexAttribPointer(lc, 3, gl.FLOAT, false, 0, 0);
+          var ci = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ci);
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7]), gl.STATIC_DRAW);
+          var ib2 = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib2); gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(r[1]), gl.STATIC_DRAW);
+          var l0 = gl.getAttribLocation(pr.p, 'aI0'), l1 = gl.getAttribLocation(pr.p, 'aI1');
+          gl.enableVertexAttribArray(l0); gl.vertexAttribPointer(l0, 4, gl.UNSIGNED_SHORT, false, 16, 0); gl.vertexAttribDivisor(l0, 1);
+          gl.enableVertexAttribArray(l1); gl.vertexAttribPointer(l1, 4, gl.UNSIGNED_SHORT, false, 16, 8); gl.vertexAttribDivisor(l1, 1);
+          gl.bindVertexArray(null);
+          boxes = { vao: vao, n: Math.min(m.count, r[1].byteLength / 16) }; return boxes.n;
+        });
+      Promise.all([a.catch(function () { return 0; }), b.catch(function () { return 0; })]).then(function (n) { host.dataset.buildings = (n[0] + n[1]) || 'error'; });
+    })();
+    // St. Johns Bridge from fp3d.json "bridge": deck line from OpenStreetMap, published dimensions for the towers and deck
+    (function buildBridge() {
+      var B = meta.bridge; if (!B) return;
+      var data = [], DECKC = [0.36, 0.36, 0.35], STEEL = [0.29, 0.50, 0.42], CABLE = [0.22, 0.40, 0.34];
+      function wp(i, j) { return [i * DX - origin[0], j * DX - origin[1]]; }
+      var G = B.deck.map(function (d) { return heightAt(d[0], d[1]); });
+      var Gs = G.map(function (g, n) { var s = 0, c = 0; for (var m = Math.max(0, n - 3); m <= Math.min(G.length - 1, n + 3); m++) { s += G[m]; c++; } return s / c; });
+      Gs[0] = G[0]; Gs[Gs.length - 1] = G[G.length - 1];
+      var dpos = B.deck.map(function (d) { return wp(d[0], d[1]); });
+      function gref(x, z) { var best = 0, bd = 1e18; dpos.forEach(function (p, n) { var dd = (p[0] - x) * (p[0] - x) + (p[1] - z) * (p[1] - z); if (dd < bd) { bd = dd; best = n; } }); return Gs[best]; }
+      function box(c, col) {   // c: 8 corners [x, G, z, rel], bottom 0-3, top 4-7
+        [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]].forEach(function (f) {
+          [f[0], f[1], f[2], f[0], f[2], f[3]].forEach(function (v) { data.push(c[v][0], c[v][1], c[v][2], c[v][3], col[0], col[1], col[2]); });
+        });
+      }
+      function beam(a, b, side, hw, th, col) {   // a, b: [x, z, rel]; hanging th below the line, hw either side
+        var ga = gref(a[0], a[1]), gb = gref(b[0], b[1]);
+        function C(p, g, sg, dz) { return [p[0] + side[0] * hw * sg, g, p[1] + side[1] * hw * sg, p[2] - g - dz]; }
+        box([C(a, ga, -1, th), C(a, ga, 1, th), C(b, gb, 1, th), C(b, gb, -1, th), C(a, ga, -1, 0), C(a, ga, 1, 0), C(b, gb, 1, 0), C(b, gb, -1, 0)], col);
+      }
+      function post(p, z0, z1, ax, ay, ha0, hb0, ha1, hb1, col) {   // vertical member, tapering from (ha0, hb0) to (ha1, hb1)
+        var g = gref(p[0], p[1]);
+        function C(sa, sb, ha, hb, zz) { return [p[0] + ax[0] * ha * sa + ay[0] * hb * sb, g, p[1] + ax[1] * ha * sa + ay[1] * hb * sb, zz - g]; }
+        box([C(-1, -1, ha0, hb0, z0), C(1, -1, ha0, hb0, z0), C(1, 1, ha0, hb0, z0), C(-1, 1, ha0, hb0, z0),
+             C(-1, -1, ha1, hb1, z1), C(1, -1, ha1, hb1, z1), C(1, 1, ha1, hb1, z1), C(-1, 1, ha1, hb1, z1)], col);
+      }
+      var e0 = dpos[0], e1 = dpos[dpos.length - 1], L = Math.hypot(e1[0] - e0[0], e1[1] - e0[1]);
+      var dir = [(e1[0] - e0[0]) / L, (e1[1] - e0[1]) / L], perp = [-dir[1], dir[0]];
+      for (var n = 0; n + 1 < B.deck.length; n++) {
+        var a = [dpos[n][0], dpos[n][1], B.deck[n][2] + Gs[n] - gref(dpos[n][0], dpos[n][1])], b = [dpos[n + 1][0], dpos[n + 1][1], B.deck[n + 1][2] + Gs[n + 1] - gref(dpos[n + 1][0], dpos[n + 1][1])];
+        a[2] = B.deck[n][2]; b[2] = B.deck[n + 1][2];
+        var sd = [-(b[1] - a[1]), b[0] - a[0]], sl = Math.hypot(sd[0], sd[1]) || 1; sd = [sd[0] / sl, sd[1] / sl];
+        beam(a, b, sd, B.width / 2, 2.5, DECKC);
+        var hab = Math.min(B.deck[n][2], B.deck[n + 1][2]) - Math.max(G[n], G[n + 1]);
+        if (hab > 12) [-1, 1].forEach(function (sg) {   // stiffening trusses along both edges
+          var o = [sd[0] * sg * (B.width / 2 - 0.8), sd[1] * sg * (B.width / 2 - 0.8)];
+          beam([a[0] + o[0], a[1] + o[1], a[2] - 2.5], [b[0] + o[0], b[1] + o[1], b[2] - 2.5], sd, 0.7, 6, STEEL);
+        });
+      }
+      B.towers.forEach(function (tw) {
+        var legs = tw.legs.map(function (c) { return wp(c[0], c[1]); });
+        legs.forEach(function (p) { post(p, B.water - 2, tw.top, dir, perp, 5, 4.2, 2.6, 2.2, STEEL); });
+        [[tw.deck - 4, 4], [tw.deck + 30, 3], [tw.top - 7, 5]].forEach(function (cb) {   // portal beams
+          beam([legs[0][0], legs[0][1], cb[0]], [legs[1][0], legs[1][1], cb[0]], dir, 2.2, cb[1], STEEL);
+        });
+        var mid = [(legs[0][0] + legs[1][0]) / 2, (legs[0][1] + legs[1][1]) / 2];
+        post(mid, tw.top - 7, tw.top + 9, dir, perp, 1.4, 1.4, 0.2, 0.2, STEEL);   // the Gothic spire
+      });
+      B.cables.forEach(function (cab) {
+        for (var n = 0; n + 1 < cab.length; n++) {
+          var p = wp(cab[n][0], cab[n][1]), q = wp(cab[n + 1][0], cab[n + 1][1]);
+          beam([p[0], p[1], cab[n][2]], [q[0], q[1], cab[n + 1][2]], perp, 0.6, 1.2, CABLE);
+          if (cab[n][2] - cab[n][3] > 3) post(p, cab[n][3], cab[n][2] - 1, dir, perp, 0.2, 0.2, 0.2, 0.2, CABLE);   // suspenders
+        }
+      });
+      var f = new Float32Array(data), vao = gl.createVertexArray(), pr = progs.br; gl.bindVertexArray(vao);
+      var vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, f, gl.STATIC_DRAW);
+      var lp = gl.getAttribLocation(pr.p, 'aP'), lc = gl.getAttribLocation(pr.p, 'aCol');
+      gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 4, gl.FLOAT, false, 28, 0);
+      gl.enableVertexAttribArray(lc); gl.vertexAttribPointer(lc, 3, gl.FLOAT, false, 28, 16);
+      gl.bindVertexArray(null);
+      bridge = { vao: vao, n: f.length / 7 };
+      var mc = B.deck[Math.floor(B.deck.length / 2)]; bridge.center = [mc[0], mc[1]]; bridge.az = Math.atan2(perp[0], perp[1]);
+    })();
+    function drawBuildings(now, dark) {
+      if (!P.bld) return;
+      var bg = dark ? [0.06, 0.065, 0.07] : [0.80, 0.84, 0.88], time = (now - start) / 1000;
+      if (bld) {
+        var pr = progs.bld; gl.useProgram(pr.p);
+        gl.bindBuffer(gl.ARRAY_BUFFER, bld.vb);
+        var lp = gl.getAttribLocation(pr.p, 'aP'), ln = gl.getAttribLocation(pr.p, 'aN');
+        gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 4, gl.UNSIGNED_SHORT, false, 12, 0);
+        gl.enableVertexAttribArray(ln); gl.vertexAttribPointer(ln, 3, gl.BYTE, true, 12, 8);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bld.ib);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, states[cur].t); gl.uniform1i(pr.u.uState, 0);
+        gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform1f(pr.u.uExag, P.exag); gl.uniform2f(pr.u.uOrigin, origin[0], origin[1]);
+        gl.uniform2i(pr.u.uSize, W, H); gl.uniform1f(pr.u.uT, t); gl.uniform1f(pr.u.uDark, dark ? 1 : 0); gl.uniform1f(pr.u.uTime, time);
+        gl.drawElements(gl.TRIANGLES, bld.n, gl.UNSIGNED_INT, 0);
+        gl.disableVertexAttribArray(ln);
+      }
+      if (boxes) {
+        var pb = progs.box; gl.useProgram(pb.p); gl.bindVertexArray(boxes.vao);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, states[cur].t); gl.uniform1i(pb.u.uState, 0);
+        gl.uniformMatrix4fv(pb.u.uMVP, false, mvp); gl.uniform1f(pb.u.uExag, P.exag); gl.uniform2f(pb.u.uOrigin, origin[0], origin[1]);
+        gl.uniform2i(pb.u.uSize, W, H); gl.uniform1f(pb.u.uT, t); gl.uniform1f(pb.u.uDark, dark ? 1 : 0); gl.uniform1f(pb.u.uTime, time);
+        gl.uniform3f(pb.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3f(pb.u.uFog, bg[0], bg[1], bg[2]);
+        gl.drawElementsInstanced(gl.TRIANGLES, 30, gl.UNSIGNED_SHORT, 0, boxes.n);
+        gl.bindVertexArray(null);
+      }
+      if (bridge) {
+        var pg = progs.br; gl.useProgram(pg.p); gl.bindVertexArray(bridge.vao);
+        gl.uniformMatrix4fv(pg.u.uMVP, false, mvp); gl.uniform1f(pg.u.uExag, P.exag); gl.uniform1f(pg.u.uDark, dark ? 1 : 0);
+        gl.uniform3f(pg.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3f(pg.u.uFog, bg[0], bg[1], bg[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, bridge.n);
+        gl.bindVertexArray(null);
+      }
+    }
+
     // ---------- interaction
-    var ptrs = {}, downAt = null, moved = 0, pinch0 = 0;
+    // mouse: drag = orbit, right/middle/shift-drag = pan (the ground follows the cursor), wheel = zoom toward the cursor,
+    // click = ignite, double-click = fly in; touch: one finger orbits, two fingers pan, pinch and twist; keyboard and on-screen buttons
+    var ptrs = {}, downAt = null, moved = 0, two = null, lastMove = 0, pend = [];
+    function wrapA(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
+    function stopAuto() { if (P.orbit) P.orbit = false; }
+    function panBy(dx, dy, dtm) {
+      var s = cam.dist * 0.785 / Math.max(1, canvas.clientHeight), sy = s / Math.max(0.3, Math.sin(cam.el)), a = cam.az;
+      var mx = -Math.cos(a) * dx * s - Math.sin(a) * dy * sy, mz = Math.sin(a) * dx * s - Math.cos(a) * dy * sy;
+      goal.tx += mx; goal.tz += mz; ease = 16;
+      if (dtm) { vel.tx = 0.6 * vel.tx + 0.4 * mx / dtm; vel.tz = 0.6 * vel.tz + 0.4 * mz / dtm; }
+    }
+    function zoomAt(f, x, y) {
+      var nd = Math.max(300, Math.min(45000, goal.dist * f)), ff = nd / goal.dist, p = x === undefined ? null : pick(x, y);
+      if (p) { var wx = p[0] * DX - origin[0], wz = p[1] * DX - origin[1]; goal.tx = wx + (goal.tx - wx) * ff; goal.tz = wz + (goal.tz - wz) * ff; }
+      goal.dist = nd; ease = 12; clampGoal();
+    }
+    function twoState() {
+      var ks = Object.keys(ptrs), a = ptrs[ks[0]], b = ptrs[ks[1]];
+      return { d: Math.max(1, Math.hypot(a[0] - b[0], a[1] - b[1])), ang: Math.atan2(b[1] - a[1], b[0] - a[0]), mx: (a[0] + b[0]) / 2, my: (a[1] + b[1]) / 2 };
+    }
     canvas.addEventListener('pointerdown', function (e) {
+      if (canvas.focus) canvas.focus({ preventScroll: true });
       canvas.setPointerCapture(e.pointerId); ptrs[e.pointerId] = [e.clientX, e.clientY];
-      downAt = { x: e.clientX, y: e.clientY, t: performance.now(), btn: e.button, shift: e.shiftKey }; moved = 0;
-      var ks = Object.keys(ptrs); if (ks.length === 2) pinch0 = Math.hypot(ptrs[ks[0]][0] - ptrs[ks[1]][0], ptrs[ks[0]][1] - ptrs[ks[1]][1]);
+      var ks = Object.keys(ptrs);
+      if (ks.length === 1) { downAt = { x: e.clientX, y: e.clientY, t: performance.now(), btn: e.button, shift: e.shiftKey }; moved = 0; }
+      else { two = twoState(); moved = 99; }
+      dragging = true; vel = { az: 0, el: 0, tx: 0, tz: 0 }; lastMove = performance.now(); stopAuto();
       help.hidden = true;
     });
     canvas.addEventListener('pointermove', function (e) {
       if (!ptrs[e.pointerId]) return;
       var p0 = ptrs[e.pointerId], dx = e.clientX - p0[0], dy = e.clientY - p0[1]; ptrs[e.pointerId] = [e.clientX, e.clientY];
       moved += Math.abs(dx) + Math.abs(dy);
-      var ks = Object.keys(ptrs);
-      if (ks.length === 2) {
-        var d = Math.hypot(ptrs[ks[0]][0] - ptrs[ks[1]][0], ptrs[ks[0]][1] - ptrs[ks[1]][1]);
-        if (pinch0) cam.dist = Math.max(2500, Math.min(45000, cam.dist * pinch0 / d)); pinch0 = d; return;
+      var now = performance.now(), dtm = Math.max(8, now - lastMove) / 1000; lastMove = now;
+      if (Object.keys(ptrs).length >= 2) {
+        var s2 = twoState();
+        if (two) {
+          var r = canvas.getBoundingClientRect();
+          zoomAt(two.d / s2.d, s2.mx, s2.my); panBy(s2.mx - two.mx, s2.my - two.my, 0);
+          goal.az -= wrapA(s2.ang - two.ang);
+        }
+        two = s2; return;
       }
-      if (downAt && (downAt.btn === 2 || downAt.shift)) {
-        var sx = cam.dist / canvas.clientHeight * 1.0;
-        cam.tx -= (Math.cos(cam.az) * dx - Math.sin(cam.az) * dy) * sx; cam.tz -= (-Math.sin(cam.az) * dx - Math.cos(cam.az) * dy) * sx;
-      } else {
-        cam.az -= dx * 0.006; cam.el = Math.max(0.12, Math.min(1.5, cam.el + dy * 0.005));
+      if (!downAt) return;
+      if (downAt.btn === 2 || downAt.btn === 1 || downAt.shift) panBy(dx, dy, dtm);
+      else {
+        var dA = -dx * 0.0055, dE = dy * 0.0045; goal.az += dA; goal.el += dE; ease = 16; clampGoal();
+        vel.az = 0.6 * vel.az + 0.4 * dA / dtm; vel.el = 0.6 * vel.el + 0.4 * dE / dtm;
       }
     });
     function up(e) {
+      if (!ptrs[e.pointerId]) return;
       delete ptrs[e.pointerId];
-      if (downAt && moved < 6 && performance.now() - downAt.t < 400 && downAt.btn === 0) {
+      var left = Object.keys(ptrs).length;
+      if (left === 1) { two = null; downAt = null; return; }
+      if (left) return;
+      dragging = false;
+      if (performance.now() - lastMove > 90) vel = { az: 0, el: 0, tx: 0, tz: 0 };
+      if (downAt && moved < 6 && performance.now() - downAt.t < 450 && downAt.btn === 0 && !downAt.shift) {
+        vel = { az: 0, el: 0, tx: 0, tz: 0 };
         var c = pick(e.clientX, e.clientY);
-        if (c) { ign.push([c[0], c[1], 40, t + 1]); if (ign.length > 24) ign.shift(); if (!P.playing) { P.playing = true; bPlay.textContent = 'Pause'; } }
+        if (c) pend.push(setTimeout(function () {   // wait briefly: a second click means "fly in", not "ignite"
+          ign.push([c[0], c[1], 40, t + 1]); if (!P.playing) { P.playing = true; bPlay.textContent = 'Pause'; }
+        }, 260));
       }
-      downAt = null; pinch0 = 0;
+      downAt = null; two = null;
     }
     canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
     canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-    canvas.addEventListener('wheel', function (e) { e.preventDefault(); cam.dist = Math.max(2500, Math.min(45000, cam.dist * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
+    canvas.addEventListener('dblclick', function (e) {
+      pend.forEach(clearTimeout); pend = [];
+      var c = pick(e.clientX, e.clientY); if (!c) return;
+      stopAuto(); setGoal(cellGoal(c, goal.dist * 0.4), 3.5);
+    });
+    canvas.addEventListener('wheel', function (e) {
+      e.preventDefault(); stopAuto();
+      var dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1);
+      zoomAt(Math.exp(Math.max(-300, Math.min(300, dy)) * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX, e.clientY);
+    }, { passive: false });
+    var NAVK = ['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'w', 'a', 's', 'd', 'q', 'e', 'r', 'f', '+', '=', '-', '_'];
+    canvas.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var k = e.key.toLowerCase();
+      if (NAVK.indexOf(k) >= 0) { keys[k] = true; e.preventDefault(); stopAuto(); }
+      else if (k === '0' || k === 'home') { setGoal(JSON.parse(JSON.stringify(cam0)), 3); e.preventDefault(); }
+      else if (k === 'n') setGoal({ az: 0 }, 4);
+    });
+    canvas.addEventListener('keyup', function (e) {
+      var k = e.key.toLowerCase(); delete keys[k];
+      if (k === '+' || k === '=') { delete keys['+']; delete keys['=']; } if (k === '-' || k === '_') { delete keys['-']; delete keys._; }
+    });
+    canvas.addEventListener('blur', function () { keys = {}; });
+    // on-screen camera buttons: tap for a step, hold to keep moving
+    [['+', 'Zoom in', { d: -1 }, function () { zoomAt(0.6); }], ['−', 'Zoom out', { d: 1 }, function () { zoomAt(1.65); }],
+     ['⟲', 'Rotate left', { a: -1 }, function () { goal.az -= 0.35; }], ['⟳', 'Rotate right', { a: 1 }, function () { goal.az += 0.35; }],
+     ['▴', 'Look from higher up', { e: 1 }, function () { goal.el += 0.18; clampGoal(); }], ['▾', 'Look from lower down', { e: -1 }, function () { goal.el -= 0.18; clampGoal(); }]
+    ].forEach(function (b) {
+      var btn = h('button', { type: 'button', text: b[0], title: b[1], 'aria-label': b[1] }), t0 = 0;
+      btn.addEventListener('pointerdown', function (e) { e.preventDefault(); stopAuto(); hold = b[2]; t0 = performance.now(); btn.setPointerCapture(e.pointerId); });
+      function rel() { if (hold === b[2]) { if (performance.now() - t0 < 200) { b[3](); ease = 8; } hold = null; } }
+      btn.addEventListener('pointerup', rel); btn.addEventListener('pointercancel', rel); btn.addEventListener('lostpointercapture', rel);
+      btn.addEventListener('click', function (e) { if (e.detail === 0) { b[3](); ease = 8; } });   // keyboard activation
+      nav.appendChild(btn);
+    });
+    compass.addEventListener('click', function () { setGoal({ az: 0 }, 4); });
+    host.cameraJump = function () { Object.assign(cam, goal); cam.ty = heightAt((cam.tx + origin[0]) / DX, (cam.tz + origin[1]) / DX) * P.exag; return JSON.stringify(goal); };   // for tests and scripted tours: skip the glide
     bPlay.addEventListener('click', function () { P.playing = !P.playing; bPlay.textContent = P.playing ? 'Pause' : 'Play'; });
     bReset.addEventListener('click', function () { reset(); });
-    bView.addEventListener('click', function () { cam = JSON.parse(JSON.stringify(cam0)); });
-    bTop.addEventListener('click', function () { cam.el = 1.5; cam.az = 0; cam.dist = 21000; });
+    bView.addEventListener('click', function () { P.orbit = false; setGoal(JSON.parse(JSON.stringify(cam0)), 3); });
+    bLapse.addEventListener('click', function () {
+      reset(); P.speed = 30; cSpeed[1].value = 30; cSpeed[2].textContent = '30 min/s'; P.orbit = true; setGoal({ dist: Math.max(goal.dist, 9000) }, 3);
+      if (!ign.length && !line && !replay) addSource('lightning');
+      P.playing = true; bPlay.textContent = 'Pause';
+    });
+    function lonlat(lon, lat) { var b = meta.bbox; return [(lon - b.west) / (b.east - b.west) * W - 0.5, (b.north - lat) / (b.north - b.south) * H - 0.5]; }
+    cFly.addEventListener('change', function () {
+      var v = cFly.value; cFly.value = ''; if (!v) return; stopAuto();
+      if (v === 'park') setGoal(cellGoal(meta.park_center, 15500, 0.62, -0.78), 2.5);
+      else if (v === 'top') setGoal(cellGoal(meta.park_center, 21000, 1.55, 0), 2.5);
+      else if (v === 'downtown') setGoal(cellGoal(lonlat(-122.679, 45.519), 2600, 0.42, -0.9), 2.5);
+      else if (v === 'nw') setGoal(cellGoal(lonlat(-122.692, 45.531), 2400, 0.45, -1.6), 2.5);
+      else if (v === 'linnton') setGoal(cellGoal(meta.places.Linnton, 1900, 0.32, 1.25), 2.5);
+      else if (v === 'stjohns') setGoal(cellGoal(meta.places['St. Johns'], 2600, 0.45, 2.4), 2.5);
+      else if (v === 'bridge' && bridge) setGoal(cellGoal(bridge.center, 850, 0.20, bridge.az + 0.5), 2.5);
+      else if (v === 'fire') {
+        var sx = 0, sy = 0, n = 0, ext = 0;
+        if (hot.length) { for (var m = 0; m < hot.length / 2; m++) { sx += (hot[2 * m] % RW) * 4 + 2; sy += ((hot[2 * m] / RW) | 0) * 4 + 2; n++; } }
+        else ign.forEach(function (g) { sx += g[0]; sy += g[1]; n++; });
+        if (!n) { focusOn(meta.presets[P.preset]); return; }
+        sx /= n; sy /= n;
+        if (hot.length) for (m = 0; m < hot.length / 2; m++) ext = Math.max(ext, Math.hypot((hot[2 * m] % RW) * 4 + 2 - sx, ((hot[2 * m] / RW) | 0) * 4 + 2 - sy));
+        setGoal(cellGoal([sx, sy], Math.max(2500, Math.min(16000, 2500 + ext * DX * 2.4)), 0.6), 2.5);
+      }
+    });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(host);
 
     coefChanged(); reset();

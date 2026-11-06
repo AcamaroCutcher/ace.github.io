@@ -18,7 +18,7 @@
         <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
         <span aria-current="page">13 · From NetCDF to KML/KMZ and 3-D animation</span>
       </nav>
-      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
     </div>
 
     <header class="banner ">
@@ -38,7 +38,7 @@
 <p><a href="../data/wrfsfire_to_kml.py" download>Download wrfsfire_to_kml.py</a>. It reads the fire-mesh variables of a <code>wrfout_d0X</code> file and
 writes everything the tools below need:</p>
 <div class="table-wrap reveal"><table class=""><thead><tr><th>File</th><th>Contents</th><th>Open with</th></tr></thead><tbody><tr><td><code>perimeters.kml</code> / <code>.kmz</code></td><td>Fire perimeter (LFN = 0) at each output time, with KML TimeSpans</td><td>Google Earth (time slider), CesiumJS, QGIS</td></tr><tr><td><code>fire_heat.kmz</code></td><td>Ground heat flux FGRNHFX as time-stamped image overlays + colour bar</td><td>Google Earth, CesiumJS</td></tr><tr><td><code>perimeters.geojson</code></td><td>The same perimeters with <code>time</code>, <code>end</code>, <code>burned_ha</code> properties</td><td>Leaflet, Mapbox, QGIS Temporal Controller, three.js</td></tr><tr><td><code>arrival_time.png</code></td><td>16-bit arrival time on a regular lat/lon grid (0 = never)</td><td>Unity, Blender, Unreal (as a data texture)</td></tr><tr><td><code>terrain.png</code></td><td>16-bit fire-mesh terrain (ZSF)</td><td>Heightmap / displacement</td></tr><tr><td><code>textures.json</code></td><td>Bounding box, pixel size, time and height scales</td><td>Your import scripts</td></tr></tbody></table></div>
-<div class="code reveal"><div class="code-head"><span>run the converter</span><button type="button" class="copy">Copy</button></div><pre><code>pip install netCDF4 numpy scipy matplotlib simplekml
+<div class="code reveal" translate="no"><div class="code-head"><span>run the converter</span><button type="button" class="copy">Copy</button></div><pre><code>pip install netCDF4 numpy scipy matplotlib simplekml
 python wrfsfire_to_kml.py wrfout_d03_2020-09-08_00:00:00 --out fire_viz --step 15
 <span class="c">#   perimeters: ... rings over 37 times</span>
 <span class="c">#   heat overlays: 37</span>
@@ -65,7 +65,7 @@ feature has a TimeSpan. Tilt the view to see the fire on the 3-D terrain of the 
 with the Temporal Controller; export frames to make a video.</li>
 <li><strong>CesiumJS</strong> gives the same thing on a web page, with world terrain and the KML clock driving the animation:</li>
 </ul>
-<div class="code reveal"><div class="code-head"><span>cesium.js</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">// CesiumJS (browser 3-D globe with terrain): load the time-stamped KMZ and play it</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>cesium.js</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">// CesiumJS (browser 3-D globe with terrain): load the time-stamped KMZ and play it</span>
 const viewer = new Cesium.Viewer("cesium", { terrain: Cesium.Terrain.fromWorldTerrain() });
 const ds = await Cesium.KmlDataSource.load("perimeters.kmz",
   { camera: viewer.scene.camera, canvas: viewer.scene.canvas, clampToGround: true });
@@ -83,7 +83,7 @@ fuel-map pages are drawn exactly this way.)</li>
 long each place glows and smokes.</li>
 <li><strong>Smoke and wind in 3-D.</strong> The smoke tracer and the 3-D wind from the atmosphere turn into volumes and particle forces.</li>
 </ol>
-<div class="code reveal"><div class="code-head"><span>the shader logic, for any engine</span><button type="button" class="copy">Copy</button></div><pre><code>Shader Graph (Unity) or a material node tree (Blender, Unreal) - the same logic:
+<div class="code reveal" translate="no"><div class="code-head"><span>the shader logic, for any engine</span><button type="button" class="copy">Copy</button></div><pre><code>Shader Graph (Unity) or a material node tree (Blender, Unreal) - the same logic:
   a      = sample(arrival_time.png) * 65535            // counts; 0 = never burns   (import as R16, linear, no compression)
   now    = _SimTimeCounts
   age    = (now - a) * secondsPerCount                  // seconds since the fire arrived
@@ -102,7 +102,7 @@ of 513, 1025 or 2049 pixels, save as 16-bit RAW, import it in Terrain Settings, 
 <li><p><strong>Fire texture.</strong> Import <code>arrival_time.png</code> with sRGB off, compression None, filter Point, format R16.</p></li>
 <li><p><strong>Shader Graph.</strong> Build the logic above (Sample Texture 2D → Subtract → Smoothstep → Emission), with a float property
 <code>_SimTimeCounts</code>.</p></li>
-<li><p><strong>Clock.</strong> Attach this script and drag in the material:</p><div class="code reveal"><div class="code-head"><span>FireClock.cs</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">// FireClock.cs: drives the fire shader from the arrival-time texture (Unity, URP/HDRP)</span>
+<li><p><strong>Clock.</strong> Attach this script and drag in the material:</p><div class="code reveal" translate="no"><div class="code-head"><span>FireClock.cs</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">// FireClock.cs: drives the fire shader from the arrival-time texture (Unity, URP/HDRP)</span>
 using UnityEngine;
 public class FireClock : MonoBehaviour {
     public Material terrainMaterial;          // uses the shader graph described below
@@ -122,7 +122,7 @@ public class FireClock : MonoBehaviour {
 </section><section id="blender" aria-labelledby="blender-h"><h2 id="blender-h">Blender</h2>
 <p>Blender gives the most realistic stills and flyovers (Cycles path tracing, volumetric smoke). The script builds the terrain from
 <code>terrain.png</code> and an emission material whose fire front is driven by a keyframed clock:</p>
-<div class="code reveal"><div class="code-head"><span>blender_fire.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># blender_fire.py: terrain + animated fire material from the converter's textures.</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>blender_fire.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># blender_fire.py: terrain + animated fire material from the converter's textures.</span>
 <span class="c"># Run inside Blender (Scripting tab, or: blender --python blender_fire.py). Written for Blender 4.x.</span>
 import bpy, json, os
 D = "/path/to/fire_viz"                           <span class="c"> # output folder of wrfsfire_to_kml.py</span>
@@ -161,7 +161,7 @@ fc.default_value = 1.0; fc.keyframe_insert("default_value", frame=250)
 <li><strong>Smoke:</strong> either Mantaflow (a smoke domain over the fire with the burning area as an emitter whose density follows the front mask), or, closer to
 the model, WRF's own smoke tracer as OpenVDB volumes, imported with Add → Volume → Import OpenVDB, one per frame:</li>
 </ul>
-<div class="code reveal"><div class="code-head"><span>wrf_smoke_to_vdb.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 3-D smoke for Blender/Houdini/Unreal: one OpenVDB volume per output time from WRF's smoke tracer.</span>
+<div class="code reveal" translate="no"><div class="code-head"><span>wrf_smoke_to_vdb.py</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c"># 3-D smoke for Blender/Houdini/Unreal: one OpenVDB volume per output time from WRF's smoke tracer.</span>
 <span class="c"># Needs the OpenVDB Python bindings (e.g. "pip install openvdb" where available, or Blender's bundled module).</span>
 from netCDF4 import Dataset
 import numpy as np, openvdb as vdb
@@ -211,5 +211,6 @@ above the fire.</li>
 
   <script src="../app.js"></script>
   <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
 </body>
 </html>

@@ -122,7 +122,7 @@
         if (age < 220) { hd[o] = d[o]; hd[o + 1] = d[o + 1]; hd[o + 2] = d[o + 2]; hd[o + 3] = a; }
       }
       fctx.putImageData(img, 0, 0);
-      ctx.imageSmoothingEnabled = false;
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(fire, p.x, p.y, p.w, p.h);
       // glow pass: shrink the fire layer 6x and draw it back up with smoothing (cheap blur, works everywhere)
       gctx.clearRect(0, 0, glow.width, glow.height);

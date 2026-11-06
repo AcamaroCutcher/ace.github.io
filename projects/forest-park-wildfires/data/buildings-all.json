@@ -1,0 +1,1 @@
+{"count": 126624, "stride": 16, "format": "uint16 x*2, z*2, ground*10, height*10, width*10, length*10, angle*65535/pi, 0", "excluded_downtown": 7922, "tallest_m": 96.9, "source": "City of Portland Building Footprints (portlandmaps.com open data, AVG_HEIGHT); oriented boxes with the footprint area"}

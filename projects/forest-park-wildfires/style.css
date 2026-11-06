@@ -794,3 +794,43 @@ ol.steps > li > * { grid-column: 2; min-width: 0; }
   .eq { padding: 14px 12px 10px; }
   .eq .katex-display > .katex { font-size: 1.0em; }
 }
+
+.sim3d-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* ---------- GPU fire lab ---------- */
+.fl-stage { position: relative; aspect-ratio: 3 / 2; background: #101010; touch-action: none; cursor: crosshair; }
+.fl-stage canvas.fl-canvas, .fl-overlay, .fl-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fl-overlay, .fl-svg { pointer-events: none; }
+.fl-perim { fill: rgba(255,255,255,.06); stroke: #fff; stroke-width: .7; stroke-dasharray: 2.2 1.6; vector-effect: non-scaling-stroke; }
+:root[data-theme="light"] .fl-perim { stroke: #111; }
+.fl-handle { fill: #fff; stroke: #111; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.fl-ign { fill: #ffb066; stroke: #111; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.fl-legend { position: absolute; left: 10px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; max-width: 75%;
+  font-size: 11.5px; padding: 6px 9px; border-radius: 8px; background: rgba(10,10,9,.62); color: #f6f4ee; pointer-events: none; }
+.fl-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.fl-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.fl-slice, .fl-chart { width: 100%; height: 160px; display: block; }
+@media (max-width: 700px) { .fl-legend { font-size: 10.5px; max-width: 92%; } }
+
+/* ---------- language switch ---------- */
+.top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lang { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.lang button { font: 600 13px system-ui, sans-serif; padding: 6px 10px; border: 0; background: transparent; color: var(--text-secondary); cursor: pointer; }
+.lang button + button { border-left: 1px solid var(--border); }
+.lang button[aria-pressed="true"] { background: var(--wash); color: var(--accent); }
+.lang-status, .lang-offer { position: fixed; right: 16px; bottom: 16px; z-index: 50; font: 600 13px system-ui, sans-serif; padding: 8px 14px;
+  border-radius: 10px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.lang-offer { cursor: pointer; color: var(--accent); }
+.rose-canvas { width: 100%; height: 340px; display: block; }
+.rose { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: grid; gap: 6px; }
+/* 3-D camera controls */
+.sim3d-canvas:focus-visible { outline: 2px solid #ffb066; outline-offset: -2px; }
+button.sim3d-compass { pointer-events: auto; cursor: pointer; border: 0; padding: 0; }
+button.sim3d-compass:hover { background: rgba(10,10,9,.8); }
+.sim3d-nav { position: absolute; right: 14px; top: 80px; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(10,10,9,.55); }
+.sim3d-nav button { width: 34px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: #f6f4ee; font: 600 16px/1 system-ui, sans-serif; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
+.sim3d-nav button:hover { background: rgba(255,255,255,.14); }
+.sim3d-nav button:active { background: rgba(255,176,102,.35); }
+.sim3d-nav button:focus-visible { outline: 2px solid #ffb066; }
+.lab-buttons select.fly { font: inherit; padding: 6px 10px; border-radius: 8px; }
+@media (max-width: 700px) { .sim3d-nav { top: 76px; right: 10px; } .sim3d-nav button { width: 32px; height: 28px; } .sim3d-help { display: none; } }
