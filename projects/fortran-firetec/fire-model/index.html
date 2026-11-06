@@ -132,8 +132,8 @@ print("wrote fire1d.png")</code></pre></div><p class="dl"><a href="../code/plot_
 array <code>tnew</code>, as FIRETEC computes all <em>forcings</em> before applying them.</li>
 <li><strong>Output for analysis.</strong> Text CSV is fine for a teaching model; FIRETEC writes unformatted binary files every <code>frqoutput</code> steps.</li>
 </ul>
-<p>When we ran the same model in NumPy, the front settled at about 1.9 m/s and burned out roughly the first 100 m of the strip in 60 s, with gas
-temperatures near 1300 K behind the front.</p>
+<p>Compiled with gfortran, the program reports <code>burned out over 103.5 m of the 200 m strip</code> and <code>hottest gas now 1278.9 K</code>,
+the same as a separate NumPy version of the model: the front settles at about 1.9 m/s.</p>
 <div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Set the wind <code>u</code> to 0, 2 and 4 m/s. How does the spread rate change? Measure it from the CSV.</li><li>Raise <code>cool</code> to 0.3 s⁻¹ (more heat lost to the surroundings). The front still advances, but the fuel no longer burns out: why?</li><li>Add fuel moisture: a second array that must evaporate (taking heat from the gas) before ψ can switch on, as in FIRETEC's evaporation ramp.</li><li>Make it 2-D, <code>t(0:nx+1, 0:ny+1)</code>, with a wind at an angle, and plot the burned area.</li></ol></div></section></div>
       </section>
     </main>

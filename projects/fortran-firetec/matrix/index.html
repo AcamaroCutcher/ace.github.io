@@ -93,7 +93,8 @@ contains
   end function solve
 
 end program matrix</code></pre></div><p class="dl"><a href="../code/matrix.f90" download>Download matrix.f90</a></p>
-<p>The system is built so that the exact answer is x = (1, −2, 3); the residual |Ax − b| should be at the level of rounding errors (about 10⁻¹⁵).
+<p>The system is built so that the exact answer is x = (1, −2, 3); the residual |Ax − b| should be zero or at the level of rounding errors (about 10⁻¹⁵). With gfortran 15 it prints exactly
+<code>x = 1.00000 -2.00000 3.00000</code> and <code>|A x - b| = 0.00E+00</code>; LAPACK's <code>dgesv</code> gives the same x.
 The function <code>solve</code> sits after <code>contains</code> inside the program: an <em>internal procedure</em> (Lesson 06).</p>
 </section><section id="tridiagonal" aria-labelledby="tridiagonal-h"><h2 id="tridiagonal-h">Implicit methods and tridiagonal systems</h2>
 <p>Time-stepping schemes that are <em>implicit</em> (they use the unknown future values on both sides) stay stable with long time steps,

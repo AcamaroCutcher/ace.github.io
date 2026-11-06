@@ -79,7 +79,8 @@ program kinds
 end program kinds</code></pre></div><p class="dl"><a href="../code/kinds.f90" download>Download kinds.f90</a></p>
 <p><code>parameter</code> makes a named constant, as in FIRETEC's <code>real(wp) :: hf=8913480</code>, the heat of reaction. Formats such as
 <code>'(a, f10.1)'</code> say how to print: <code>a</code> text, <code>i5</code> an integer in 5 columns, <code>f10.1</code> a real in 10 columns with 1 decimal,
-<code>es12.4</code> scientific notation. <code>print *</code> lets the compiler choose.</p>
+<code>es12.4</code> scientific notation. <code>print *</code> lets the compiler choose. With <code>-Wall</code>, gfortran warns
+"Integer division truncated" on <code>7 / 2</code>: that is exactly the trap the line demonstrates.</p>
 </section><section id="decide" aria-labelledby="decide-h"><h2 id="decide-h">Decisions</h2><div class="code reveal" translate="no"><div class="code-head"><span>control.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! control.f90 -- if / else if and select case</span>
 program control
   implicit none
