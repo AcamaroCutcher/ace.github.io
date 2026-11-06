@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A hands-on Fortran course built around LANL&#x27;s HIGRAD/FIRETEC wildfire model: basics, loops, arrays, matrix algebra, procedures and modules, a small fire model, OpenMP and MPI, and reading the FIRETEC source.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../fortran-firetec/course.css">
+  <script src="../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">All projects</a><span aria-hidden="true">/</span>
+        <span aria-current="page">Fortran for FIRETEC</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Computing · course</p>
+        <h1>Fortran for FIRETEC</h1>
+        <p class="lede">Learn the Fortran behind Los Alamos' HIGRAD/FIRETEC wildfire model: from your first program to loops, arrays, matrix algebra, modules, a small fire model of your own, and parallel computing with OpenMP and MPI, ending with a guided tour of the real FIRETEC source.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-labelledby="lessons-h">
+        <div class="block-head">
+          <p class="eyebrow">Nine lessons</p>
+          <h2 id="lessons-h">Lessons</h2>
+          <p class="lede">Each lesson has complete programs to download and exercises. Lessons 01–07 need only gfortran; 08 adds OpenMP and MPI; 09 builds and reads FIRETEC itself. The physics is explained in <a href="../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a>.</p>
+        </div>
+        <nav class="chapters" aria-label="Lessons">
+        <a class="chapter lesson-card reveal" href="getting-started/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">01</span></div>
+            <h3>Getting started</h3>
+            <p>Why Fortran still runs the big physics codes, installing a compiler on a laptop or a cluster, and your first program.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="variables/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">02</span></div>
+            <h3>Variables, kinds and decisions</h3>
+            <p>Types, precision with kind parameters (FIRETEC's wp), constants, arithmetic, formatted output, if and select case.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="loops/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">03</span></div>
+            <h3>Loops</h3>
+            <p>Counted loops, do while (FIRETEC's time loop), exit and cycle, and why the order of nested loops decides the speed.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="arrays/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">04</span></div>
+            <h3>Arrays</h3>
+            <p>Allocatable arrays, custom bounds and halo cells, sections, whole-array arithmetic, masks and the intrinsic functions.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="matrix/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">05</span></div>
+            <h3>Matrix algebra</h3>
+            <p>matmul, transpose and dot_product; solving linear systems by Gaussian elimination, with the tridiagonal Thomas algorithm, and with LAPACK.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="procedures/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">06</span></div>
+            <h3>Functions, subroutines and modules</h3>
+            <p>Splitting a program into procedures, intent, pure and elemental functions, optional arguments, and modules the way FIRETEC uses them.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="fire-model/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">07</span></div>
+            <h3>Building a small fire model</h3>
+            <p>Everything so far in one program: a 1-D strip of grass where hot gas is carried by the wind, fuel burns, and the front moves.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="parallel/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">08</span></div>
+            <h3>Parallel processing: OpenMP and MPI</h3>
+            <p>Threads on one machine with OpenMP, processes across a cluster with MPI, domain decomposition and halo exchange as in FIRETEC, and job scripts.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="reading-firetec/index.html">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">09</span></div>
+            <h3>Reading and running FIRETEC</h3>
+            <p>A guided tour of the HIGRAD/FIRETEC source: the main loop, the state arrays, a physics routine, the build, the input file and first changes.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        </nav>
+        <div class="article" style="margin-top:28px"><div class="callout note reveal"><b>About the code</b> The programs were written for this course; the 1-D fire model was checked against a NumPy version of itself. Each lesson's files can be downloaded, and <a href="code/build_all.sh" download>build_all.sh</a> compiles and runs them all. FIRETEC excerpts are from FIRETEC-1.5.1, © 2026 Triad National Security, LLC, under the BSD 3-Clause license.</div><p class="dl-all">All programs: <a href="code/arrays.f90" download><code>arrays.f90</code></a>, <a href="code/build_all.sh" download><code>build_all.sh</code></a>, <a href="code/control.f90" download><code>control.f90</code></a>, <a href="code/fire1d.f90" download><code>fire1d.f90</code></a>, <a href="code/hello.f90" download><code>hello.f90</code></a>, <a href="code/job.slurm" download><code>job.slurm</code></a>, <a href="code/kinds.f90" download><code>kinds.f90</code></a>, <a href="code/lapack.f90" download><code>lapack.f90</code></a>, <a href="code/loop_order.f90" download><code>loop_order.f90</code></a>, <a href="code/loops.f90" download><code>loops.f90</code></a>, <a href="code/matrix.f90" download><code>matrix.f90</code></a>, <a href="code/mpi_heat.f90" download><code>mpi_heat.f90</code></a>, <a href="code/mpi_hello.f90" download><code>mpi_hello.f90</code></a>, <a href="code/omp_sum.f90" download><code>omp_sum.f90</code></a>, <a href="code/plot_fire1d.py" download><code>plot_fire1d.py</code></a>, <a href="code/procedures.f90" download><code>procedures.f90</code></a>, <a href="code/thomas.f90" download><code>thomas.f90</code></a>.</p></div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../index.html">All projects</a> · Companion to <a href="../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../forest-park-wildfires/fx.js"></script>
+  <script src="../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

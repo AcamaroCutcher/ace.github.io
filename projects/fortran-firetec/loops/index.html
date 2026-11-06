@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 03: Loops. Counted loops, do while (FIRETEC&#x27;s time loop), exit and cycle, and why the order of nested loops decides the speed.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Loops · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">03 · Loops</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 03 of 9</p>
+        <h1>Loops</h1>
+        <p class="lede">Counted loops, do while (FIRETEC's time loop), exit and cycle, and why the order of nested loops decides the speed.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Loops">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#do">do loops</a><a href="#order">Memory order</a></nav><section id="do" aria-labelledby="do-h"><h2 id="do-h">do loops</h2><div class="code reveal" translate="no"><div class="code-head"><span>loops.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! loops.f90 -- counted loops, do while, exit and cycle</span>
+program loops
+  implicit none
+  integer, parameter :: wp = kind(1.0d0)
+  integer  :: i, it, nt
+  real(wp) :: total, time, dt, fuel
+
+<span class="c">  ! 1) counted loop: sum of 1/i^2 tends to pi^2/6</span>
+  total = 0.0_wp
+  do i = 1, 100000
+    total = total + 1.0_wp / real(i, wp)**2
+  end do
+  print '(a, f12.8, a, f12.8)', 'sum 1/i^2 = ', total, '   pi^2/6 = ', acos(-1.0_wp)**2 / 6.0_wp
+
+<span class="c">  ! 2) a step other than one, and counting down</span>
+  do i = 10, 1, -3
+    write(*, '(i4)', advance='no') i
+  end do
+  print *
+
+<span class="c">  ! 3) do while: the shape of FIRETEC's main time loop in compress.F90</span>
+  nt = 5; it = 0; time = 0.0_wp; dt = 0.01_wp
+  do while (it &lt; nt)
+    it = it + 1
+    time = time + dt
+    print '(a, i3, a, f6.3)', 'step', it, '   time (s) =', time
+  end do
+
+<span class="c">  ! 4) exit leaves the loop, cycle skips to the next pass</span>
+  fuel = 1.0_wp
+  do i = 1, 1000
+    if (mod(i, 2) == 0) cycle         <span class="c"> ! burn only on odd steps</span>
+    fuel = fuel * 0.8_wp
+    if (fuel &lt; 0.01_wp) exit          <span class="c"> ! stop when less than 1% is left</span>
+  end do
+  print '(a, i4, a, f7.4)', 'stopped at i =', i, ', fuel left =', fuel
+end program loops</code></pre></div><p class="dl"><a href="../code/loops.f90" download>Download loops.f90</a></p>
+<p>A counted loop is <code>do i = start, stop [, step]</code>. The loop variable must be an integer and must not be changed inside the loop.
+After an <code>exit</code> it keeps the value it had. FIRETEC's main program is a <code>do while</code> over time steps; every physics
+routine inside it is a set of nested counted loops over the grid.</p>
+</section><section id="order" aria-labelledby="order-h"><h2 id="order-h">Nested loops and memory order</h2>
+<p>Fortran stores a 2-D array <em>column by column</em>: <code>a(1,1), a(2,1), a(3,1), …, a(1,2), …</code> (C and Python's NumPy do the opposite).
+Memory is fastest when read in order, so the <strong>first index belongs in the innermost loop</strong>. That is why FIRETEC loops
+<code>k</code> (height) outside, <code>j</code> in the middle and <code>i</code> inside:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, Vegetation/burn_veg.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>  do k=1,lls
+    do j=jl,ju
+      do i=il,iu
+        do ift=1,nfuel
+<span class="c">          ! ... reaction rate for fuel type ift in cell (i,j,k)</span></code></pre></div><div class="code reveal" translate="no"><div class="code-head"><span>loop_order.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! loop_order.f90 -- Fortran stores arrays column by column: loop over the FIRST index innermost</span>
+program loop_order
+  implicit none
+  integer, parameter :: wp = kind(1.0d0), n = 4000
+  real(wp), allocatable :: a(:,:)
+  integer :: i, j, c0, c1, rate
+  real(wp) :: s
+
+  allocate(a(n, n)); a = 1.0_wp
+
+  call system_clock(c0, rate)
+  s = 0.0_wp
+  do j = 1, n           <span class="c"> ! columns outside</span>
+    do i = 1, n         <span class="c"> ! rows inside: walks through memory in order</span>
+      s = s + a(i, j)
+    end do
+  end do
+  call system_clock(c1)
+  print '(a, f8.4, a, f14.1)', 'i inner (fast): ', real(c1 - c0, wp) / rate, ' s, sum =', s
+
+  call system_clock(c0)
+  s = 0.0_wp
+  do i = 1, n           <span class="c"> ! rows outside</span>
+    do j = 1, n         <span class="c"> ! columns inside: jumps n*8 bytes every step</span>
+      s = s + a(i, j)
+    end do
+  end do
+  call system_clock(c1)
+  print '(a, f8.4, a, f14.1)', 'j inner (slow): ', real(c1 - c0, wp) / rate, ' s, sum =', s
+end program loop_order</code></pre></div><p class="dl"><a href="../code/loop_order.f90" download>Download loop_order.f90</a></p>
+<p>With <code>-O2</code> the compiler may reorder the slow loop for you, so try <code>-O0</code> as well; on most machines the wrong order is several
+times slower. (In FIRETEC the innermost loop over fuel types runs over the <em>first</em> index of <code>xvfuel(ift,i,j,k,var)</code>, also in order.)</p>
+<div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>In <code>loops.f90</code>, sum 1/i² with i counting down from 100000 to 1. Is the result different in the last digits? Why?</li><li>Time <code>loop_order.f90</code> with <code>-O0</code>, <code>-O2</code> and <code>-O3</code>.</li><li>Write a loop that halves a fire's remaining fuel every 2 s and stops when less than 1 g/m³ is left. How many steps does it take from 0.7 kg/m³?</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../variables/index.html"><small>← Previous</small><b>02 · Variables, kinds and decisions</b></a>
+      <a class="next" href="../arrays/index.html"><small>Next →</small><b>04 · Arrays</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

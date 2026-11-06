@@ -1,0 +1,18 @@
+/* Fortran for FIRETEC: additions to the Forest Park stylesheet */
+.course-art {
+  background:
+    radial-gradient(ellipse at 18% 30%, rgba(235, 104, 52, .55), transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(42, 120, 214, .45), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 22px),
+    linear-gradient(135deg, #10151c, #1d1410);
+}
+.course-banner .banner-inner::before {
+  content: "do k=1,l\A  do j=1,mp\A    do i=1,np"; white-space: pre; display: block; font: 600 13px/1.35 ui-monospace, Menlo, monospace;
+  color: rgba(255, 213, 158, .55); margin-bottom: 4px;
+}
+.lesson-card { grid-template-rows: 1fr; }
+.lesson-card .chapter-body { padding-top: 18px; }
+p.dl { margin: -6px 0 18px; font-size: 13px; }
+p.dl a::before { content: "↓ "; }
+.dl-all { font-size: 14px; line-height: 1.9; }
+ol.ex { margin: 8px 0 0; padding-left: 1.3em; display: grid; gap: 6px; }

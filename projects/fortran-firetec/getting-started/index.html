@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 01: Getting started. Why Fortran still runs the big physics codes, installing a compiler on a laptop or a cluster, and your first program.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Getting started · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">01 · Getting started</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 01 of 9</p>
+        <h1>Getting started</h1>
+        <p class="lede">Why Fortran still runs the big physics codes, installing a compiler on a laptop or a cluster, and your first program.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Getting started">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#why">Why Fortran</a><a href="#install">Install</a><a href="#hello">First program</a><a href="#source">Source and flags</a></nav><section id="why" aria-labelledby="why-h"><h2 id="why-h">Why Fortran?</h2>
+<p>Fortran (FORmula TRANslation, 1957) is the oldest high-level language still in heavy use, and for one reason: it was designed for
+numerical work on arrays, and compilers have had sixty years to make that fast. Weather and climate models (WRF, the model under WRF-SFIRE),
+ocean and earthquake codes, and LANL's fire model HIGRAD/FIRETEC are written in it. Modern Fortran (the 1990, 2003, 2008, 2018 and 2023
+standards) is not the punch-card language of FORTRAN 77: it has free-form source, modules, dynamic arrays, whole-array operations,
+pure functions and built-in parallel features.</p>
+<p>This course teaches the parts of Fortran you need to read, run and change FIRETEC, whose open source code is on
+<a href="https://github.com/lanl/FIRETEC">GitHub</a> (Fortran 90 with MPI, about 12,000 lines). Every example is a complete program you can download,
+and most mirror a piece of FIRETEC. The physics behind the code is in
+<a href="../../forest-park-wildfires/firetec-math/index.html">Section 15 of the Forest Park project</a>.</p>
+</section><section id="install" aria-labelledby="install-h"><h2 id="install-h">Install a compiler</h2>
+<p>You need <strong>gfortran</strong> (part of GCC, free), and later an <strong>MPI</strong> library and <strong>CMake</strong> to build FIRETEC.</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>System</th><th>Commands</th></tr></thead><tbody><tr><td>macOS (Homebrew)</td><td><code>brew install gcc open-mpi cmake</code>  (gfortran comes with gcc)</td></tr><tr><td>macOS (MacPorts)</td><td><code>sudo port install gcc14 openmpi cmake</code>, then use <code>gfortran-mp-14</code></td></tr><tr><td>Ubuntu / Debian / WSL on Windows</td><td><code>sudo apt install gfortran openmpi-bin libopenmpi-dev cmake liblapack-dev</code></td></tr><tr><td>HPC cluster</td><td><code>module avail</code>, then for example <code>module load gcc openmpi cmake</code> (names differ between clusters)</td></tr></tbody></table></div>
+<p>Check it works with <code>gfortran --version</code>. Intel's <code>ifx</code> (free, in the oneAPI HPC toolkit) and NVIDIA's <code>nvfortran</code>
+are common on clusters; FIRETEC's build files support GNU, Intel and Cray compilers.</p>
+</section><section id="hello" aria-labelledby="hello-h"><h2 id="hello-h">Your first program</h2><div class="code reveal" translate="no"><div class="code-head"><span>hello.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! hello.f90 -- the smallest complete Fortran program</span>
+<span class="c">! build:  gfortran hello.f90 -o hello</span>
+<span class="c">! run:    ./hello</span>
+program hello
+  implicit none                  <span class="c"> ! every variable must be declared (always use this)</span>
+  print *, 'Hello from Fortran!'
+end program hello</code></pre></div><p class="dl"><a href="../code/hello.f90" download>Download hello.f90</a></p><div class="code reveal" translate="no"><div class="code-head"><span>Compile and run</span><button type="button" class="copy">Copy</button></div><pre><code>gfortran hello.f90 -o hello    <span class="c"> # compile: source in, executable out</span>
+./hello                        <span class="c"> # run</span></code></pre></div>
+<p>Every program starts with <code>program name</code> and ends with <code>end program name</code>. <code>implicit none</code> turns off a 1950s
+rule that made any undeclared variable starting with i–n an integer and anything else a real; with it, a typo becomes a compile error instead
+of a silent new variable. FIRETEC writes <code>Implicit None</code> in every routine: Fortran ignores upper and lower case.</p>
+</section><section id="source" aria-labelledby="source-h"><h2 id="source-h">Source form and compiler flags</h2>
+<ul>
+<li><strong>Comments</strong> start with <code>!</code>. <strong>Long lines</strong> continue with <code>&amp;</code> at the end. Free-form lines may be 132 characters
+(gfortran's <code>-ffree-line-length-none</code> lifts the limit).</li>
+<li><strong>.f90 and .F90.</strong> A capital F means "run the C preprocessor first", which allows <code>#ifdef</code>. FIRETEC's files are <code>.F90</code> because
+<code>variables.F90</code> chooses the precision this way:</li>
+</ul>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, variables.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>module gridlist_variables
+  use, intrinsic :: iso_fortran_env, only : real32,real64
+  Implicit None
+<span class="c">#ifdef DBL_PREC</span>
+  integer,parameter :: wp = 8
+<span class="c">#else</span>
+  integer,parameter :: wp = 4
+<span class="c">#endif</span></code></pre></div><div class="table-wrap reveal"><table class=""><thead><tr><th>Flag</th><th>What it does</th></tr></thead><tbody><tr><td><code>-O2</code>, <code>-O3</code></td><td>optimize (FIRETEC builds with <code>-O2 -g</code>)</td></tr><tr><td><code>-g</code></td><td>keep debugging information (line numbers in error messages, gdb)</td></tr><tr><td><code>-Wall -Wextra</code></td><td>warn about suspicious code: unused variables, implicit conversions</td></tr><tr><td><code>-fcheck=all</code></td><td>check array bounds and more at run time: slow, but finds most bugs (FIRETEC's <code>-DDEBUG=ON</code> turns it on)</td></tr><tr><td><code>-fopenmp</code></td><td>enable OpenMP threads (Lesson 08)</td></tr><tr><td><code>-DNAME</code></td><td>define a preprocessor symbol for <code>.F90</code> files, e.g. <code>-DDBL_PREC</code></td></tr><tr><td><code>-c</code></td><td>compile only, to an object file <code>.o</code> (for programs in several files)</td></tr></tbody></table></div><div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Remove <code>implicit none</code>, add the line <code>x = 3.7</code>, compile and run <code>print *, x</code>. Then put <code>implicit none</code> back and read the error.</li><li>Compile <code>hello.f90</code> with <code>-Wall -fcheck=all -g</code>. Nothing changes for such a small program; keep these flags while learning.</li><li>Install CMake and an MPI library now; Lesson 08 and Lesson 09 need them.</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../index.html"><small>← Previous</small><b>Course home</b></a>
+      <a class="next" href="../variables/index.html"><small>Next →</small><b>02 · Variables, kinds and decisions</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

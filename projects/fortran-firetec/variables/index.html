@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 02: Variables, kinds and decisions. Types, precision with kind parameters (FIRETEC&#x27;s wp), constants, arithmetic, formatted output, if and select case.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Variables, kinds and decisions · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">02 · Variables, kinds and decisions</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 02 of 9</p>
+        <h1>Variables, kinds and decisions</h1>
+        <p class="lede">Types, precision with kind parameters (FIRETEC's wp), constants, arithmetic, formatted output, if and select case.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Variables, kinds and decisions">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#types">Types and kinds</a><a href="#decide">Decisions</a></nav><section id="types" aria-labelledby="types-h"><h2 id="types-h">Types and kinds</h2>
+<p>Fortran has five built-in types: <code>integer</code>, <code>real</code>, <code>complex</code>, <code>logical</code> (<code>.true.</code>/<code>.false.</code>) and
+<code>character</code>. Reals come in different <em>kinds</em>: 4-byte single precision (about 7 digits) and 8-byte double precision (about 16).
+Scientific codes name the kind once and use it everywhere, so one line switches the whole program. FIRETEC calls it <code>wp</code>
+("working precision"): single by default, double with <code>cmake -DDBL_PREC=ON</code>. A literal needs the suffix too: <code>2.0_wp</code>;
+a plain <code>0.1</code> is single precision even inside a double-precision program.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>kinds.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! kinds.f90 -- variables, kinds, constants and arithmetic</span>
+program kinds
+  use, intrinsic :: iso_fortran_env, only : real32, real64
+  implicit none
+  integer, parameter :: wp = real64         <span class="c"> ! "working precision", as in FIRETEC's variables.F90</span>
+  real(wp), parameter :: pi = 3.141592653589793_wp
+  real(wp), parameter :: hf = 8913480.0_wp   <span class="c"> ! heat of reaction of wood (J/kg of products)</span>
+  integer  :: ncells
+  real(wp) :: dx, area
+  real(real32) :: x4
+  real(real64) :: x8
+  logical  :: wet
+  character(len=20) :: fuel_name
+
+  ncells = 200
+  dx = 2.0_wp                                 <span class="c"> ! the _wp suffix makes the literal double precision</span>
+  area = (ncells * dx)**2                     <span class="c"> ! ** is the power operator</span>
+  fuel_name = 'tall grass'
+  wet = .false.
+
+  print *, 'domain side (m): ', ncells * dx
+  print '(a, f10.1, a)', 'domain area: ', area / 1.0e4_wp, ' ha'
+  print '(a, a)', 'fuel: ', trim(fuel_name)
+  print *, 'is the fuel wet? ', wet
+
+<span class="c">  ! integer division truncates; mixing kinds promotes to the wider one</span>
+  print *, '7 / 2   = ', 7 / 2
+  print *, '7 / 2.0 = ', 7 / 2.0_wp
+
+<span class="c">  ! single versus double precision</span>
+  x4 = 1.0_real32 / 3.0_real32
+  x8 = 1.0_real64 / 3.0_real64
+  print '(a, f22.18)', '1/3 in single: ', x4
+  print '(a, f22.18)', '1/3 in double: ', x8
+  print *, 'digits of precision: ', precision(x4), precision(x8)
+  print '(a, es12.4, a)', 'heat from 1 kg of products: ', hf, ' J'
+  print '(a, f8.5)', 'pi = ', pi
+end program kinds</code></pre></div><p class="dl"><a href="../code/kinds.f90" download>Download kinds.f90</a></p>
+<p><code>parameter</code> makes a named constant, as in FIRETEC's <code>real(wp) :: hf=8913480</code>, the heat of reaction. Formats such as
+<code>'(a, f10.1)'</code> say how to print: <code>a</code> text, <code>i5</code> an integer in 5 columns, <code>f10.1</code> a real in 10 columns with 1 decimal,
+<code>es12.4</code> scientific notation. <code>print *</code> lets the compiler choose.</p>
+</section><section id="decide" aria-labelledby="decide-h"><h2 id="decide-h">Decisions</h2><div class="code reveal" translate="no"><div class="code-head"><span>control.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! control.f90 -- if / else if and select case</span>
+program control
+  implicit none
+  integer, parameter :: wp = kind(1.0d0)
+  real(wp) :: moisture, temperature
+  integer  :: category
+
+  moisture = 0.08_wp         <span class="c"> ! fuel moisture as a fraction of dry mass</span>
+  temperature = 650.0_wp     <span class="c"> ! solid temperature (K)</span>
+
+  if (moisture &gt; 0.30_wp) then
+    print *, 'Too wet to carry fire'
+  else if (moisture &gt; 0.15_wp) then
+    print *, 'Burns slowly'
+  else
+    print *, 'Dry: burns readily'
+  end if
+
+<span class="c">  ! the same tests written with the old operators you will see in FIRETEC:  .gt. .ge. .lt. .le. .eq. .ne.</span>
+  if (temperature .ge. 600.0_wp .and. moisture .lt. 0.30_wp) print *, 'Above the pyrolysis temperature'
+
+  category = 10
+  select case (category)
+  case (1:3)
+    print *, 'Grass models'
+  case (4:7)
+    print *, 'Shrub models'
+  case (8:10)
+    print *, 'Timber models'
+  case (11:13)
+    print *, 'Slash models'
+  case default
+    print *, 'Unknown fuel model'
+  end select
+end program control</code></pre></div><p class="dl"><a href="../code/control.f90" download>Download control.f90</a></p>
+<p>Older code, including much of FIRETEC, writes comparisons as <code>.gt.</code>, <code>.ge.</code>, <code>.lt.</code>, <code>.le.</code>, <code>.eq.</code>,
+<code>.ne.</code>; the modern <code>&gt; &gt;= &lt; &lt;= == /=</code> mean the same. For example, in FIRETEC's <code>computePsif</code>:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, Vegetation/burn_veg.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>    if(temps.le.tfstep)then
+      psif=0.0_wp
+    elseif(temps.le.(2*(tcrit-tfstep)+tfstep))then
+      er = erf(c2*(temps-tcrit))
+      psif = c1*(c3+er)
+    else
+      psif = 1.0_wp
+    endif</code></pre></div><div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Change <code>wp</code> in <code>kinds.f90</code> to <code>real32</code> and compare the output of 1/3 and of the domain area.</li><li>Print <code>huge(1)</code>, <code>huge(1.0_wp)</code> and <code>epsilon(1.0_wp)</code>. What do they mean?</li><li>Extend <code>control.f90</code>: read the fuel moisture from the keyboard with <code>read *, moisture</code>.</li><li>Write the FIRETEC rule above as a program that prints ψ for T = 300, 600 and 900 K (the intrinsic <code>erf</code> exists in Fortran 2008).</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../getting-started/index.html"><small>← Previous</small><b>01 · Getting started</b></a>
+      <a class="next" href="../loops/index.html"><small>Next →</small><b>03 · Loops</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

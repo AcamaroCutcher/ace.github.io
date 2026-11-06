@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 06: Functions, subroutines and modules. Splitting a program into procedures, intent, pure and elemental functions, optional arguments, and modules the way FIRETEC uses them.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Functions, subroutines and modules · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">06 · Functions, subroutines and modules</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 06 of 9</p>
+        <h1>Functions, subroutines and modules</h1>
+        <p class="lede">Splitting a program into procedures, intent, pure and elemental functions, optional arguments, and modules the way FIRETEC uses them.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Functions, subroutines and modules">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#procs">Procedures and modules</a><a href="#files">Several files</a></nav><section id="procs" aria-labelledby="procs-h"><h2 id="procs-h">Functions, subroutines and modules</h2>
+<p>A <strong>function</strong> returns a value and is used in expressions; a <strong>subroutine</strong> is called with <code>call</code> and changes its
+arguments. Declaring each argument's <code>intent</code> (<code>in</code>, <code>out</code>, <code>inout</code>) lets the compiler catch mistakes.
+<code>pure</code> promises no side effects; <code>elemental</code> procedures are written for one value and work element by element on arrays.
+A <strong>module</strong> bundles constants, variables and procedures; a program or another module gets them with <code>use</code>.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>procedures.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! procedures.f90 -- modules, functions, subroutines, intent, pure/elemental, optional arguments</span>
+<span class="c">! A module groups constants, variables and procedures; programs "use" it. FIRETEC is built from modules like this one.</span>
+module fuel_physics
+  implicit none
+  private                                      <span class="c"> ! hide everything not listed as public</span>
+  public :: wp, nfuel_const, psi_ramp, donor, consume_fuel, describe
+
+  integer, parameter :: wp = kind(1.0d0)
+  real(wp), parameter :: nfuel_const = 0.4552_wp    <span class="c"> ! N_wood in FIRETEC's Vegetation/variables_veg.F90</span>
+  real(wp), parameter :: tstep = 310.0_wp, tcrit = 600.0_wp
+
+contains
+
+<span class="c">  ! elemental: written for one value, works on whole arrays too</span>
+  elemental function psi_ramp(temps) result(psi)
+    real(wp), intent(in) :: temps
+    real(wp) :: psi
+    psi = min(1.0_wp, max(0.0_wp, (temps - tstep) / (2.0_wp * (tcrit - tstep))))
+  end function psi_ramp
+
+<span class="c">  ! the upwind (donor-cell) flux used by FIRETEC's advection: take the value from the side the wind comes from</span>
+  pure function donor(y1, y2, c) result(flux)
+    real(wp), intent(in) :: y1, y2, c       <span class="c"> ! left value, right value, Courant number u*dt/dx at the face</span>
+    real(wp) :: flux
+    flux = max(c, 0.0_wp) * y1 + min(c, 0.0_wp) * y2
+  end function donor
+
+<span class="c">  ! a subroutine changes its arguments; intent says which ones it reads and which it writes</span>
+  subroutine consume_fuel(rhof, rate, dt, burned)
+    real(wp), intent(inout) :: rhof(:)               <span class="c"> ! fuel density, updated in place</span>
+    real(wp), intent(in)    :: rate(:), dt           <span class="c"> ! reaction rate F and time step</span>
+    real(wp), intent(out), optional :: burned        <span class="c"> ! total mass burned (only if the caller asks)</span>
+    real(wp) :: before
+    before = sum(rhof)
+    rhof = max(0.0_wp, rhof - nfuel_const * rate * dt)
+    if (present(burned)) burned = before - sum(rhof)
+  end subroutine consume_fuel
+
+  subroutine describe(name, value, unit)
+    character(len=*), intent(in) :: name, unit     <span class="c"> ! len=* takes the length from the actual argument</span>
+    real(wp), intent(in) :: value
+    print '(a, ": ", es11.4, 1x, a)', name, value, unit
+  end subroutine describe
+
+end module fuel_physics
+
+
+program procedures
+  use fuel_physics, only : wp, psi_ramp, donor, consume_fuel, describe
+  implicit none
+  real(wp) :: temps(4) = [300.0_wp, 450.0_wp, 600.0_wp, 900.0_wp]
+  real(wp) :: rhof(3), rate(3), burned
+
+  print '(a, 4f7.3)', 'psi_ramp(T)  = ', psi_ramp(temps)       <span class="c"> ! elemental: called on an array</span>
+  print '(a, f6.2)', 'donor, wind to the right: ', donor(1.0_wp, 5.0_wp,  0.5_wp)
+  print '(a, f6.2)', 'donor, wind to the left:  ', donor(1.0_wp, 5.0_wp, -0.5_wp)
+
+  rhof = [0.7_wp, 0.7_wp, 0.7_wp]
+  rate = [0.0_wp, 0.5_wp, 1.0_wp]
+  call consume_fuel(rhof, rate, 0.1_wp, burned)
+  print '(a, 3f7.4)', 'fuel after one step: ', rhof
+  call describe('mass burned per m^3 of each cell, summed', burned, 'kg/m^3')
+  call consume_fuel(rhof, rate, 0.1_wp)                         <span class="c"> ! optional argument left out</span>
+  print '(a, 3f7.4)', 'after a second step: ', rhof
+end program procedures</code></pre></div><p class="dl"><a href="../code/procedures.f90" download>Download procedures.f90</a></p>
+<p>The <code>donor</code> function is FIRETEC's own upwind flux, from <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/advectionScheme.F90"><code>advectionScheme.F90</code></a>, the building block of its advection
+scheme (Section 15, Eq. 17). FIRETEC is organised entirely in modules: global settings read from the input file live in modules such as
+<code>gridlist_variables</code>, and each routine lists exactly what it uses:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, Vegetation/burn_veg.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>subroutine burnFuel(force_xv,force_xvfuel,xv,xvfuel, &amp;
+    ilh,iuh,jlh,juh,ku,il,iu,jl,ju,lls,nvp,nvf,nfuel)
+  use gridlist_variables, only : wp
+  use vegetation_gridlist_variables, only : cpwood
+  use xvall, only : ikb,iO2,irho,irhof,irhow,isies,itheta
+  use fuel_variables, only : temps,rhoFuelInitial,rno,rnfuel, &amp;
+    sizeScale,hf,tcrit
+  Implicit None
+  integer,intent(in) :: ilh,iuh,jlh,juh,ku,il,iu,jl,ju,lls,nvp,nvf,nfuel
+  real(wp),intent(in) :: xv(ilh:iuh,jlh:juh,ku,nvp), &amp;
+    xvfuel(nfuel,il:iu,jl:ju,lls,nvf)
+  real(wp),intent(inout) :: force_xv(ilh:iuh,jlh:juh,ku,nvp), &amp;
+    force_xvfuel(nfuel,il:iu,jl:ju,lls,nvf)</code></pre></div>
+<p>Note the <em>explicit-shape</em> dummy arrays: the bounds are passed in as arguments, so the routine sees the halo cells with the same
+indices as the caller.</p>
+</section><section id="files" aria-labelledby="files-h"><h2 id="files-h">Programs in several files</h2>
+<p>Real codes put each module in its own file. A module must be compiled before any file that uses it, because compiling it writes a
+<code>.mod</code> file the compiler reads later. By hand:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>Separate compilation</span><button type="button" class="copy">Copy</button></div><pre><code>gfortran -c fuel_physics.f90         <span class="c"> # writes fuel_physics.o and fuel_physics.mod</span>
+gfortran -c main.f90                 <span class="c"> # reads fuel_physics.mod</span>
+gfortran fuel_physics.o main.o -o model</code></pre></div>
+<p>With dozens of files this is done by a build system. FIRETEC uses CMake, which works out the module order itself; a minimal
+<code>CMakeLists.txt</code> for a Fortran program is:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>CMakeLists.txt</span><button type="button" class="copy">Copy</button></div><pre><code>cmake_minimum_required(VERSION 3.10)
+project(model Fortran)
+add_executable(model fuel_physics.f90 main.f90)</code></pre></div><div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Split <code>procedures.f90</code> into two files and build it by hand, then with CMake (<code>mkdir build; cd build; cmake ..; make</code>).</li><li>Add an elemental function <code>psi_erf(T)</code> that returns ½(1 + erf(0.0079 (T − 600))) and print it next to <code>psi_ramp</code>.</li><li>Try calling <code>consume_fuel</code> with a constant as its first argument. What does the compiler say, and why?</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../matrix/index.html"><small>← Previous</small><b>05 · Matrix algebra</b></a>
+      <a class="next" href="../fire-model/index.html"><small>Next →</small><b>07 · Building a small fire model</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 09: Reading and running FIRETEC. A guided tour of the HIGRAD/FIRETEC source: the main loop, the state arrays, a physics routine, the build, the input file and first changes.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Reading and running FIRETEC · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">09 · Reading and running FIRETEC</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 09 of 9</p>
+        <h1>Reading and running FIRETEC</h1>
+        <p class="lede">A guided tour of the HIGRAD/FIRETEC source: the main loop, the state arrays, a physics routine, the build, the input file and first changes.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Reading and running FIRETEC">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#get">Get and build</a><a href="#map">Source map</a><a href="#physics">A physics routine</a><a href="#run">First run</a></nav><section id="get" aria-labelledby="get-h"><h2 id="get-h">Get and build the code</h2><div class="code reveal" translate="no"><div class="code-head"><span>Clone and build FIRETEC-1.5.1</span><button type="button" class="copy">Copy</button></div><pre><code>git clone https://github.com/lanl/FIRETEC.git
+cd FIRETEC/CODE-1.5.1
+mkdir build &amp;&amp; cd build
+cmake ..                      <span class="c"> # -DDBL_PREC=ON: double precision;  -DDEBUG=ON: -Wall -fcheck=all</span>
+make -j 8                     <span class="c"> # the executable is ./firerad</span></code></pre></div>
+<p>The build needs gfortran (or Intel or Cray Fortran), MPI and CMake. CMake builds each physics package (<code>Vegetation</code>, <code>Radiation</code>,
+<code>subGridTurb</code>, <code>Firebrands</code>, <code>Emissions</code>, …) as a library and links them into <code>firerad</code>.</p>
+</section><section id="map" aria-labelledby="map-h"><h2 id="map-h">A map of the source</h2><div class="table-wrap reveal"><table class=""><thead><tr><th>File or folder</th><th>What is in it</th></tr></thead><tbody><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/compress.F90"><code>compress.F90</code></a></td><td>the main program: read input, set up MPI, initialise, time loop, output</td></tr><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/variables.F90"><code>variables.F90</code></a></td><td>modules of global variables, including the defaults of every input (<code>gridlist_variables</code>)</td></tr><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/input.F90"><code>input.F90</code></a>, <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/readgridlist.F90"><code>readgridlist.F90</code></a></td><td>reading the <code>gridlist</code> text file</td></tr><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/msga.F90"><code>msga.F90</code></a>, <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/update.F90"><code>update.F90</code></a></td><td>MPI setup and halo exchange (Lesson 08)</td></tr><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/definearray.F90"><code>definearray.F90</code></a></td><td>allocating the state arrays and the named indices into <code>xv</code></td></tr><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/MOA.F90"><code>MOA.F90</code></a>, <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/higrad.F90"><code>higrad.F90</code></a>, <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/advectionScheme.F90"><code>advectionScheme.F90</code></a></td><td>the HIGRAD solver: method of averages, donor cell, MPDATA</td></tr><tr><td><a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/force.F90"><code>force.F90</code></a></td><td>collects all forcings and advances a step</td></tr><tr><td><code>Vegetation/</code></td><td>fuel physics: burning, evaporation, convection, drag, ignition</td></tr><tr><td><code>Radiation/</code>, <code>subGridTurb/</code>, <code>Firebrands/</code>, <code>Emissions/</code></td><td>Monte Carlo radiation, turbulence, embers, smoke</td></tr><tr><td><code>TOOLS/</code> (top level)</td><td>example <code>gridlist</code>, all input options, ignition-file makers, fuel maps</td></tr></tbody></table></div>
+<p>Read the main loop first; it is in <a href="../../forest-park-wildfires/firetec-math/index.html#numerics">Section 15</a>. Then follow one variable: search for
+<code>irhof</code> (the fuel density index) with <code>grep -rn irhof .</code> and you will find where fuel is read, burned and written.</p>
+</section><section id="physics" aria-labelledby="physics-h"><h2 id="physics-h">Reading a physics routine</h2>
+<p>Here is the heart of the burning routine, with the Fortran from this course marked. Every line maps to an equation in Section 15.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, Vegetation/burn_veg.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>  do k=1,lls                                  <span class="c"> ! nested loops, first index innermost (Lesson 03)</span>
+    do j=jl,ju
+      do i=il,iu
+        do ift=1,nfuel
+          rkctemp=0.2_wp*xv(i,j,k,ikb)/xv(i,j,k,irho)     <span class="c"> ! kind suffix _wp (Lesson 02); named indices (Lesson 04)</span>
+          sigmac=sc*0.5_wp*sqrt(rkctemp)
+          call computePsif(psif,temps(ift,i,j,k))         <span class="c"> ! a subroutine returning psif (Lesson 06)</span>
+          percHydroRemaining=max(0.0_wp,(xvfuel(ift,i,j,k,irhof) &amp;
+            -hydroThresh*rhoFuelinitial(ift,i,j,k)) &amp;
+            /(rhoFuelinitial(ift,i,j,k)*(1.0_wp-hydroThresh)))
+          cf=cfhydro*percHydroRemaining+cfchar*(1-percHydroRemaining)
+          slambdaof=sum(xvfuel(:,i,j,k,irhof))*xv(i,j,k,iO2) &amp;    <span class="c"> ! sum over a section (Lesson 04)</span>
+            /(sum(xvfuel(:,i,j,k,irhof))/rnfuel+xv(i,j,k,iO2)/rno)**2
+          ff=cf*xvfuel(ift,i,j,k,irhof)*xv(i,j,k,iO2)*sigmac*psif* &amp;
+            slambdaof/(100.0_wp*sizescale(ift,i,j,k)**2.0_wp)
+<span class="c">          ! ... then forcings: fuel lost, heat to the solid and to the gas</span>
+          force_xvfuel(ift,i,j,k,irhof)=force_xvfuel(ift,i,j,k,irhof)-ff*rnfuel</code></pre></div>
+<p>Notice that the routine does not change <code>xvfuel</code> directly: it adds to a <em>forcing</em> array, and the solver applies all forcings
+together. That keeps the physics independent of the time-stepping scheme, as in Lesson 07.</p>
+</section><section id="run" aria-labelledby="run-h"><h2 id="run-h">Running a first case</h2>
+<p>A run reads <code>gridlist</code> (one <code>name = value</code> per line) from the working directory. Start from
+<code>TOOLS/Gridlist/gridlist</code>, a 50 × 50 × 20 grid on 2 × 2 processes, and the full list of options in
+<code>TOOLS/Gridlist/GRIDLIST_OPTIONS.txt</code>.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>Run the example</span><button type="button" class="copy">Copy</button></div><pre><code>mkdir run &amp;&amp; cd run
+cp ../TOOLS/Gridlist/gridlist .
+mkdir -p comp                                 <span class="c"> # outname = './comp/comp.out'</span>
+mpirun -np 4 ../CODE-1.5.1/build/firerad | tee log.txt</code></pre></div>
+<p>Every step prints the minimum and maximum of each field (the routine <code>rmaxmin</code>), which is the first thing to watch: NaNs or
+runaway values mean the time step or the inputs are wrong. A real burn also needs fuel files from LANL's
+<a href="https://github.com/lanl/Trees">Trees</a> program and an ignition file; see <code>TOOLS/Ignition</code>.</p>
+<div class="callout warn reveal"><b>Not run for this page</b> These commands follow the repository's build files and example input; I have not run FIRETEC itself.</div><div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Build FIRETEC in debug mode (<code>cmake .. -DDEBUG=ON</code>) and in double precision, and compare the run time of the example.</li><li>Find where <code>nprocx</code> and <code>nprocy</code> are checked against the number of MPI processes, and make a run fail on purpose to see the message.</li><li>In <code>burn_veg.F90</code>, the drag coefficient <code>cd</code> and the mixing scale <code>sc</code> live in a module. Find it with <code>grep</code>.</li><li>Add a line to <code>compress.F90</code> that prints the total fuel mass every <code>frqoutput</code> steps. You will need <code>MPI_Allreduce</code> (Lesson 08).</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../parallel/index.html"><small>← Previous</small><b>08 · Parallel processing: OpenMP and MPI</b></a>
+      <a class="next" href="../index.html"><small>Next →</small><b>Back to the course home</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

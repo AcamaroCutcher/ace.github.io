@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 05: Matrix algebra. matmul, transpose and dot_product; solving linear systems by Gaussian elimination, with the tridiagonal Thomas algorithm, and with LAPACK.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Matrix algebra · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">05 · Matrix algebra</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 05 of 9</p>
+        <h1>Matrix algebra</h1>
+        <p class="lede">matmul, transpose and dot_product; solving linear systems by Gaussian elimination, with the tridiagonal Thomas algorithm, and with LAPACK.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Matrix algebra">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#intrinsics">Built-ins</a><a href="#tridiagonal">Tridiagonal</a><a href="#lapack">LAPACK</a></nav><section id="intrinsics" aria-labelledby="intrinsics-h"><h2 id="intrinsics-h">Built-in matrix operations</h2>
+<p><code>matmul(A, B)</code>, <code>transpose(A)</code> and <code>dot_product(x, y)</code> are part of the language. <code>A * B</code> is <em>not</em> a matrix
+product: it multiplies element by element. Note also that <code>reshape</code> fills a matrix column by column, so a matrix typed in row by row
+needs a <code>transpose</code>.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>matrix.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! matrix.f90 -- matrix algebra: matmul, transpose, dot_product, and solving A x = b by Gaussian elimination</span>
+program matrix
+  implicit none
+  integer, parameter :: wp = kind(1.0d0), n = 3
+  real(wp) :: a(n, n), b(n), x(n), c(n, n), r(n)
+  integer :: i
+
+<span class="c">  ! Fortran fills reshape column by column; transpose to write the matrix by rows</span>
+  a = transpose(reshape([ 4.0_wp, -2.0_wp,  1.0_wp, &amp;
+                         -2.0_wp,  4.0_wp, -2.0_wp, &amp;
+                          1.0_wp, -2.0_wp,  4.0_wp], [n, n]))
+  b = [11.0_wp, -16.0_wp, 17.0_wp]
+
+  print '(a)', 'A ='
+  do i = 1, n
+    print '(3f8.2)', a(i, :)
+  end do
+  print '(a, f8.2)', 'dot_product(b, b) = ', dot_product(b, b)
+  c = matmul(a, transpose(a))
+  print '(a)', 'A A^T ='
+  do i = 1, n
+    print '(3f8.2)', c(i, :)
+  end do
+
+  x = solve(a, b)
+  print '(a, 3f10.5)', 'x        = ', x
+  r = matmul(a, x) - b
+  print '(a, es10.2)', '|A x - b| = ', sqrt(dot_product(r, r))
+
+contains
+
+<span class="c">  ! Gaussian elimination with partial pivoting; returns the solution, leaves a and b unchanged</span>
+  function solve(a_in, b_in) result(x)
+    real(wp), intent(in) :: a_in(:, :), b_in(:)
+    real(wp) :: x(size(b_in))
+    real(wp) :: m(size(b_in), size(b_in) + 1), row(size(b_in) + 1), f
+    integer :: k, p, j, nn
+    nn = size(b_in)
+    m(:, 1:nn) = a_in
+    m(:, nn + 1) = b_in
+    do k = 1, nn - 1
+      p = maxloc(abs(m(k:nn, k)), dim=1) + k - 1     <span class="c"> ! pivot: largest entry in column k</span>
+      if (p /= k) then
+        row = m(k, :); m(k, :) = m(p, :); m(p, :) = row
+      end if
+      do j = k + 1, nn
+        f = m(j, k) / m(k, k)
+        m(j, k:) = m(j, k:) - f * m(k, k:)           <span class="c"> ! eliminate below the pivot</span>
+      end do
+    end do
+    do k = nn, 1, -1                                 <span class="c"> ! back substitution</span>
+      x(k) = (m(k, nn + 1) - dot_product(m(k, k + 1:nn), x(k + 1:nn))) / m(k, k)
+    end do
+  end function solve
+
+end program matrix</code></pre></div><p class="dl"><a href="../code/matrix.f90" download>Download matrix.f90</a></p>
+<p>The system is built so that the exact answer is x = (1, −2, 3); the residual |Ax − b| should be at the level of rounding errors (about 10⁻¹⁵).
+The function <code>solve</code> sits after <code>contains</code> inside the program: an <em>internal procedure</em> (Lesson 06).</p>
+</section><section id="tridiagonal" aria-labelledby="tridiagonal-h"><h2 id="tridiagonal-h">Implicit methods and tridiagonal systems</h2>
+<p>Time-stepping schemes that are <em>implicit</em> (they use the unknown future values on both sides) stay stable with long time steps,
+but every step needs a linear solve. In one dimension the matrix is tridiagonal and the Thomas algorithm solves it in O(n) operations.
+Heat conduction into a fuel bed, below, takes a 0.5 s step at which the explicit scheme would blow up
+(r = κΔt/Δx² = 12.5, far above the explicit limit of 0.5). FIRETEC's method of averages treats the fast pressure terms on small steps for the
+same reason: stability.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>thomas.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! thomas.f90 -- implicit (backward Euler) heat diffusion through a 1-D fuel bed, solved with the tridiagonal (Thomas) algorithm</span>
+program thomas
+  implicit none
+  integer, parameter :: wp = kind(1.0d0), n = 50
+  real(wp), parameter :: kappa = 1.0e-4_wp, dx = 0.002_wp, dt = 0.5_wp
+  real(wp) :: t(n), lo(n), di(n), up(n), rhs(n), r
+  integer :: step, i
+
+  t = 300.0_wp
+  r = kappa * dt / dx**2                <span class="c"> ! = 12.5: an explicit scheme would blow up, an implicit one is stable</span>
+  lo = -r; di = 1.0_wp + 2.0_wp * r; up = -r
+<span class="c">  ! fixed temperatures at both ends: a hot face at 900 K and the far side at 300 K</span>
+  di(1) = 1.0_wp; up(1) = 0.0_wp; di(n) = 1.0_wp; lo(n) = 0.0_wp
+
+  do step = 1, 20
+    rhs = t
+    rhs(1) = 900.0_wp; rhs(n) = 300.0_wp
+    call tridiag(lo, di, up, rhs, t)
+  end do
+  print '(a, f5.1, a)', 'after ', 20 * dt, ' s:'
+  do i = 1, n, 7
+    print '(f7.3, a, f8.2, a)', (i - 1) * dx * 100.0_wp, ' cm  ', t(i), ' K'
+  end do
+
+contains
+
+<span class="c">  ! solve  lo(i) x(i-1) + di(i) x(i) + up(i) x(i+1) = d(i),  i = 1..n  (lo(1) and up(n) unused)</span>
+  subroutine tridiag(lo, di, up, d, x)
+    real(wp), intent(in)  :: lo(:), di(:), up(:), d(:)
+    real(wp), intent(out) :: x(:)
+    real(wp) :: c(size(d)), g(size(d)), m
+    integer :: i, nn
+    nn = size(d)
+    c(1) = up(1) / di(1)
+    g(1) = d(1) / di(1)
+    do i = 2, nn                         <span class="c"> ! forward sweep</span>
+      m = di(i) - lo(i) * c(i - 1)
+      c(i) = up(i) / m
+      g(i) = (d(i) - lo(i) * g(i - 1)) / m
+    end do
+    x(nn) = g(nn)
+    do i = nn - 1, 1, -1                 <span class="c"> ! back substitution</span>
+      x(i) = g(i) - c(i) * x(i + 1)
+    end do
+  end subroutine tridiag
+
+end program thomas</code></pre></div><p class="dl"><a href="../code/thomas.f90" download>Download thomas.f90</a></p></section><section id="lapack" aria-labelledby="lapack-h"><h2 id="lapack-h">LAPACK</h2>
+<p>For real work, call LAPACK (and BLAS underneath it): decades-old, heavily optimized Fortran libraries. <code>dgesv</code> solves a general
+system by LU factorization; <code>dgtsv</code> is the tridiagonal solver; <code>dsyev</code> computes eigenvalues. On clusters link OpenBLAS or Intel MKL.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>lapack.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! lapack.f90 -- the same 3x3 system with LAPACK's dgesv (LU factorization with partial pivoting)</span>
+<span class="c">! build:  gfortran lapack.f90 -llapack -o lapack      (on clusters: -lopenblas, or -qmkl with Intel)</span>
+program lapack_demo
+  implicit none
+  integer, parameter :: n = 3
+  double precision :: a(n, n), b(n, 1)
+  integer :: ipiv(n), info
+
+  a = transpose(reshape([ 4d0, -2d0,  1d0, &amp;
+                         -2d0,  4d0, -2d0, &amp;
+                          1d0, -2d0,  4d0], [n, n]))
+  b(:, 1) = [11d0, -16d0, 17d0]
+  call dgesv(n, 1, a, n, ipiv, b, n, info)  <span class="c"> ! on return b holds x, and a holds the LU factors</span>
+  if (info /= 0) stop 'dgesv failed'
+  print '(a, 3f10.5)', 'x = ', b(:, 1)
+end program lapack_demo</code></pre></div><p class="dl"><a href="../code/lapack.f90" download>Download lapack.f90</a></p><div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Check <code>matrix.f90</code> on a 6 × 6 system you build with <code>call random_number(a)</code> and b = A·(1, 2, …, 6).</li><li>Replace the call to <code>tridiag</code> with LAPACK's <code>dgtsv</code> and compare the results.</li><li>Write the explicit scheme for the heat equation in <code>thomas.f90</code> and watch it fail at r = 12.5, then work at r = 0.4.</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../arrays/index.html"><small>← Previous</small><b>04 · Arrays</b></a>
+      <a class="next" href="../procedures/index.html"><small>Next →</small><b>06 · Functions, subroutines and modules</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

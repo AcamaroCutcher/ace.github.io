@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 15: The math of FIRETEC. Los Alamos' physics-based fire model: fuel, water and gas conservation, mixing-limited burning, turbulence, radiation and HIGRAD numerics, checked against the open Fortran source. With two labs.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>The math of FIRETEC · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../vendor/katex/katex.min.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">15 · The math of FIRETEC</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/photos/canopy.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 15 · Beyond WRF-SFIRE · theory</p>
+        <h1>The math of FIRETEC</h1>
+        <p class="lede">FIRETEC, from Los Alamos National Laboratory, computes fire behavior from the physics of burning vegetation and moving air instead of a spread-rate formula. Its equations, how they are solved, and where to get the code.</p>
+      </div>
+      <span class="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">Jon Roberts from Austin TX, USA</a>, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons</span>
+    </header>
+
+    <main>
+      <section class="block" id="firetec-math" aria-label="The math of FIRETEC">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#what">Overview</a><a href="#averaging">Averaging</a><a href="#chemistry">Chemistry</a><a href="#rate">Reaction rate</a><a href="#solid">Solid phase</a><a href="#gas">Gas phase</a><a href="#turbulence">Turbulence</a><a href="#radiation">Radiation</a><a href="#numerics">Numerics</a><a href="#parallel">Parallel</a><a href="#code">Code</a><a href="#refs">References</a></nav><section id="what" aria-labelledby="what-h"><h2 id="what-h">A different kind of fire model</h2>
+<p>WRF-SFIRE (Sections 06–14) moves the fire front with a <em>formula</em>: Rothermel's spread rate tells the level set how fast to
+advance, and the atmosphere only feels the heat the burning fuel releases. FIRETEC, developed at Los Alamos National Laboratory
+by Rodman Linn and colleagues (Linn 1997; Linn et al. 2002), has no spread-rate formula at all. It solves conservation equations
+for the gas <em>and</em> for the vegetation in every cell of a fine 3-D grid, and the fire's spread, shape and intensity come out of
+how heat moves from burning fuel to unburned fuel through the air: by convection, radiation and turbulent mixing. Linn et al.
+call this a <em>self-determining</em> model.</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th></th><th>WRF-SFIRE</th><th>HIGRAD/FIRETEC</th></tr></thead><tbody><tr><td>Fire front</td><td>Level-set function moved at a prescribed rate of spread</td><td>No front variable; burning emerges where hot gas, fuel and oxygen meet</td></tr><tr><td>Fuel</td><td>13 surface fuel categories on a 2-D mesh</td><td>3-D bulk density, moisture and size of each fuel type in every cell (grass, shrubs, canopy)</td></tr><tr><td>Atmosphere</td><td>WRF, cells of 50 m to km, minutes of simulated time per second</td><td>HIGRAD, compressible, cells of 1–10 m horizontally and under 1 m to a few m near the ground</td></tr><tr><td>Typical domain</td><td>Tens of km, hours to days</td><td>Hundreds of m to a few km, minutes to an hour</td></tr><tr><td>Cost</td><td>A forecast on a modest cluster</td><td>Thousands of core-hours for one burn</td></tr><tr><td>Used for</td><td>Forecasting real fires, risk ensembles</td><td>Understanding fire behavior: crown fires, fuel treatments, fire–wind feedbacks, prescribed burns</td></tr></tbody></table></div>
+<p>The two are complementary. FIRETEC can tell us <em>why</em> a fire behaves as it does in a particular stand of trees; WRF-SFIRE can
+run the whole park for days. LANL's faster tool QUIC-Fire (Linn et al. 2020) sits in between: it couples a fast wind solver with a simplified fire
+model to capture FIRETEC-like fire–wind feedbacks quickly enough for prescribed-fire planning on a desktop computer.</p>
+<div class="callout note reveal"><b>Where the equations on this page come from</b> Equations (1)–(9) are transcribed from Linn, Reisner, Colman and Winterkamp (2002), the standard published description. Where the 2002 paper leaves a coefficient unspecified ("described in Linn 1997"), the formula shown is the one in the open FIRETEC-1.5.1 source on GitHub, with a link to the file, so every number can be checked.</div></section><section id="averaging" aria-labelledby="averaging-h"><h2 id="averaging-h">Resolved volumes and averaged equations</h2>
+<p>A 2 m FIRETEC cell holds thousands of grass blades or a piece of a tree crown. Their positions are never known, so FIRETEC
+works with averages over a <em>resolved volume</em>: the bulk density of fuel (kg of dry fuel per m³ of space), its moisture, its
+surface-area-to-volume ratio, and the mean temperatures of the solid and the gas. Each instantaneous variable is split into a
+mean and a fluctuation, \(\phi = \overline{\phi} + \phi'\), and the conservation laws are ensemble-averaged. Averaging a
+product leaves correlations such as \(\overline{u_i' u_j'}\) (turbulent stresses) or \(\overline{\rho_{\text{wood}}'\rho_{O_2}'}\)
+(how often fuel and oxygen are actually in the same place), and these need models: that is where most of FIRETEC's physics lives.</p>
+<p>Flames are not resolved. Instead, FIRETEC estimates what fraction of a resolved volume is hot enough to burn from a
+probability distribution of temperature inside the cell (below), and lets the reaction rate depend on that fraction, on the
+oxygen supply and on turbulent mixing.</p>
+</section><section id="chemistry" aria-labelledby="chemistry-h"><h2 id="chemistry-h">One reaction for all of combustion</h2>
+<p>The hundreds of reactions in burning vegetation are lumped into a single solid–gas reaction that turns wood and oxygen into
+inert products and heat:</p>
+<div class="eq reveal" id="eq-1">$$N_{\text{wood}}\,(\text{wood}) + N_{O_2}\,(\text{oxygen}) \;\longrightarrow\; (\text{products}) + (\text{heat}) \tag{1}$$<p class="eq-caption"><span class="eq-n">Eq. (1)</span>The stoichiometric coefficients give the mass of wood and of oxygen consumed per unit mass of products, through pyrolysis and all the intermediate reactions. Linn et al. (2002), Eq. (1).</p></div><div class="table-wrap reveal"><table class=""><thead><tr><th>Constant</th><th>Value in FIRETEC-1.5.1</th><th>Meaning</th></tr></thead><tbody><tr><td>\(N_{\text{wood}}\)</td><td>0.4552</td><td>kg of dry fuel per kg of products (Drysdale)</td></tr><tr><td>\(N_{O_2}\)</td><td>0.5448</td><td>kg of oxygen per kg of products; \(N_{\text{wood}} + N_{O_2} = 1\)</td></tr><tr><td>\(H_{\text{wood}}\)</td><td>8.913 MJ kg⁻¹</td><td>heat of reaction per kg of products (the 2002 paper uses 8914 kJ kg⁻¹)</td></tr><tr><td>\(T_{\text{pyr}}\)</td><td>600 K</td><td><code>tcrit</code>: temperature at which half of a cell's fuel is taken to be reacting</td></tr><tr><td>\(H_{\text{water}}\)</td><td>2.257 MJ kg⁻¹</td><td>latent heat of evaporation of fuel moisture at 373 K</td></tr><tr><td>\(c_{p,\text{wood}}\)</td><td>2500 J kg⁻¹ K⁻¹</td><td>heat capacity of the fuel (<code>cpwood</code>, a gridlist input)</td></tr><tr><td>\(\rho_{\text{micro}}\)</td><td>500 kg m⁻³</td><td>density of the fuel material itself (<code>rhoMicro</code>, a gridlist input)</td></tr></tbody></table></div><p>Constants: <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Vegetation/variables_veg.F90"><code>Vegetation/variables_veg.F90</code></a>.</p></section><section id="rate" aria-labelledby="rate-h"><h2 id="rate-h">The reaction rate: mixing-limited burning</h2>
+<p>The rate at which fuel is consumed (kg m⁻³ s⁻¹ of products) is</p>
+<div class="eq reveal" id="eq-2">$$F_{\text{wood}} = \rho_{\text{wood}}\,\rho_{O_2}\,\sigma\,\Pi \tag{2}$$<p class="eq-caption"><span class="eq-n">Eq. (2)</span>Linn et al. (2002), Eq. (2). σ is a turbulent mixing coefficient and Π gathers the temperature distribution and the proportions of the reactants.</p></div>
+<p>The philosophy, in the paper's words, is that pyrolysis is driven by the heat flux to the solid, which comes from gas-phase
+reactions limited by how fast oxygen is mixed in. If either fuel or oxygen is missing, the chain breaks. In the 1.5.1 source
+(<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Vegetation/burn_veg.F90"><code>Vegetation/burn_veg.F90</code></a>) the factors are written out as</p>
+<div class="eq reveal" id="eq-3">$$F_{\text{wood}} = \frac{c_F\,\rho_{\text{wood}}\,\rho_{O_2}\,\sigma_c\,\psi_s\,\lambda_{of}}{100\,s^{2}},\qquad \sigma_c = \tfrac12\,s_c\sqrt{0.2\,k_B},\qquad \lambda_{of} = \frac{\rho_{\text{wood}}\,\rho_{O_2}}{\left(\rho_{\text{wood}}/N_{\text{wood}} + \rho_{O_2}/N_{O_2}\right)^{2}} \tag{3}$$<p class="eq-caption"><span class="eq-n">Eq. (3)</span>The rate as coded in <code>burnFuel</code>. The constant 100 and the factor 0.2 are in the source as written.</p></div><dl class="where"><dt>\(\psi_s\)</dt><dd>fraction of the solid in the cell hotter than the reaction threshold: a cumulative distribution of solid temperature, Eq. (5)</dd><dt>\(\lambda_{of}\)</dt><dd>largest when fuel and oxygen are in stoichiometric proportion, \(\rho_{\text{wood}}/\rho_{O_2} = N_{\text{wood}}/N_{O_2}\)</dd><dt>\(\sigma_c\)</dt><dd>turbulent mixing speed at the smallest (flame) scale; \(k_B\) is the turbulent kinetic energy at the fuel scale, \(s_c = 0.1\) m</dd><dt>\(s\)</dt><dd>fuel size scale (m): thin fuels have more surface per unit mass and burn faster, as \(1/s^2\)</dd><dt>\(c_F\)</dt><dd>0.9 while volatile fuel remains, falling linearly to 0.09 (char burning) once less than 40% of the initial fuel is left, Eq. (4)</dd></dl><div class="eq reveal" id="eq-4">$$c_F = 0.9\,p + 0.09\,(1-p),\qquad p = \max\!\left(0,\;\frac{\rho_{\text{wood}} - 0.4\,\rho_{\text{wood},0}}{0.6\,\rho_{\text{wood},0}}\right) \tag{4}$$<p class="eq-caption"><span class="eq-n">Eq. (4)</span>Flaming to smoldering: p is the fraction of the volatile ("hydrocarbon") part of the fuel that is left.</p></div>
+<h3>The temperature distribution \(\psi_s\)</h3>
+<p>A cell with a mean solid temperature of 500 K may contain some fuel at 700 K next to a flame and some still at 350 K.
+FIRETEC represents this with \(\psi_s(\bar T_s)\), the expected fraction of the solid above the reaction threshold. Three
+shapes are available through the <code>ifuel</code> input; all equal ½ at \(T_{\text{pyr}} = 600\) K. The default (<code>ifuel = 1</code>)
+is a piecewise curve made of a straight ramp joined to two circular arcs between 310 K and 890 K; option 3 is</p>
+<div class="eq reveal" id="eq-5">$$\psi_s(T_s) = \tfrac12\left[1 + \operatorname{erf}\!\big(0.0079\,(T_s - 600\,\text{K})\big)\right]\quad\text{for }310 < T_s < 890\text{ K}, \tag{5}$$<p class="eq-caption"><span class="eq-n">Eq. (5)</span><code>ifuel = 3</code> in <code>computePsif</code>: 0 below 310 K and 1 above 890 K. Option 2 evaluates the same erf curve with a polynomial approximation and no cut-offs.</p></div>
+<h3>Where the heat goes</h3>
+<p>Not all of the heat \(H_{\text{wood}}F_{\text{wood}}\) stays in the cell's gas. A fraction \(\Theta\) goes straight back into
+the solid. It is small while the fuel is flaming (most of the heat leaves with the gases, and less when oxygen is scarce relative to fuel)
+and grows to \(\theta_g = 0.75\) as the fuel turns to char and glows:</p>
+<div class="eq reveal" id="eq-6">$$\Theta = p\,(1-\theta_g)\exp\!\left(-\frac{N_{O_2}}{N_{\text{wood}}}\,\psi_s\,\frac{\rho_{\text{wood}}}{\rho_{O_2}}\right) + (1-p)\,\theta_g,\qquad \theta_g = 0.75 \tag{6}$$<p class="eq-caption"><span class="eq-n">Eq. (6)</span>The share of the reaction heat deposited in the solid (<code>thetaSolid</code> in <code>burnFuel</code>). The 2002 paper describes it as "a linearly increasing function of the amount of wood that has burned".</p></div>
+<div class="ftec reveal" data-ftec="psi" data-root="../"></div>
+</section><section id="solid" aria-labelledby="solid-h"><h2 id="solid-h">The solid phase: fuel, water and temperature</h2>
+<p>Each fuel type in each cell carries three variables: dry fuel density, water density and temperature. Fuel and water are only
+consumed; they do not move.</p>
+<div class="eq reveal" id="eq-7">$$\frac{\partial \rho_{\text{wood}}}{\partial t} = -N_{\text{wood}}\,F_{\text{wood}} \tag{7}$$<p class="eq-caption"><span class="eq-n">Eq. (7)</span>Fuel consumed by the reaction. Linn et al. (2002), Eq. (3).</p></div><div class="eq reveal" id="eq-8">$$\frac{\partial \rho_{\text{water}}}{\partial t} = -F_{\text{water}} \tag{8}$$<p class="eq-caption"><span class="eq-n">Eq. (8)</span>Moisture lost by evaporation. Linn et al. (2002), Eq. (4).</p></div><div class="eq reveal" id="eq-9">$$\begin{aligned}\left(c_{p,\text{water}}\rho_{\text{water}} + c_{p,\text{wood}}\rho_{\text{wood}}\right)\frac{\partial T_s}{\partial t} = {}& Q_{\text{rad}} + h\,a_v\,(T_{\text{gas}} - T_s) - F_{\text{water}}\left(H_{\text{water}} + c_{p,\text{water}}T_{\text{boil}}\right) \\ &+ F_{\text{wood}}\left(\Theta H_{\text{wood}} - c_{p,\text{wood}}\,T_{\text{pyr}}N_{\text{wood}}\right)\end{aligned} \tag{9}$$<p class="eq-caption"><span class="eq-n">Eq. (9)</span>Energy of the solid. Linn et al. (2002), Eq. (5): net thermal radiation, convective exchange with the gas, the latent and sensible heat carried off by evaporating water, and the reaction heat kept by the solid minus the sensible heat carried off by the pyrolysis gases.</p></div>
+<h3>Evaporation</h3>
+<p>Like burning, drying is spread over a range of mean temperatures because the cell's temperature varies inside. In
+<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Vegetation/evaporation_veg.F90"><code>Vegetation/evaporation_veg.F90</code></a> the evaporated fraction of the initial water follows a ramp \(\psi_w(T_s)\) that
+never decreases:</p>
+<div class="eq reveal" id="eq-10">$$\psi_w = \operatorname{clamp}\!\left(\frac{T_s - T_a}{2T_{\text{boil}} - 2T_a},\,0,\,1\right),\qquad T_a = T_\infty + (T_{\text{boil}} - T_\infty)\,\frac{310 - T_\infty}{T_{\text{pyr}} - T_\infty} \tag{10}$$<p class="eq-caption"><span class="eq-n">Eq. (10)</span>For an ambient \(T_\infty\) = 300 K the water goes between 302 K and 444 K, centred on \(T_{\text{boil}}\) = 373 K. \(F_{\text{water}}\) is the rate that keeps \(\rho_{\text{water}} = \rho_{\text{water},0}(1-\psi_w)\).</p></div>
+<h3>Convective heating</h3>
+<p>The exchange coefficient comes from a correlation for flow across a cylinder (Incropera and DeWitt), with an effective speed that
+includes turbulence (<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Vegetation/convection_veg.F90"><code>Vegetation/convection_veg.F90</code></a>):</p>
+<div class="eq reveal" id="eq-11">$$\begin{gathered}h = \frac{0.683}{\pi}\,\mathrm{Re}^{0.466}\,\frac{k_{\text{air}}}{s},\qquad \mathrm{Re} = \frac{s\,U_{\text{eff}}}{\nu},\\ U_{\text{eff}} = \sqrt{k_A + 1.2\,k_B} + |\mathbf u_{\text{fuel}}|,\qquad a_v = \frac{2\,\rho_{\text{wood}}}{\rho_{\text{micro}}\,s}\end{gathered} \tag{11}$$<p class="eq-caption"><span class="eq-n">Eq. (11)</span>\(k_{\text{air}}\) = 0.0338 W m⁻¹ K⁻¹, \(\nu\) = 1.5×10⁻⁵ m² s⁻¹. \(a_v\) is the fuel surface area per unit volume of space. The 1/π is an average over the orientation of the fuel elements.</p></div>
+<p>The lab below integrates Eq. (9) for one resolved volume of grass bathed in gas at a fixed temperature (as at the edge of a
+flame), with the same ramps, correlation and reaction rate as the code. Radiation is simplified to an exchange between the fuel and
+surroundings at the gas temperature (emissivity 0.9) instead of FIRETEC's Monte Carlo transport, and the gas does not respond, so it shows the solid's side of the story: the moisture delays heating, the fuel reacts only slowly until its mean
+temperature nears 600 K, and whether it burns at all depends on the gas temperature and the oxygen supply.</p>
+<div class="ftec reveal" data-ftec="cell" data-root="../"></div>
+</section><section id="gas" aria-labelledby="gas-h"><h2 id="gas-h">The gas phase</h2>
+<p>The air is a compressible gas whose averaged density, momentum, potential temperature and oxygen are transported on the grid.
+Oxygen is advected, diffused by turbulence and consumed by the reaction:</p>
+<div class="eq reveal" id="eq-12">$$\frac{\partial \rho_{O_2}}{\partial t} + \frac{\partial (u_i\,\rho_{O_2})}{\partial x_i} = \frac{\partial}{\partial x_j}\!\left(\sigma\,\frac{\partial (\rho_{O_2}/\rho_{\text{gas}})}{\partial x_j}\right) - F_{\text{wood}}\,N_{O_2} \tag{12}$$<p class="eq-caption"><span class="eq-n">Eq. (12)</span>Oxygen. Linn et al. (2002), Eq. (6).</p></div><div class="eq reveal" id="eq-13">$$\frac{\partial \rho_{\text{gas}}}{\partial t} + \frac{\partial (u_i\,\rho_{\text{gas}})}{\partial x_i} = F_{\text{wood}}\,N_{\text{wood}} + F_{\text{water}} \tag{13}$$<p class="eq-caption"><span class="eq-n">Eq. (13)</span>Total gas mass: the burned fuel and the evaporated water become gas. Linn et al. (2002), Eq. (7).</p></div><div class="eq reveal" id="eq-14">$$\begin{aligned}\frac{\partial (\rho_{\text{gas}} u_i)}{\partial t} + \frac{\partial (u_i u_j\,\rho_{\text{gas}})}{\partial x_j} = {}& -\frac{\partial R_{ij}}{\partial x_j} - \frac{\partial p}{\partial x_i} + \rho_{\text{gas}}\,g_i \\ &- \frac{3\,C_D\,\rho_{\text{wood}}\,\rho_{\text{gas}}\,|\mathbf u|\,u_i}{8\,s\,\rho_{\text{micro}}}\end{aligned} \tag{14}$$<p class="eq-caption"><span class="eq-n">Eq. (14)</span>Momentum. Linn et al. (2002), Eq. (8): advection, turbulent (Reynolds) stresses, pressure gradient, buoyancy and drag by the vegetation, with \(C_D \approx 1\).</p></div><div class="eq reveal" id="eq-15">$$\begin{aligned}\frac{\partial (\rho_{\text{gas}}\theta)}{\partial t} + \frac{\partial (\theta u_j\,\rho_{\text{gas}})}{\partial x_j} = {}& \frac{\partial}{\partial x_j}\!\left(\sigma\,\frac{\partial \theta}{\partial x_j}\right) \\ &+ \frac{\theta}{c_p}\left[\frac{h\,a_v\,(T_s - T_{\text{gas}}) + Q_{\text{rad,gas}} + F_{\text{wood}}\,(1-\Theta)\,H_{\text{wood}}}{T_{\text{gas}}}\right]\end{aligned} \tag{15}$$<p class="eq-caption"><span class="eq-n">Eq. (15)</span>Potential temperature of the gas. Linn et al. (2002), Eq. (9): convective exchange with the solid (the mirror of Eq. 9 above), radiation absorbed by the gas, and the share 1 − Θ of the reaction heat.</p></div>
+<p>The drag term is what makes a canopy slow the wind and generate turbulence. In the 1.5.1 code (<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Vegetation/drag_veg.F90"><code>Vegetation/drag_veg.F90</code></a>)
+it is written as \(\tfrac12 C_D\,a'_v\,|\mathbf u|\,\rho_{\text{gas}}u_i\) with \(a'_v = 2\rho_{\text{wood}}/(\pi s\,\rho_{\text{micro}})\),
+a coefficient of \(1/\pi \approx 0.32\) instead of the paper's 3/8, and the bottom cell includes a correlation for grass bending in the wind.
+The paper is explicit that both the drag term and \(C_D\) were subjects of ongoing research.</p>
+</section><section id="turbulence" aria-labelledby="turbulence-h"><h2 id="turbulence-h">Turbulence at three scales</h2>
+<p>FIRETEC's cells are larger than the eddies shed by branches and much larger than the mixing zones around flames, so
+turbulence is modelled. Linn (1997) tracks the turbulent kinetic energy at three length scales, each with its own transport equation:</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Scale</th><th>Size</th><th>Created by</th><th>Used for</th></tr></thead><tbody><tr><td>A</td><td>the cell or the canopy (largest unresolved eddies)</td><td>wind shear</td><td>turbulent stresses \(R_{ij}\) and diffusion of heat and species</td></tr><tr><td>B</td><td>the spacing of fuel elements</td><td>wind flowing through vegetation (wakes)</td><td>mixing of oxygen into the fuel bed, \(\sigma_c\) in Eq. (3)</td></tr><tr><td>C</td><td>flame and fuel-element size</td><td>transfer from the larger scales</td><td>the mixing that limits combustion</td></tr></tbody></table></div>
+<p>Each equation includes production by velocity shear and by wind–canopy interaction, transfer of energy between the scales,
+diffusion and dissipation. The stresses use a Boussinesq form, schematically</p>
+<div class="eq reveal" id="eq-16">$$R_{ij} = \tfrac23\,\rho\,k\,\delta_{ij} - \rho\,K\left(\frac{\partial u_i}{\partial x_j} + \frac{\partial u_j}{\partial x_i}\right),\qquad K \sim \ell\,\sqrt{k}, \tag{16}$$<p class="eq-caption"><span class="eq-n">Eq. (16)</span>Generic Boussinesq closure: an eddy diffusivity K from a length scale and a turbulent kinetic energy. FIRETEC's version is anisotropic and built from the three prescribed length scales (Linn 1997); see <code>subGridTurb/</code> for the coded form.</p></div>
+<p>In the code the scale-A and scale-B energies are transported variables (<code>ka</code>, <code>kb</code>) next to u, v, w and θ,
+switched on with <code>iturb</code>. Later work compared this closure with standard LES sub-filter models over canopies.</p>
+</section><section id="radiation" aria-labelledby="radiation-h"><h2 id="radiation-h">Radiation</h2>
+<p>Thermal radiation preheats fuel ahead of the fire. The 2002 paper used a two-field, diffusion-like transport of radiant energy
+(adapted from Stephens 1984): energy emitted by hot gas, according to a temperature distribution in the cell, spreads through the
+medium and is absorbed by fuel according to its projected surface area per unit volume. It is cheaper but less accurate than
+discrete-ordinates methods.</p>
+<p>FIRETEC-1.5.1 replaces this with a Monte Carlo method (<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Radiation/monteCarlo_rad.F90"><code>Radiation/monteCarlo_rad.F90</code></a>): photon packets are shot
+from emitting cells and absorbed by the fuel and gas they cross, giving the radiative source terms \(Q_{\text{rad}}\) in Eqs. (9) and (15).
+It also adds solar heating of fuels from the sun's position (<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/Radiation/solarHeat_rad.F90"><code>Radiation/solarHeat_rad.F90</code></a>).</p>
+</section><section id="numerics" aria-labelledby="numerics-h"><h2 id="numerics-h">HIGRAD: how the equations are solved</h2>
+<p>The gas equations are solved by HIGRAD (Reisner et al. 2000), a finite-volume, fully compressible atmospheric code.</p>
+<ul>
+<li><strong>Terrain-following grid.</strong> The vertical coordinate follows the ground and stretches with height, so cells are under a metre
+thick at the surface and tens of metres aloft. With ground height \(z_s(x,y)\) and domain top \(z_b\), the Jacobian is
+\(G = z_b / \big[(z_b - z_s)\,g'(\zeta)\big]\), where \(g\) is a cubic stretching set by <code>aa1</code> (<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/metric.F90"><code>metric.F90</code></a>).</li>
+<li><strong>Advection</strong> with MPDATA (Smolarkiewicz and Margolin 1998): an upwind donor-cell step followed by antidiffusive corrections
+that keep it second order and free of new extrema, so densities and temperatures never go negative or overshoot. The donor-cell
+flux at a face is</li>
+</ul>
+<div class="eq reveal" id="eq-17">$$\Phi_{i+\frac12} = \max(c_{i+\frac12},0)\,\phi_i + \min(c_{i+\frac12},0)\,\phi_{i+1},\qquad \phi_i^{\,n+1} = \phi_i^{\,n} - G_i^{-1}\left(\Phi_{i+\frac12} - \Phi_{i-\frac12}\right) \tag{17}$$<p class="eq-caption"><span class="eq-n">Eq. (17)</span>Donor-cell (upwind) update in one direction, with Courant number c = uΔt/Δx at each face. The Fortran is in <code>donorcell</code> (higrad.F90) and <code>donor</code> (advectionScheme.F90); the Fortran course builds the same scheme step by step.</p></div>
+<ul>
+<li><strong>Method of averages (MOA).</strong> Sound waves are thousands of times faster than the wind, so the pressure and buoyancy terms are
+stepped on <code>nts</code> small time steps inside each large step <code>dt</code>, using the averaged velocities for advection on the large step
+(Reisner et al. 2000; <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/MOA.F90"><code>MOA.F90</code></a>).</li>
+<li><strong>Fuel on the same grid.</strong> The fuel arrays have an extra index for fuel type, <code>xvfuel(ift, i, j, k, var)</code>, and are read from
+files made by LANL's Trees program (bulk density, size scale, moisture and depth for each type).</li>
+<li><strong>Ignition</strong> raises the solid temperature in prescribed cells, as in the 2002 runs (fuel in a 4 m × 20 m box heated from 300 to
+500 K over 1 s).</li>
+</ul>
+<p>The main loop in <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/compress.F90"><code>compress.F90</code></a> is short and shows the order of operations:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>compress.F90 (FIRETEC-1.5.1, abridged; BSD-3-Clause, © 2026 Triad National Security / LANL)</span><button type="button" class="copy">Copy</button></div><pre><code>call input              ! read the 'gridlist' input file
+call setup_MPI          ! split the domain over nprocx x nprocy processes
+call definearray        ! allocate the fields
+call rinit              ! initial wind, temperature, fuels
+do while (ittot &lt; nt)
+  call explicit_domain_updates   ! pressure, gas temperature, halo exchange
+  call small_explicit_forcings   ! forcings applied on every small step
+  call MOA                       ! method of averages: nts small steps
+  call large_explicit_forcings   ! fuel physics, turbulence, radiation
+  call forcing                   ! apply all forcings, advance one large step
+  time = time + dt
+  if (mod(ittot, frqoutput) == 0) call binary_writeio(ittot)
+  it = it + 1
+end do
+call mpi_finalize(ierror)</code></pre></div></section><section id="parallel" aria-labelledby="parallel-h"><h2 id="parallel-h">Running on many processors</h2>
+<p>FIRETEC is written in Fortran 90 and parallelised with MPI. The horizontal grid of n × m columns is cut into
+<code>nprocx</code> × <code>nprocy</code> rectangular blocks, one per MPI process, each with <code>ih</code> layers of ghost (halo) cells
+around it. Before any step that needs a neighbour's values, the routine <code>update</code> exchanges the edge rows with
+<code>MPI_Sendrecv</code>; at the domain edges it applies the boundary condition instead (cyclic, relaxation to the ambient wind,
+or mirror). The grid must divide evenly: <code>n</code> divisible by <code>nprocx</code> and <code>m</code> by <code>nprocy</code>,
+and the run must be started with exactly <code>nprocx × nprocy</code> processes (<a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/msga.F90"><code>msga.F90</code></a>).</p>
+<p>The defaults are a 200 × 200 × 40 grid at 2 m on 8 × 8 = 64 processes. A 1 km × 1 km piece of Forest Park at 2 m with 60
+levels is 15 million cells, a typical job for a few hundred cores.
+<a href="../../fortran-firetec/index.html">Fortran for FIRETEC</a>, a separate project on this site, teaches the Fortran and MPI needed to read and change this code.</p>
+</section><section id="code" aria-labelledby="code-h"><h2 id="code-h">Is the code available?</h2>
+<p><strong>Yes.</strong> In June 2026 LANL published HIGRAD/FIRETEC on GitHub at <a href="https://github.com/lanl/FIRETEC">github.com/lanl/FIRETEC</a>.
+The default branch is <code>FIRETEC-1.5.1</code>, a checkpoint release; <code>develop</code> has the newest work, and the
+branches FIRETEC-1.1.0 to 1.5.0 keep older versions. The repository's LICENSE file is the BSD 3-Clause license, and the README
+cites LANL open-source release O5086. It contains about 12,000 lines of Fortran 90 in <code>CODE-1.5.1/</code> (vegetation, radiation,
+turbulence, firebrands, emissions and sensor modules), example inputs and fuel maps in <code>TOOLS/</code>, and a growing <code>DOCS/</code>.
+LANL's technology-licensing page lists a FIRETEC 2.x for license agreements, so the public code may lag the internal version.</p>
+<div class="table-wrap reveal"><table class=""><thead><tr><th>Code</th><th>Availability</th></tr></thead><tbody><tr><td><a href="https://github.com/lanl/FIRETEC">HIGRAD/FIRETEC</a></td><td>Open source on GitHub (BSD-3-Clause), Fortran 90 + MPI, built with CMake</td></tr><tr><td><a href="https://github.com/lanl/Trees">Trees</a></td><td>Open on GitHub: builds the 3-D fuel arrays (trees, shrubs, litter) that FIRETEC and QUIC-Fire read</td></tr><tr><td>QUIC-Fire</td><td>Closed source, licensed by LANL; community tools such as <a href="https://github.com/silvxlabs/quicfire-tools">quicfire-tools</a> handle its inputs and outputs</td></tr></tbody></table></div>
+<h3>Building and running</h3>
+<p>FIRETEC needs a Fortran compiler (gfortran, Intel or Cray), an MPI library and CMake. The build follows the repository's
+<code>CMakeLists.txt</code>; the executable is called <code>firerad</code>.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>Build (Linux or macOS, with gfortran, Open MPI and CMake installed)</span><button type="button" class="copy">Copy</button></div><pre><code>git clone https://github.com/lanl/FIRETEC.git
+cd FIRETEC/CODE-1.5.1
+mkdir build &amp;&amp; cd build
+cmake ..                <span class="c"> # add -DDBL_PREC=ON for double precision, -DDEBUG=ON for bounds checking</span>
+make -j 8               <span class="c"> # produces ./firerad</span></code></pre></div>
+<p>A run reads a text file called <code>gridlist</code> from the working directory, one <code>name = value</code> per line
+(all options are listed in <code>TOOLS/Gridlist/GRIDLIST_OPTIONS.txt</code>). The example gridlist runs a 50 × 50 × 20 grid on 2 × 2
+processes:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>gridlist (from TOOLS/Gridlist, abridged)</span><button type="button" class="copy">Copy</button></div><pre><code>irst      = 0         <span class="c"> ! 0 = fresh start, 1 = restart</span>
+nt        = 1000      <span class="c"> ! number of large time steps</span>
+frqoutput = 1000      <span class="c"> ! output every 1000 steps</span>
+nprocx    = 2
+nprocy    = 2         <span class="c"> ! run with exactly 2 x 2 = 4 MPI processes</span>
+n         = 50
+m         = 50
+l         = 20
+outname   = './comp/comp.out'
+ifire     = 1         <span class="c"> ! vegetation and fire physics on</span>
+irad      = 2         <span class="c"> ! radiation option</span>
+u0        = 5.0       <span class="c"> ! ambient wind (m/s) at height zu</span>
+zu        = 10</code></pre></div><div class="code reveal" translate="no"><div class="code-head"><span>Run</span><button type="button" class="copy">Copy</button></div><pre><code>mpirun -np 4 ../CODE-1.5.1/build/firerad     <span class="c"> # from the directory holding gridlist</span></code></pre></div><div class="callout warn reveal"><b>Not tested here</b> The commands above follow the repository's build files and example input; I have not run FIRETEC for this page. Fuel files (<code>treesrhof.dat</code>, <code>treesmoist.dat</code>, … from Trees) and an ignition file (<code>ignite.dat</code>) are needed for a real burn; see <code>TOOLS/</code> and the documentation as it is released.</div></section><section id="refs" aria-labelledby="refs-h"><h2 id="refs-h">References</h2><ol class="refs"><li>Linn, R. R. (1997). <em>A transport model for prediction of wildfire behavior</em>. PhD dissertation, New Mexico State University; Los Alamos report LA-13334-T.</li><li>Linn, R., Reisner, J., Colman, J. J., &amp; Winterkamp, J. (2002). Studying wildfire behavior using FIRETEC. <em>International Journal of Wildland Fire</em>, 11, 233–246. <a href="https://doi.org/10.1071/WF02007">doi:10.1071/WF02007</a></li><li>Reisner, J., Wynne, S., Margolin, L., &amp; Linn, R. (2000). Coupled atmospheric–fire modeling employing the method of averages. <em>Monthly Weather Review</em>, 128, 3683–3691.</li><li>Smolarkiewicz, P. K., &amp; Margolin, L. G. (1998). MPDATA: A finite-difference solver for geophysical flows. <em>Journal of Computational Physics</em>, 140, 459–480.</li><li>Colman, J. J., &amp; Linn, R. R. (2007). Separating combustion from pyrolysis in HIGRAD/FIRETEC. <em>International Journal of Wildland Fire</em>, 16, 493–502.</li><li>Linn, R. R., Goodrick, S. L., Brambilla, S., et al. (2020). QUIC-fire: A fast-running simulation tool for prescribed fire planning. <em>Environmental Modelling &amp; Software</em>, 125, 104616.</li><li>Los Alamos National Laboratory. HIGRAD/FIRETEC source code, version 1.5.1. <a href="https://github.com/lanl/FIRETEC">github.com/lanl/FIRETEC</a> (BSD-3-Clause).</li><li>Drysdale, D. (1985). <em>An Introduction to Fire Dynamics</em>. Wiley. Incropera, F. P., &amp; DeWitt, D. P. (1985). <em>Fundamentals of Heat and Mass Transfer</em>. Wiley.</li></ol></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../fire-3d/index.html"><small>← Previous</small><b>14 · 3-D Forest Park fire simulator</b></a>
+      <a class="next" href="../index.html"><small>Next →</small><b>Back to project home</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+  <script src="../i18n.js"></script>
+  <script src="../firetec.js"></script>
+  <script defer src="../vendor/katex/katex.min.js"></script>
+  <script defer src="../vendor/katex/contrib/auto-render.min.js"></script>
+  <script defer src="../math.js"></script>
+</body>
+</html>

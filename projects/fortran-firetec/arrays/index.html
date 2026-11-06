@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 04: Arrays. Allocatable arrays, custom bounds and halo cells, sections, whole-array arithmetic, masks and the intrinsic functions.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Arrays · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">04 · Arrays</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 04 of 9</p>
+        <h1>Arrays</h1>
+        <p class="lede">Allocatable arrays, custom bounds and halo cells, sections, whole-array arithmetic, masks and the intrinsic functions.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Arrays">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#arrays">Arrays</a></nav><section id="arrays" aria-labelledby="arrays-h"><h2 id="arrays-h">Arrays the Fortran way</h2>
+<p>Arrays are Fortran's strength. They can have up to 15 dimensions, any lower bound, and you can do arithmetic on whole arrays or
+sections without writing loops. FIRETEC's main state is one 4-D array, <code>xv(i, j, k, variable)</code>, with named indices
+<code>iuvel</code>, <code>ivvel</code>, <code>iwvel</code>, <code>itheta</code>, … set at run time in <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/definearray.F90"><code>definearray.F90</code></a>, and its horizontal
+bounds run from <code>1-ih</code> to <code>np+ih</code> so that each processor's block is surrounded by <code>ih</code> halo cells.</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>arrays.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! arrays.f90 -- allocatable arrays, custom bounds (halo cells), whole-array operations and intrinsics</span>
+program arrays
+  implicit none
+  integer, parameter :: wp = kind(1.0d0)
+  integer, parameter :: np = 6, mp = 4, l = 3, ih = 1    <span class="c"> ! local grid and halo width, named as in FIRETEC</span>
+  integer, parameter :: iuvel = 1, ivvel = 2, iwvel = 3, itheta = 4, nv = 4
+  real(wp), allocatable :: rhof(:,:,:), xv(:,:,:,:), t(:)
+  real(wp) :: v(5) = [3.0_wp, -1.0_wp, 4.0_wp, 1.0_wp, -5.0_wp]
+  integer :: k
+
+<span class="c">  ! 1) bounds need not start at 1: here 0 and np+1 are ghost (halo) cells around the interior 1..np</span>
+  allocate(rhof(1-ih:np+ih, 1-ih:mp+ih, l))
+  rhof = 0.0_wp                    <span class="c"> ! whole-array assignment</span>
+  rhof(1:np, 1:mp, 1) = 0.7_wp      <span class="c"> ! a section: interior cells of the bottom layer</span>
+  print *, 'lbound, ubound: ', lbound(rhof), ubound(rhof)
+  print *, 'shape:          ', shape(rhof)
+  print '(a, f6.2, a)', 'fuel in the bottom layer: ', sum(rhof(:,:,1)) * 2.0_wp * 2.0_wp * 1.0_wp, ' kg (2x2x1 m cells)'
+
+<span class="c">  ! 2) one array for several fields, with named index "pointers", like FIRETEC's xv(i,j,k,nv)</span>
+  allocate(xv(np, mp, l, nv))
+  xv(:,:,:,iuvel) = 5.0_wp
+  xv(:,:,:,ivvel) = 0.0_wp
+  xv(:,:,:,iwvel) = 0.0_wp
+  xv(:,:,:,itheta) = 300.0_wp
+  xv(3, 2, 1, itheta) = 900.0_wp    <span class="c"> ! one hot cell</span>
+  print '(a, f7.1, a, 3i3)', 'hottest theta: ', maxval(xv(:,:,:,itheta)), ' K at ', maxloc(xv(:,:,:,itheta))
+
+<span class="c">  ! 3) elemental arithmetic and masks</span>
+  print '(a, 5f6.1)', 'v        =', v
+  print '(a, 5f6.1)', 'abs(v)   =', abs(v)
+  print '(a, 5f6.1)', 'v**2     =', v**2
+  where (v &lt; 0.0_wp) v = 0.0_wp     <span class="c"> ! clip negative values, the way densities are kept &gt;= 0</span>
+  print '(a, 5f6.1)', 'clipped  =', v
+  print '(a, f6.2, a, i2)', 'mean = ', sum(v) / size(v), ', count(v &gt; 0) = ', count(v &gt; 0.0_wp)
+
+<span class="c">  ! 4) array constructors with an implied do loop</span>
+  t = [(300.0_wp + 50.0_wp * k, k = 0, 6)]  <span class="c"> ! automatic allocation on assignment</span>
+  print '(a, 7f7.1)', 'temperatures: ', t
+  print '(a, 7l2)', 'above 400 K:  ', t &gt; 400.0_wp
+
+<span class="c">  ! 5) reshape and matrix layout: memory is filled column by column</span>
+  print '(a)', 'reshape([1..6], [2,3]) row by row:'
+  block
+    integer :: m(2, 3), r
+    m = reshape([(k, k = 1, 6)], [2, 3])
+    do r = 1, 2
+      print '(3i4)', m(r, :)
+    end do
+  end block
+
+  deallocate(rhof, xv)
+end program arrays</code></pre></div><p class="dl"><a href="../code/arrays.f90" download>Download arrays.f90</a></p><div class="table-wrap reveal"><table class=""><thead><tr><th>Syntax</th><th>Meaning</th></tr></thead><tbody><tr><td><code>real(wp), allocatable :: a(:,:)</code></td><td>a 2-D array whose size is set later with <code>allocate(a(n, m))</code></td></tr><tr><td><code>a(1-ih:np+ih)</code></td><td>bounds from 1 − ih to np + ih: interior 1..np plus halo cells</td></tr><tr><td><code>a(2:5)</code>, <code>a(:, 1)</code>, <code>a(1:n:2)</code></td><td>sections: elements 2–5, the first column, every second element</td></tr><tr><td><code>a = 0</code>, <code>c = a * b + 1</code></td><td>whole-array operations, element by element</td></tr><tr><td><code>sum, product, maxval, minval, maxloc, count, any, all, size, shape</code></td><td>reductions and inquiries</td></tr><tr><td><code>where (mask) a = b</code></td><td>masked assignment</td></tr><tr><td><code>[1, 2, 3]</code>, <code>[(i**2, i = 1, n)]</code></td><td>array constructors, with an implied do loop</td></tr></tbody></table></div><div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Allocate a 3-D fuel array for a 50 × 50 × 20 grid with one halo cell, fill the bottom two layers with 0.7 kg/m³, and print the total fuel mass for 2 m × 2 m × 1 m cells.</li><li>Use <code>maxloc</code> and <code>minval</code> to find the coldest and hottest cells of a random temperature field (<code>call random_number(t)</code> gives values in [0, 1)).</li><li>Rewrite one of your loops from Lesson 03 as a single whole-array statement.</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../loops/index.html"><small>← Previous</small><b>03 · Loops</b></a>
+      <a class="next" href="../matrix/index.html"><small>Next →</small><b>05 · Matrix algebra</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

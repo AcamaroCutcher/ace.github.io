@@ -122,10 +122,11 @@
 
       <section class="block" aria-labelledby="handbook-h">
         <div class="block-head">
-          <p class="eyebrow">Part II · Sections 06–14</p>
+          <p class="eyebrow">Part II · Sections 06–15</p>
           <h2 id="handbook-h">WRF-SFIRE handbook</h2>
           <p class="lede">How the coupled fire–atmosphere model works and how to run it: the math, installing it on a cluster,
-            single, perimeter and multiple ignitions, and turning the output into web maps and 3-D animations.</p>
+            single, perimeter and multiple ignitions, and turning the output into web maps and 3-D animations. Section 15 looks
+            beyond WRF-SFIRE at Los Alamos' physics-based FIRETEC model.</p>
         </div>
         <nav class="chapters" aria-label="Part II sections">
         <a class="chapter reveal" href="wrf-sfire-math/index.html">
@@ -209,10 +210,19 @@
             <span class="go">Open section →</span>
           </div>
         </a>
+        <a class="chapter reveal" href="firetec-math/index.html">
+          <div class="chapter-img" style="background-image: url('img/photos/canopy-sm.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">15</span><span class="pill done">Theory</span></div>
+            <h3>The math of FIRETEC</h3>
+            <p>Los Alamos' physics-based fire model: fuel, water and gas conservation, mixing-limited burning, turbulence, radiation and HIGRAD numerics, checked against the open Fortran source. With two labs.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
         <div class="chapter upcoming reveal" aria-disabled="true">
           <div class="chapter-img" style="background-image: url('img/bg/banner-terrain.jpg')" aria-hidden="true"></div>
           <div class="chapter-body">
-            <div class="chapter-top"><span class="num">15</span><span class="pill">Next</span></div>
+            <div class="chapter-top"><span class="num">16</span><span class="pill">Next</span></div>
             <h3>Forest Park WRF-SFIRE runs</h3>
             <p>The first coupled runs on the worst east-wind episodes, using this handbook's setup.</p>
           </div>
@@ -225,7 +235,14 @@
           <h3 id="log-title">Progress log</h3>
           <ol class="log-list">
             <li>
-              <span class="log-tag new">v7</span>
+              <span class="log-tag new">v8</span>
+              <time datetime="2026-11-06">6 Nov 2026</time>
+              <p><strong>FIRETEC, GPU labs and all of Portland in 3-D.</strong> A new <a href="firetec-math/index.html">Section 15</a> on the math of
+                Los Alamos' FIRETEC model and its open Fortran code; the WRF-SFIRE labs now run SFIRE's own level-set update on the GPU over real
+                Forest Park terrain; the 3-D simulator shows every building in the domain and the St. Johns Bridge; and an English / Español / 中文 switch.</p>
+            </li>
+            <li>
+              <span class="log-tag">v7</span>
               <time datetime="2026-11-05">5 Nov 2026</time>
               <p><strong>WRF-SFIRE handbook.</strong> Eight new sections (<a href="wrf-sfire-math/index.html">06</a>–<a href="kml-3d/index.html">13</a>):
                 the model's equations with interactive level-set and perimeter labs, installing it on a cluster, a complete

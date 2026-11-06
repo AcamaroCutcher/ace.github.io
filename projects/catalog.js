@@ -33,9 +33,25 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'fortran-firetec',
+      title: 'Fortran for FIRETEC',
+      summary: 'A hands-on course in the Fortran behind Los Alamos’ HIGRAD/FIRETEC wildfire model, whose source is now open on GitHub: compilers and kinds, loops and memory order, arrays and halo cells, matrix algebra (Gaussian elimination, tridiagonal solvers, LAPACK), functions, subroutines and modules, a small 1-D fire model, parallel computing with OpenMP and MPI domain decomposition, and a guided tour of the real FIRETEC source. Nine lessons with downloadable programs and exercises.',
+      disciplines: ['ml', 'earth'],
+      types: ['code', 'interactive'],
+      status: 'current',
+      year: 2026,
+      featured: false,
+      tags: ['Fortran', 'MPI', 'OpenMP', 'HPC', 'Numerical methods', 'FIRETEC', 'Wildfire'],
+      links: [
+        { label: 'Start the course', href: 'fortran-firetec/index.html', icon: 'fa-arrow-right', primary: true },
+        { label: 'The math of FIRETEC', href: 'forest-park-wildfires/firetec-math/index.html', icon: 'fa-square-root-variable' },
+        { label: 'FIRETEC on GitHub', href: 'https://github.com/lanl/FIRETEC', icon: 'fa-github', brand: true },
+      ],
+    },
+    {
       id: 'forest-park-wildfires',
       title: 'Forest Park Wildfires',
-      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? A group project (with Andrea Baeza and Alex Bentley) on wildfire risk, community concerns and the CEI Hub. Part I: our partner proposal, a 30 m wildland–urban fuel map, WRF-SFIRE terrain, 26 years of fire weather and 4,000 simulated fires. Part II: a WRF-SFIRE handbook with the model’s math and interactive level-set labs, HPC installation, single, perimeter and multiple ignitions, the WRFx web viewer, converting output to KML/KMZ and 3-D animation, and a live 3-D fire simulator of Forest Park.',
+      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? A group project (with Andrea Baeza and Alex Bentley) on wildfire risk, community concerns and the CEI Hub. Part I: our partner proposal, a 30 m wildland–urban fuel map, WRF-SFIRE terrain, 26 years of fire weather and 4,000 simulated fires. Part II: a WRF-SFIRE handbook with the model’s math and interactive level-set labs, HPC installation, single, perimeter and multiple ignitions, the WRFx web viewer, converting output to KML/KMZ and 3-D animation, a live 3-D fire simulator of Forest Park, and the math of Los Alamos’ physics-based FIRETEC model.',
       disciplines: ['earth'],
       types: ['research'],
       status: 'current',

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fortran for FIRETEC, lesson 08: Parallel processing: OpenMP and MPI. Threads on one machine with OpenMP, processes across a cluster with MPI, domain decomposition and halo exchange as in FIRETEC, and job scripts.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Parallel processing: OpenMP and MPI · Fortran for FIRETEC - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../../fortran-firetec/course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Fortran for FIRETEC</a><span aria-hidden="true">/</span>
+        <span aria-current="page">08 · Parallel processing: OpenMP and MPI</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner course-banner">
+      <div class="banner-img course-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 08 of 9</p>
+        <h1>Parallel processing: OpenMP and MPI</h1>
+        <p class="lede">Threads on one machine with OpenMP, processes across a cluster with MPI, domain decomposition and halo exchange as in FIRETEC, and job scripts.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Parallel processing: OpenMP and MPI">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#ideas">Ideas</a><a href="#openmp">OpenMP</a><a href="#mpi">MPI</a><a href="#halo">Halo exchange</a><a href="#cluster">Clusters</a></nav><section id="ideas" aria-labelledby="ideas-h"><h2 id="ideas-h">Two kinds of parallelism</h2><div class="table-wrap reveal"><table class=""><thead><tr><th></th><th>Shared memory (OpenMP)</th><th>Distributed memory (MPI)</th></tr></thead><tbody><tr><td>What runs</td><td>several threads of one program</td><td>several copies of the program (processes), one per core</td></tr><tr><td>Memory</td><td>all threads see the same arrays</td><td>each process has its own; data moves only in messages</td></tr><tr><td>Scale</td><td>one node (tens of cores)</td><td>thousands of cores on many nodes</td></tr><tr><td>Effort</td><td>add directives to loops</td><td>split the data and write the communication</td></tr><tr><td>In FIRETEC</td><td>not used</td><td>the whole code: the grid is split over nprocx × nprocy processes</td></tr></tbody></table></div>
+<p>No program speeds up forever. If a fraction f of the work is serial, P processors give at most a speed-up of
+1 / (f + (1 − f)/P) (Amdahl's law): with 5% serial work, 64 cores give at most 15×. In grid codes the limit is usually communication:
+each step, every block must swap its edges with its neighbours.</p>
+</section><section id="openmp" aria-labelledby="openmp-h"><h2 id="openmp-h">OpenMP: parallel loops</h2><div class="code reveal" translate="no"><div class="code-head"><span>omp_sum.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! omp_sum.f90 -- shared-memory parallel loops with OpenMP</span>
+<span class="c">! build:  gfortran -O2 -fopenmp omp_sum.f90 -o omp_sum</span>
+<span class="c">! run:    OMP_NUM_THREADS=4 ./omp_sum</span>
+program omp_sum
+  use omp_lib
+  implicit none
+  integer, parameter :: wp = kind(1.0d0), n = 50000000
+  real(wp), allocatable :: rhof(:), rate(:)
+  real(wp) :: total, t0, t1
+  integer :: i
+
+  allocate(rhof(n), rate(n))
+
+<span class="c">  !$omp parallel do</span>
+  do i = 1, n                                  <span class="c"> ! iterations are split between the threads</span>
+    rhof(i) = 0.7_wp
+    rate(i) = 1.0e-3_wp * mod(i, 7)
+  end do
+<span class="c">  !$omp end parallel do</span>
+
+  t0 = omp_get_wtime()
+  total = 0.0_wp
+<span class="c">  !$omp parallel do reduction(+:total)</span>
+  do i = 1, n                                  <span class="c"> ! each thread keeps a private partial sum, added at the end</span>
+    rhof(i) = max(0.0_wp, rhof(i) - 0.4552_wp * rate(i) * 0.1_wp)
+    total = total + rhof(i)
+  end do
+<span class="c">  !$omp end parallel do</span>
+  t1 = omp_get_wtime()
+
+  print '(a, i3)', 'threads:   ', omp_get_max_threads()
+  print '(a, f14.4)', 'fuel left: ', total
+  print '(a, f8.4, a)', 'loop time: ', t1 - t0, ' s'
+end program omp_sum</code></pre></div><p class="dl"><a href="../code/omp_sum.f90" download>Download omp_sum.f90</a></p>
+<p><code>!$omp</code> lines are comments to a compiler without <code>-fopenmp</code>, so the same file builds serially. The
+<code>reduction(+:total)</code> clause gives each thread a private copy of <code>total</code> and adds them at the end; without it, threads would
+overwrite each other's sums (a <em>race condition</em>). Try 1, 2, 4 and 8 threads: a loop this simple soon stops speeding up because it is
+limited by memory bandwidth, not arithmetic.</p>
+</section><section id="mpi" aria-labelledby="mpi-h"><h2 id="mpi-h">MPI: many processes</h2><div class="code reveal" translate="no"><div class="code-head"><span>mpi_hello.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! mpi_hello.f90 -- every process runs the same program; MPI gives each one a rank</span>
+<span class="c">! build:  mpif90 mpi_hello.f90 -o mpi_hello</span>
+<span class="c">! run:    mpirun -np 4 ./mpi_hello</span>
+program mpi_hello
+  use mpi
+  implicit none
+  integer :: rank, nprocs, ierror
+
+  call MPI_Init(ierror)
+  call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)    <span class="c"> ! who am I?        0 .. nprocs-1</span>
+  call MPI_Comm_size(MPI_COMM_WORLD, nprocs, ierror)  <span class="c"> ! how many of us?</span>
+  print '(a, i3, a, i3)', 'Hello from rank', rank, ' of', nprocs
+  call MPI_Finalize(ierror)
+end program mpi_hello</code></pre></div><p class="dl"><a href="../code/mpi_hello.f90" download>Download mpi_hello.f90</a></p>
+<p>Run it a few times: the order of the lines changes, because the processes run independently. MPI programs follow the
+<em>single program, multiple data</em> pattern: every process runs the same code and uses its <code>rank</code> to decide which part of the data
+is its own.</p>
+</section><section id="halo" aria-labelledby="halo-h"><h2 id="halo-h">Domain decomposition and halo exchange</h2>
+<p>This is the core of FIRETEC's parallelism. The grid is cut into blocks; each process allocates its block plus a frame of <em>halo</em> cells
+that hold copies of its neighbours' edge values. Before each stencil update, the halos are refreshed with messages. Here is the same idea on
+a 1-D rod:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>mpi_heat.f90</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">! mpi_heat.f90 -- domain decomposition with halo (ghost) cells, the pattern FIRETEC uses in msga.F90 and update.F90.</span>
+<span class="c">! A 1-D rod of N cells is split into equal pieces, one per process. Each step, every process swaps its edge</span>
+<span class="c">! values with its neighbours (MPI_Sendrecv), updates its own cells, and all processes agree on the maximum (MPI_Allreduce).</span>
+<span class="c">! build:  mpif90 -O2 mpi_heat.f90 -o mpi_heat</span>
+<span class="c">! run:    mpirun -np 4 ./mpi_heat</span>
+program mpi_heat
+  use mpi
+  implicit none
+  integer, parameter :: wp = kind(1.0d0), n = 1200, ih = 1
+  real(wp), parameter :: r = 0.4_wp                    <span class="c"> ! kappa*dt/dx^2 &lt;= 0.5 for stability</span>
+  real(wp), allocatable :: t(:), tnew(:)
+  integer :: rank, nprocs, ierror, np, i0, left, right, step, i
+  integer :: status(MPI_STATUS_SIZE)
+  real(wp) :: local_max, global_max, local_sum, global_sum
+
+  call MPI_Init(ierror)
+  call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)
+  call MPI_Comm_size(MPI_COMM_WORLD, nprocs, ierror)
+  if (mod(n, nprocs) /= 0) then                         <span class="c"> ! FIRETEC makes the same check on n/nprocx</span>
+    if (rank == 0) print *, 'n must be divisible by the number of processes'
+    call MPI_Abort(MPI_COMM_WORLD, 1, ierror)
+  end if
+  np = n / nprocs                                       <span class="c"> ! cells owned by this process</span>
+  i0 = rank * np                                        <span class="c"> ! global index of cell 0 (the left ghost)</span>
+  left = rank - 1; right = rank + 1
+  if (rank == 0) left = MPI_PROC_NULL                   <span class="c"> ! no neighbour: MPI skips the transfer</span>
+  if (rank == nprocs - 1) right = MPI_PROC_NULL
+
+  allocate(t(1-ih:np+ih), tnew(np))
+  t = 300.0_wp
+  do i = 1, np                                          <span class="c"> ! a hot slab in the middle of the global rod</span>
+    if (abs(i0 + i - n / 2) &lt; n / 20) t(i) = 1000.0_wp
+  end do
+
+  do step = 1, 2000
+<span class="c">    ! halo exchange: send my last cell right while receiving my left ghost, then the reverse</span>
+    call MPI_Sendrecv(t(np), 1, MPI_DOUBLE_PRECISION, right, 1, &amp;
+                      t(0),  1, MPI_DOUBLE_PRECISION, left,  1, MPI_COMM_WORLD, status, ierror)
+    call MPI_Sendrecv(t(1),    1, MPI_DOUBLE_PRECISION, left,  2, &amp;
+                      t(np+1), 1, MPI_DOUBLE_PRECISION, right, 2, MPI_COMM_WORLD, status, ierror)
+    if (rank == 0) t(0) = 300.0_wp                      <span class="c"> ! physical boundaries on the outer edges</span>
+    if (rank == nprocs - 1) t(np + 1) = 300.0_wp
+    do i = 1, np
+      tnew(i) = t(i) + r * (t(i - 1) - 2.0_wp * t(i) + t(i + 1))
+    end do
+    t(1:np) = tnew
+  end do
+
+  local_max = maxval(t(1:np)); local_sum = sum(t(1:np))
+  call MPI_Allreduce(local_max, global_max, 1, MPI_DOUBLE_PRECISION, MPI_MAX, MPI_COMM_WORLD, ierror)
+  call MPI_Allreduce(local_sum, global_sum, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, ierror)
+  print '(a, i3, a, i5, a, i5, a, f8.2)', 'rank', rank, ' owns cells', i0 + 1, ' to', i0 + np, ', local max', local_max
+  if (rank == 0) then
+    print '(a, f8.2, a)', 'global max after 2000 steps: ', global_max, ' K'
+    print '(a, f8.2, a)', 'mean temperature:            ', global_sum / n, ' K'
+  end if
+  call MPI_Finalize(ierror)
+end program mpi_heat</code></pre></div><p class="dl"><a href="../code/mpi_heat.f90" download>Download mpi_heat.f90</a></p>
+<p><code>MPI_Sendrecv</code> sends and receives in one call, which avoids the deadlock of two processes both waiting to receive first.
+<code>MPI_PROC_NULL</code> as a neighbour turns the transfer into a no-op at the ends. <code>MPI_Allreduce</code> combines a value from every
+process (here the maximum and the sum) and gives the result to all of them. The answer does not depend on the number of processes.</p>
+<p>FIRETEC does the same in 2-D. <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/msga.F90"><code>msga.F90</code></a> computes each process's block and its eight neighbours (left, right, above, below
+and the corners), wrapping around for cyclic boundaries:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, msga.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>  np=n/nprocx   <span class="c"> !number of cells per processor in the x direction</span>
+  mp=m/nprocy   <span class="c"> !number of cells per processor in the y direction</span>
+  npos = mod((mpi_rank+nprocx),nprocx)+1
+  mpos = mpi_rank/nprocx+1
+<span class="c">  ! set up neighbor information</span>
+  peleft=mpi_rank-1
+  if (peleft&lt;((mpos-1)*nprocx)) peleft=mpi_rank+(nprocx-1)
+  peright=mpi_rank+1
+  if (peright&gt;(mpos*nprocx-1)) peright=mpi_rank-(nprocx-1)
+  peabove=mpi_rank+nprocx
+  if (peabove&gt;(numprocs-1)) peabove=npos-1
+  pebelow=mpi_rank-nprocx
+  if (pebelow&lt;0) pebelow=mpi_rank+((nprocy-1)*nprocx)</code></pre></div>and <a href="https://github.com/lanl/FIRETEC/blob/FIRETEC-1.5.1/CODE-1.5.1/update.F90"><code>update.F90</code></a> packs a strip of halo-width rows into a buffer and swaps it:</p>
+<div class="code reveal" translate="no"><div class="code-head"><span>FIRETEC-1.5.1, update.F90 (excerpt)</span><button type="button" class="copy">Copy</button></div><pre><code>    ncount=0
+    do k=1,nzp
+      do j=1,ih
+        do i=1,nxp
+          ncount=ncount+1
+          tmpxsnd(ncount)=a(i,j+j0,k)
+        enddo
+      enddo
+    enddo
+    itag=1000
+    call MPI_Sendrecv(tmpxsnd,ncount,mpi_wp,pebelow,itag,tmpxrcv, &amp;
+      ncount,mpi_wp,peabove,itag,mpi_comm_world,sndrcvStatus,ierror)</code></pre></div></section><section id="cluster" aria-labelledby="cluster-h"><h2 id="cluster-h">Running on a cluster</h2><div class="code reveal" translate="no"><div class="code-head"><span>job.slurm</span><button type="button" class="copy">Copy</button></div><pre><code>#!/bin/bash
+#SBATCH --job-name=mpi_heat
+#SBATCH --nodes=1
+#SBATCH --ntasks=4
+#SBATCH --time=00:05:00
+#SBATCH --output=mpi_heat_%j.out
+<span class="c"># Module names differ between clusters: run "module avail" to see yours.</span>
+module load gcc openmpi
+mpif90 -O2 mpi_heat.f90 -o mpi_heat
+srun ./mpi_heat</code></pre></div><p class="dl"><a href="../code/job.slurm" download>Download job.slurm</a></p>
+<p>Submit with <code>sbatch job.slurm</code> and watch the queue with <code>squeue -u $USER</code>. For FIRETEC the number of tasks must equal
+<code>nprocx × nprocy</code> from the input file, and the grid must divide evenly between them.</p>
+<p><strong>Beyond MPI.</strong> Fortran 2008 <em>coarrays</em> build parallelism into the language (<code>real :: t(n)[*]</code>), and
+<code>do concurrent</code> loops or OpenACC directives let compilers such as <code>nvfortran</code> run loops on GPUs.</p>
+<div class="callout note reveal"><b>Exercises</b><ol class="ex"><li>Run <code>mpi_heat</code> with 1, 2, 3, 4 and 6 processes and check that the global maximum is identical. Why must <code>n</code> be divisible by the process count?</li><li>Remove the second <code>MPI_Sendrecv</code>. What goes wrong, and where in the rod?</li><li>Time <code>omp_sum</code> with 1 to 8 threads and plot the speed-up against Amdahl's law.</li><li>Extend <code>mpi_heat.f90</code> to 2-D with an <code>nprocx × nprocy</code> layout using <code>MPI_Cart_create</code> and <code>MPI_Cart_shift</code>, and compare with FIRETEC's hand-made neighbour logic.</li></ol></div></section></div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../fire-model/index.html"><small>← Previous</small><b>07 · Building a small fire model</b></a>
+      <a class="next" href="../reading-firetec/index.html"><small>Next →</small><b>09 · Reading and running FIRETEC</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Fortran for FIRETEC · <a href="../../index.html">All projects</a> · Companion to <a href="../../forest-park-wildfires/firetec-math/index.html">The math of FIRETEC</a> in the Forest Park Wildfires project.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>
