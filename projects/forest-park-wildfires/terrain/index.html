@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 03: Terrain for WRF-SFIRE. Three nested model grids around the park, with terrain from USGS lidar instead of 1 km global data.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Terrain for WRF-SFIRE · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">03 · Terrain for WRF-SFIRE</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/bg/banner-terrain.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 03 · v3</p>
+        <h1>Terrain for WRF-SFIRE</h1>
+        <p class="lede">WRF-SFIRE needs the shape of the ground twice: once for the atmosphere, where hills steer
+            the wind, and once for the fire, which runs faster uphill. Out of the box, the model's preprocessor uses
+            global terrain at about 1 km, which can't see the park's ravines. I replaced it with USGS 3DEP lidar
+            elevation for both, so the wind and the fire stand on the same ground.</p>
+      </div>
+      <span class="credit">Background: Forest Park terrain from USGS 3DEP, tinted with this project's data</span>
+    </header>
+
+    <main>
+      <section class="block" id="terrain" aria-label="Terrain for WRF-SFIRE">
+
+        
+
+        <article class="reveal fig wide" id="fig-terrain">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/terrain_elevation_slope.png" aria-label="Enlarge: terrain">
+              <img src="../img/terrain_elevation_slope.png" width="1944" height="1042" loading="lazy" alt="Two maps: elevation with shaded relief, and slope in degrees. The Tualatin Mountains ridge runs northwest to southeast through Forest Park, with steep ravines on the river side.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 8</p>
+            <h3>The ground under the park</h3>
+            <p>Fire runs faster uphill, so the model needs the ground shape as well as the fuel. Forest Park sits on the
+              ridge of the Tualatin Mountains, from 12 m at the river to 339 m at the crest. Slopes inside the park have
+              a median of 19°, and the steepest 10% exceed 29°, mostly in the ravines facing the Willamette.</p>
+            <p>This 10 m USGS 3DEP elevation becomes the fire mesh's terrain (<code>ZSF</code>). Rivers in 3DEP are
+              flattened at the water surface (about 2.8 m here), so riverbanks don't get fake cliffs. Four bad cells
+              below sea level at the domain edge were filled from their neighbors.</p>
+          </div>
+        </article>
+
+        <article class="reveal fig wide" id="fig-domains">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/wrf_domains.png" aria-label="Enlarge: nested WRF domains">
+              <img src="../img/wrf_domains.png" width="1694" height="939" loading="lazy" alt="Two maps. Left: three nested square model domains on shaded terrain around Portland, from 135 km wide down to 16 km, with Mount St. Helens near the top. Right: zoom showing the 16 km inner domain around Forest Park, inside the fuel-data box.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 9</p>
+            <h3>Three nested model grids</h3>
+            <p>Weather models zoom in through nested grids, each three times finer than the one around it. The
+              outermost takes weather from a forecast model at 3 km; the innermost runs the fire.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Grid</th><th scope="col" class="r">Spacing</th><th scope="col" class="r">Cells</th><th scope="col" class="r">Width</th><th scope="col">Role</th></tr></thead>
+                <tbody>
+                  <tr><td>d01</td><td class="r">1,350 m</td><td class="r">100 × 100</td><td class="r">135 km</td><td>Regional wind, including east winds leaving the Columbia Gorge</td></tr>
+                  <tr><td>d02</td><td class="r">450 m</td><td class="r">132 × 132</td><td class="r">59.4 km</td><td>Tualatin Mountains and the Portland basin</td></tr>
+                  <tr><td>d03</td><td class="r">150 m</td><td class="r">108 × 108</td><td class="r">16.2 km</td><td>Wind over the park; hosts the fire</td></tr>
+                  <tr><td>Fire mesh</td><td class="r">30 m</td><td class="r">540 × 540</td><td class="r">16.2 km</td><td>Fire spread, on the fuel map and 10 m terrain</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>The inner grid is centered on the park, with 2.7 km between the park and its edge, and sits 1.3 km
+              inside the fuel and terrain data. With the original data box, a grid that size would have run off the
+              data's southern edge, past the park's south tip in NW Portland, so I extended the box.</p>
+          </div>
+        </article>
+
+        <article class="reveal fig wide" id="fig-ridge">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/terrain_ridge_profile.png" aria-label="Enlarge: ridge profile at each resolution">
+              <img src="../img/terrain_ridge_profile.png" width="1800" height="936" loading="lazy" alt="Line chart of elevation along a 9 km profile across Forest Park, from Washington County over the ridge to the Willamette River and St. Johns. The 10 m and 30 m lines follow every ravine; the 150 m grid keeps the main shape; the 450 m and 1,350 m grids turn the slope into a few large steps and put the river about 80 m up.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 10</p>
+            <h3>The same ridge, as each grid sees it</h3>
+            <p>A 9 km cross-section through the middle of the park, perpendicular to the ridge. Each grid averages the
+              ground over its cells:</p>
+            <ul>
+              <li>The <strong>30 m fire mesh</strong> follows the 10 m lidar almost exactly, including the 195 m
+                ravine at 4.1 km.</li>
+              <li>The <strong>150 m</strong> inner atmosphere keeps the main ridge and the river-facing slope.</li>
+              <li>At <strong>1,350 m</strong> the slope becomes a few large steps; the ravine disappears and the
+                Willamette sits about 80 m up, averaged with the hillside.</li>
+            </ul>
+            <p>That's why the fire needs its own fine terrain, and why the wind near the park comes from the 150 m grid.</p>
+          </div>
+        </article>
+
+        <div class="reveal two-col">
+          <div class="prose">
+            <h3>Slopes each grid can resolve</h3>
+            <p>Inside the 16.2 km inner domain. Coarse grids smooth the steep ravine walls away.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Grid</th><th scope="col" class="r">Relief</th><th scope="col" class="r">Steepest 1%</th><th scope="col" class="r">Max slope</th></tr></thead>
+                <tbody>
+                  <tr><td>Lidar DEM, 10 m</td><td class="r">390 m</td><td class="r">35°</td><td class="r">70°</td></tr>
+                  <tr><td>Fire mesh, 30 m</td><td class="r">389 m</td><td class="r">30°</td><td class="r">56°</td></tr>
+                  <tr><td>d03, 150 m</td><td class="r">378 m</td><td class="r">18°</td><td class="r">29°</td></tr>
+                  <tr><td>d02, 450 m</td><td class="r">352 m</td><td class="r">12°</td><td class="r">16°</td></tr>
+                  <tr><td>d01, 1,350 m</td><td class="r">294 m</td><td class="r">7°</td><td class="r">7°</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="prose">
+            <h3>What's exported for the model</h3>
+            <ul>
+              <li><strong>Atmosphere terrain</strong>: 3DEP at 1 arc-second (about 30 m) over all of d01,
+                6,890 × 4,960 cells from sea level to Mount St. Helens (2,531 m). It agrees with the 10 m data
+                to within 0.06 m on average.</li>
+              <li><strong>Fire terrain</strong>: 3DEP at 10 m over the fuel-map area.</li>
+              <li><strong>Setup files</strong>: a domain configuration and the lookup-table entries that point the
+                model at these files.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="prose limits">
+          <h3>Limitations</h3>
+          <ul>
+            <li><strong>Not yet run.</strong> The grids are a proposal. They still need to pass through the model's
+              preprocessor and a test simulation, which may call for terrain smoothing on the 150 m grid.</li>
+            <li><strong>Approximate averaging.</strong> The resolution comparison uses simple block averages; the
+              preprocessor's own averaging will differ slightly.</li>
+          </ul>
+        </div>
+      
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../fuel-maps/index.html"><small>← Previous</small><b>02 · Fuel maps</b></a>
+      <a class="next" href="../fire-weather/index.html"><small>Next →</small><b>04 · Fire weather</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+</body>
+</html>

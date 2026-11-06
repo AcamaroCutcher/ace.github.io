@@ -35,12 +35,7 @@ window.PROJECT_LIBRARY = {
     {
       id: 'forest-park-wildfires',
       title: 'Forest Park Wildfires',
-      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? The first section ' +
-        'builds a 30 m wildland–urban fuel map: LANDFIRE fuels inside the park, and stand-in surface fuels for the city ' +
-        'from land-cover imperviousness, tree canopy, roads and 142,596 building footprints. The second sets up nested ' +
-        'WRF-SFIRE model grids and builds their terrain from USGS lidar. The third finds the dangerous fire weather: ' +
-        '26 years of airport records show dry, windy hours come from the east. The fourth burns 4,000 simulated ' +
-        'fires to map where a park fire is likely to reach homes.',
+      summary: 'How could a fire in Portland’s Forest Park spread into the neighborhoods around it? A group project (with Andrea Baeza and Alex Bentley) on wildfire risk, community concerns and the CEI Hub. Sections: our partner proposal; a 30 m wildland–urban fuel map with 142,596 building footprints; nested WRF-SFIRE grids on USGS lidar terrain; 26 years of fire weather showing dry, windy hours come from the east; and 4,000 simulated fires that map where a park fire is likely to reach homes.',
       disciplines: ['earth'],
       types: ['research'],
       status: 'current',
@@ -50,10 +45,11 @@ window.PROJECT_LIBRARY = {
       tags: ['Wildfire', 'Wildland–Urban Interface', 'LANDFIRE', 'WRF-SFIRE', 'Python / GIS'],
       links: [
         { label: 'Explore', href: 'forest-park-wildfires/index.html', icon: 'fa-arrow-right', primary: true },
-        { label: 'Fuel maps', href: 'forest-park-wildfires/index.html#fuel-maps', icon: 'fa-map' },
-        { label: 'Terrain', href: 'forest-park-wildfires/index.html#terrain', icon: 'fa-mountain' },
-        { label: 'Fire weather', href: 'forest-park-wildfires/index.html#fire-weather', icon: 'fa-wind' },
-        { label: 'Fire spread', href: 'forest-park-wildfires/index.html#fire-spread', icon: 'fa-fire' },
+        { label: 'Proposal', href: 'forest-park-wildfires/proposal/index.html', icon: 'fa-file-lines' },
+        { label: 'Fuel maps', href: 'forest-park-wildfires/fuel-maps/index.html', icon: 'fa-map' },
+        { label: 'Terrain', href: 'forest-park-wildfires/terrain/index.html', icon: 'fa-mountain' },
+        { label: 'Fire weather', href: 'forest-park-wildfires/fire-weather/index.html', icon: 'fa-wind' },
+        { label: 'Fire spread', href: 'forest-park-wildfires/fire-spread/index.html', icon: 'fa-fire' },
       ],
     },
     {

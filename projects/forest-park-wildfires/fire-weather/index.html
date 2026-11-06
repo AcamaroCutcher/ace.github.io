@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forest Park Wildfires, section 04: Fire weather. 26 years of airport records: the dangerous dry, windy hours come from the east, mostly in September and October.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Fire weather · Forest Park Wildfires - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body class="sub">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Forest Park Wildfires</a><span aria-hidden="true">/</span>
+        <span aria-current="page">04 · Fire weather</span>
+      </nav>
+      <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </div>
+
+    <header class="banner ">
+      <div class="banner-img" style="background-image: url('../img/bg/banner-fire-weather.jpg')" aria-hidden="true"></div>
+      <canvas data-fx="wind" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Section 04 · v4</p>
+        <h1>Fire weather</h1>
+        <p class="lede">A fuel map and terrain say where fire <em>can</em> go; the weather decides where it <em>does</em>.
+            To choose realistic wind and dryness for the simulations, and real dates to run WRF-SFIRE on, I analysed hourly
+            observations from June to October, 2000–2025, at the four airports around the park: Portland International
+            (13 km east of the park's centre), Hillsboro (15 km west), Scappoose (23 km north) and Troutdale (28 km east, at
+            the mouth of the Columbia River Gorge).</p>
+      </div>
+      <span class="credit">Background: Forest Park terrain from USGS 3DEP, tinted with this project's data</span>
+    </header>
+
+    <main>
+      <section class="block" id="fire-weather" aria-label="Fire weather">
+
+        
+
+        <article class="reveal fig wide" id="fig-wind-roses">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/fire_weather_wind_roses.png" aria-label="Enlarge: wind roses">
+              <img src="../img/fire_weather_wind_roses.png" width="2098" height="1286" loading="lazy" alt="Eight wind roses. Top row, grey: on ordinary fire-season hours the wind at Portland, Hillsboro and Scappoose comes mostly from the northwest or north, and at Troutdale from the east or west. Bottom row, orange: on dry and windy hours the wind at Portland, Troutdale and Hillsboro comes almost entirely from the east or east-northeast; Scappoose, with few such hours, shows mostly north winds.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 11</p>
+            <h3>Dangerous winds come from the east</h3>
+            <p>I counted an hour as <strong>dry and windy</strong> when relative humidity was 25% or lower and the wind
+              reached 15 mph, or gusts 25 mph. That's my screening threshold, not the National Weather Service's official
+              Red Flag criteria.</p>
+            <p>On an ordinary summer hour the wind at Portland International blows from the northwest. On dry and windy
+              hours, 92% blow from the northeast to southeast. This is the east wind that pours out of the Columbia River
+              Gorge when high pressure builds east of the Cascades, bringing dry inland air. Hillsboro, on the far side of the
+              park, sees the same thing (83%). Scappoose is the exception, but it logged only 46 such hours in 26 years.</p>
+          </div>
+        </article>
+
+        <article class="reveal fig wide" id="fig-weather-months">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/fire_weather_by_month.png" aria-label="Enlarge: dry and windy hours by month">
+              <img src="../img/fire_weather_by_month.png" width="1620" height="792" loading="lazy" alt="Grouped bar chart of dry and windy hours per year by month at four stations. June to August stay below 2 hours a year; September and October rise to 6 to 8 hours at Portland and Troutdale and about 3 at Hillsboro. Scappoose stays below 1 hour all season.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 12</p>
+            <h3>Late summer, not midsummer</h3>
+            <p>Portland International averages about 17 dry and windy hours a year, and 76% fall in September or October.
+              July is hot but rarely windy enough. The danger window is the end of the dry season, when fuels have had all
+              summer to dry and the first east-wind events of autumn arrive before the rains.</p>
+          </div>
+        </article>
+
+        <article class="reveal fig wide" id="fig-labor-day">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/fire_weather_labor_day_2020.png" aria-label="Enlarge: Labor Day 2020 event">
+              <img src="../img/fire_weather_labor_day_2020.png" width="1700" height="1258" loading="lazy" alt="Three stacked time series, September 6 to 10, 2020, at Portland International and Troutdale. On the afternoon of September 7 the wind jumps from under 10 to about 30 mph with gusts near 50 mph, relative humidity falls from 80% to under 20%, and estimated fine-fuel moisture drops to about 4%, reaching 2% on September 9.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 13</p>
+            <h3>The case study: Labor Day 2020</h3>
+            <p>The same east wind drove the 2020 Labor Day fires in the Oregon Cascades. At Portland International it
+              lasted from the afternoon of 7 September to the evening of the 9th: 44 dry and windy hours, sustained winds to
+              36 mph, gusts to 50 mph and humidity down to 8%.</p>
+            <p>The bottom panel estimates the moisture of fine dead fuel (twigs, grass, needles) from temperature and
+              humidity. It fell from 16% to about 4% within a day and reached 2% on the 9th. Fuels that dry burn readily.</p>
+          </div>
+        </article>
+
+        <article class="reveal fig wide" id="fig-wind-slope">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/fire_weather_wind_slope.png" aria-label="Enlarge: wind and slope alignment">
+              <img src="../img/fire_weather_wind_slope.png" width="2014" height="1138" loading="lazy" alt="Two shaded-relief maps of Forest Park. Left: slopes facing an east wind are coloured orange and cover most of the river-facing hillside, 42% of the park's slopes of 10 degrees or more. Right: slopes facing a northwest wind are coloured blue, mostly the northwest sides of the ravines, 28%.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 14</p>
+            <h3>Where wind and slope work together</h3>
+            <p>Fire spreads fastest when wind and slope push the same way. Coloured cells are slopes of 10° or more that face
+              into the wind, so the wind drives fire straight uphill there.</p>
+            <p>An <strong>east wind</strong> lines up with 42% of the park's slopes: the river-facing hillside, from Linnton
+              and Highway 30 up to the ridge. Over the ridge, a fire would be heading for the homes along Skyline Boulevard
+              and the Washington County side. The usual <strong>northwest wind</strong> lines up with 28% and pushes fire
+              along the park's length, toward its southeast end in NW Portland.</p>
+          </div>
+        </article>
+
+        <div class="reveal two-col">
+          <div class="prose">
+            <h3>Two scenarios for the simulations</h3>
+            <p>From Portland International. Dry-side numbers are the driest 10% of hours in each scenario.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col"></th><th scope="col" class="r">East wind</th><th scope="col" class="r">NW afternoon</th></tr></thead>
+                <tbody>
+                  <tr><td>Hours (2000–2025)</td><td class="r">399</td><td class="r">6,438</td></tr>
+                  <tr><td>Mean direction</td><td class="r">84°</td><td class="r">317°</td></tr>
+                  <tr><td>Wind, median</td><td class="r">20 mph</td><td class="r">9 mph</td></tr>
+                  <tr><td>Wind, 90th percentile</td><td class="r">28 mph</td><td class="r">14 mph</td></tr>
+                  <tr><td>Gusts, median (when reported)</td><td class="r">30 mph</td><td class="r">20 mph</td></tr>
+                  <tr><td>Humidity, median / driest 10%</td><td class="r">19% / 14%</td><td class="r">39% / 27%</td></tr>
+                  <tr><td>Fine-fuel moisture, median / driest 10%</td><td class="r">4.3% / 3.2%</td><td class="r">7.3% / 5.1%</td></tr>
+                  <tr><td>Park slopes facing the wind</td><td class="r">42%</td><td class="r">28%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>The northwest scenario covers July–August afternoons (2–6 pm) with a northwest wind, 80% of all such
+              afternoons.</p>
+          </div>
+          <div class="prose">
+            <h3>Candidate dates for WRF-SFIRE</h3>
+            <p>The worst episodes at Portland International, ranked by the Fosberg Fire Weather Index. WRF-SFIRE needs
+              weather-model data to start from: the 3 km HRRR exists from August 2014, while older events need coarser
+              reanalysis.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Episode</th><th scope="col" class="r">Hours</th><th scope="col" class="r">Gusts</th><th scope="col" class="r">Min RH</th><th scope="col">HRRR</th></tr></thead>
+                <tbody>
+                  <tr><td>30 Oct 2002</td><td class="r">11</td><td class="r">48 mph</td><td class="r">15%</td><td>No</td></tr>
+                  <tr><td>7–9 Sep 2020</td><td class="r">44</td><td class="r">50 mph</td><td class="r">8%</td><td>Yes</td></tr>
+                  <tr><td>4 Oct 2001</td><td class="r">12</td><td class="r">38 mph</td><td class="r">14%</td><td>No</td></tr>
+                  <tr><td>9 Sep 2022</td><td class="r">14</td><td class="r">40 mph</td><td class="r">13%</td><td>Yes</td></tr>
+                  <tr><td>11 Sep 2014</td><td class="r">10</td><td class="r">41 mph</td><td class="r">17%</td><td>Yes</td></tr>
+                  <tr><td>6 Oct 2012</td><td class="r">8</td><td class="r">35 mph</td><td class="r">11%</td><td>No</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Labor Day 2020 is the first case: the longest and driest episode, recorded at all four airports, with HRRR
+              data available.</p>
+          </div>
+        </div>
+
+        <div class="prose limits">
+          <h3>Limitations</h3>
+          <ul>
+            <li><strong>Airports, not the park.</strong> The stations are 13–28 km away on open, flat ground. Inside the
+              park, terrain channels the wind and the forest floor stays moister than air-based estimates suggest. WRF-SFIRE
+              will resolve the local wind; the fuel moisture still needs care.</li>
+            <li><strong>Dead fuel only.</strong> The moisture estimate covers fine dead fuel from that hour's temperature and
+              humidity. It ignores rain in the days before (common before October events) and the moisture of living plants.</li>
+            <li><strong>Hours, not fires.</strong> A dry, windy hour is an opportunity, not a prediction. Ignition is a separate
+              question.</li>
+          </ul>
+        </div>
+      
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next section">
+      <a class="prev" href="../terrain/index.html"><small>← Previous</small><b>03 · Terrain for WRF-SFIRE</b></a>
+      <a class="next" href="../fire-spread/index.html"><small>Next →</small><b>05 · Fire-spread simulations</b></a>
+    </nav>
+
+    <footer class="site-footer">
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
+      elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
+    </footer>
+  </div>
+
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <span id="viewer-title"></span>
+      <button type="button" id="viewer-close">Close</button>
+    </div>
+    <img id="viewer-img" alt="">
+  </dialog>
+
+  <script src="../app.js"></script>
+  <script src="../fx.js"></script>
+</body>
+</html>

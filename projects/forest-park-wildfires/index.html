@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Forest Park Wildfires: fuel maps and fire-spread modeling for Portland's Forest Park and the neighborhoods around it. By Acamaro Cutcher.">
+  <meta name="description" content="Forest Park Wildfires: wildfire risk, fuel maps and fire-spread modeling for Portland's Forest Park and the neighborhoods around it. Group 2: Andrea Baeza, Alex Bentley, Acamaro Cutcher.">
   <meta name="author" content="Acamaro Cutcher">
   <link rel="icon" href="data:,">
   <title>Forest Park Wildfires - Acamaro Cutcher</title>
@@ -17,55 +17,141 @@
       <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
     </div>
 
-    <header class="intro">
-      <p class="eyebrow">Wildland–urban interface · Portland, Oregon · In progress</p>
-      <h1>Forest Park Wildfires</h1>
-      <p class="lede">Forest Park covers about 5,100 acres of forest along Portland's West Hills, with homes,
+    <header class="banner hero">
+      <div class="slides" aria-hidden="true">
+        <div class="slide on" style="background-image: url('img/photos/canopy.jpg')" data-credit="Photo: &lt;a href=&quot;https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg&quot;&gt;Jon Roberts from Austin TX, USA&lt;/a&gt;, &lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0&quot; rel=&quot;license&quot;&gt;CC BY-SA 2.0&lt;/a&gt;, via Wikimedia Commons"></div>
+        <div class="slide" style="background-image: url('img/photos/wildwood.jpg')" data-credit="Photo: &lt;a href=&quot;https://commons.wikimedia.org/wiki/File:Forest_park_wildwood_trail_lazy_bend_P3861.jpeg&quot;&gt;EncMstr&lt;/a&gt;, &lt;a href=&quot;https://creativecommons.org/licenses/by-sa/3.0&quot; rel=&quot;license&quot;&gt;CC BY-SA 3.0&lt;/a&gt;, via Wikimedia Commons"></div>
+        <div class="slide" style="background-image: url('img/photos/ravine.jpg')" data-credit="Photo: &lt;a href=&quot;https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(24012149446).jpg&quot;&gt;Tony Webster from Half Moon Bay, California&lt;/a&gt;, &lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0&quot; rel=&quot;license&quot;&gt;CC BY-SA 2.0&lt;/a&gt;, via Wikimedia Commons"></div>
+        <div class="slide" style="background-image: url('img/photos/leif-erikson.jpg')" data-credit="Photo: &lt;a href=&quot;https://commons.wikimedia.org/wiki/File:Leif_Erikson_Drive,_Forest_Park,_Portland_Oregon_01.jpg&quot;&gt;Joe Mabel&lt;/a&gt;, &lt;a href=&quot;https://creativecommons.org/licenses/by-sa/3.0&quot; rel=&quot;license&quot;&gt;CC BY-SA 3.0&lt;/a&gt;, via Wikimedia Commons"></div>
+      </div>
+      <canvas data-fx="embers" aria-hidden="true"></canvas>
+      <div class="banner-inner">
+        <p class="eyebrow">Wildland–urban interface · Portland, Oregon · In progress</p>
+        <h1>Forest Park Wildfires</h1>
+        <p class="lede">Forest Park covers about 5,100 acres of forest along Portland's West Hills, with homes,
         industry and the Willamette River along its edges. This project models how a fire that starts in the
         park could spread into the neighborhoods around it, using the coupled fire–atmosphere model WRF-SFIRE
         and probabilistic fire-spread maps.</p>
-      <nav class="sections" aria-label="Project sections">
-        <a class="section-link" href="#fuel-maps">
-          <span class="num">01</span>
-          <span class="section-name">Fuel maps</span>
-          <span class="pill done">Available</span>
-        </a>
-        <a class="section-link" href="#terrain">
-          <span class="num">02</span>
-          <span class="section-name">Terrain for WRF-SFIRE</span>
-          <span class="pill done">Available</span>
-        </a>
-        <a class="section-link" href="#fire-weather">
-          <span class="num">03</span>
-          <span class="section-name">Fire weather</span>
-          <span class="pill done">Available</span>
-        </a>
-        <a class="section-link" href="#fire-spread">
-          <span class="num">04</span>
-          <span class="section-name">Fire-spread simulations</span>
-          <span class="pill done">New: prototype</span>
-        </a>
-        <div class="section-link upcoming" aria-disabled="true">
-          <span class="num">05</span>
-          <span class="section-name">WRF-SFIRE runs</span>
-          <span class="pill">Next</span>
+        <div class="hero-stats" aria-label="Key numbers">
+          <div><b>5,100 acres</b><span>of forest on Portland's West Hills</span></div>
+          <div><b>4,000</b><span>simulated fires so far</span></div>
+          <div><b>37%</b><span>of east-wind fires leave the park</span></div>
         </div>
-      </nav>
-      <div class="log" aria-labelledby="log-title">
+        <div class="slide-dots" role="group" aria-label="Photos"></div>
+      </div>
+      <span class="credit"><span data-slide-credit></span></span>
+    </header>
+
+    <main>
+      <section class="fire-panel reveal" aria-labelledby="fire-h">
+        <div class="fire-copy">
+          <p class="eyebrow">Fire on the map</p>
+          <h2 id="fire-h">60 fires, one east wind</h2>
+          <p class="lede">Each glowing ring is a simulated ignition in Forest Park. The fire then spreads cell by cell
+            through the 30 m fuel map at the speed the Rothermel model gives for that fuel, slope and a
+            20 mph east wind, for 8 hours each.</p>
+          <ul class="legend">
+            <li><i style="background:#ffeca0"></i>Flame front</li>
+            <li><i style="background:#ff7a1a"></i>Flaming</li>
+            <li><i style="background:#8a1c0c"></i>Smouldering</li>
+            <li><i style="background:#4a2c22"></i>Burned</li>
+          </ul>
+          <p class="meta" style="font-size:13px;color:var(--text-secondary)">These are 60 of the 2,000 random
+            east-wind ignitions from <a href="fire-spread/index.html">Section 05</a>, re-run with the same model
+            (median fire 11.0 ha). Ignitions are staggered 18 minutes apart only to make the
+            animation readable. The map switches with the light/dark button.</p>
+        </div>
+        <div class="firemap " data-root="" role="img" aria-label="Animation: 60 simulated fires igniting one after another in Forest Park and spreading west under a 20 mph east wind, drawn on the WUI fuel map."><canvas></canvas><span class="hud" data-hud aria-live="off"></span><button type="button" class="play" data-play>Pause</button></div>
+      </section>
+
+      <section class="block" aria-labelledby="chapters-h">
+        <div class="block-head">
+          <p class="eyebrow">Sections</p>
+          <h2 id="chapters-h">Explore the project</h2>
+          <p class="lede">Each section is its own page. Start with the proposal, or jump straight to the maps and
+            simulations.</p>
+        </div>
+        <nav class="chapters" aria-label="Project sections">
+        <a class="chapter reveal" href="proposal/index.html">
+          <div class="chapter-img" style="background-image: url('img/photos/river-view-sm.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">01</span><span class="pill warm">29 Oct 2026</span></div>
+            <h3>Project proposal</h3>
+            <p>Why Forest Park, who we are, and the questions and data needs we brought to our community partner.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="fuel-maps/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-fuel-maps.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">02</span><span class="pill done">v1–v2</span></div>
+            <h3>Fuel maps</h3>
+            <p>A 30 m wildland–urban fuel map: LANDFIRE fuels in the park, stand-in fuels for the city, roads and buildings.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="terrain/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-terrain.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">03</span><span class="pill done">v3</span></div>
+            <h3>Terrain for WRF-SFIRE</h3>
+            <p>Three nested model grids around the park, with terrain from USGS lidar instead of 1 km global data.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="fire-weather/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-fire-weather.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">04</span><span class="pill done">v4</span></div>
+            <h3>Fire weather</h3>
+            <p>26 years of airport records: the dangerous dry, windy hours come from the east, mostly in September and October.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <a class="chapter reveal" href="fire-spread/index.html">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-fire-spread.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">05</span><span class="pill done">v5 · prototype</span></div>
+            <h3>Fire-spread simulations</h3>
+            <p>4,000 simulated fires on the fuel map: where a park fire is likely to go, and how often it reaches homes.</p>
+            <span class="go">Open section →</span>
+          </div>
+        </a>
+        <div class="chapter upcoming reveal" aria-disabled="true">
+          <div class="chapter-img" style="background-image: url('img/bg/banner-terrain.jpg')" aria-hidden="true"></div>
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">06</span><span class="pill">Next</span></div>
+            <h3>WRF-SFIRE runs</h3>
+            <p>Coupled fire–atmosphere runs on the worst east-wind episodes from the fire-weather analysis.</p>
+          </div>
+        </div>
+        </nav>
+      </section>
+
+      <section class="block" aria-label="Progress log">
+        <div class="log reveal" aria-labelledby="log-title">
           <h3 id="log-title">Progress log</h3>
           <ol class="log-list">
             <li>
-              <span class="log-tag new">v5</span>
+              <span class="log-tag new">v6</span>
+              <time datetime="2026-11-05">5 Nov 2026</time>
+              <p><strong>Proposal, photos and a new layout.</strong> Added our group's partner proposal
+                (<a href="proposal/index.html">Section 01</a>), split the project into one page per section, added
+                photos of Forest Park, and an ignition animation drawn from the spread model that follows light and
+                dark mode.</p>
+            </li>
+            <li>
+              <span class="log-tag">v5</span>
               <time datetime="2026-11-04">4 Nov 2026</time>
               <p><strong>First fire-spread maps.</strong> Wrote a fire-spread model in Python on the 30 m fuel map and
-                burned 2,000 simulated fires under each wind scenario (<a href="#fire-spread">Section 04</a>). In an east
+                burned 2,000 simulated fires under each wind scenario (<a href="fire-spread/index.html">Section 05</a>). In an east
                 wind, 37% of fires leave the park and 29% reach buildings, more than twice the northwest-wind numbers.</p>
             </li>
             <li>
               <span class="log-tag">v4</span>
               <time datetime="2026-11-04">4 Nov 2026</time>
               <p><strong>Fire weather.</strong> Analysed 26 years of hourly weather from four airports around the park
-                (<a href="#fire-weather">Section 03</a>). Dangerous dry, windy hours come almost only from the east, mostly
+                (<a href="fire-weather/index.html">Section 04</a>). Dangerous dry, windy hours come almost only from the east, mostly
                 in September and October, and an east wind pushes fire uphill on 42% of the park's steep slopes. The worst
                 episodes are now the candidate dates for the first WRF-SFIRE runs.</p>
             </li>
@@ -73,7 +159,7 @@
               <span class="log-tag">v3</span>
               <time datetime="2026-11-04">4 Nov 2026</time>
               <p><strong>Terrain for WRF-SFIRE.</strong> Proposed three nested model grids around the park and built
-                their terrain from USGS 3DEP instead of the model's default 1 km data (<a href="#terrain">Section 02</a>).
+                their terrain from USGS 3DEP instead of the model's default 1 km data (<a href="terrain/index.html">Section 03</a>).
                 The study area grew about 2 km south and 1 km east so the innermost grid has room around the park, so
                 every fuel-map number below was recomputed.</p>
             </li>
@@ -81,8 +167,8 @@
               <span class="log-tag">v2</span>
               <time datetime="2026-11-04">4 Nov 2026</time>
               <p><strong>Roads and terrain.</strong> Open road cells are now firebreaks instead of grass corridors
-                (<a href="#fig-roads">Figure 4</a>), which removed 1,848 ha of false fuel at the time. Added 10 m USGS terrain,
-                slope and the elevation layer WRF-SFIRE needs for its fire grid (<a href="#fig-terrain">Figure 8</a>).</p>
+                (<a href="fuel-maps/index.html#fig-roads">Figure 4</a>), which removed 1,848 ha of false fuel at the time. Added 10 m USGS terrain,
+                slope and the elevation layer WRF-SFIRE needs for its fire grid (<a href="terrain/index.html#fig-terrain">Figure 8</a>).</p>
             </li>
             <li>
               <span class="log-tag">v1</span>
@@ -92,599 +178,27 @@
             </li>
           </ol>
       </div>
-    </header>
-
-    <main>
-      <section class="block" id="fuel-maps" aria-labelledby="fuel-maps-title">
-        <div class="block-head">
-          <p class="eyebrow">Section 01</p>
-          <h2 id="fuel-maps-title">Fuel maps</h2>
-          <p class="lede">A fire model doesn't see trees, lawns or houses. It sees a grid, and every cell holds a
-            <em>fuel model</em>: a standard description of how much fuel is there, how deep the fuel bed is and
-            how dry it has to be to burn. Before any fire can be simulated, the park and the city need that grid.</p>
-        </div>
-
-
-        <div class="prose two-col">
-          <div>
-            <h3>The problem at the park's edge</h3>
-            <p>The standard U.S. fuel map, LANDFIRE, marks developed land as <strong>non-burnable</strong>.
-              That makes sense for a forest-scale study. For a city edge, it means a simulated fire stops at the park
-              boundary every time, so the question this project asks can't be answered.</p>
-          </div>
-          <div>
-            <h3>What I built</h3>
-            <p>A combined map at 30 m resolution over about 19 × 20 km. Inside the park, LANDFIRE is used as published. Outside it, each
-              developed cell gets a stand-in surface fuel based on how much of it is paved and how much tree canopy
-              it has. Cells that are mostly buildings stay non-burnable.</p>
-          </div>
-        </div>
-
-        <ul class="stats" aria-label="Summary figures">
-          <li><strong>13,007 → 20,633 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
-          <li><strong>7,631 ha</strong><span>City cells given stand-in fuels</span></li>
-          <li><strong>2,551 ha</strong><span>Open road cells made firebreaks</span></li>
-          <li><strong>142,596</strong><span>Building footprints mapped at 3 m</span></li>
-        </ul>
-
-        <article class="fig" id="fig-fuel-map">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fuel_map_wui.png" aria-label="Enlarge: the combined fuel map">
-              <img src="img/fuel_map_wui.png" width="1922" height="1525" alt="Fuel map of Forest Park and surrounding Portland, colored by fuel group: grass, shrub and timber-understory, timber litter, pavement, structures and water.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 1</p>
-            <h3>The combined fuel map</h3>
-            <p>Three colorblind-safe colors carry the burnable fuel groups. Greys are non-burnable, pale blue is water,
-              and the black outline is Forest Park.</p>
-            <ul>
-              <li>The park is mostly <strong>timber-understory</strong> (violet) and <strong>timber litter</strong>
-                (green). The heaviest model, TU5 (very high load, dry timber-shrub), covers about 846 ha inside the park.</li>
-              <li>Treed neighborhoods south and west of the park, in the NW Hills and Forest Heights, form continuous
-                timber litter joined to the park.</li>
-              <li>Open, lightly paved areas such as St. Johns become grass (yellow).</li>
-            </ul>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-before-after">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fuel_map_before_after.png" aria-label="Enlarge: before and after">
-              <img src="img/fuel_map_before_after.png" width="1791" height="1068" loading="lazy" alt="Two maps side by side. Left: LANDFIRE as published, where most of the city is non-burnable. Right: the adjusted map with fuels in urban areas.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 2</p>
-            <h3>Before and after</h3>
-            <p>On the left, fuel ends at the park boundary. On the right, the city's vegetated cells carry fuel, so a
-              model can move fire from the park edge into yards and street trees.</p>
-          </div>
-        </article>
-
-        <article class="fig" id="fig-reassigned">
-          <figure>
-            <button type="button" class="zoom" data-full="img/urban_reassignment.png" aria-label="Enlarge: cells changed by the urban rules">
-              <img src="img/urban_reassignment.png" width="1790" height="1423" loading="lazy" alt="Map highlighting only the cells changed by the urban fuel rules, colored by new fuel group; all other cells are grey.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 3</p>
-            <h3>What the urban rules changed</h3>
-            <p>Only the cells that received a stand-in fuel are colored.</p>
-            <ul>
-              <li>Green lines in the rural west are roads under tree canopy, which keep timber litter. Open, paved
-                road cells are firebreaks since v2 (Figure 4).</li>
-              <li>A few yellow lines remain where roads are less than 30% paved, such as gravel roads.</li>
-              <li>Industrial land with little canopy, in Rivergate and the NW industrial district, also became grass.</li>
-              <li>Dark grey blocks are cells that are mostly buildings.</li>
-            </ul>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-roads">
-          <figure>
-            <button type="button" class="zoom" data-full="img/roads_v1_vs_v2.png" aria-label="Enlarge: road fix, v1 and v2">
-              <img src="img/roads_v1_vs_v2.png" width="1615" height="1014" loading="lazy" alt="Two zoomed maps of the hills southwest of Forest Park. In v1 a network of road cells is grass; in v2 open road cells are non-burnable and roads under canopy stay timber litter.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 4 · new in v2</p>
-            <h3>Fixing the roads</h3>
-            <p>A 4 × 4 km window southwest of the park, where the fix changed the most cells. In v1, partly paved road
-              cells with little canopy fell into the "open lots" rule and became a connected network of grass corridors
-              (yellow), which would carry fire along every street. The NLCD road layer now identifies them first:</p>
-            <ul>
-              <li><strong>Freeways</strong> (US-26, I-405) are always non-burnable.</li>
-              <li><strong>Other roads</strong> are non-burnable when at least 30% paved with under 40% tree canopy.</li>
-              <li><strong>Roads under canopy</strong> keep their stand-in fuel, because overhanging trees and yards in
-                the same 30 m cell still carry fire.</li>
-            </ul>
-            <p>A first attempt made every paved street a firebreak. That turned 6,605 ha of the residential grid
-              non-burnable and isolated every block, so I narrowed it to open roads.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-families">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fuel_families_small_multiples.png" aria-label="Enlarge: fuel-model families">
-              <img src="img/fuel_families_small_multiples.png" width="1889" height="1358" loading="lazy" alt="Six small maps, one per fuel-model family (grass, grass-shrub, shrub, timber-understory, timber litter, slash-blowdown), each showing where that family occurs.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 5</p>
-            <h3>Fuel-model families</h3>
-            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Timber litter (39%),
-              grass (31%) and timber-understory (26%) make up most of the burnable area, with grass-shrub at 4%.
-              Shrub and slash fuels are almost absent.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-inputs">
-          <figure>
-            <button type="button" class="zoom" data-full="img/inputs_impervious_canopy_buildings.png" aria-label="Enlarge: rule inputs">
-              <img src="img/inputs_impervious_canopy_buildings.png" width="2415" height="978" loading="lazy" alt="Three maps: NLCD 2021 imperviousness, NLCD 2021 tree canopy, and building footprint cover per 30 m cell.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 6</p>
-            <h3>What the rules are based on</h3>
-            <p>Pavement and tree canopy from the National Land Cover Database decide each city cell's stand-in fuel.
-              Building cover, from City of Portland footprints, decides which cells stay non-burnable.</p>
-          </div>
-        </article>
-
-
-        <article class="fig" id="fig-anderson">
-          <figure>
-            <button type="button" class="zoom" data-full="img/anderson13_area.png" aria-label="Enlarge: WRF-SFIRE fuel categories">
-              <img src="img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 17,901 ha; closed timber litter 7,839; short grass 3,724; hardwood litter 3,094; timber grass and understory 3,069; timber litter and understory 2,009; brush 898.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 7</p>
-            <h3>Ready for WRF-SFIRE</h3>
-            <p>WRF-SFIRE uses the older 13 Anderson fuel models, so the map is also exported in that system,
-              in the binary format its preprocessing step (WPS geogrid) reads, together with the 10 m terrain (<a href="#terrain">Section 02</a>).
-              Category 14 means "no fuel".</p>
-          </div>
-        </article>
-
-        <div class="two-col">
-          <div class="prose">
-            <h3>How city cells were assigned</h3>
-            <p>Each developed cell outside the park takes the first rule it matches. Road cells are checked first (v2).</p>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th scope="col">Paved</th><th scope="col">Canopy</th><th scope="col">Fuel model</th><th scope="col" class="r">Area (ha)</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td colspan="3">Open road cell (freeway, or ≥ 30% paved with &lt; 40% canopy) → non-burnable</td><td class="r">2,550.9</td></tr>
-                  <tr><td>≥ 60%</td><td>any</td><td>Non-burnable (NB1)</td><td class="r">9,988.2</td></tr>
-                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,981.7</td></tr>
-                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">3,083.2</td></tr>
-                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">983.0</td></tr>
-                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">941.4</td></tr>
-                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">641.2</td></tr>
-                  <tr><td colspan="3">Building cover ≥ 50% → non-burnable</td><td class="r">1,463.3</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="prose limits">
-            <h3>Limitations</h3>
-            <ul>
-              <li><strong>The urban rules are a first pass.</strong> The thresholds are working assumptions and still
-                need to be calibrated against field data and published WUI fuel studies.</li>
-              <li><strong>Roads as firebreaks are an assumption.</strong> A paved road stops a surface fire, but
-                wind-driven fires throw embers across roads, which this map can't represent.</li>
-              <li><strong>Gravel and narrow roads</strong> (under 30% paved) still follow the yard rules.</li>
-              <li><strong>Surface fuels only.</strong> WRF-SFIRE spreads fire through vegetation. It doesn't model
-                houses igniting each other or embers, which cause most home losses in urban fires.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="block" id="terrain" aria-labelledby="terrain-title">
-        <div class="block-head">
-          <p class="eyebrow">Section 02 · v3</p>
-          <h2 id="terrain-title">Terrain for WRF-SFIRE</h2>
-          <p class="lede">WRF-SFIRE needs the shape of the ground twice: once for the atmosphere, where hills steer
-            the wind, and once for the fire, which runs faster uphill. Out of the box, the model's preprocessor uses
-            global terrain at about 1 km, which can't see the park's ravines. I replaced it with USGS 3DEP lidar
-            elevation for both, so the wind and the fire stand on the same ground.</p>
-        </div>
-
-        <article class="fig wide" id="fig-terrain">
-          <figure>
-            <button type="button" class="zoom" data-full="img/terrain_elevation_slope.png" aria-label="Enlarge: terrain">
-              <img src="img/terrain_elevation_slope.png" width="1944" height="1042" loading="lazy" alt="Two maps: elevation with shaded relief, and slope in degrees. The Tualatin Mountains ridge runs northwest to southeast through Forest Park, with steep ravines on the river side.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 8</p>
-            <h3>The ground under the park</h3>
-            <p>Fire runs faster uphill, so the model needs the ground shape as well as the fuel. Forest Park sits on the
-              ridge of the Tualatin Mountains, from 12 m at the river to 339 m at the crest. Slopes inside the park have
-              a median of 19°, and the steepest 10% exceed 29°, mostly in the ravines facing the Willamette.</p>
-            <p>This 10 m USGS 3DEP elevation becomes the fire mesh's terrain (<code>ZSF</code>). Rivers in 3DEP are
-              flattened at the water surface (about 2.8 m here), so riverbanks don't get fake cliffs. Four bad cells
-              below sea level at the domain edge were filled from their neighbors.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-domains">
-          <figure>
-            <button type="button" class="zoom" data-full="img/wrf_domains.png" aria-label="Enlarge: nested WRF domains">
-              <img src="img/wrf_domains.png" width="1694" height="939" loading="lazy" alt="Two maps. Left: three nested square model domains on shaded terrain around Portland, from 135 km wide down to 16 km, with Mount St. Helens near the top. Right: zoom showing the 16 km inner domain around Forest Park, inside the fuel-data box.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 9</p>
-            <h3>Three nested model grids</h3>
-            <p>Weather models zoom in through nested grids, each three times finer than the one around it. The
-              outermost takes weather from a forecast model at 3 km; the innermost runs the fire.</p>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th scope="col">Grid</th><th scope="col" class="r">Spacing</th><th scope="col" class="r">Cells</th><th scope="col" class="r">Width</th><th scope="col">Role</th></tr></thead>
-                <tbody>
-                  <tr><td>d01</td><td class="r">1,350 m</td><td class="r">100 × 100</td><td class="r">135 km</td><td>Regional wind, including east winds leaving the Columbia Gorge</td></tr>
-                  <tr><td>d02</td><td class="r">450 m</td><td class="r">132 × 132</td><td class="r">59.4 km</td><td>Tualatin Mountains and the Portland basin</td></tr>
-                  <tr><td>d03</td><td class="r">150 m</td><td class="r">108 × 108</td><td class="r">16.2 km</td><td>Wind over the park; hosts the fire</td></tr>
-                  <tr><td>Fire mesh</td><td class="r">30 m</td><td class="r">540 × 540</td><td class="r">16.2 km</td><td>Fire spread, on the fuel map and 10 m terrain</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>The inner grid is centered on the park, with 2.7 km between the park and its edge, and sits 1.3 km
-              inside the fuel and terrain data. With the original data box, a grid that size would have run off the
-              data's southern edge, past the park's south tip in NW Portland, so I extended the box.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-ridge">
-          <figure>
-            <button type="button" class="zoom" data-full="img/terrain_ridge_profile.png" aria-label="Enlarge: ridge profile at each resolution">
-              <img src="img/terrain_ridge_profile.png" width="1800" height="936" loading="lazy" alt="Line chart of elevation along a 9 km profile across Forest Park, from Washington County over the ridge to the Willamette River and St. Johns. The 10 m and 30 m lines follow every ravine; the 150 m grid keeps the main shape; the 450 m and 1,350 m grids turn the slope into a few large steps and put the river about 80 m up.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 10</p>
-            <h3>The same ridge, as each grid sees it</h3>
-            <p>A 9 km cross-section through the middle of the park, perpendicular to the ridge. Each grid averages the
-              ground over its cells:</p>
-            <ul>
-              <li>The <strong>30 m fire mesh</strong> follows the 10 m lidar almost exactly, including the 195 m
-                ravine at 4.1 km.</li>
-              <li>The <strong>150 m</strong> inner atmosphere keeps the main ridge and the river-facing slope.</li>
-              <li>At <strong>1,350 m</strong> the slope becomes a few large steps; the ravine disappears and the
-                Willamette sits about 80 m up, averaged with the hillside.</li>
-            </ul>
-            <p>That's why the fire needs its own fine terrain, and why the wind near the park comes from the 150 m grid.</p>
-          </div>
-        </article>
-
-        <div class="two-col">
-          <div class="prose">
-            <h3>Slopes each grid can resolve</h3>
-            <p>Inside the 16.2 km inner domain. Coarse grids smooth the steep ravine walls away.</p>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th scope="col">Grid</th><th scope="col" class="r">Relief</th><th scope="col" class="r">Steepest 1%</th><th scope="col" class="r">Max slope</th></tr></thead>
-                <tbody>
-                  <tr><td>Lidar DEM, 10 m</td><td class="r">390 m</td><td class="r">35°</td><td class="r">70°</td></tr>
-                  <tr><td>Fire mesh, 30 m</td><td class="r">389 m</td><td class="r">30°</td><td class="r">56°</td></tr>
-                  <tr><td>d03, 150 m</td><td class="r">378 m</td><td class="r">18°</td><td class="r">29°</td></tr>
-                  <tr><td>d02, 450 m</td><td class="r">352 m</td><td class="r">12°</td><td class="r">16°</td></tr>
-                  <tr><td>d01, 1,350 m</td><td class="r">294 m</td><td class="r">7°</td><td class="r">7°</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="prose">
-            <h3>What's exported for the model</h3>
-            <ul>
-              <li><strong>Atmosphere terrain</strong>: 3DEP at 1 arc-second (about 30 m) over all of d01,
-                6,890 × 4,960 cells from sea level to Mount St. Helens (2,531 m). It agrees with the 10 m data
-                to within 0.06 m on average.</li>
-              <li><strong>Fire terrain</strong>: 3DEP at 10 m over the fuel-map area.</li>
-              <li><strong>Setup files</strong>: a domain configuration and the lookup-table entries that point the
-                model at these files.</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="prose limits">
-          <h3>Limitations</h3>
-          <ul>
-            <li><strong>Not yet run.</strong> The grids are a proposal. They still need to pass through the model's
-              preprocessor and a test simulation, which may call for terrain smoothing on the 150 m grid.</li>
-            <li><strong>Approximate averaging.</strong> The resolution comparison uses simple block averages; the
-              preprocessor's own averaging will differ slightly.</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="block" id="fire-weather" aria-labelledby="fire-weather-title">
-        <div class="block-head">
-          <p class="eyebrow">Section 03 · v4</p>
-          <h2 id="fire-weather-title">Fire weather</h2>
-          <p class="lede">A fuel map and terrain say where fire <em>can</em> go; the weather decides where it <em>does</em>.
-            To choose realistic wind and dryness for the simulations, and real dates to run WRF-SFIRE on, I analysed hourly
-            observations from June to October, 2000–2025, at the four airports around the park: Portland International
-            (13 km east of the park's centre), Hillsboro (15 km west), Scappoose (23 km north) and Troutdale (28 km east, at
-            the mouth of the Columbia River Gorge).</p>
-        </div>
-
-        <article class="fig wide" id="fig-wind-roses">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fire_weather_wind_roses.png" aria-label="Enlarge: wind roses">
-              <img src="img/fire_weather_wind_roses.png" width="2098" height="1286" loading="lazy" alt="Eight wind roses. Top row, grey: on ordinary fire-season hours the wind at Portland, Hillsboro and Scappoose comes mostly from the northwest or north, and at Troutdale from the east or west. Bottom row, orange: on dry and windy hours the wind at Portland, Troutdale and Hillsboro comes almost entirely from the east or east-northeast; Scappoose, with few such hours, shows mostly north winds.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 11</p>
-            <h3>Dangerous winds come from the east</h3>
-            <p>I counted an hour as <strong>dry and windy</strong> when relative humidity was 25% or lower and the wind
-              reached 15 mph, or gusts 25 mph. That's my screening threshold, not the National Weather Service's official
-              Red Flag criteria.</p>
-            <p>On an ordinary summer hour the wind at Portland International blows from the northwest. On dry and windy
-              hours, 92% blow from the northeast to southeast. This is the east wind that pours out of the Columbia River
-              Gorge when high pressure builds east of the Cascades, bringing dry inland air. Hillsboro, on the far side of the
-              park, sees the same thing (83%). Scappoose is the exception, but it logged only 46 such hours in 26 years.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-weather-months">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fire_weather_by_month.png" aria-label="Enlarge: dry and windy hours by month">
-              <img src="img/fire_weather_by_month.png" width="1620" height="792" loading="lazy" alt="Grouped bar chart of dry and windy hours per year by month at four stations. June to August stay below 2 hours a year; September and October rise to 6 to 8 hours at Portland and Troutdale and about 3 at Hillsboro. Scappoose stays below 1 hour all season.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 12</p>
-            <h3>Late summer, not midsummer</h3>
-            <p>Portland International averages about 17 dry and windy hours a year, and 76% fall in September or October.
-              July is hot but rarely windy enough. The danger window is the end of the dry season, when fuels have had all
-              summer to dry and the first east-wind events of autumn arrive before the rains.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-labor-day">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fire_weather_labor_day_2020.png" aria-label="Enlarge: Labor Day 2020 event">
-              <img src="img/fire_weather_labor_day_2020.png" width="1700" height="1258" loading="lazy" alt="Three stacked time series, September 6 to 10, 2020, at Portland International and Troutdale. On the afternoon of September 7 the wind jumps from under 10 to about 30 mph with gusts near 50 mph, relative humidity falls from 80% to under 20%, and estimated fine-fuel moisture drops to about 4%, reaching 2% on September 9.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 13</p>
-            <h3>The case study: Labor Day 2020</h3>
-            <p>The same east wind drove the 2020 Labor Day fires in the Oregon Cascades. At Portland International it
-              lasted from the afternoon of 7 September to the evening of the 9th: 44 dry and windy hours, sustained winds to
-              36 mph, gusts to 50 mph and humidity down to 8%.</p>
-            <p>The bottom panel estimates the moisture of fine dead fuel (twigs, grass, needles) from temperature and
-              humidity. It fell from 16% to about 4% within a day and reached 2% on the 9th. Fuels that dry burn readily.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-wind-slope">
-          <figure>
-            <button type="button" class="zoom" data-full="img/fire_weather_wind_slope.png" aria-label="Enlarge: wind and slope alignment">
-              <img src="img/fire_weather_wind_slope.png" width="2014" height="1138" loading="lazy" alt="Two shaded-relief maps of Forest Park. Left: slopes facing an east wind are coloured orange and cover most of the river-facing hillside, 42% of the park's slopes of 10 degrees or more. Right: slopes facing a northwest wind are coloured blue, mostly the northwest sides of the ravines, 28%.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 14</p>
-            <h3>Where wind and slope work together</h3>
-            <p>Fire spreads fastest when wind and slope push the same way. Coloured cells are slopes of 10° or more that face
-              into the wind, so the wind drives fire straight uphill there.</p>
-            <p>An <strong>east wind</strong> lines up with 42% of the park's slopes: the river-facing hillside, from Linnton
-              and Highway 30 up to the ridge. Over the ridge, a fire would be heading for the homes along Skyline Boulevard
-              and the Washington County side. The usual <strong>northwest wind</strong> lines up with 28% and pushes fire
-              along the park's length, toward its southeast end in NW Portland.</p>
-          </div>
-        </article>
-
-        <div class="two-col">
-          <div class="prose">
-            <h3>Two scenarios for the simulations</h3>
-            <p>From Portland International. Dry-side numbers are the driest 10% of hours in each scenario.</p>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th scope="col"></th><th scope="col" class="r">East wind</th><th scope="col" class="r">NW afternoon</th></tr></thead>
-                <tbody>
-                  <tr><td>Hours (2000–2025)</td><td class="r">399</td><td class="r">6,438</td></tr>
-                  <tr><td>Mean direction</td><td class="r">84°</td><td class="r">317°</td></tr>
-                  <tr><td>Wind, median</td><td class="r">20 mph</td><td class="r">9 mph</td></tr>
-                  <tr><td>Wind, 90th percentile</td><td class="r">28 mph</td><td class="r">14 mph</td></tr>
-                  <tr><td>Gusts, median (when reported)</td><td class="r">30 mph</td><td class="r">20 mph</td></tr>
-                  <tr><td>Humidity, median / driest 10%</td><td class="r">19% / 14%</td><td class="r">39% / 27%</td></tr>
-                  <tr><td>Fine-fuel moisture, median / driest 10%</td><td class="r">4.3% / 3.2%</td><td class="r">7.3% / 5.1%</td></tr>
-                  <tr><td>Park slopes facing the wind</td><td class="r">42%</td><td class="r">28%</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>The northwest scenario covers July–August afternoons (2–6 pm) with a northwest wind, 80% of all such
-              afternoons.</p>
-          </div>
-          <div class="prose">
-            <h3>Candidate dates for WRF-SFIRE</h3>
-            <p>The worst episodes at Portland International, ranked by the Fosberg Fire Weather Index. WRF-SFIRE needs
-              weather-model data to start from: the 3 km HRRR exists from August 2014, while older events need coarser
-              reanalysis.</p>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th scope="col">Episode</th><th scope="col" class="r">Hours</th><th scope="col" class="r">Gusts</th><th scope="col" class="r">Min RH</th><th scope="col">HRRR</th></tr></thead>
-                <tbody>
-                  <tr><td>30 Oct 2002</td><td class="r">11</td><td class="r">48 mph</td><td class="r">15%</td><td>No</td></tr>
-                  <tr><td>7–9 Sep 2020</td><td class="r">44</td><td class="r">50 mph</td><td class="r">8%</td><td>Yes</td></tr>
-                  <tr><td>4 Oct 2001</td><td class="r">12</td><td class="r">38 mph</td><td class="r">14%</td><td>No</td></tr>
-                  <tr><td>9 Sep 2022</td><td class="r">14</td><td class="r">40 mph</td><td class="r">13%</td><td>Yes</td></tr>
-                  <tr><td>11 Sep 2014</td><td class="r">10</td><td class="r">41 mph</td><td class="r">17%</td><td>Yes</td></tr>
-                  <tr><td>6 Oct 2012</td><td class="r">8</td><td class="r">35 mph</td><td class="r">11%</td><td>No</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>Labor Day 2020 is the first case: the longest and driest episode, recorded at all four airports, with HRRR
-              data available.</p>
-          </div>
-        </div>
-
-        <div class="prose limits">
-          <h3>Limitations</h3>
-          <ul>
-            <li><strong>Airports, not the park.</strong> The stations are 13–28 km away on open, flat ground. Inside the
-              park, terrain channels the wind and the forest floor stays moister than air-based estimates suggest. WRF-SFIRE
-              will resolve the local wind; the fuel moisture still needs care.</li>
-            <li><strong>Dead fuel only.</strong> The moisture estimate covers fine dead fuel from that hour's temperature and
-              humidity. It ignores rain in the days before (common before October events) and the moisture of living plants.</li>
-            <li><strong>Hours, not fires.</strong> A dry, windy hour is an opportunity, not a prediction. Ignition is a separate
-              question.</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="block" id="fire-spread" aria-labelledby="fire-spread-title">
-        <div class="block-head">
-          <p class="eyebrow">Section 04 · new in v5 · prototype</p>
-          <h2 id="fire-spread-title">Fire-spread simulations</h2>
-          <p class="lede">Before running the full WRF-SFIRE model, I built a fast fire-spread model to see what the fuel
-            map, terrain and weather add up to. It uses the same spread equations (Rothermel's) and the same 13 fuel types
-            as WRF-SFIRE, but holds the wind steady instead of simulating the atmosphere. That makes each fire take a
-            fraction of a second, so I could start 2,000 random fires inside Forest Park for each of the two wind
-            scenarios from <a href="#fire-weather">Section 03</a> and let each burn for 8 hours.</p>
-        </div>
-
-        <article class="fig wide" id="fig-burn-probability">
-          <figure>
-            <button type="button" class="zoom" data-full="img/spread_burn_probability.png" aria-label="Enlarge: burn probability">
-              <img src="img/spread_burn_probability.png" width="1998" height="1201" loading="lazy" alt="Two maps of Forest Park on shaded relief, coloured by how many of 1,000 simulated fires reach each cell. Left, east wind: darker orange throughout the park, highest on the east-facing ravine slopes, with fire spilling out of the park's west and northwest edges. Right, northwest wind: lighter colours, mostly inside the park.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 15</p>
-            <h3>Burn probability</h3>
-            <p>Each cell shows how many of every 1,000 fires started in the park reach it within 8 hours. Single fires
-              are small compared with the park (the median east-wind fire covers 11 ha), so no cell burns often. The map
-              shows <em>where</em> fire tends to go.</p>
-            <p>In the <strong>east wind</strong>, fires run uphill and west across the ravines and spill over the park's west
-              edge toward the Skyline side. In the <strong>northwest wind</strong> they stay small (median 3 ha) and mostly
-              inside the park.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-ignition-danger">
-          <figure>
-            <button type="button" class="zoom" data-full="img/spread_ignition_danger.png" aria-label="Enlarge: ignition danger">
-              <img src="img/spread_ignition_danger.png" width="2015" height="1200" loading="lazy" alt="Two maps with one dot per simulated ignition. Ignitions deep in the park reach no buildings. Ignitions near the park's edges, especially its west edge and northwest end in the east wind and the southeast end in both winds, reach 10 to 70 buildings.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 16</p>
-            <h3>Where a fire start matters</h3>
-            <p>The reverse view: each dot is a simulated ignition, coloured by how many buildings its fire reached (fire
-              within about 30 m of the footprint).</p>
-            <p>Fires that start deep in the park rarely get out within 8 hours: litter under the forest canopy burns
-              slowly, about 25 m an hour. The dangerous starts are within a few hundred metres of the edge. In an east wind
-              those are the west edge and the northwest end; in both winds, the southeast end, where the park meets the
-              hillside streets of NW Portland.</p>
-          </div>
-        </article>
-
-        <article class="fig wide" id="fig-example-fire">
-          <figure>
-            <button type="button" class="zoom" data-full="img/spread_example_fire.png" aria-label="Enlarge: example fire">
-              <img src="img/spread_example_fire.png" width="2097" height="1139" loading="lazy" alt="Two zoomed maps of the same ignition point at the park's southeast end over the faded fuel map, with shaded areas the fire reaches within 1, 2, 4 and 8 hours. With the east wind the fire spreads about 800 metres west, 26 hectares; with the northwest wind it covers 3 hectares.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 17</p>
-            <h3>One fire, two winds</h3>
-            <p>The east-wind fire that reached the most buildings, re-run under both winds. The east wind stretches it
-              about 800 m west through the forest in 8 hours (26 ha). With the northwest wind the same start burns 3 ha.</p>
-            <p>Roads and buildings stop the fire in this model, so it moves through the city only along unbroken
-              vegetation. Real fires also jump gaps with embers, so treat the city spread here as a minimum.</p>
-          </div>
-        </article>
-
-        <article class="fig" id="fig-validation">
-          <figure>
-            <button type="button" class="zoom" data-full="img/spread_validation.png" aria-label="Enlarge: validation">
-              <img src="img/spread_validation.png" width="1620" height="756" loading="lazy" alt="Dot plot comparing this model's rate of spread to Anderson's 1982 published values for 13 fuel models. Most pairs nearly overlap; model 5 is about 20% slower and model 7 about 30% faster.">
-            </button>
-          </figure>
-          <div class="fig-notes">
-            <p class="fig-num">Figure 18</p>
-            <h3>Checking the spread model</h3>
-            <p>Before trusting the maps, I checked my implementation against the spread rates Anderson (1982)
-              published for the 13 fuel models. It matches within 10% for 11 of them. Two shrub models are further off:
-              model 5 (−19%, 4% of the map) and model 7 (+30%, not on the map).</p>
-          </div>
-        </article>
-
-        <div class="two-col">
-          <div class="prose">
-            <h3>Results</h3>
-            <p>2,000 fires per scenario, 8 hours each.</p>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th scope="col"></th><th scope="col" class="r">East wind</th><th scope="col" class="r">NW afternoon</th></tr></thead>
-                <tbody>
-                  <tr><td>Fires that leave the park</td><td class="r">37%</td><td class="r">17%</td></tr>
-                  <tr><td>Fires that reach buildings</td><td class="r">29%</td><td class="r">13%</td></tr>
-                  <tr><td>Buildings reached, average per fire</td><td class="r">3.0</td><td class="r">1.0</td></tr>
-                  <tr><td>Most buildings, single fire</td><td class="r">71</td><td class="r">55</td></tr>
-                  <tr><td>Area burned, median / 90th percentile</td><td class="r">11 / 22 ha</td><td class="r">3 / 7 ha</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="prose">
-            <h3>How it works</h3>
-            <ul>
-              <li><strong>Spread rate</strong>: Rothermel's equations give each 30 m cell a head-fire speed from its fuel
-                type, its slope, the wind and the fuel moisture of the scenario.</li>
-              <li><strong>Shape</strong>: fire spreads fastest downwind and upslope and slower to the sides and back,
-                as an ellipse that stretches with wind speed.</li>
-              <li><strong>Path</strong>: arrival time at every cell is the fastest route from the ignition through the
-                grid, in 16 directions. Roads, buildings and water can't be crossed, even diagonally.</li>
-              <li><strong>Shelter</strong>: wind at flame height is reduced under tree canopy.</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="prose limits">
-          <h3>Limitations</h3>
-          <ul>
-            <li><strong>Steady, uniform wind.</strong> One wind speed and direction everywhere, for 8 hours. In reality the
-              terrain channels the wind and the fire makes its own. That is what WRF-SFIRE adds.</li>
-            <li><strong>No embers, no house-to-house spread, no crown fire.</strong> These drive most home losses in
-              wildland–urban fires, so building counts here are a lower bound on exposure, not a loss estimate.</li>
-            <li><strong>No firefighting.</strong> Fires near the park's edges are usually reached quickly.</li>
-            <li><strong>Uncalibrated city fuels.</strong> The stand-in fuels for yards and street trees from
-              <a href="#fuel-maps">Section 01</a> are assumptions; the city results depend on them.</li>
-          </ul>
-        </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
+      <p>Data: LANDFIRE LF2025 fuel models FBFM40 and FBFM13 (U.S. Forest Service / USGS); National Land Cover Database
       2021 land cover, imperviousness, impervious descriptor (roads) and tree canopy (MRLC); USGS 3DEP 1/3 and 1 arc-second
       elevation; hourly airport observations (ASOS) via the Iowa Environmental Mesonet; City of Portland Open Data building footprints and park
-      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.
+      boundary. Fuel models: Scott &amp; Burgan (2005), Anderson (1982). Spread model: Rothermel (1972), Albini (1976), Anderson (1983). Maps and analysis by Acamaro Cutcher.</p>
+      <p class="photo-credits">Photos of Forest Park: <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(2013-09-09_15.01.47_by_Jon_Roberts).jpg">“Forest Park, Portland, Oregon (2013-09-09 15.01.47 by Jon Roberts)”</a> by Jon Roberts from Austin TX, USA, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Forest_park_wildwood_trail_lazy_bend_P3861.jpeg">“Forest park wildwood trail lazy bend P3861”</a> by EncMstr, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Forest_Park,_Portland,_Oregon_(24012149446).jpg">“Forest Park, Portland, Oregon (24012149446)”</a> by Tony Webster from Half Moon Bay, California, <a href="https://creativecommons.org/licenses/by-sa/2.0" rel="license">CC BY-SA 2.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:Leif_Erikson_Drive,_Forest_Park,_Portland_Oregon_01.jpg">“Leif Erikson Drive, Forest Park, Portland Oregon 01”</a> by Joe Mabel, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons (resized); <a href="https://commons.wikimedia.org/wiki/File:View_from_Leif_Erikson_Drive,_Forest_Park,_Portland_Oregon_02.jpg">“View from Leif Erikson Drive, Forest Park, Portland Oregon 02”</a> by Joe Mabel, <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license">CC BY-SA 3.0</a>, via Wikimedia Commons (resized). The canopy photo is the page background.</p>
     </footer>
   </div>
 
-  <dialog id="viewer" aria-labelledby="viewer-title">
-    <div class="viewer-bar">
-      <span id="viewer-title"></span>
-      <button type="button" id="viewer-close">Close</button>
-    </div>
-    <img id="viewer-img" alt="">
-  </dialog>
-
-  <script src="app.js"></script>
+  <script>
+  /* Old single-page links (index.html#fire-spread, #fig-roads ...) go to the new pages. */
+  (function () {
+    var h = location.hash.slice(1); if (!h) return;
+    var map = {"fuel-maps": "fuel-maps", "terrain": "terrain", "fire-weather": "fire-weather", "fire-spread": "fire-spread", "fig-fuel-map": "fuel-maps", "fig-before-after": "fuel-maps", "fig-reassigned": "fuel-maps", "fig-roads": "fuel-maps", "fig-families": "fuel-maps", "fig-inputs": "fuel-maps", "fig-anderson": "fuel-maps", "fig-terrain": "terrain", "fig-domains": "terrain", "fig-ridge": "terrain", "fig-wind-roses": "fire-weather", "fig-weather-months": "fire-weather", "fig-labor-day": "fire-weather", "fig-wind-slope": "fire-weather", "fig-burn-probability": "fire-spread", "fig-ignition-danger": "fire-spread", "fig-example-fire": "fire-spread", "fig-validation": "fire-spread"};
+    if (map[h]) location.replace(map[h] + '/index.html' + (h.indexOf('fig-') === 0 ? '#' + h : ''));
+  })();
+  </script>
+  <script src="fx.js"></script>
+  <script src="fire-map.js"></script>
 </body>
 </html>
