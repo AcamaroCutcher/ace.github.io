@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Forest Park Wildfires, section 02: Fuel maps. A 30 m wildland–urban fuel map: LANDFIRE fuels in the park, stand-in fuels for the city, roads and buildings.">
+  <meta name="description" content="Forest Park Wildfires, section 02: Fuel maps. A 30 m wildland–urban fuel map: LANDFIRE fuels in the park, stand-in fuels for the city, roads, buildings and land use, plus the canopy layers.">
   <meta name="author" content="Acamaro Cutcher">
   <link rel="icon" href="data:,">
   <title>Fuel maps · Forest Park Wildfires - Acamaro Cutcher</title>
@@ -55,8 +55,8 @@
         </div>
 
         <ul class="reveal stats" aria-label="Summary figures">
-          <li><strong>13,007 → 20,633 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
-          <li><strong>7,631 ha</strong><span>City cells given stand-in fuels</span></li>
+          <li><strong>13,007 → 20,373 ha</strong><span>Burnable area: LANDFIRE as published → adjusted map</span></li>
+          <li><strong>7,057 ha</strong><span>City cells given stand-in fuels</span></li>
           <li><strong>2,551 ha</strong><span>Open road cells made firebreaks</span></li>
           <li><strong>142,596</strong><span>Building footprints mapped at 3 m</span></li>
         </ul>
@@ -64,7 +64,7 @@
         <article class="reveal fig" id="fig-fuel-map">
           <figure>
             <button type="button" class="zoom" data-full="../img/fuel_map_wui.png" aria-label="Enlarge: the combined fuel map">
-              <img src="../img/fuel_map_wui.png" width="1922" height="1525" alt="Fuel map of Forest Park and surrounding Portland, colored by fuel group: grass, shrub and timber-understory, timber litter, pavement, structures and water.">
+              <img src="../img/fuel_map_wui.png" width="1925" height="1518" alt="Fuel map of Forest Park and surrounding Portland, colored by fuel group: grass, shrub and timber-understory, timber litter, pavement, structures and water.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -85,7 +85,7 @@
         <article class="reveal fig wide" id="fig-before-after">
           <figure>
             <button type="button" class="zoom" data-full="../img/fuel_map_before_after.png" aria-label="Enlarge: before and after">
-              <img src="../img/fuel_map_before_after.png" width="1791" height="1068" loading="lazy" alt="Two maps side by side. Left: LANDFIRE as published, where most of the city is non-burnable. Right: the adjusted map with fuels in urban areas.">
+              <img src="../img/fuel_map_before_after.png" width="1791" height="1064" loading="lazy" alt="Two maps side by side. Left: LANDFIRE as published, where most of the city is non-burnable. Right: the adjusted map with fuels in urban areas.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -99,7 +99,7 @@
         <article class="reveal fig" id="fig-reassigned">
           <figure>
             <button type="button" class="zoom" data-full="../img/urban_reassignment.png" aria-label="Enlarge: cells changed by the urban rules">
-              <img src="../img/urban_reassignment.png" width="1790" height="1423" loading="lazy" alt="Map highlighting only the cells changed by the urban fuel rules, colored by new fuel group; all other cells are grey.">
+              <img src="../img/urban_reassignment.png" width="1787" height="1407" loading="lazy" alt="Map highlighting only the cells changed by the urban fuel rules, colored by new fuel group; all other cells are grey.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -110,7 +110,7 @@
               <li>Green lines in the rural west are roads under tree canopy, which keep timber litter. Open, paved
                 road cells are firebreaks since v2 (Figure 4).</li>
               <li>A few yellow lines remain where roads are less than 30% paved, such as gravel roads.</li>
-              <li>Industrial land with little canopy, in Rivergate and the NW industrial district, also became grass.</li>
+              <li>In v2, industrial land with little canopy, in Rivergate and the NW industrial district, also became grass. Version 3 removes that fuel (Figure 8).</li>
               <li>Dark grey blocks are cells that are mostly buildings.</li>
             </ul>
           </div>
@@ -142,14 +142,13 @@
         <article class="reveal fig wide" id="fig-families">
           <figure>
             <button type="button" class="zoom" data-full="../img/fuel_families_small_multiples.png" aria-label="Enlarge: fuel-model families">
-              <img src="../img/fuel_families_small_multiples.png" width="1889" height="1358" loading="lazy" alt="Six small maps, one per fuel-model family (grass, grass-shrub, shrub, timber-understory, timber litter, slash-blowdown), each showing where that family occurs.">
+              <img src="../img/fuel_families_small_multiples.png" width="1895" height="1358" loading="lazy" alt="Six small maps, one per fuel-model family (grass, grass-shrub, shrub, timber-understory, timber litter, slash-blowdown), each showing where that family occurs.">
             </button>
           </figure>
           <div class="fig-notes">
             <p class="fig-num">Figure 5</p>
             <h3>Fuel-model families</h3>
-            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Timber litter (39%),
-              grass (31%) and timber-understory (26%) make up most of the burnable area, with grass-shrub at 4%.
+            <p>One panel per Scott &amp; Burgan family shows the detail behind the three map colors. Timber litter (40%), grass (30%) and timber-understory (26%) make up most of the burnable area, with grass-shrub at 4%.
               Shrub and slash fuels are almost absent.</p>
           </div>
         </article>
@@ -157,7 +156,7 @@
         <article class="reveal fig wide" id="fig-inputs">
           <figure>
             <button type="button" class="zoom" data-full="../img/inputs_impervious_canopy_buildings.png" aria-label="Enlarge: rule inputs">
-              <img src="../img/inputs_impervious_canopy_buildings.png" width="2415" height="978" loading="lazy" alt="Three maps: NLCD 2021 imperviousness, NLCD 2021 tree canopy, and building footprint cover per 30 m cell.">
+              <img src="../img/inputs_impervious_canopy_buildings.png" width="2411" height="978" loading="lazy" alt="Three maps: NLCD 2021 imperviousness, NLCD 2021 tree canopy, and building footprint cover per 30 m cell.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -172,7 +171,7 @@
         <article class="reveal fig" id="fig-anderson">
           <figure>
             <button type="button" class="zoom" data-full="../img/anderson13_area.png" aria-label="Enlarge: WRF-SFIRE fuel categories">
-              <img src="../img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 17,901 ha; closed timber litter 7,839; short grass 3,724; hardwood litter 3,094; timber grass and understory 3,069; timber litter and understory 2,009; brush 898.">
+              <img src="../img/anderson13_area.png" width="1350" height="763" loading="lazy" alt="Bar chart of area by Anderson 13 fuel category: no fuel 18,161 ha; closed timber litter 7,811; short grass 3,543; hardwood litter 3,094; timber grass and understory 3,024; timber litter and understory 2,009; brush 893.">
             </button>
           </figure>
           <div class="fig-notes">
@@ -184,10 +183,95 @@
           </div>
         </article>
 
+
+        <div class="reveal prose two-col" id="v3">
+          <div>
+            <h3>New in version 3: what the land is used for</h3>
+            <p>The v2 rules know how much of a cell is paved and how much is under trees, but not what the rest of the
+              cell is. In a rail yard or a container terminal the rest is gravel and steel, and v2 called it grass.
+              Version 3 adds <strong>land use from OpenStreetMap</strong> and the <strong>NLCD land-cover class</strong>
+              to correct four things, all outside the park.</p>
+          </div>
+          <div>
+            <h3>The four corrections</h3>
+            <ul>
+              <li><strong>Industrial, commercial and parking land</strong> with under 40% canopy loses its stand-in fuel.</li>
+              <li><strong>Irrigated turf</strong> (golf courses, sports fields, cemeteries) is capped at the sparsest grass model.</li>
+              <li><strong>Pasture and hay</strong>, which LANDFIRE treats as non-burnable farmland, gets short grass.</li>
+              <li><strong>Islands</strong> of one or two stand-in cells that no surface fire can reach are removed.</li>
+            </ul>
+          </div>
+        </div>
+
+        <ul class="reveal stats" aria-label="Version 3 changes">
+          <li><strong>284 ha</strong><span>Industrial and commercial land no longer burnable</span></li>
+          <li><strong>215 ha</strong><span>Unreachable fuel islands removed</span></li>
+          <li><strong>239 ha</strong><span>Pasture given a grass fuel</span></li>
+          <li><strong>106 ha</strong><span>Irrigated turf set to sparse grass</span></li>
+        </ul>
+
+        <article class="reveal fig" id="fig-v3-changes">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/fuel_map_v3_changes.png" aria-label="Enlarge: what version 3 changed">
+              <img src="../img/fuel_map_v3_changes.png" width="2084" height="1518" loading="lazy" alt="Map of the study area with only the cells changed in version 3 colored: orange for industrial and commercial land that lost its fuel, mostly along the Willamette and in the Tualatin Valley; dark grey for small removed islands across the street grid; green for golf courses and sports fields; yellow for pasture in the west and on Sauvie Island. Nothing inside Forest Park changed.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 8 · new in v3</p>
+            <h3>What version 3 changed</h3>
+            <p>Only the changed cells are colored.</p>
+            <ul>
+              <li><strong>Orange:</strong> stand-in grass removed from the industrial waterfront (Rivergate, the NW
+                industrial district, Swan Island) and from business parks in the Tualatin Valley.</li>
+              <li><strong>Yellow:</strong> pasture in the west hills and on Sauvie Island, now short grass.</li>
+              <li><strong>Green:</strong> golf courses and playing fields, now the sparsest grass.</li>
+              <li><strong>Dark grey:</strong> single cells of yard fuel scattered through the street grid.</li>
+              <li>Nothing inside the park boundary changed: LANDFIRE is still used there as published.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="reveal fig wide" id="fig-canopy">
+          <figure>
+            <button type="button" class="zoom" data-full="../img/canopy_height_base.png" aria-label="Enlarge: canopy height and canopy base height">
+              <img src="../img/canopy_height_base.png" width="1931" height="938" loading="lazy" alt="Two maps. Left: canopy height, tallest (25 to 39 metres) in Forest Park and the West Hills. Right: canopy base height, mostly 2 to 4 metres in the park.">
+            </button>
+          </figure>
+          <div class="fig-notes">
+            <p class="fig-num">Figure 9 · new in v3</p>
+            <h3>The canopy above the surface fuels</h3>
+            <p>A surface fuel map says nothing about the trees overhead. Version 3 adds LANDFIRE's four canopy layers
+              on the same 30 m grid: height, cover, base height and bulk density. Inside the park the canopy averages
+              25 m tall with 64% cover, and its base sits a median 2 m above the ground, low enough for a hot
+              surface fire to reach. WRF-SFIRE's default fire model does not use these layers. The
+              <a href="../fire-3d/index.html">3-D simulator</a> uses them to draw the forest and for its optional
+              crown-fire test.</p>
+          </div>
+        </article>
+
+        <div class="reveal prose" id="v3-effect">
+          <h3>Did it change the answer?</h3>
+          <p>I re-ran the 4,000 fires of <a href="../fire-spread/index.html">Section 05</a> on the new map. The results
+            moved by a tenth of a percentage point: the corrections are far from the park, on land a park fire rarely
+            reaches in eight hours. The fire-spread results therefore stand, and they no longer depend on grass that
+            was never there.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th scope="col">Scenario (v2 → v3)</th><th scope="col" class="r">Fires leaving the park</th><th scope="col" class="r">Fires reaching buildings</th><th scope="col" class="r">Buildings exposed per fire</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>East wind, 20 mph</td><td class="r">37.3 → 37.2%</td><td class="r">29.4 → 29.3%</td><td class="r">2.9 → 2.8</td></tr>
+                <tr><td>Northwest afternoon, 9 mph</td><td class="r">17.0 → 16.9%</td><td class="r">13.0 → 13.0%</td><td class="r">1.0 → 0.9</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="reveal two-col">
           <div class="prose">
             <h3>How city cells were assigned</h3>
-            <p>Each developed cell outside the park takes the first rule it matches. Road cells are checked first (v2).</p>
+            <p>Each developed cell outside the park takes the first rule it matches. Road cells are checked first (v2). The four land-use corrections of version 3 are applied afterwards. Areas are those of the final map.</p>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -196,12 +280,16 @@
                 <tbody>
                   <tr><td colspan="3">Open road cell (freeway, or ≥ 30% paved with &lt; 40% canopy) → non-burnable</td><td class="r">2,550.9</td></tr>
                   <tr><td>≥ 60%</td><td>any</td><td>Non-burnable (NB1)</td><td class="r">9,988.2</td></tr>
-                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,981.7</td></tr>
-                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">3,083.2</td></tr>
-                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">983.0</td></tr>
-                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">941.4</td></tr>
-                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">641.2</td></tr>
+                  <tr><td>30–60%</td><td>≥ 40%</td><td>Low-load conifer litter (TL1)</td><td class="r">1,954.8</td></tr>
+                  <tr><td>30–60%</td><td>&lt; 40%</td><td>Short sparse grass (GR1)</td><td class="r">2,673.4</td></tr>
+                  <tr><td>&lt; 30%</td><td>≥ 50%</td><td>Moderate conifer litter (TL3)</td><td class="r">982.7</td></tr>
+                  <tr><td>&lt; 30%</td><td>20–50%</td><td>Timber-grass-shrub (TU1)</td><td class="r">921.2</td></tr>
+                  <tr><td>&lt; 30%</td><td>&lt; 20%</td><td>Low-load grass (GR2)</td><td class="r">524.6</td></tr>
                   <tr><td colspan="3">Building cover ≥ 50% → non-burnable</td><td class="r">1,463.3</td></tr>
+                  <tr><td colspan="3">v3 · Stand-in fuel inside industrial, commercial or parking land use, canopy &lt; 40% → non-burnable</td><td class="r">283.7</td></tr>
+                  <tr><td colspan="3">v3 · Grass on irrigated turf (golf, sports fields, cemeteries), canopy &lt; 20% → short sparse grass (GR1)</td><td class="r">105.9</td></tr>
+                  <tr><td colspan="3">v3 · Pasture and hay that LANDFIRE codes as non-burnable agriculture → short sparse grass (GR1)</td><td class="r">238.9</td></tr>
+                  <tr><td colspan="3">v3 · Stand-in islands of one or two cells with no burnable neighbor → non-burnable</td><td class="r">215.0</td></tr>
                 </tbody>
               </table>
             </div>
@@ -214,6 +302,10 @@
               <li><strong>Roads as firebreaks are an assumption.</strong> A paved road stops a surface fire, but
                 wind-driven fires throw embers across roads, which this map can't represent.</li>
               <li><strong>Gravel and narrow roads</strong> (under 30% paved) still follow the yard rules.</li>
+              <li><strong>Land use is volunteered data.</strong> OpenStreetMap polygons are drawn by hand and are
+                uneven: a yard that nobody has mapped as industrial keeps its v2 fuel.</li>
+              <li><strong>Pasture is assumed cured.</strong> Giving hay and pasture a grass fuel fits September and
+                October. Irrigated or freshly cut fields would not burn.</li>
               <li><strong>Surface fuels only.</strong> WRF-SFIRE spreads fire through vegetation. It doesn't model
                 houses igniting each other or embers, which cause most home losses in urban fires.</li>
             </ul>

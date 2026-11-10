@@ -177,6 +177,70 @@
     });
   }
 
-  function boot() { init(); slideshow(); printButton(); copyButtons(); }
+  /* Motion added in v8. All of it is skipped under prefers-reduced-motion. */
+  function motion() {
+    if (reduce) return;
+
+    // 1. reading-progress bar along the top edge
+    var bar = document.createElement('div');
+    bar.className = 'read-progress'; bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+    var banner = document.querySelector('.banner'), inner = banner && banner.querySelector('.banner-inner'), ticking = false;
+    function onScroll() {
+      ticking = false;
+      var y = window.scrollY, max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
+      // 2. the banner text sinks and fades a little as the page scrolls away from it
+      if (inner && y < banner.offsetHeight + 200) {
+        var k = Math.min(1, y / Math.max(1, banner.offsetHeight));
+        inner.style.transform = 'translateY(' + (k * 46).toFixed(1) + 'px)';
+        inner.style.opacity = (1 - k * 0.75).toFixed(3);
+      }
+    }
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+    onScroll();
+
+    // 3. siblings that reveal together do so one after another
+    document.querySelectorAll('.chapters, .stats, .hero-stats, .lab-buttons').forEach(function (box) {
+      var n = 0;
+      Array.prototype.forEach.call(box.children, function (el) { el.style.setProperty('--i', Math.min(n++, 8)); });
+    });
+
+    // 4. numbers count up the first time they are seen. Text such as "13,007 → 20,373 ha" keeps its format.
+    var NUM = /\d[\d,]*(?:\.\d+)?/g;
+    function countUp(el) {
+      var text = el.textContent, targets = [], m;
+      NUM.lastIndex = 0;
+      while ((m = NUM.exec(text))) targets.push({ at: m.index, raw: m[0], v: parseFloat(m[0].replace(/,/g, '')), dec: (m[0].split('.')[1] || '').length, comma: m[0].indexOf(',') >= 0 });
+      if (!targets.length) return;
+      var t0 = performance.now(), dur = 1100;
+      el.style.minWidth = el.getBoundingClientRect().width + 'px';   // no layout shift while the digits change
+      function fmt(tg, v) { var s2 = v.toFixed(tg.dec); return tg.comma ? s2.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : s2; }
+      function tick(now) {
+        var u = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - u, 3), out = '', pos = 0;
+        targets.forEach(function (tg) { out += text.slice(pos, tg.at) + (u >= 1 ? tg.raw : fmt(tg, tg.v * e)); pos = tg.at + tg.raw.length; });
+        el.textContent = out + text.slice(pos);
+        if (u < 1) requestAnimationFrame(tick); else el.style.minWidth = '';
+      }
+      requestAnimationFrame(tick);
+    }
+    var nums = document.querySelectorAll('.stats strong, .hero-stats b');
+    if (nums.length && 'IntersectionObserver' in window) {
+      var no = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { no.unobserve(e.target); countUp(e.target); } });
+      }, { rootMargin: '0px 0px -10% 0px' });
+      nums.forEach(function (el) { no.observe(el); });
+    }
+
+    // 5. section cards: a soft light follows the pointer
+    document.querySelectorAll('a.chapter').forEach(function (card) {
+      card.addEventListener('pointermove', function (e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px'); card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
+  }
+
+  function boot() { init(); slideshow(); printButton(); copyButtons(); motion(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

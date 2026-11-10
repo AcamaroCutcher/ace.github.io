@@ -9,6 +9,11 @@
  * stepping (fire_back_weight = 0.5); fuel-free cells (roads, buildings, water) do not burn.
  * The wind is steady and uniform: this is the fire model alone, without WRF's atmosphere.
  *
+ * Rendering (v8): a natural land surface built from the fuel map, LANDFIRE canopy cover and NLCD pavement;
+ * a tree for every forested cell at its LANDFIRE canopy height; sun, sky and terrain shadows that follow the
+ * simulated clock; flames sized by Byram's flame length; buoyant smoke. An optional crown-fire add-on
+ * (Van Wagner 1977 initiation, Rothermel 1991 spread) uses LANDFIRE canopy base height and bulk density.
+ *
  * <div class="sim3d" data-sim3d data-root="../" data-preset="single|multiple|line|perimeter|free"></div>
  */
 (function () {
@@ -85,12 +90,14 @@
     '#version 300 es', 'precision highp float;', 'precision highp int;',
     'uniform sampler2D uState; uniform sampler2D uStatic; uniform ivec2 uSize; uniform float uDx;',
     'uniform vec4 uCoef[13]; uniform float uWrf[13]; uniform float uUseWrf; uniform vec2 uWind; uniform float uU;',
+    'uniform sampler2D uCan; uniform float uCrown, uFmc; uniform float uFgi[13]; float gCrown;',   // crown-fire add-on (not in SFIRE)
+    'vec4 can(ivec2 p){vec4 v=texelFetch(uCan,clamp(p,ivec2(0),uSize-1),0)*255.; return vec4(v.r/4.,v.g/100.,v.b/10.,v.a/400.);}',   // height m, cover 0-1, base height m, bulk density kg/m3
     'ivec2 cl(ivec2 p){return clamp(p,ivec2(0),uSize-1);}',
     'int fuelOf(ivec2 p){int c=int(texelFetch(uStatic,cl(p),0).a+.5);return c>=32?c-32:c;}',
     'bool ok(int f){return f>=1&&f<=13;}',
     'float psiAt(sampler2D s,ivec2 p,float pc){return ok(fuelOf(p))?texelFetch(s,cl(p),0).r:pc;}',
     'float rhs(sampler2D s,ivec2 p,out float S){',
-    '  int f=fuelOf(p); S=0.; if(!ok(f)) return 0.;',
+    '  int f=fuelOf(p); S=0.; gCrown=0.; if(!ok(f)) return 0.;',
     '  float pc=texelFetch(s,p,0).r;',
     '  float pe=psiAt(s,p+ivec2(1,0),pc), pw=psiAt(s,p-ivec2(1,0),pc);',
     '  float pn=psiAt(s,p-ivec2(0,1),pc), ps=psiAt(s,p+ivec2(0,1),pc);',
@@ -101,6 +108,13 @@
     '  float cw=U>0.?max(0.,dot(uWind,n)):0.; float cs=g>0.?max(0.,dot(gz,n)/g):0.; float tp=min(g,5.);',
     '  float umid=min(U,30.)*196.85;',
     '  S=min(6.,k.x+k.y*pow(max(umid,1e-6),k.z)*cw+k.w*tp*tp*cs);',
+    // Crown fire. Initiation (Van Wagner 1977): Byram intensity I = H w R >= I0 = (0.010 CBH (460 + 25.9 FMC))^1.5 kW/m.
+    // Active spread (Rothermel 1991): Rc = 3.34 x the rate of fuel model 10 at 40% of the open wind, if Rc >= 3.0 / CBD m/min.
+    '  if(uCrown>.5){ vec4 cn=can(p); if(cn.x>=3.&&cn.y>=.2&&cn.w>0.){',
+    '    float I=18000.*uFgi[f-1]*S, I0=pow(.010*max(cn.z,.3)*(460.+25.9*uFmc),1.5);',
+    '    if(I>=I0){ gCrown=1.; vec4 k10=uCoef[9]; float u10=min(uU*.4,30.)*196.85;',
+    '      float Rc=3.34*(k10.x+k10.y*pow(max(u10,1e-6),k10.z)*cw+k10.w*tp*tp*cs);',
+    '      if(Rc>=3./cn.w/60.){ gCrown=2.; S=min(6.,max(S,Rc)); } } } }',
     '  float gr=sqrt(pow(max(dxm,0.),2.)+pow(min(dxp,0.),2.)+pow(max(dym,0.),2.)+pow(min(dyp,0.),2.));',
     '  return S*gr;}'
   ].join('\n');
@@ -113,9 +127,9 @@
     'uniform vec4 uLine; uniform vec3 uLineP; uniform float uReplay, uTp;',      // line: ax,ay,bx,by (cells); radius, ros, t start
     'out vec4 o;',
     'void main(){ivec2 p=ivec2(gl_FragCoord.xy); vec4 s=texelFetch(uState,p,0);',
-    ' float S1,S2; float f1=rhs(uState,p,S1); float f2=rhs(uStar,p,S2);',
-    ' float psi=s.r, tg=s.g; float pn=min(psi, psi-.5*uDt*(f1+f2));',
-    ' if(psi>0.&&pn<=0.) tg=min(tg,uT0+uDt*psi/max(psi-pn,1e-6));',
+    ' float S1,S2; float f1=rhs(uState,p,S1); float c1=gCrown; float f2=rhs(uStar,p,S2);',
+    ' float psi=s.r, tg=s.g, ca=s.a; float pn=min(psi, psi-.5*uDt*(f1+f2));',
+    ' if(psi>0.&&pn<=0.){ tg=min(tg,uT0+uDt*psi/max(psi-pn,1e-6)); ca=c1; }',   // alpha: 0 surface fire, 1 torching, 2 active crown fire
     ' bool fo=ok(fuelOf(p)); vec2 x=vec2(p);',
     ' for(int k=0;k<24;k++){ if(k>=uNIgn) break; vec4 g=uIgn[k];',
     '   if(g.w>uTlo&&g.w<=uT1){ float d=length(x-g.xy)*uDx-g.z; float v=fo?d:max(d,uDx); pn=min(pn,v); if(fo&&d<=0.) tg=min(tg,g.w);} }',
@@ -124,30 +138,65 @@
     '   if(u1>u0||(uTlo<uLineP.z&&uT1>=uLineP.z)){ vec2 e=(b-a)*u1; float q=clamp(dot(x-a,e)/max(dot(e,e),1e-6),0.,1.);',
     '     float d=length(x-a-e*q)*uDx-uLineP.x; float v=fo?d:max(d,uDx); pn=min(pn,v); if(fo&&d<=0.) tg=min(tg,uLineP.z+q*u1*L/uLineP.y);} }',
     ' if(uReplay>.5&&uT1<=uTp){ float T=texelFetch(uRep,p,0).r; pn=T-uT1; tg=(T<=uT1&&fo)?T:1e9; if(!fo) pn=max(pn,uDx);}',
-    ' o=vec4(pn,tg,S1,s.a);}'
+    ' o=vec4(pn,tg,S1,ca);}'
   ].join('\n');
   var REDUCE = [
     '#version 300 es', 'precision highp float;', 'uniform sampler2D uState; uniform sampler2D uStatic; uniform ivec2 uSize; uniform float uT; out vec4 o;',
-    'void main(){ivec2 b=ivec2(gl_FragCoord.xy)*4; float burning=0., burned=0., outside=0.;',
+    'void main(){ivec2 b=ivec2(gl_FragCoord.xy)*4; float burning=0., burned=0., outside=0., crown=0.;',
     ' for(int j=0;j<4;j++) for(int i=0;i<4;i++){ ivec2 p=min(b+ivec2(i,j),uSize-1); vec4 s=texelFetch(uState,p,0);',
-    '  if(s.r<=0.){ burned+=1.; if(uT-s.g<900.) burning+=1.; int c=int(texelFetch(uStatic,p,0).a+.5); if(c<32) outside+=1.; } }',
-    ' o=vec4(burning,burned,outside,16.)/16.;}'
+    '  if(s.r<=0.){ burned+=1.; if(uT-s.g<900.) burning+=1.; if(s.a>1.5) crown+=1.; int c=int(texelFetch(uStatic,p,0).a+.5); if(c<32) outside+=1.; } }',
+    ' o=vec4(burning,burned,outside,crown)/16.;}'
+  ].join('\n');
+  var NOISE = [
+    'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+    'float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}'
+  ].join('\n');
+  // sky: a gradient from zenith to horizon, the sun (or moon) and stars, from the view ray of each pixel
+  var SKY_VS = '#version 300 es\nin vec2 p; out vec2 vP; void main(){vP=p; gl_Position=vec4(p,1.,1.);}';
+  var SKY_FS = [
+    '#version 300 es', 'precision highp float;', 'in vec2 vP; uniform mat4 uInv; uniform vec3 uEye, uSun, uSunCol, uZen, uHor; uniform float uNight; out vec4 o;', NOISE,
+    'void main(){ vec4 a=uInv*vec4(vP,1.,1.); vec3 d=normalize(a.xyz/a.w-uEye);',
+    ' vec3 c=mix(uZen,uHor,pow(1.-clamp(d.y,0.,1.),3.)); if(d.y<0.) c=mix(uHor,uHor*.32+uZen*.22,smoothstep(0.,-.22,d.y));',   // below the horizon: distant haze, not sky
+    ' float sd=max(dot(d,uSun),0.); c+=uSunCol*(pow(sd,900.)*2.+pow(sd,14.)*.16)*step(0.,d.y+.02);',
+    ' if(uNight>.5&&d.y>0.){ vec2 q=floor(d.xz/(d.y+.25)*260.); c+=vec3(step(.9978,hash(q)))*.75*clamp(d.y*5.,0.,1.); }',
+    ' o=vec4(c,1.);}'
   ].join('\n');
   var TERRAIN_VS = [
     '#version 300 es', 'precision highp float;', 'in vec2 aCell; uniform sampler2D uStatic; uniform mat4 uMVP; uniform float uExag, uDx; uniform vec2 uOrigin;',
-    'out vec2 vCell; out vec3 vN; out float vDepth;',
+    'out vec2 vCell; out vec3 vN; out vec3 vW; out float vDepth;',
     'void main(){ ivec2 c=ivec2(aCell); vec4 st=texelFetch(uStatic,c,0);',
-    ' vec3 w=vec3(aCell.x*uDx-uOrigin.x, st.r*uExag, aCell.y*uDx-uOrigin.y);',
-    ' vN=normalize(vec3(-st.g*uExag,1.,st.b*uExag)); vCell=aCell; gl_Position=uMVP*vec4(w,1.); vDepth=gl_Position.w; }'
+    ' vW=vec3(aCell.x*uDx-uOrigin.x, st.r*uExag, aCell.y*uDx-uOrigin.y);',
+    ' vN=normalize(vec3(-st.g*uExag,1.,st.b*uExag)); vCell=aCell; gl_Position=uMVP*vec4(vW,1.); vDepth=gl_Position.w; }'
   ].join('\n');
   var TERRAIN_FS = [
     '#version 300 es', 'precision highp float;',
-    'in vec2 vCell; in vec3 vN; in float vDepth; uniform sampler2D uState; uniform sampler2D uStatic; uniform sampler2D uAlbedo;',
-    'uniform ivec2 uSize; uniform float uT, uTime, uDark; uniform float uTf[14]; uniform vec3 uFog; out vec4 o;',
-    'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
-    'float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}',
+    'in vec2 vCell; in vec3 vN; in vec3 vW; in float vDepth;',
+    'uniform sampler2D uState; uniform sampler2D uStatic; uniform sampler2D uAlbedo; uniform sampler2D uCan; uniform sampler2D uSurf;',
+    'uniform ivec2 uSize; uniform float uT, uTime, uNight, uView, uExag, uDx; uniform float uTf[14];',
+    'uniform vec3 uFog, uSun, uSunCol, uAmb, uEye; out vec4 o;', NOISE,
     'vec4 st(ivec2 p){return texelFetch(uState,clamp(p,ivec2(0),uSize-1),0);}',
     'float park(ivec2 p){return texelFetch(uStatic,clamp(p,ivec2(0),uSize-1),0).a>=31.5?1.:0.;}',
+    'float hc(ivec2 p){return texelFetch(uStatic,clamp(p,ivec2(0),uSize-1),0).r;}',
+    'float hAt(vec2 c){ ivec2 i=ivec2(floor(c)); vec2 f=c-vec2(i); return mix(mix(hc(i),hc(i+ivec2(1,0)),f.x),mix(hc(i+ivec2(0,1)),hc(i+ivec2(1,1)),f.x),f.y); }',
+    // natural land surface: the fuel class, canopy cover and paved share of each cell, with noise so 30 m cells do not show
+    'vec3 natural(vec2 g, out float wat){',
+    ' vec2 gj=g+(vec2(noise(g*1.9),noise(g*1.9+7.3))-.5)*1.15;',
+    ' ivec2 c=clamp(ivec2(floor(gj+.5)),ivec2(0),uSize-1);',
+    ' vec4 sf=texelFetch(uSurf,c,0)*255.; int cls=int(sf.r+.5); float imp=sf.g/100.;',
+    ' float cc=texture(uCan,(gj+.5)/vec2(uSize)).g*2.55;',
+    ' int f=int(texelFetch(uStatic,c,0).a+.5); f=f>=32?f-32:f;',
+    ' float n1=noise(g*.11), n2=noise(g*.9), n3=noise(g*5.3), n4=noise(g*23.);',
+    ' vec3 dry=mix(vec3(.60,.52,.32),vec3(.50,.47,.27),n2), green=mix(vec3(.30,.40,.19),vec3(.38,.46,.22),n2);',
+    ' vec3 litter=mix(vec3(.17,.20,.11),vec3(.24,.24,.14),n3), crown=mix(vec3(.07,.17,.08),vec3(.13,.26,.11),n2*.6+n4*.4);',
+    ' vec3 col; wat=0.;',
+    ' if(cls==1){ col=mix(vec3(.05,.13,.20),vec3(.08,.18,.25),n1); wat=1.; }',
+    ' else if(cls==2||cls==5){ vec3 pav=mix(vec3(.40,.40,.41),vec3(.50,.49,.48),n3); vec3 yard=mix(mix(dry,green,.55),crown,clamp(cc*1.3,0.,1.));',
+    '   col=mix(yard,pav,clamp(imp*1.15+.12,0.,1.)); if(cls==5) col=mix(col,vec3(.46,.45,.44),.5); }',
+    ' else if(cls==3){ col=mix(vec3(.55,.50,.30),vec3(.36,.44,.22),step(.5,hash(floor(g/9.))))*(.9+.2*n2); }',
+    ' else if(cls==4){ col=vec3(.50,.46,.40); }',
+    ' else { vec3 open=(f==1||f==3)?dry:(f>=5&&f<=7)?mix(vec3(.33,.36,.20),dry,.3):mix(dry,green,.5);',
+    '   col=mix(open,mix(litter,crown,.75),smoothstep(.15,.7,cc)); }',
+    ' return col*(.86+.28*n4);}',
     'void main(){',
     ' vec2 g=vCell; ivec2 i0=ivec2(floor(g)); vec2 f=g-vec2(i0);',
     ' vec4 a=st(i0), b=st(i0+ivec2(1,0)), c=st(i0+ivec2(0,1)), d=st(i0+ivec2(1,1));',
@@ -155,31 +204,46 @@
     ' ivec2 nc=ivec2(floor(g+.5)); vec4 sn=st(nc); float tg=sn.g;',
     ' int code=int(texelFetch(uStatic,clamp(nc,ivec2(0),uSize-1),0).a+.5); int fu=code>=32?code-32:code;',
     ' float pk=mix(mix(park(i0),park(i0+ivec2(1,0)),f.x),mix(park(i0+ivec2(0,1)),park(i0+ivec2(1,1)),f.x),f.y);',
-    ' vec3 alb=texture(uAlbedo,(g+.5)/vec2(uSize)).rgb;',
-    ' vec3 L=normalize(vec3(-.55,.75,-.38)); float dif=.42+.7*max(dot(normalize(vN),L),0.);',
-    ' vec3 col=alb*dif*(uDark>.5?1.35:1.);',
+    ' float wat=0.; vec3 alb=uView>.5?texture(uAlbedo,(g+.5)/vec2(uSize)).rgb*(uNight>.5?2.2:1.):natural(g,wat);',
+    ' vec3 N=normalize(vN+vec3(noise(g*3.)-.5,0.,noise(g*3.+5.)-.5)*.22);',
+    // terrain shadow: march toward the sun over the height field
+    ' float sh=1., hl=length(uSun.xz);',
+    ' if(uSun.y>.02&&hl>1e-3){ vec2 hd=uSun.xz/hl; float tanE=uSun.y/hl, h0=hAt(g)*uExag;',
+    '  for(int i=1;i<=12;i++){ float dd=float(i*i)*7.+10.; vec2 q=g+hd*dd/uDx;',
+    '   if(q.x<0.||q.y<0.||q.x>float(uSize.x-1)||q.y>float(uSize.y-1)) break;',
+    '   sh=min(sh,1.-clamp((hAt(q)*uExag-(h0+dd*tanE))/(dd*.06+4.),0.,1.)); } }',
+    ' float dif=max(dot(N,uSun),0.)*sh;',
+    ' vec3 col=alb*(uAmb*(.75+.25*N.y)+uSunCol*dif);',
+    ' if(wat>.5){ vec3 V=normalize(uEye-vW); vec3 Nw=normalize(vec3((noise(g*4.+uTime*.3)-.5)*.14,1.,(noise(g*4.-uTime*.25+9.)-.5)*.14));',
+    '  float fres=pow(1.-max(dot(V,Nw),0.),4.); col=mix(col,uFog,.22+.5*fres); col+=uSunCol*pow(max(dot(reflect(-V,Nw),uSun),0.),90.)*1.3*sh; }',
     ' float burned=smoothstep(6.,-6.,psi); float age=max(uT-tg,0.);',
     ' float tf=max(uTf[clamp(fu,1,14)-1],90.);',
     ' float flaming=burned*exp(-age/tf); float front=burned*exp(-age/150.);',
-    ' vec3 charc=uDark>.5?vec3(.07,.055,.05):vec3(.16,.13,.11);',
-    ' col=mix(col,charc*dif,burned*clamp(age/120.,0.,1.)*.92);',
+    ' vec3 charc=vec3(.10,.085,.075)*(uAmb+uSunCol*dif)*(.8+.4*noise(g*7.));',
+    ' col=mix(col,charc,burned*clamp(age/120.,0.,1.)*.93);',
     ' float fl=.6+.4*noise(g*1.7+vec2(uTime*2.3,-uTime*1.7))+.25*noise(g*6.+uTime*7.);',
-    ' vec3 em=vec3(1.,.38,.06)*flaming*1.1*fl + vec3(1.,.82,.45)*front*1.8*fl;',
+    ' float smolder=burned*exp(-age/(tf*4.+600.))*step(.72,noise(g*9.+floor(uTime*1.5)))*.5;',
+    ' vec3 em=vec3(1.,.38,.06)*flaming*1.1*fl + vec3(1.,.82,.45)*front*1.8*fl + vec3(1.,.3,.05)*smolder;',
     ' float edge=1.-smoothstep(0.,fwidth(pk)*1.6+1e-4,abs(pk-.5));',
-    ' col=mix(col,uDark>.5?vec3(.95,.95,.9):vec3(.08,.09,.08),edge*.55);',
-    ' col+=em;',
+    ' col=mix(col,uNight>.5?vec3(.85,.85,.8):vec3(.98,.97,.92),edge*.5);',
+    ' col+=em*(1.+.6*uNight);',
     ' float fog=clamp((vDepth-9000.)/45000.,0.,.75); col=mix(col,uFog,fog*(1.-min(1.,flaming+front)));',
     ' o=vec4(col,1.);}'
   ].join('\n');
+  // smoke: soft sprites lit from above; young smoke glows, crown-fire smoke is darker
   var SMOKE_VS = [
-    '#version 300 es', 'precision highp float;', 'in vec4 aP; uniform mat4 uMVP; uniform float uScale; out float vA; out float vHot;',
-    'void main(){ gl_Position=uMVP*vec4(aP.xyz,1.); float life=aP.w; vA=sin(3.14159*clamp(life,0.,1.)); vHot=1.-clamp(life*3.,0.,1.);',
-    ' gl_PointSize=clamp(uScale*(40.+260.*life)/gl_Position.w,1.,220.); }'
+    '#version 300 es', 'precision highp float;', 'in vec4 aP; in vec2 aS; uniform mat4 uMVP; uniform float uScale; out float vA, vHot, vTone, vSeed;',
+    'void main(){ gl_Position=uMVP*vec4(aP.xyz,1.); float life=clamp(aP.w,0.,1.);',
+    ' vA=smoothstep(0.,.07,life)*(1.-smoothstep(.5,1.,life)); vHot=1.-clamp(life*5.,0.,1.); vSeed=aS.x; vTone=aS.y;',
+    ' if(aP.w>=1.){ gl_Position=vec4(2.,2.,2.,1.); gl_PointSize=1.; return; }',
+    ' gl_PointSize=clamp(uScale*(60.+520.*pow(life,.7))/gl_Position.w,1.,320.); }'
   ].join('\n');
   var SMOKE_FS = [
-    '#version 300 es', 'precision highp float;', 'in float vA; in float vHot; uniform vec3 uSmoke; out vec4 o;',
-    'void main(){ vec2 q=gl_PointCoord*2.-1.; float r=dot(q,q); if(r>1.) discard; float a=(1.-r)*(1.-r)*vA*.38;',
-    ' vec3 c=mix(uSmoke,vec3(1.,.55,.2),vHot*.5); o=vec4(c,a); }'
+    '#version 300 es', 'precision highp float;', 'in float vA, vHot, vTone, vSeed; uniform vec3 uLit, uShade, uGlow; out vec4 o;', NOISE,
+    'void main(){ vec2 q=gl_PointCoord*2.-1.; float r=dot(q,q); if(r>1.) discard;',
+    ' float n=noise(q*2.3+vSeed*31.); float a=pow(1.-r,1.5)*(.5+.5*n)*vA*.26;',
+    ' vec3 c=mix(uShade,uLit,clamp(.55-q.y*.5,0.,1.)*.85+.15*n); c=mix(c,c*.42,vTone); c=mix(c,uGlow,vHot*.5);',
+    ' o=vec4(c,a); }'
   ].join('\n');
 
   var GLOW_VS = [
@@ -187,9 +251,73 @@
     'void main(){ gl_Position=uMVP*vec4(aP.xyz,1.); vI=aP.w; gl_PointSize=clamp(uPx*(380.+420.*aP.w)/gl_Position.w,6.,120.); }'
   ].join('\n');
   var GLOW_FS = [
-    '#version 300 es', 'precision highp float;', 'in float vI; uniform float uTime; out vec4 o;',
+    '#version 300 es', 'precision highp float;', 'in float vI; uniform float uTime, uGain; out vec4 o;',
     'void main(){ vec2 q=gl_PointCoord*2.-1.; float r=dot(q,q); if(r>1.) discard;',
-    ' float a=exp(-r*3.)*(.35+.65*vI); vec3 c=mix(vec3(1.,.35,.05),vec3(1.,.85,.45),exp(-r*8.)); o=vec4(c*a,a); }'
+    ' float a=exp(-r*3.)*(.35+.65*vI)*uGain; vec3 c=mix(vec3(1.,.35,.05),vec3(1.,.85,.45),exp(-r*8.)); o=vec4(c*a,a); }'
+  ].join('\n');
+  // flames: one camera-facing sheet per burning cell, as tall as Byram's flame length L = 0.0775 I^0.46 (I = H w R),
+  // or the torching tree when the crown-fire add-on says the cell crowned
+  var FLAME_VS = [
+    '#version 300 es', 'precision highp float;', 'precision highp int;', 'in vec2 aQ;',
+    'uniform sampler2D uState; uniform sampler2D uStatic; uniform sampler2D uCan; uniform ivec2 uSize; uniform ivec3 uBox; uniform int uStride;',
+    'uniform mat4 uMVP; uniform vec3 uRight; uniform vec2 uOrigin; uniform float uT, uExag, uDx; uniform float uTf[14]; uniform float uFgi[13];',
+    'out vec2 vUV; out float vI, vSeed;', NOISE,
+    'void main(){ int id=gl_InstanceID; ivec2 c=ivec2(uBox.x+(id%uBox.z)*uStride, uBox.y+(id/uBox.z)*uStride);',
+    ' vUV=vec2(0.); vI=0.; vSeed=0.; gl_Position=vec4(2.,2.,2.,1.);',
+    ' if(c.x<0||c.y<0||c.x>=uSize.x||c.y>=uSize.y) return;',
+    ' vec4 s=texelFetch(uState,c,0), stt=texelFetch(uStatic,c,0); int code=int(stt.a+.5); int f=code>=32?code-32:code;',
+    ' if(s.r>0.||f<1||f>13) return; float age=uT-s.g, tf=max(uTf[f-1],60.); if(age<0.||age>tf*3.) return;',
+    ' float fl=exp(-age/tf); float L=.0775*pow(18000.*uFgi[f-1]*max(s.b,.002),.46);',
+    ' if(s.a>.5) L=max(L,texelFetch(uCan,c,0).r*255./4.*(s.a>1.5?2.:1.3));',
+    ' float hgt=max(L,4.)*(.35+.65*fl), wid=uDx*float(uStride)*1.3; vSeed=hash(vec2(c));',
+    ' vec2 jit=(vec2(hash(vec2(c)+3.),hash(vec2(c)+7.))-.5)*uDx*.6;',
+    ' vec3 w=vec3(float(c.x)*uDx-uOrigin.x+jit.x, stt.r*uExag, float(c.y)*uDx-uOrigin.y+jit.y)+uRight*aQ.x*wid+vec3(0.,aQ.y*hgt,0.);',
+    ' vUV=vec2(aQ.x+.5,aQ.y); vI=fl; gl_Position=uMVP*vec4(w,1.); }'
+  ].join('\n');
+  var FLAME_FS = [
+    '#version 300 es', 'precision highp float;', 'in vec2 vUV; in float vI, vSeed; uniform float uTime; out vec4 o;', NOISE,
+    'void main(){ vec2 uv=vUV; float t=uTime*1.6+vSeed*17.;',
+    ' float n=noise(vec2(uv.x*3.+vSeed*9.,uv.y*2.6-t*1.9))*.6+noise(vec2(uv.x*7.-t*.7,uv.y*6.-t*3.1))*.4;',
+    ' float x=abs(uv.x-.5)*2.; float body=1.-x*(1.15+uv.y*1.4)-uv.y*.55+(n-.5)*(.5+uv.y*.9);',
+    ' float a=smoothstep(0.,.35,body)*smoothstep(0.,.06,uv.y+.02); if(a<.01) discard;',
+    ' float heat=clamp(body*1.6,0.,1.)*(1.-uv.y*.5);',
+    ' vec3 c=mix(vec3(.9,.16,.02),vec3(1.,.55,.08),smoothstep(.1,.55,heat)); c=mix(c,vec3(1.,.9,.55),smoothstep(.6,1.,heat));',
+    ' a*=.35+.65*vI; o=vec4(c*a,a); }'
+  ].join('\n');
+  // trees: one lathed crown per instance (a cone for conifers, an ovoid for broadleaves), at the LANDFIRE canopy height of its cell.
+  // A surface fire scorches the lower crown; a cell that crowned leaves a black snag.
+  var TREE_VS = [
+    '#version 300 es', 'precision highp float;', 'in vec2 aV; in vec4 aT0; in vec2 aT1;',
+    'uniform sampler2D uState; uniform sampler2D uStatic; uniform ivec2 uSize; uniform mat4 uMVP; uniform vec3 uEye; uniform vec2 uOrigin;',
+    'uniform float uT, uExag, uDx; out vec3 vN, vW; out float vV, vSeed, vType, vScorch, vGone, vFire;',
+    'float hc(ivec2 p){return texelFetch(uStatic,clamp(p,ivec2(0),uSize-1),0).r;}',
+    'void main(){ float x=aT0.x*.5, z=aT0.y*.5, hgt=aT0.z*.1, rad=aT0.w*.1, cb=aT1.x/65535.;',
+    ' vType=floor(aT1.y/256.); vSeed=mod(aT1.y,256.)/255.;',
+    ' vec2 cc=vec2(x,z)/uDx; ivec2 i=ivec2(floor(cc)); vec2 f=cc-vec2(i);',
+    ' float ground=mix(mix(hc(i),hc(i+ivec2(1,0)),f.x),mix(hc(i+ivec2(0,1)),hc(i+ivec2(1,1)),f.x),f.y)*uExag;',
+    ' vec3 basep=vec3(x-uOrigin.x,ground,z-uOrigin.y); float dist=length(uEye-basep);',
+    ' float keep=dist<5000.?1.:dist<10000.?.5:.25; vV=aV.x; vN=vec3(0.,1.,0.); vW=basep; vScorch=0.; vGone=0.; vFire=0.;',
+    ' if(vSeed>keep){ gl_Position=vec4(2.,2.,2.,1.); return; }',   // distance level of detail: fewer, wider crowns far away
+    ' rad*=inversesqrt(keep);',
+    ' vec4 s=texelFetch(uState,clamp(ivec2(floor(cc+.5)),ivec2(0),uSize-1),0);',
+    ' if(s.r<=0.){ float age=max(uT-s.g,0.); vScorch=1.; vFire=exp(-age/(s.a>.5?240.:90.))*(s.a>.5?1.:.35); if(s.a>.5) vGone=smoothstep(30.,420.,age); }',
+    ' float v=aV.x, prof=vType<.5?(v<.01?.55:(1.-v)*1.25):sin(3.14159*(.14+.86*v))*1.05;',
+    ' prof*=mix(1.,.13,vGone); float base=hgt*cb*mix(1.,.2,vGone);',
+    ' float ca=cos(aV.y), sa=sin(aV.y);',
+    ' vW=basep+vec3(ca*rad*prof, base+(hgt-base)*v, sa*rad*prof); vN=normalize(vec3(ca,vType<.5?.5:(v-.4)*1.6,sa));',
+    ' gl_Position=uMVP*vec4(vW,1.); }'
+  ].join('\n');
+  var TREE_FS = [
+    '#version 300 es', 'precision highp float;', 'in vec3 vN, vW; in float vV, vSeed, vType, vScorch, vGone, vFire;',
+    'uniform vec3 uSun, uSunCol, uAmb, uEye, uFog; uniform float uTime; out vec4 o;',
+    'void main(){ vec3 base=vType<.5?mix(vec3(.06,.16,.08),vec3(.12,.25,.11),vSeed):mix(vec3(.17,.30,.10),vec3(.30,.36,.12),vSeed);',
+    ' if(vType>.5&&fract(vSeed*7.3)>.95) base=vec3(.40,.36,.13);',   // a few early autumn crowns
+    ' vec3 light=uAmb*(.55+.45*vV)+uSunCol*max(dot(normalize(vN),uSun),0.)*(.5+.5*vV);',
+    ' vec3 c=base*light;',
+    ' c=mix(c,vec3(.30,.20,.10)*light,vScorch*(1.-vGone)*clamp(1.2-vV*1.1,0.,1.));',
+    ' c=mix(c,vec3(.05,.045,.04)*(.5+light),vGone);',
+    ' c+=vec3(1.,.45,.08)*vFire*(.7+.3*sin(uTime*11.+vSeed*40.))*(1.-.5*vV);',
+    ' c=mix(c,uFog,clamp((length(uEye-vW)-9000.)/45000.,0.,.75)); o=vec4(c,1.); }'
   ].join('\n');
 
   var BLD_VS = [
@@ -202,8 +330,8 @@
     ' vFire=f; vBurnt=b; vH=aP.w*.1; vN=aN; gl_Position=uMVP*vec4(w,1.); }'
   ].join('\n');
   var BLD_FS = [
-    '#version 300 es', 'precision highp float;', 'in vec3 vN; in float vFire, vBurnt, vH; uniform float uDark, uTime; out vec4 o;',
-    'void main(){ vec3 L=normalize(vec3(-.55,.75,-.38)); float d=.45+.6*max(dot(normalize(vN),L),0.);',
+    '#version 300 es', 'precision highp float;', 'in vec3 vN; in float vFire, vBurnt, vH; uniform float uDark, uTime; uniform vec3 uSun; out vec4 o;',
+    'void main(){ float d=.45+.6*max(dot(normalize(vN),uSun),0.);',
     ' vec3 base=uDark>.5?vec3(.42,.42,.44):vec3(.86,.85,.82); vec3 c=base*d;',
     ' c=mix(c,c*.35,vBurnt*.6*(1.-vFire)); float low=exp(-vH/25.);',
     ' c+=vec3(1.,.42,.08)*vFire*(.6+.4*sin(uTime*9.+vH))*(.35+.9*low);',
@@ -226,10 +354,10 @@
   ].join('\n');
   var BOX_FS = [
     '#version 300 es', 'precision highp float;', 'in vec3 vW, vL; in float vFire, vBurnt, vH; flat in int vId;',
-    'uniform float uDark, uTime; uniform vec3 uEye, uFog; out vec4 o;',
+    'uniform float uDark, uTime; uniform vec3 uEye, uFog, uSun; out vec4 o;',
     'float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }',
     'void main(){ vec3 n=normalize(cross(dFdx(vW),dFdy(vW))); if(dot(n,uEye-vW)<0.) n=-n;',
-    ' float d=.48+.55*max(dot(n,normalize(vec3(-.55,.75,-.38))),0.); bool roof=n.y>.6;',
+    ' float d=.48+.55*max(dot(n,uSun),0.); bool roof=n.y>.6;',
     ' vec3 base=uDark>.5?(roof?vec3(.33,.34,.37):vec3(.45,.46,.49)):(roof?vec3(.76,.74,.71):vec3(.91,.90,.87));',
     ' base*=.92+.16*hash(vec2(float(vId),3.1)); vec3 c=base*d; float dist=length(uEye-vW);',
     ' if(!roof){ c*=.70+.30*smoothstep(0.,9.,vL.y);',
@@ -245,13 +373,13 @@
     'void main(){ vW=vec3(aP.x,aP.y*uExag+aP.w,aP.z); vCol=aCol; gl_Position=uMVP*vec4(vW,1.); }'
   ].join('\n');
   var BR_FS = [
-    '#version 300 es', 'precision highp float;', 'in vec3 vW, vCol; uniform vec3 uEye, uFog; uniform float uDark; out vec4 o;',
+    '#version 300 es', 'precision highp float;', 'in vec3 vW, vCol; uniform vec3 uEye, uFog, uSun; uniform float uDark; out vec4 o;',
     'void main(){ vec3 n=normalize(cross(dFdx(vW),dFdy(vW))); if(dot(n,uEye-vW)<0.) n=-n;',
-    ' float d=.42+.62*max(dot(n,normalize(vec3(-.55,.75,-.38))),0.); vec3 c=vCol*d*(uDark>.5?.8:1.);',
+    ' float d=.42+.62*max(dot(n,uSun),0.); vec3 c=vCol*d*(uDark>.5?.8:1.);',
     ' c=mix(c,uFog,clamp((length(uEye-vW)-9000.)/45000.,0.,.75)); o=vec4(c,1.); }'
   ].join('\n');
 
-  function Sim(host, meta, gridBmp, albD, albL) {
+  function Sim(host, meta, gridBmp, albD, albL, canBmp) {
     var root = host.getAttribute('data-root') || '';
     var W = meta.W, H = meta.H, DX = meta.dx;
     var presetKey = host.getAttribute('data-preset') || 'single';
@@ -269,6 +397,18 @@
       var e = hgt[j * W + Math.min(W - 1, i + 1)], w = hgt[j * W + Math.max(0, i - 1)];
       var n = hgt[Math.max(0, j - 1) * W + i], s = hgt[Math.min(H - 1, j + 1) * W + i];
       stat[4 * k] = hgt[k]; stat[4 * k + 1] = (e - w) / (2 * DX); stat[4 * k + 2] = (n - s) / (2 * DX); stat[4 * k + 3] = code[k];
+    }
+    // ---------- canopy and surface classes (fp3d-canopy.png: two W x H tiles, see make_sim_data.py)
+    var canPx = new Uint8Array(W * H * 4), surfPx = new Uint8Array(W * H * 4), hasCanopy = false;
+    if (canBmp && canBmp.width === 2 * W) {
+      var c3 = document.createElement('canvas'); c3.width = 2 * W; c3.height = H;
+      var x3 = c3.getContext('2d'); x3.drawImage(canBmp, 0, 0);
+      var lp = x3.getImageData(0, 0, W, H).data, rp = x3.getImageData(W, 0, W, H).data;
+      for (k = 0; k < W * H; k++) {
+        canPx[4 * k] = lp[4 * k]; canPx[4 * k + 1] = lp[4 * k + 1]; canPx[4 * k + 2] = lp[4 * k + 2]; canPx[4 * k + 3] = rp[4 * k];   // height x4, cover %, base dm, density x400
+        surfPx[4 * k] = rp[4 * k + 1]; surfPx[4 * k + 1] = rp[4 * k + 2]; surfPx[4 * k + 3] = 255;                                 // class, paved %
+      }
+      hasCanopy = true;
     }
     function heightAt(cx, cy) {   // bilinear, cell coordinates
       var i0 = Math.max(0, Math.min(W - 2, Math.floor(cx))), j0 = Math.max(0, Math.min(H - 2, Math.floor(cy)));
@@ -293,7 +433,8 @@
     }
 
     var P = { preset: presetKey, weather: 'east', wind: meta.scenarios.east.wind, dir: meta.scenarios.east.dir,
-      wrf: true, speed: 12, exag: 2.0, smoke: true, playing: !reduceMotion, spot: false, bld: true, orbit: false };
+      wrf: true, speed: 12, exag: 2.0, smoke: true, playing: !reduceMotion, spot: false, bld: true, orbit: false,
+      view: hasCanopy ? 'natural' : 'fuel', light: 'clock', trees: hasCanopy, crown: false, treeFrac: window.innerWidth < 700 ? 0.45 : 1 };
     function sel(label, opts, val, on) {
       var s = h('select'); opts.forEach(function (o) { var op = h('option', { value: o[0], text: o[1] }); if (o[0] === val) op.selected = true; s.appendChild(op); });
       s.addEventListener('change', function () { on(s.value); }); return [h('label', {}, [document.createTextNode(label), s]), s];
@@ -324,11 +465,18 @@
     var cSpot = h('input', { type: 'checkbox' }); cSpot.addEventListener('change', function () { P.spot = cSpot.checked; });
     var cBld = h('input', { type: 'checkbox' }); cBld.checked = true; cBld.addEventListener('change', function () { P.bld = cBld.checked; });
     var cSmoke = h('input', { type: 'checkbox' }); cSmoke.checked = true; cSmoke.addEventListener('change', function () { P.smoke = cSmoke.checked; });
+    var cView = sel('Surface', [['natural', 'Natural (land cover and canopy)'], ['fuel', 'Fuel map colors']], P.view, function (v) { P.view = v; });
+    var cLight = sel('Light', [['clock', 'Follow the clock (fire starts 2 pm)'], ['day', 'Midday'], ['dusk', 'Sunset'], ['night', 'Night']], P.light, function (v) { P.light = v; });
+    var cTrees = h('input', { type: 'checkbox' }); cTrees.checked = P.trees; cTrees.addEventListener('change', function () { P.trees = cTrees.checked; });
+    var cCrown = h('input', { type: 'checkbox' }); cCrown.addEventListener('change', function () { P.crown = cCrown.checked; coefChanged(); });
     var controls = h('div', { class: 'lab-controls' }, [lockPreset ? h('span') : cPreset[0], cWx[0], cWind[0], cDir[0], cSpeed[0], cExag[0],
+      hasCanopy ? cView[0] : h('span'), cLight[0],
       h('div', { class: 'ctl' }, [h('label', { class: 'check' }, [cWrf, document.createTextNode('Mid-flame wind (fuel windrf, fire_use_windrf = 1)')]),
                                   h('label', { class: 'check' }, [cSmoke, document.createTextNode('Smoke')]),
                                   h('label', { class: 'check' }, [cSpot, document.createTextNode('Ember spotting (simple add-on, not in SFIRE ifire = 1)')]),
-                                  h('label', { class: 'check' }, [cBld, document.createTextNode('3-D buildings (all of Portland in the domain) and St. Johns Bridge')])]), cSrc[0]]);
+                                  h('label', { class: 'check' }, [cBld, document.createTextNode('3-D buildings (all of Portland in the domain) and St. Johns Bridge')])].concat(hasCanopy ? [
+                                  h('label', { class: 'check' }, [cTrees, document.createTextNode('Trees at LANDFIRE canopy height')]),
+                                  h('label', { class: 'check' }, [cCrown, document.createTextNode('Crown fire (Van Wagner 1977 / Rothermel 1991 add-on, not in SFIRE ifire = 1)')])] : [])), cSrc[0]]);
     host.appendChild(controls);
     var bPlay = h('button', { type: 'button', class: 'primary', text: P.playing ? 'Pause' : 'Play' });
     var bReset = h('button', { type: 'button', text: 'Reset' }), bView = h('button', { type: 'button', text: 'Reset view' });
@@ -365,13 +513,14 @@
     try {
       progs = { p1: program(FS_VERT, SIM_PASS1), p2: program(FS_VERT, SIM_PASS2), red: program(FS_VERT, REDUCE),
         ter: program(TERRAIN_VS, TERRAIN_FS), smoke: program(SMOKE_VS, SMOKE_FS), glow: program(GLOW_VS, GLOW_FS), bld: program(BLD_VS, BLD_FS),
-        box: program(BOX_VS, BOX_FS), br: program(BR_VS, BR_FS) };
+        box: program(BOX_VS, BOX_FS), br: program(BR_VS, BR_FS), sky: program(SKY_VS, SKY_FS), flame: program(FLAME_VS, FLAME_FS), tree: program(TREE_VS, TREE_FS) };
     } catch (err) {
       stage.innerHTML = ''; stage.appendChild(h('p', { class: 'sim3d-fallback', text: 'WebGL error: ' + err.message })); return;
     }
     var tStatic = tex(W, H, gl.RGBA32F, gl.RGBA, gl.FLOAT, stat);
     var states = [0, 1, 2].map(function () { var t = tex(W, H, gl.RGBA32F, gl.RGBA, gl.FLOAT, null); return { t: t, f: fbo(t) }; });
     var tRep = tex(W, H, gl.R32F, gl.RED, gl.FLOAT, new Float32Array(W * H));
+    var tCan = tex(W, H, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, canPx, gl.LINEAR), tSurf = tex(W, H, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, surfPx);
     var RW = Math.ceil(W / 4), RH = Math.ceil(H / 4);
     var tRed = tex(RW, RH, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, null), fRed = fbo(tRed), redBuf = new Uint8Array(RW * RH * 4);
     var tAlbD = tex(albD.width, albD.height, gl.RGB8, gl.RGB, gl.UNSIGNED_BYTE, albD, gl.LINEAR);
@@ -388,9 +537,51 @@
     }
     var vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo); gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
     var ibo = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
-    var NSMOKE = 1600, smoke = new Float32Array(NSMOKE * 4), smokeV = new Float32Array(NSMOKE * 4), sp = 0;
+    var NSMOKE = 4500, smoke = new Float32Array(NSMOKE * 4), smokeV = new Float32Array(NSMOKE * 4), smokeS = new Float32Array(NSMOKE * 2), sp = 0, smokeDebt = 0;
     for (k = 0; k < NSMOKE; k++) smoke[4 * k + 3] = 2;   // dead
-    var sbo = gl.createBuffer(), gbo = gl.createBuffer(), glowData = new Float32Array(0);
+    var sbo = gl.createBuffer(), sbo2 = gl.createBuffer(), gbo = gl.createBuffer(), glowData = new Float32Array(0);
+    var fqo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, fqo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-.5, 0, .5, 0, .5, 1, -.5, 0, .5, 1, -.5, 1]), gl.STATIC_DRAW);
+
+    // ---------- trees: one or two per forested cell (LANDFIRE height >= 5 m, cover >= 20 %), in random order so that
+    // drawing only the first part of the list thins the forest evenly on slow machines
+    var trees = null;
+    (function buildTrees() {
+      if (!hasCanopy) return;
+      var seed = 12345; function rr() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+      var list = [];
+      for (var jj = 0; jj < H; jj++) for (var ii = 0; ii < W; ii++) {
+        var kk = jj * W + ii, th = canPx[4 * kk] / 4, cov = canPx[4 * kk + 1] / 100, cls = surfPx[4 * kk];
+        if (th < 5 || cov < 0.2 || cls === 1) continue;
+        if (cov < 0.35 && rr() > 0.6) continue;
+        var n = cov >= 0.6 ? 2 : 1, fu = code[kk] & 31, cbf = Math.min(0.75, Math.max(0.12, (canPx[4 * kk + 2] / 10) / th));
+        for (var q2 = 0; q2 < n; q2++) {
+          var broad = rr() < (fu === 9 ? 0.8 : (cls === 2 || cls === 5) ? 0.55 : 0.15) ? 1 : 0;
+          var hh = th * (0.72 + 0.4 * rr()) * (broad ? 0.85 : 1), rad = (n === 2 ? 7.2 : 6.2) * (0.75 + 0.5 * rr()) * (broad ? 1.3 : 1);
+          list.push((ii + rr() - 0.5) * DX * 2, (jj + rr() - 0.5) * DX * 2, hh * 10, rad * 10, (broad ? Math.max(cbf, 0.3) : cbf) * 65535, broad * 256 + Math.floor(rr() * 256));
+        }
+      }
+      var nT = list.length / 6, order = new Uint32Array(nT);
+      for (var a1 = 0; a1 < nT; a1++) order[a1] = a1;
+      for (a1 = nT - 1; a1 > 0; a1--) { var b1 = Math.floor(rr() * (a1 + 1)), tmp = order[a1]; order[a1] = order[b1]; order[b1] = tmp; }
+      var inst = new Uint16Array(nT * 6);
+      for (a1 = 0; a1 < nT; a1++) for (var c1 = 0; c1 < 6; c1++) inst[a1 * 6 + c1] = Math.max(0, Math.min(65535, Math.round(list[order[a1] * 6 + c1])));
+      var RINGS = [0, 0.28, 0.62, 1], SEG = 5, lv = [], li = [];
+      RINGS.forEach(function (v) { for (var sg = 0; sg < SEG; sg++) lv.push(v, sg / SEG * 2 * Math.PI); });
+      for (var r1 = 0; r1 + 1 < RINGS.length; r1++) for (var s1 = 0; s1 < SEG; s1++) {
+        var A = r1 * SEG + s1, B = r1 * SEG + (s1 + 1) % SEG, C = A + SEG, D = B + SEG; li.push(A, C, B, B, C, D);
+      }
+      var pr = progs.tree, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+      var vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lv), gl.STATIC_DRAW);
+      var lV = gl.getAttribLocation(pr.p, 'aV'); gl.enableVertexAttribArray(lV); gl.vertexAttribPointer(lV, 2, gl.FLOAT, false, 0, 0);
+      var eb = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, eb); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(li), gl.STATIC_DRAW);
+      var ib3 = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib3); gl.bufferData(gl.ARRAY_BUFFER, inst, gl.STATIC_DRAW);
+      var l0 = gl.getAttribLocation(pr.p, 'aT0'), l1 = gl.getAttribLocation(pr.p, 'aT1');
+      gl.enableVertexAttribArray(l0); gl.vertexAttribPointer(l0, 4, gl.UNSIGNED_SHORT, false, 12, 0); gl.vertexAttribDivisor(l0, 1);
+      gl.enableVertexAttribArray(l1); gl.vertexAttribPointer(l1, 2, gl.UNSIGNED_SHORT, false, 12, 8); gl.vertexAttribDivisor(l1, 1);
+      gl.bindVertexArray(null);
+      trees = { vao: vao, n: nT, idx: li.length }; host.dataset.trees = nT;
+    })();
 
     // ---------- simulation state
     var cur = 0, t = 0, tlo = -1, ign = [], line = null, replay = false, tp = 0, simStart = 0;
@@ -403,6 +594,10 @@
         var U = P.wind * (P.wrf ? meta.windrf[m] : 1), u = Math.min(U, 30) * 196.85;
         var s = Math.min(6, cf[m][0] + cf[m][1] * Math.pow(Math.max(u, 1e-6), cf[m][2]) + cf[m][3] * tm * tm);
         if (s > Smax) Smax = s;
+      }
+      if (P.crown) {   // upper bound of Rothermel's crown-fire rate, for the time step limit
+        var k10 = cf[9], u10 = Math.min(P.wind * 0.4, 30) * 196.85;
+        Smax = Math.max(Smax, Math.min(6, 3.34 * (k10[0] + k10[1] * Math.pow(Math.max(u10, 1e-6), k10[2]) + k10[3] * tm * tm)));
       }
     }
     function buildReplay(pr) {
@@ -440,9 +635,10 @@
       if (pr.line) line = { a: pr.line[0], b: pr.line[1], ros: pr.ros, t: pr.t || 0, r: 30 };
       if (pr.perim) { buildReplay(pr); replay = true; tp = pr.tp; }
       for (var m = 0; m < NSMOKE; m++) smoke[4 * m + 3] = 2;
-      burnedHa = 0; outsideHa = 0;
+      smokeDebt = 0;
+      burnedHa = 0; outsideHa = 0; crownHa = 0; hotBox = null;
     }
-    var burnedHa = 0, outsideHa = 0;
+    var burnedHa = 0, outsideHa = 0, crownHa = 0, hotBox = null;
 
     function runPass(prog, target, bind) {
       gl.useProgram(prog.p); gl.bindFramebuffer(gl.FRAMEBUFFER, target);
@@ -458,6 +654,8 @@
       for (var m = 0; m < 13; m++) flat.push(cf[m][0], cf[m][1], cf[m][2], cf[m][3]);
       gl.uniform4fv(u.uCoef, flat); gl.uniform1fv(u.uWrf, meta.windrf); gl.uniform1f(u.uUseWrf, P.wrf ? 1 : 0);
       var wv = windVec(); gl.uniform2f(u.uWind, wv[0], wv[1]); gl.uniform1f(u.uU, P.wind);
+      gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, tCan); gl.uniform1i(u.uCan, 4);
+      gl.uniform1f(u.uCrown, P.crown && hasCanopy ? 1 : 0); gl.uniform1f(u.uFmc, 100); gl.uniform1fv(u.uFgi, meta.fgi);
     }
     function step(dt) {
       var A = states[cur], B = states[(cur + 1) % 3], C = states[(cur + 2) % 3];
@@ -477,7 +675,7 @@
       });
       cur = (cur + 2) % 3; tlo = t; t += dt;
     }
-    var lastRead = 0, hot = [];
+    var lastRead = 0, hot = [], hotCrown = [];
     function readBack(now, force) {
       if (!force && now - lastRead < 350) return; lastRead = now;
       gl.viewport(0, 0, RW, RH);
@@ -487,12 +685,16 @@
         gl.uniform2i(u.uSize, W, H); gl.uniform1f(u.uT, t);
       });
       gl.readPixels(0, 0, RW, RH, gl.RGBA, gl.UNSIGNED_BYTE, redBuf);
-      var b = 0, o = 0; hot = [];
+      var b = 0, o = 0, cr = 0, x0 = RW, x1 = -1, y0 = RH, y1 = -1; hot = []; hotCrown = [];
       for (var kk = 0; kk < RW * RH; kk++) {
-        b += redBuf[4 * kk + 1]; o += redBuf[4 * kk + 2];
-        if (redBuf[4 * kk] > 0) hot.push(kk, redBuf[4 * kk]);
+        b += redBuf[4 * kk + 1]; o += redBuf[4 * kk + 2]; cr += redBuf[4 * kk + 3];
+        if (redBuf[4 * kk] > 0) {
+          hot.push(kk, redBuf[4 * kk]); hotCrown.push(redBuf[4 * kk + 3] > 0 ? 1 : 0);
+          var bx = kk % RW, by = (kk / RW) | 0; if (bx < x0) x0 = bx; if (bx > x1) x1 = bx; if (by < y0) y0 = by; if (by > y1) y1 = by;
+        }
       }
-      burnedHa = b / 255 * 16 * DX * DX / 1e4; outsideHa = o / 255 * 16 * DX * DX / 1e4;
+      burnedHa = b / 255 * 16 * DX * DX / 1e4; outsideHa = o / 255 * 16 * DX * DX / 1e4; crownHa = cr / 255 * 16 * DX * DX / 1e4;
+      hotBox = x1 >= 0 ? [x0 * 4 - 2, y0 * 4 - 2, (x1 - x0 + 1) * 4 + 4, (y1 - y0 + 1) * 4 + 4] : null;   // cells: i0, j0, width, height
       glowData = new Float32Array(hot.length * 2);
       for (var m = 0; m < hot.length / 2; m++) {
         var cell = hot[2 * m], wp = worldOfCell((cell % RW) * 4 + 2, ((cell / RW) | 0) * 4 + 2);
@@ -577,6 +779,28 @@
       return null;
     }
 
+    // ---------- light. The clock starts at meta.start_hour (2 pm) and the sun follows a mid-September day in Portland
+    // (sunrise about 6:50, sunset about 19:20, 46 degrees high at solar noon). x = east, y = up, z = south.
+    function mix3(a, b, u) { return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u]; }
+    function lightState() {
+      var hr = P.light === 'clock' ? ((meta.start_hour || 14) + t / 3600) % 24 : { day: 13.1, dusk: 19.0, night: 23.5 }[P.light];
+      var rise = 6.85, set = 19.35, x = (hr - rise) / (set - rise), el = -0.3, az = Math.PI;
+      if (x > -0.06 && x < 1.06) { el = Math.sin(Math.PI * x) * 46 * Math.PI / 180; az = (90 + 180 * x) * Math.PI / 180; }
+      var day = Math.max(0, Math.min(1, (Math.sin(el) + 0.07) / 0.2)), high = Math.max(0, Math.min(1, Math.sin(Math.max(el, 0)) / 0.38));
+      high = high * high * (3 - 2 * high);
+      var e2 = Math.max(el, 0.03), sun = day > 0.02 ? [Math.sin(az) * Math.cos(e2), Math.sin(e2), -Math.cos(az) * Math.cos(e2)] : norm([-0.45, 0.62, -0.4]);
+      var L = {
+        hr: hr, day: day, night: day < 0.35, sun: sun,
+        sunCol: day > 0.02 ? mix3([0, 0, 0], mix3([1.05, 0.50, 0.24], [1.0, 0.96, 0.88], high), day) : [0.15, 0.19, 0.28],
+        amb: mix3([0.11, 0.14, 0.21], mix3([0.40, 0.34, 0.37], [0.48, 0.54, 0.62], high), day),
+        zen: mix3([0.012, 0.018, 0.04], mix3([0.15, 0.20, 0.40], [0.24, 0.46, 0.80], high), day),
+        hor: mix3([0.05, 0.065, 0.10], mix3([0.93, 0.55, 0.30], [0.72, 0.80, 0.88], high), day)
+      };
+      if (day <= 0.02) L.sunCol = [0.15, 0.19, 0.28];
+      return L;
+    }
+    var LS = null;
+
     // ---------- labels
     var labelEls = Object.keys(meta.places).map(function (name) {
       var el = h('span', { text: name }); labels.appendChild(el); return { el: el, c: meta.places[name] };
@@ -591,10 +815,18 @@
     }
     function draw(now) {
       resize(); camera();
-      var dark = isDark(), bg = dark ? [0.06, 0.065, 0.07] : [0.80, 0.84, 0.88];
+      LS = lightState();
+      var dark = LS.night, bg = LS.hor, time = (now - start) / 1000;
       gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(bg[0], bg[1], bg[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      gl.enable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
+      // sky
+      gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND); gl.depthMask(false);
+      var ps = progs.sky; gl.useProgram(ps.p); gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+      var lq = gl.getAttribLocation(ps.p, 'p'); gl.enableVertexAttribArray(lq); gl.vertexAttribPointer(lq, 2, gl.FLOAT, false, 0, 0);
+      gl.uniformMatrix4fv(ps.u.uInv, false, inv(mvp)); gl.uniform3f(ps.u.uEye, eye[0], eye[1], eye[2]);
+      gl.uniform3fv(ps.u.uSun, LS.sun); gl.uniform3fv(ps.u.uSunCol, LS.sunCol); gl.uniform3fv(ps.u.uZen, LS.zen); gl.uniform3fv(ps.u.uHor, LS.hor);
+      gl.uniform1f(ps.u.uNight, LS.night ? 1 : 0); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.depthMask(true); gl.enable(gl.DEPTH_TEST);
       var pr = progs.ter; gl.useProgram(pr.p);
       gl.bindBuffer(gl.ARRAY_BUFFER, vbo); var loc = gl.getAttribLocation(pr.p, 'aCell');
       gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
@@ -604,13 +836,19 @@
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, dark ? tAlbD : tAlbL); gl.uniform1i(pr.u.uAlbedo, 2);
       gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform1f(pr.u.uExag, P.exag); gl.uniform1f(pr.u.uDx, DX);
       gl.uniform2f(pr.u.uOrigin, origin[0], origin[1]); gl.uniform2i(pr.u.uSize, W, H);
-      gl.uniform1f(pr.u.uT, t); gl.uniform1f(pr.u.uTime, (now - start) / 1000); gl.uniform1f(pr.u.uDark, dark ? 1 : 0);
-      gl.uniform1fv(pr.u.uTf, meta.weight.concat([7]).map(function (wt) { return wt / 0.85; }));
+      gl.uniform1f(pr.u.uT, t); gl.uniform1f(pr.u.uTime, time); gl.uniform1f(pr.u.uNight, dark ? 1 : 0);
+      gl.uniform1fv(pr.u.uTf, TF);
       gl.uniform3f(pr.u.uFog, bg[0], bg[1], bg[2]);
+      gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, tCan); gl.uniform1i(pr.u.uCan, 3);
+      gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, tSurf); gl.uniform1i(pr.u.uSurf, 4);
+      gl.uniform1f(pr.u.uView, P.view === 'fuel' || !hasCanopy ? 1 : 0);
+      gl.uniform3fv(pr.u.uSun, LS.sun); gl.uniform3fv(pr.u.uSunCol, LS.sunCol); gl.uniform3fv(pr.u.uAmb, LS.amb); gl.uniform3f(pr.u.uEye, eye[0], eye[1], eye[2]);
       gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_INT, 0);
       drawBuildings(now, dark);
+      if (P.trees && trees) drawTrees(time);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
       drawGlow(now);
+      drawFlames(time);
       if (P.smoke) drawSmoke(dark);
       // labels and ignition markers
       labelEls.forEach(function (L) {
@@ -628,8 +866,42 @@
       compass.style.transform = 'rotate(' + (cam.az * 180 / Math.PI + 180).toFixed(1) + 'deg)';
       var wa = compass.querySelector('i'); wa.style.transform = 'rotate(' + (P.dir + 180) + 'deg)';
       var hrs = Math.floor(t / 3600), mins = Math.floor((t % 3600) / 60);
-      hud.textContent = hrs + ' h ' + (mins < 10 ? '0' : '') + mins + ' min · ' + burnedHa.toFixed(1) + ' ha burned · ' +
-        outsideHa.toFixed(1) + ' ha outside the park' + (replay && t < tp ? ' · replaying the perimeter' : '');
+      var ck = ((meta.start_hour || 14) + t / 3600) % 24, ch2 = Math.floor(ck), cm = Math.floor((ck - ch2) * 60);
+      hud.textContent = (P.light === 'clock' ? ch2 + ':' + (cm < 10 ? '0' : '') + cm + ' · ' : '') + hrs + ' h ' + (mins < 10 ? '0' : '') + mins + ' min · ' +
+        burnedHa.toFixed(1) + ' ha burned · ' + outsideHa.toFixed(1) + ' ha outside the park' +
+        (P.crown ? ' · ' + crownHa.toFixed(1) + ' ha active crown fire' : '') + (replay && t < tp ? ' · replaying the perimeter' : '');
+    }
+    var TF = meta.weight.concat([7]).map(function (wt) { return wt / 0.85; });
+    function drawTrees(time) {
+      var pr = progs.tree; gl.useProgram(pr.p); gl.bindVertexArray(trees.vao);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, states[cur].t); gl.uniform1i(pr.u.uState, 0);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tStatic); gl.uniform1i(pr.u.uStatic, 1);
+      gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform2i(pr.u.uSize, W, H); gl.uniform2f(pr.u.uOrigin, origin[0], origin[1]);
+      gl.uniform1f(pr.u.uT, t); gl.uniform1f(pr.u.uExag, P.exag); gl.uniform1f(pr.u.uDx, DX); gl.uniform1f(pr.u.uTime, time);
+      gl.uniform3f(pr.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3fv(pr.u.uSun, LS.sun); gl.uniform3fv(pr.u.uSunCol, LS.sunCol);
+      gl.uniform3fv(pr.u.uAmb, LS.amb); gl.uniform3fv(pr.u.uFog, LS.hor);
+      gl.disable(gl.CULL_FACE);
+      gl.drawElementsInstanced(gl.TRIANGLES, trees.idx, gl.UNSIGNED_SHORT, 0, Math.max(1, Math.floor(trees.n * P.treeFrac)));
+      gl.bindVertexArray(null);
+    }
+    function drawFlames(time) {
+      if (!hotBox) return;
+      var bw = hotBox[2], bh = hotBox[3], stride = Math.max(1, Math.ceil(Math.sqrt(bw * bh / 60000)));
+      var nx = Math.ceil(bw / stride), ny = Math.ceil(bh / stride);
+      var pr = progs.flame; gl.useProgram(pr.p);
+      gl.bindBuffer(gl.ARRAY_BUFFER, fqo); var loc = gl.getAttribLocation(pr.p, 'aQ');
+      gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0); gl.vertexAttribDivisor(loc, 0);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, states[cur].t); gl.uniform1i(pr.u.uState, 0);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tStatic); gl.uniform1i(pr.u.uStatic, 1);
+      gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, tCan); gl.uniform1i(pr.u.uCan, 2);
+      gl.uniform2i(pr.u.uSize, W, H); gl.uniform3i(pr.u.uBox, hotBox[0], hotBox[1], nx); gl.uniform1i(pr.u.uStride, stride);
+      gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform2f(pr.u.uOrigin, origin[0], origin[1]);
+      gl.uniform3f(pr.u.uRight, Math.cos(cam.az), 0, -Math.sin(cam.az));
+      gl.uniform1f(pr.u.uT, t); gl.uniform1f(pr.u.uExag, P.exag); gl.uniform1f(pr.u.uDx, DX); gl.uniform1f(pr.u.uTime, time);
+      gl.uniform1fv(pr.u.uTf, TF); gl.uniform1fv(pr.u.uFgi, meta.fgi);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, nx * ny);
+      gl.depthMask(true); gl.disable(gl.BLEND);
     }
     function drawGlow(now) {
       if (!glowData.length) return;
@@ -637,6 +909,7 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, gbo); gl.bufferData(gl.ARRAY_BUFFER, glowData, gl.DYNAMIC_DRAW);
       var loc = gl.getAttribLocation(pr.p, 'aP'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, 0, 0);
       gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform1f(pr.u.uPx, canvas.height * 0.9);
+      gl.uniform1f(pr.u.uGain, 0.45 + 0.55 * (1 - LS.day));   // the glow reads strongest at night
       gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false);
       gl.drawArrays(gl.POINTS, 0, glowData.length / 4);
       gl.depthMask(true); gl.disable(gl.BLEND);
@@ -645,31 +918,47 @@
       var pr = progs.smoke; gl.useProgram(pr.p);
       gl.bindBuffer(gl.ARRAY_BUFFER, sbo); gl.bufferData(gl.ARRAY_BUFFER, smoke, gl.DYNAMIC_DRAW);
       var loc = gl.getAttribLocation(pr.p, 'aP'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, sbo2); gl.bufferData(gl.ARRAY_BUFFER, smokeS, gl.DYNAMIC_DRAW);
+      var loc2 = gl.getAttribLocation(pr.p, 'aS'); gl.enableVertexAttribArray(loc2); gl.vertexAttribPointer(loc2, 2, gl.FLOAT, false, 0, 0);
       gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform1f(pr.u.uScale, canvas.height * 1.4);
-      gl.uniform3f(pr.u.uSmoke, dark ? 0.55 : 0.42, dark ? 0.55 : 0.42, dark ? 0.57 : 0.44);
-      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+      var d = LS.day, lit = mix3([0.17, 0.18, 0.21], [0.80 * (0.6 + 0.4 * LS.sunCol[0]), 0.76 * (0.6 + 0.4 * LS.sunCol[1]), 0.72 * (0.6 + 0.4 * LS.sunCol[2])], d);
+      gl.uniform3fv(pr.u.uLit, lit); gl.uniform3fv(pr.u.uShade, mix3([0.05, 0.05, 0.06], [0.33, 0.32, 0.33], d)); gl.uniform3f(pr.u.uGlow, 1.0, 0.5, 0.18);
+      // keep the canvas opaque: blend colour only, or the page behind shows through the smoke as black
+      gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE); gl.depthMask(false);
       gl.drawArrays(gl.POINTS, 0, NSMOKE);
-      gl.depthMask(true); gl.disable(gl.BLEND);
+      gl.depthMask(true); gl.disable(gl.BLEND); gl.disableVertexAttribArray(loc2);
     }
+    // buoyant plume: puffs leave the fire fast and slow down as they cool, the wind takes over with height, and each puff wanders
     function updateSmoke(dtReal) {
-      var wv = windVec(), drift = Math.min(P.wind, 15) * 18;
+      var wv = windVec(), drift = Math.min(P.wind, 15) * 18, tnow = performance.now() / 1000;
       for (var m = 0; m < NSMOKE; m++) {
         if (smoke[4 * m + 3] >= 1) continue;
-        smoke[4 * m] += (wv[0] * drift + smokeV[4 * m]) * dtReal;
-        smoke[4 * m + 2] += (-wv[1] * drift + smokeV[4 * m + 2]) * dtReal;
+        var life = smoke[4 * m + 3], sd = smokeS[2 * m], lift = 0.35 + 1.15 * Math.min(1, life * 2.2);
+        smoke[4 * m] += (wv[0] * drift * lift + smokeV[4 * m] + Math.sin(tnow * 0.9 + sd * 40) * 22) * dtReal;
+        smoke[4 * m + 2] += (-wv[1] * drift * lift + smokeV[4 * m + 2] + Math.cos(tnow * 0.8 + sd * 53) * 22) * dtReal;
         smoke[4 * m + 1] += smokeV[4 * m + 1] * dtReal;
+        smokeV[4 * m + 1] *= Math.exp(-dtReal * 0.22);
         smoke[4 * m + 3] += dtReal / smokeV[4 * m + 3];
       }
       if (!hot.length || !P.playing) return;
-      var n = Math.min(40, Math.ceil(hot.length / 6));
-      for (var s = 0; s < n; s++) {
-        var pick2 = (Math.random() * (hot.length / 2)) | 0, cell = hot[2 * pick2];
+      smokeDebt += Math.min(420, 24 + hot.length * 3) * dtReal;
+      while (smokeDebt >= 1) {
+        smokeDebt -= 1;
+        var pick2 = (Math.random() * (hot.length / 2)) | 0, cell = hot[2 * pick2], crown = hotCrown[pick2] || 0;
         var cx = (cell % RW) * 4 + Math.random() * 4, cy = ((cell / RW) | 0) * 4 + Math.random() * 4, wp = worldOfCell(cx, cy);
-        smoke[4 * sp] = wp[0]; smoke[4 * sp + 1] = wp[1] + 20; smoke[4 * sp + 2] = wp[2]; smoke[4 * sp + 3] = 0;
-        smokeV[4 * sp] = (Math.random() - 0.5) * 60; smokeV[4 * sp + 1] = 120 + Math.random() * 160; smokeV[4 * sp + 2] = (Math.random() - 0.5) * 60;
-        smokeV[4 * sp + 3] = 5 + Math.random() * 6;
+        smoke[4 * sp] = wp[0]; smoke[4 * sp + 1] = wp[1] + 12; smoke[4 * sp + 2] = wp[2]; smoke[4 * sp + 3] = 0;
+        smokeV[4 * sp] = (Math.random() - 0.5) * 50; smokeV[4 * sp + 1] = (110 + Math.random() * 150) * (crown ? 1.5 : 1); smokeV[4 * sp + 2] = (Math.random() - 0.5) * 50;
+        smokeV[4 * sp + 3] = 8 + Math.random() * 6;
+        smokeS[2 * sp] = Math.random(); smokeS[2 * sp + 1] = crown ? 0.75 : 0.12 + 0.2 * Math.random();
         sp = (sp + 1) % NSMOKE;
       }
+    }
+    // keep the frame rate: if frames stay slow, draw fewer trees
+    var slow = 0;
+    function adapt(dtReal) {
+      if (!trees || !P.trees) return;
+      slow = dtReal > 0.034 ? slow + dtReal : Math.max(0, slow - dtReal * 0.5);
+      if (slow > 2.5 && P.treeFrac > 0.3) { P.treeFrac = Math.max(0.3, P.treeFrac * 0.7); slow = 0; }
     }
     function frame(now) {
       var dtReal = Math.min(0.1, (now - lastFrame) / 1000); lastFrame = now;
@@ -680,7 +969,7 @@
           if (t > 24 * 3600) { P.playing = false; P.orbit = false; bPlay.textContent = 'Play'; }
           if (P.spot) spotting(dtReal * P.speed * 60);
         }
-        updateCam(dtReal); readBack(now); updateSmoke(dtReal); draw(now); overlay(now);
+        updateCam(dtReal); readBack(now); updateSmoke(dtReal); adapt(dtReal); draw(now); overlay(now);
       }
       requestAnimationFrame(frame);
     }
@@ -852,7 +1141,7 @@
     })();
     function drawBuildings(now, dark) {
       if (!P.bld) return;
-      var bg = dark ? [0.06, 0.065, 0.07] : [0.80, 0.84, 0.88], time = (now - start) / 1000;
+      var bg = LS.hor, time = (now - start) / 1000;
       if (bld) {
         var pr = progs.bld; gl.useProgram(pr.p);
         gl.bindBuffer(gl.ARRAY_BUFFER, bld.vb);
@@ -863,6 +1152,7 @@
         gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, states[cur].t); gl.uniform1i(pr.u.uState, 0);
         gl.uniformMatrix4fv(pr.u.uMVP, false, mvp); gl.uniform1f(pr.u.uExag, P.exag); gl.uniform2f(pr.u.uOrigin, origin[0], origin[1]);
         gl.uniform2i(pr.u.uSize, W, H); gl.uniform1f(pr.u.uT, t); gl.uniform1f(pr.u.uDark, dark ? 1 : 0); gl.uniform1f(pr.u.uTime, time);
+        gl.uniform3fv(pr.u.uSun, LS.sun);
         gl.drawElements(gl.TRIANGLES, bld.n, gl.UNSIGNED_INT, 0);
         gl.disableVertexAttribArray(ln);
       }
@@ -871,14 +1161,14 @@
         gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, states[cur].t); gl.uniform1i(pb.u.uState, 0);
         gl.uniformMatrix4fv(pb.u.uMVP, false, mvp); gl.uniform1f(pb.u.uExag, P.exag); gl.uniform2f(pb.u.uOrigin, origin[0], origin[1]);
         gl.uniform2i(pb.u.uSize, W, H); gl.uniform1f(pb.u.uT, t); gl.uniform1f(pb.u.uDark, dark ? 1 : 0); gl.uniform1f(pb.u.uTime, time);
-        gl.uniform3f(pb.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3f(pb.u.uFog, bg[0], bg[1], bg[2]);
+        gl.uniform3f(pb.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3f(pb.u.uFog, bg[0], bg[1], bg[2]); gl.uniform3fv(pb.u.uSun, LS.sun);
         gl.drawElementsInstanced(gl.TRIANGLES, 30, gl.UNSIGNED_SHORT, 0, boxes.n);
         gl.bindVertexArray(null);
       }
       if (bridge) {
         var pg = progs.br; gl.useProgram(pg.p); gl.bindVertexArray(bridge.vao);
         gl.uniformMatrix4fv(pg.u.uMVP, false, mvp); gl.uniform1f(pg.u.uExag, P.exag); gl.uniform1f(pg.u.uDark, dark ? 1 : 0);
-        gl.uniform3f(pg.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3f(pg.u.uFog, bg[0], bg[1], bg[2]);
+        gl.uniform3f(pg.u.uEye, eye[0], eye[1], eye[2]); gl.uniform3f(pg.u.uFog, bg[0], bg[1], bg[2]); gl.uniform3fv(pg.u.uSun, LS.sun);
         gl.drawArrays(gl.TRIANGLES, 0, bridge.n);
         gl.bindVertexArray(null);
       }
@@ -990,6 +1280,7 @@
       nav.appendChild(btn);
     });
     compass.addEventListener('click', function () { setGoal({ az: 0 }, 4); });
+    host.simSet = function (o) { Object.assign(P, o); if (o.crown !== undefined || o.wind !== undefined) coefChanged(); return JSON.stringify(P); };   // for tests
     host.cameraJump = function () { Object.assign(cam, goal); cam.ty = heightAt((cam.tx + origin[0]) / DX, (cam.tz + origin[1]) / DX) * P.exag; return JSON.stringify(goal); };   // for tests and scripted tours: skip the glide
     bPlay.addEventListener('click', function () { P.playing = !P.playing; bPlay.textContent = P.playing ? 'Pause' : 'Play'; });
     bReset.addEventListener('click', function () { reset(); });
@@ -1034,7 +1325,8 @@
   function loadData(root) {
     if (!dataPromise) {
       dataPromise = Promise.all([get(root + 'data/fp3d.json').then(function (r) { return r.json(); }), loadBitmap(root + 'data/fp3d-grid.png'),
-        loadBitmap(root + 'img/fire/fuelmap-dark.jpg'), loadBitmap(root + 'img/fire/fuelmap-light.jpg')]);
+        loadBitmap(root + 'img/fire/fuelmap-dark.jpg'), loadBitmap(root + 'img/fire/fuelmap-light.jpg'),
+        loadBitmap(root + 'data/fp3d-canopy.png').catch(function () { return null; })]);   // without it the simulator falls back to the fuel-map view
       dataPromise.catch(function () { dataPromise = null; });   // allow a retry
     }
     return dataPromise;
@@ -1046,7 +1338,7 @@
     el.appendChild(wait);
     loadData(root).then(function (r) {
       wait.remove(); el.classList.remove('loading');
-      try { Sim(el, r[0], r[1], r[2], r[3]); }
+      try { Sim(el, r[0], r[1], r[2], r[3], r[4]); }
       catch (err) { el.appendChild(h('p', { class: 'sim3d-fallback', text: 'The 3-D simulation could not start: ' + err.message })); }
     }).catch(function (err) {
       wait.textContent = 'Could not load the Forest Park data (' + err.message + '). ';
