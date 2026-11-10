@@ -3,11 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Curriculum Vitae and Resume" />
     <title>CV - Acamaro Cutcher</title>
+    <meta
+      name="description"
+      content="Curriculum vitae of Acamaro Cutcher, PhD student in mathematics at Portland State University: education, research experience, publications, fellowships and teaching."
+    />
+    <meta name="author" content="Acamaro Cutcher" />
+    <link rel="canonical" href="https://acamaro.com/cv.html" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="Acamaro Cutcher" />
+    <meta property="og:title" content="Curriculum Vitae - Acamaro Cutcher" />
+    <meta
+      property="og:description"
+      content="Education, research experience, publications, fellowships and teaching."
+    />
+    <meta property="og:url" content="https://acamaro.com/cv.html" />
+    <meta property="og:image" content="https://acamaro.com/images/profile.jpg" />
 
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+    <script src="js/theme-init.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link
@@ -19,190 +39,187 @@
     <link rel="stylesheet" href="css/cv.css" />
   </head>
   <body>
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-      <div class="container nav-container">
-        <a href="index.html" class="logo">Acamaro Cutcher</a>
+    <a class="skip-link" href="#main">Skip to content</a>
 
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar" aria-label="Main">
+      <div class="container nav-container">
+        <a href="index.html" class="logo">
+          <span class="logo-mark" aria-hidden="true">AC</span>
+          Acamaro Cutcher
+        </a>
 
         <ul class="nav-menu" id="navMenu">
-          <li><a href="index.html#home" class="nav-link">Home</a></li>
-          <li><a href="index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html#work" class="nav-link">Work</a></li>
           <li><a href="index.html#research" class="nav-link">Research</a></li>
+          <li><a href="index.html#about" class="nav-link">About</a></li>
           <li><a href="projects/index.html" class="nav-link">Projects</a></li>
-          <li><a href="index.html#blog" class="nav-link">Blog</a></li>
-          <li><a href="index.html#gallery" class="nav-link">Gallery</a></li>
-          <li><a href="cv.html" class="nav-link active">CV</a></li>
+          <li><a href="cv.html" class="nav-link active" aria-current="page">CV</a></li>
           <li><a href="index.html#contact" class="nav-link">Contact</a></li>
         </ul>
 
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <i class="fas fa-moon"></i>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+          <i class="fas fa-moon" aria-hidden="true"></i>
+        </button>
+
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </nav>
 
-    <!-- CV Header -->
-    <div class="cv-header">
+    <!-- Header -->
+    <header class="page-header">
       <div class="container">
         <div class="cv-header-content">
           <div>
-            <h1>Curriculum Vitae</h1>
-            <p class="cv-subtitle">Academic & Professional Experience</p>
+            <p class="eyebrow">Curriculum Vitae</p>
+            <h1>Acamaro Cutcher</h1>
+            <p class="page-lede">
+              PhD student in mathematics at Portland State University. Wildfire modeling with machine learning.
+            </p>
           </div>
           <div class="cv-actions">
-            <button onclick="window.print()" class="btn btn-secondary">
-              <i class="fas fa-print"></i> Print CV
+            <button type="button" class="btn btn-secondary" data-print>
+              <i class="fas fa-print" aria-hidden="true"></i> Print
             </button>
-            <a
-              href="files/cv_acamaro_cutcher.pdf"
-              download
-              class="btn btn-primary"
-            >
-              <i class="fas fa-download"></i> Download PDF
+            <a href="files/cv_acamaro_cutcher.pdf" download class="btn btn-primary">
+              <i class="fas fa-download" aria-hidden="true"></i> Download PDF
             </a>
           </div>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- CV Content -->
-    <div class="cv-content">
+    <main id="main" class="cv-content">
       <div class="container">
         <div class="cv-grid">
-          <!-- Main Content -->
+          <!-- Main column -->
           <div class="cv-main">
             <!-- Summary -->
-            <section class="cv-section">
-              <h2 class="cv-section-title">
-                <i class="fas fa-user"></i> Professional Summary
+            <section class="cv-section" aria-labelledby="summary-h">
+              <h2 class="cv-section-title" id="summary-h">
+                <i class="fas fa-user" aria-hidden="true"></i> Summary
               </h2>
               <p class="cv-summary">
-                Multidisciplinary researcher with a triple major background in
-                Mathematics, Physics, and Computer Science. Proven expertise in
-                bridging experimental and theoretical physics, from fabricating
-                thin film devices and conducting reflectance experiments to
-                modeling super-lattice structures using Bloch’s theorem and
-                Maxwell’s equations. Demonstrated proficiency in abstract
-                algebra, specifically in classifying finite group embeddings and
-                applying Sylow theorems. Currently advancing the field of
-                computational forecasting through hybrid data-driven modeling of
-                monsoon oscillations and adapting Fourier Neural Operators
-                (FourCAstNet) for direct wildfire spread prediction.
+                First-year PhD student in mathematics at Portland State University. My research focuses on wildfire
+                modeling, using machine learning to learn fast surrogate models for operational use. Undergraduate
+                degrees in mathematics (honors), physics, computer science and general science. Research experience
+                spans molecular dynamics with machine-learned potentials at Los Alamos National Laboratory, hybrid
+                data-driven forecasting of monsoon oscillations, finite group theory, and experimental and theoretical
+                plasmonics, from fabricating thin-film devices to modeling superlattices with Bloch's theorem and
+                Maxwell's equations.
               </p>
             </section>
 
             <!-- Education -->
-            <section class="cv-section">
-              <h2 class="cv-section-title">
-                <i class="fas fa-graduation-cap"></i> Education
+            <section class="cv-section" aria-labelledby="education-h">
+              <h2 class="cv-section-title" id="education-h">
+                <i class="fas fa-graduation-cap" aria-hidden="true"></i> Education
               </h2>
 
               <div class="cv-item">
                 <div class="cv-item-header">
                   <div>
-                    <h3>B.S. in Computer Science, Mathematics & Physics</h3>
-                    <p class="cv-institution">Portland State University</p>
+                    <h3>Ph.D. in Mathematics (in progress)</h3>
+                    <p class="cv-institution">
+                      Portland State University, Department of Mathematics &amp; Statistics
+                    </p>
                   </div>
-                  <span class="cv-date">2022 - 2026</span>
+                  <span class="cv-date">2026 – Present</span>
                 </div>
                 <p class="cv-description">
-                  <strong>Background:</strong> "Comprehensive exposure to areas
-                  of Computer Science, Mathematics and Physics. Research
-                  projects include Minimal Group Embeddings, and Wildfire
-                  Forecasting using dynamical models and deep learning
-                  methods."<br />
+                  Research on wildfire modeling: machine learning techniques for learning fast surrogate models for
+                  operational use. NRT RECHARGE Fellow.
                 </p>
-                <!-- <p class="cv-description">
-                  <strong>RTG Fellowship:</strong> "Modified Fourier Neural
-                  Operators for Direct Wildfire Spread Prediction: A FourCastNet
-                  Adaptation"<br />
-                  <strong>Advisor:</strong> Prof. Safa Mote<br />
-                  Focus: Deep Learning, scientific computing, Dynamical Systems,
-                  Wildfire Forecasting
-                </p> -->
-                <!-- 
-                <p class="cv-description">
-                  <strong>McNair/CCAR REU:</strong> "Data-Driven and Dynamical
-                  Forecasting of the South Asian Monsoon Intraseasonal
-                  Oscillation"<br />
-                  <strong>Advisor:</strong> Prof. Safa Mote<br />
-                  Focus: Machine learning, scientific computing, Data-Driven
-                  Forecasting, Dynamical Systems, Weather
-                </p> -->
+              </div>
 
-                <!-- <p class="cv-description">
-                  <strong>Thesis:</strong> "Minimal Group Embeddings"<br />
-                  <strong>Advisor:</strong> Prof. Liubomir Chiriac<br />
-                  Focus: Abstract algebra, Group Theory, Sylow Theorems
-                </p> -->
+              <div class="cv-item">
+                <div class="cv-item-header">
+                  <div>
+                    <h3>B.S. in Mathematics (Honors), Physics, Computer Science, and General Science</h3>
+                    <p class="cv-institution">Portland State University</p>
+                  </div>
+                  <span class="cv-date">2022 – 2026</span>
+                </div>
+                <p class="cv-description">
+                  Honors thesis in mathematics on minimal group embeddings. Undergraduate research in wildfire
+                  forecasting with dynamical models and deep learning.
+                </p>
                 <div class="cv-tags">
-                  <span class="tag">GPA: 3.5/4.0</span>
+                  <span class="tag">GPA: 3.5 / 4.0</span>
                 </div>
               </div>
 
               <div class="cv-item">
                 <div class="cv-item-header">
                   <div>
-                    <h3>Mathematics & Physics</h3>
+                    <h3>Mathematics &amp; Physics</h3>
                     <p class="cv-institution">Western Washington University</p>
                   </div>
-                  <span class="cv-date">2019 - 2021</span>
+                  <span class="cv-date">2019 – 2021</span>
                 </div>
                 <p class="cv-description">
-                  <strong>Background:</strong> "Introductory Physics and
-                  Mathematics classes. Research in Surface Plasmon Polaritons,
-                  experimental development of thin film devices and theoretical
-                  calculation of electric fields inside these finite
-                  devices."<br />
+                  Introductory physics and mathematics coursework. Research on surface plasmon polaritons: experimental
+                  development of thin-film devices and theoretical calculation of the electric fields inside these
+                  finite devices.
                 </p>
               </div>
             </section>
 
-            <!-- Experience -->
-            <section class="cv-section">
-              <h2 class="cv-section-title">
-                <i class="fas fa-briefcase"></i> Professional Experience
+            <!-- Research experience -->
+            <section class="cv-section" aria-labelledby="experience-h">
+              <h2 class="cv-section-title" id="experience-h">
+                <i class="fas fa-flask" aria-hidden="true"></i> Research Experience
               </h2>
+
+              <div class="cv-item">
+                <div class="cv-item-header">
+                  <div>
+                    <h3>Summer Research, Los Alamos National Laboratory</h3>
+                    <p class="cv-institution">Los Alamos National Laboratory, Los Alamos, NM</p>
+                  </div>
+                  <span class="cv-date">Summer 2026</span>
+                </div>
+                <p class="cv-description">
+                  <strong>Melting of tin from molecular dynamics with a hybrid machine-learned potential.</strong>
+                  Ran molecular dynamics simulations in LAMMPS with a hybrid machine-learned interatomic potential,
+                  using first-passage-time dynamics to understand the melting behavior of tin.
+                </p>
+                <div class="cv-tags">
+                  <span class="tag">LAMMPS</span>
+                  <span class="tag">Molecular dynamics</span>
+                  <span class="tag">Machine-learned potentials</span>
+                  <span class="tag">First-passage times</span>
+                </div>
+              </div>
 
               <div class="cv-item">
                 <div class="cv-item-header">
                   <div>
                     <h3>RTG in CADES Fellowship</h3>
                     <p class="cv-institution">
-                      Portland State University / Department of Mathematics &
-                      Statistics
+                      Portland State University, Department of Mathematics &amp; Statistics
                     </p>
                   </div>
-                  <span class="cv-date">Summer 2025 - Present</span>
+                  <span class="cv-date">Summer 2025 – Present</span>
                 </div>
-                <ul class="cv-list">
-                  <p class="cv-description">
-                    <strong
-                      >Modified Fourier Neural Operators for Direct Wildfire
-                      Spread Prediction: A FourCastNet Adaptation:</strong
-                    >
-                    "This research utilizes the FourCastNet architecture for
-                    direct wildfire propagation modeling. It integrates critical
-                    fire drivers—including fuel moisture, vegetation density
-                    (LANDFIRE), and topography—into the model's input channels.
-                    By training the system on historical fire perimeters, it
-                    learns to predict the fire front's evolution as a discrete
-                    state-space variable. This approach leverages FourCastNet's
-                    speed, generating subseasonal fire-spread ensembles
-                    dramatically faster than traditional physics models."<br />
-                  </p>
-                </ul>
-
+                <p class="cv-description">
+                  <strong>
+                    Modified Fourier Neural Operators for Direct Wildfire Spread Prediction: A FourCastNet Adaptation.
+                  </strong>
+                  Uses the FourCastNet architecture for direct modeling of wildfire propagation. Critical fire drivers,
+                  including fuel moisture, vegetation density (LANDFIRE) and topography, are integrated into the
+                  model's input channels. Trained on historical fire perimeters, the system learns to predict the
+                  evolution of the fire front as a discrete state-space variable. The approach builds on FourCastNet's
+                  speed, with the goal of generating fire-spread ensembles far faster than traditional physics models.
+                </p>
                 <div class="cv-tags">
                   <span class="tag">Python</span>
                   <span class="tag">C++</span>
-                  <span class="tag">Machine Learning</span>
+                  <span class="tag">Machine learning</span>
                   <span class="tag">HPC</span>
                 </div>
               </div>
@@ -210,41 +227,27 @@
               <div class="cv-item">
                 <div class="cv-item-header">
                   <div>
-                    <h3>McNair / CCAR REU</h3>
-                    <p class="cv-institution">
-                      Portland State University / Department of Physics and
-                      Astronomy
-                    </p>
+                    <h3>McNair Scholars Program / CCAR REU</h3>
+                    <p class="cv-institution">Portland State University, Department of Physics</p>
                   </div>
-                  <span class="cv-date">Summer 2024 - Present</span>
+                  <span class="cv-date">Summer 2024 – Present</span>
                 </div>
-                <ul class="cv-list">
-                  <p class="cv-description">
-                    <strong
-                      >Hybrid Data-Driven and Dynamical Forecasting of the South
-                      Asian Monsoon Intraseasonal Oscillation:</strong
-                    >
-                    "Advancing Monsoon Forecasting through Data-Driven
-                    Oscillatory Modes Current dynamical models often struggle to
-                    predict the active and break phases of the South Asian
-                    monsoon, which are driven by northward-propagating rainfall
-                    anomalies known as MISOs. This research introduces Ensemble
-                    Oscillation Correction (EnOC) to overcome these limitations.
-                    By leveraging the near-regularity of climate oscillations,
-                    this methodology refines traditional physics-based forecasts
-                    with data-driven insights. The result is a more accurate
-                    tool for agricultural and hydrological planning, providing
-                    reliable rainfall predictions three to four weeks in
-                    advance—a timeframe previously considered unreliable by
-                    standard meteorological models."<br />
-                  </p>
-                </ul>
-
+                <p class="cv-description">
+                  <strong>
+                    Hybrid Data-Driven and Dynamical Forecasting of the South Asian Monsoon Intraseasonal Oscillation.
+                  </strong>
+                  Dynamical models struggle to predict the active and break phases of the South Asian monsoon, which
+                  are driven by northward-propagating rainfall anomalies known as MISOs. This research applies Ensemble
+                  Oscillation Correction (EnOC; <a href="https://doi.org/10.1175/JCLI-D-20-0624.1">Bach et al., 2021</a>),
+                  which uses the near-regularity of climate oscillations to refine physics-based ensemble forecasts
+                  with data-driven ones, improving rainfall prediction three to four weeks in advance for agricultural
+                  and hydrological planning.
+                </p>
                 <div class="cv-tags">
-                  <span class="tag">Python/Julia</span>
-                  <span class="tag">Machine Learning</span>
-                  <span class="tag">Data-Driven Forecasting</span>
-                  <span class="tag">Dynamical Models</span>
+                  <span class="tag">Python / Julia</span>
+                  <span class="tag">Machine learning</span>
+                  <span class="tag">Data-driven forecasting</span>
+                  <span class="tag">Dynamical models</span>
                   <span class="tag">HPC</span>
                 </div>
               </div>
@@ -254,74 +257,53 @@
                   <div>
                     <h3>Math Honors Thesis / LSAMP Research Scholar</h3>
                     <p class="cv-institution">
-                      Portland State University / Department of Mathematics and
-                      Statistics
+                      Portland State University, Department of Mathematics &amp; Statistics
                     </p>
                   </div>
-                  <span class="cv-date">Fall 2023 - Spring 2024</span>
+                  <span class="cv-date">Fall 2023 – Spring 2024</span>
                 </div>
-                <ul class="cv-list">
-                  <p class="cv-description">
-                    <strong>Minimal Group Embeddings</strong>
-                    "This project focuses on the classification of small finite
-                    groups and the determination of their minimal embedding
-                    degree. By utilizing the Sylow Theorems, I analyzed the
-                    prime power subgroups for each order to verify group
-                    structures and non-simplicity. Building upon Cayley’s
-                    Theorem, which guarantees an embedding into \(S_{|G|}\), I
-                    calculated the minimum \(n\) such that \(G\hookrightarrow
-                    S_{n}\), often finding degrees significantly smaller than
-                    the group's order."<br />
-                  </p>
-                </ul>
-
+                <p class="cv-description">
+                  <strong>Minimal Group Embeddings.</strong>
+                  Classified small finite groups and determined their minimal embedding degree. Used the Sylow theorems
+                  to analyze the prime-power subgroups for each order and verify group structure and non-simplicity.
+                  Building on Cayley's theorem, which guarantees an embedding into <em>S</em><sub>|<em>G</em>|</sub>,
+                  calculated the minimum <em>n</em> such that <em>G</em> ↪ <em>S<sub>n</sub></em>, often finding
+                  degrees much smaller than the group's order.
+                  <a href="papers/401_Honors_Project_Minimal_Group_Embeddings.pdf">Thesis (PDF)</a>.
+                </p>
                 <div class="cv-tags">
-                  <span class="tag">Abstract Algebra</span>
-                  <span class="tag">Group Theory</span>
-                  <span class="tag">Sylow Theorems</span>
-                  <span class="tag">Group Embeddings</span>
+                  <span class="tag">Abstract algebra</span>
+                  <span class="tag">Group theory</span>
+                  <span class="tag">Sylow theorems</span>
+                  <span class="tag">Group embeddings</span>
                 </div>
               </div>
 
               <div class="cv-item">
                 <div class="cv-item-header">
                   <div>
-                    <h3>
-                      Research Assistantship in Theoretical and Experimental
-                      Physics
-                    </h3>
+                    <h3>Research Assistantship in Theoretical and Experimental Physics</h3>
                     <p class="cv-institution">
-                      Western Washington University / Department of Physics and
-                      Astronomy
+                      Western Washington University, Department of Physics &amp; Astronomy
                     </p>
                   </div>
-                  <span class="cv-date">Fall 2023 - Spring 2024</span>
+                  <span class="cv-date">Fall 2023 – Spring 2024</span>
                 </div>
-                <ul class="cv-list">
-                  <p class="cv-description">
-                    <strong
-                      >Multiscale Theoretical Modeling of Surface Plasmon
-                      Polaritons (SPPs): From Fundamentals to Integrated
-                      Photonic Applications</strong
-                    >
-                    "Theoretical investigation of SPP dispersion relations by
-                    applying Bloch’s Theorem to the fundamental Maxwell’s
-                    equations. By treating the multilayer as a 1D plasmonic
-                    crystal, this model identifies how periodic modulation
-                    creates unique band structures and forbidden gaps. The
-                    findings provide a roadmap for tailoring the optical
-                    response of superllatice metal-insulator-metal devices,
-                    bridging the gap between analytical theory and functional
-                    nanophotonic device design."<br />
-                  </p>
-                </ul>
-
+                <p class="cv-description">
+                  <strong>
+                    Multiscale Theoretical Modeling of Surface Plasmon Polaritons (SPPs): From Fundamentals to
+                    Integrated Photonic Applications.
+                  </strong>
+                  Investigated SPP dispersion relations by applying Bloch's theorem to Maxwell's equations. Treating
+                  the multilayer as a one-dimensional plasmonic crystal, the model identifies how periodic modulation
+                  creates band structures and forbidden gaps, a guide for tailoring the optical response of
+                  superlattice metal–insulator–metal devices.
+                </p>
                 <div class="cv-tags">
-                  <span class="tag">Maxwell's Equations</span>
-                  <span class="tag">Dispersion Relation</span>
-                  <span class="tag">Electric Fields</span>
-                  <span class="tag">Bloch Theorem</span>
-                  <span class="tag">Solid State Physics</span>
+                  <span class="tag">Maxwell's equations</span>
+                  <span class="tag">Dispersion relations</span>
+                  <span class="tag">Bloch's theorem</span>
+                  <span class="tag">Solid-state physics</span>
                   <span class="tag">Mathematica</span>
                 </div>
               </div>
@@ -331,307 +313,162 @@
                   <div>
                     <h3>Research Assistantship in Experimental Physics</h3>
                     <p class="cv-institution">
-                      Western Washington University / Department of Physics and
-                      Astronomy
+                      Western Washington University, Department of Physics &amp; Astronomy
                     </p>
                   </div>
                   <span class="cv-date">Summer 2020</span>
                 </div>
-                <ul class="cv-list">
-                  <p class="cv-description">
-                    <strong
-                      >Excitation of “forbidden” guided-wave plasmon polariton
-                      modes via direct reflectance using a low refractive index
-                      polymer coupling layer.</strong
-                    >
-                    "Experimental investigation of plasmonic modes in
-                    metal-insulator-metal thin film structures using a low
-                    refractive index polymer coupling layer. By employing
-                    angle-resolved reflectance spectroscopy, we successfully
-                    excited and characterized "forbidden" guided-wave plasmon
-                    polariton modes that are typically inaccessible through
-                    conventional methods. The study reveals how the polymer
-                    layer modifies the coupling conditions, enabling direct
-                    excitation of these modes. Our findings provide new insights
-                    into light-matter interactions in complex thin film systems
-                    and open up avenues for advanced photonic device
-                    applications."<br />
-                  </p>
-                </ul>
-
-                <div class="cv-tags">
-                  <span class="tag">Thin Film Devices</span>
-                  <span class="tag">AFM/XRR</span>
-                  <span class="tag">Solid State Physics</span>
-                  <span class="tag">Surface Plasmon Polaritons</span>
-                </div>
-              </div>
-            </section>
-            <!-- Publications -->
-            <section class="cv-section">
-              <h2 class="cv-section-title">
-                <i class="fas fa-book"></i> Selected Publications
-              </h2>
-
-              <div class="cv-publication">
-                <h4>Journal Articles</h4>
-                <ol class="cv-pub-list">
-                  <li>
-                    Marquis CD, McCarley LM, Pollock AL, Cutcher AS, Cannella
-                    MT, Smith TL, et al. Excitation of “forbidden” guided-wave
-                    plasmon polariton modes via direct reflectance using a low
+                <p class="cv-description">
+                  <strong>
+                    Excitation of “forbidden” guided-wave plasmon polariton modes via direct reflectance using a low
                     refractive index polymer coupling layer.
-
-                    <em>PLOS one</em>, 2022
-                    <a
-                      href="https://doi.org/10.1371/journal.pone.0276522"
-                      target="_blank"
-                      class="pub-link"
-                    >
-                      <i class="fas fa-external-link-alt"></i> DOI
-                    </a>
-                    <!-- <a
-                      href="papers/paper1.pdf"
-                      target="_blank"
-                      class="pub-link"
-                    >
-                      <i class="fas fa-file-pdf"></i> PDF
-                    </a> -->
-                  </li>
-                  <!-- <li>
-                    Co-Author, <strong>Your Name</strong>, Another Author.
-                    (2023). "Another Significant Paper."
-                    <em>IEEE Transactions on Pattern Analysis</em>, 42(8),
-                    2341-2355.
-                    <a
-                      href="https://doi.org/xxx"
-                      target="_blank"
-                      class="pub-link"
-                    >
-                      <i class="fas fa-external-link-alt"></i> DOI
-                    </a>
-                  </li>
-                  <li>
-                    <strong>Your Name</strong>, et al. (2022). "Innovative
-                    Methods for Complex Systems."
-                    <em>SIAM Journal on Scientific Computing</em>, 38(5),
-                    A789-A812.
-                  </li> -->
-                </ol>
+                  </strong>
+                  Experimental investigation of plasmonic modes in metal–insulator–metal thin-film structures. Using a
+                  low-index polymer coupling layer and angle-resolved reflectance spectroscopy, the group excited and
+                  characterized guided-wave plasmon polariton modes that are normally inaccessible, and showed how the
+                  polymer layer modifies the coupling conditions. Published in <em>PLOS ONE</em> (2022).
+                </p>
+                <div class="cv-tags">
+                  <span class="tag">Thin-film devices</span>
+                  <span class="tag">AFM / XRR</span>
+                  <span class="tag">Solid-state physics</span>
+                  <span class="tag">Surface plasmon polaritons</span>
+                </div>
               </div>
-              <!-- 
-              <div class="cv-publication">
-                <h4>Conference Proceedings</h4>
-                <ol class="cv-pub-list">
-                  <li>
-                    <strong>Your Name</strong>, Co-Author. (2024). "Novel
-                    Approach to Problem X."
-                    <em>Proceedings of NeurIPS 2024</em>, pp. 1234-1245.
-                    <span class="tag">Best Paper Award</span>
-                  </li>
-                  <li>
-                    <strong>Your Name</strong>. (2023). "Efficient Algorithms
-                    for Large-Scale Optimization." <em>ICML 2023</em>, pp.
-                    5678-5690.
-                    <span class="tag">Oral Presentation</span>
-                  </li>
-                </ol>
-              </div> -->
             </section>
 
-            <!-- Awards & Honors -->
-            <section class="cv-section">
-              <h2 class="cv-section-title">
-                <i class="fas fa-trophy"></i> Awards & Honors
+            <!-- Publications -->
+            <section class="cv-section" aria-labelledby="publications-h">
+              <h2 class="cv-section-title" id="publications-h">
+                <i class="fas fa-book" aria-hidden="true"></i> Publications
               </h2>
 
-              <div class="cv-awards">
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-graduation-cap"></i>
+              <ol class="cv-pub-list">
+                <li>
+                  Marquis CD, McCarley LM, Pollock AL, <strong>Cutcher AS</strong>, Cannella MT, Smith TL, Larsen MB,
+                  Peden BM, Johnson BL, Leger JM (2022). Excitation of “forbidden” guided-wave plasmon polariton modes
+                  via direct reflectance using a low refractive index polymer coupling layer.
+                  <em>PLOS ONE</em> 17(10): e0276522.
+                  <div class="pub-links">
+                    <a href="https://doi.org/10.1371/journal.pone.0276522" class="pub-link">
+                      <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                      doi:10.1371/journal.pone.0276522
+                    </a>
+                    <a
+                      href="https://scholar.google.com/citations?user=OsKdb4IAAAAJ&amp;hl=en"
+                      class="pub-link"
+                    >
+                      <i class="fas fa-graduation-cap" aria-hidden="true"></i> Google Scholar
+                    </a>
                   </div>
-                  <div>
-                    <h4>
-                      NSF RTG Undergraduate Fellowship | Portland State
-                      University (Summer 2025)
-                    </h4>
-                    <p>
-                      Awarded a merit-based fellowship to join a
-                      multidisciplinary research team; contributed to technical
-                      projects in data-driven science to perform original
-                      research in wildfire forecasting using deep learning
-                      methods.
-                    </p>
-                  </div>
-                </div>
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Ronald E. McNair Post-Baccalaureate Achievement Scholar
-                      (2024)
-                    </h4>
-                    <p>
-                      Selected for a federally-funded, national fellowship
-                      program preparing high-achieving undergraduates for
-                      doctoral studies through intensive faculty-mentored
-                      research.
-                    </p>
-                  </div>
-                </div>
+                </li>
+              </ol>
+            </section>
 
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      NSF Undergraduate Research Fellow | Center for Climate and
-                      Aerosol Research at Portland State University (Summer
-                      2024)
-                    </h4>
-                    <p>
-                      Selected for a prestigious, NSF-funded 10-week intensive
-                      residency at the Center for Climate and Aerosol Research
-                      (CCAR) to conduct independent, faculty-mentored research
-                      in atmospheric science.
-                    </p>
-                  </div>
-                </div>
+            <!-- Awards -->
+            <section class="cv-section" id="awards" aria-labelledby="awards-h">
+              <h2 class="cv-section-title" id="awards-h">
+                <i class="fas fa-trophy" aria-hidden="true"></i> Awards &amp; Honors
+              </h2>
 
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Goforth Semiconductor Microelectronics Scholarship |
-                      Portland State University (Summer 2024)
-                    </h4>
-                    <p>
-                      Recipient of a National Science Foundation (NSF)-funded
-                      scholarship supporting STEM coursework and professional
-                      development for technical careers in the Pacific
-                      Northwest’s "Silicon Forest" semiconductor industry.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Jarvis Research Fellow | Western Washington University
-                      (2021)
-                    </h4>
-                    <p>
-                      Selected as a merit-based recipient of a $7,000
-                      college-wide scholarship to conduct intensive,
-                      faculty-mentored research within the College of Science
-                      and Engineering (CSE).
-                    </p>
-                  </div>
-                </div>
-
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Internal ASCME Research Assistantship | Western Washington
-                      University (Summer 2020)
-                    </h4>
-                    <p>
-                      Awarded a competitive research assistantship to conduct
-                      faculty-mentored research in experimental physics within
-                      the Advanced Surface-Engineered Coatings/Materials and
-                      Energy (ASCME) lab.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-award"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Three-Time Mercer Family Foundation Scholar (2023 – 2025)
-                    </h4>
-                    <p>
-                      Selected as an "exceptional" scholar in Math/Physics based
-                      on academic merit and commitment to advancing scientific
-                      research. One of a limited number of recipients chosen
-                      nationally for their potential to serve society through
-                      the physical sciences.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-award"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      PSU EAGLES S-STEM Scholarship | Portland State University
-                      (2025 – 2026)
-                    </h4>
-                    <p>
-                      Awarded a highly competitive, merit- and need-based
-                      NSF-funded scholarship for excellence in STEM fields.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-award"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Mickey and Carole Ghio Science Scholarship | Western
-                      Washington University (2020 – 2021)
-                    </h4>
-                    <p>
-                      Recipient of a competitive, merit-based scholarship
-                      recognizing outstanding academic achievement and
-                      professional promise within the Western Washington
-                      University College of Science and Engineering (CSE).
-                    </p>
-                  </div>
-                </div>
-
-                <div class="cv-award-item">
-                  <div class="award-icon">
-                    <i class="fas fa-award"></i>
-                  </div>
-                  <div>
-                    <h4>
-                      Multicultural Achievement Program (MAP) Scholarship |
-                      Western Washington University (2020-2021)
-                    </h4>
-                    <p>
-                      Recipient of a merit-based award recognized for
-                      significant contributions to multiculturalism. Chosen
-                      through a rigorous application and essay process for the
-                      potential to foster a diverse and inclusive campus
-                      environment.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ul class="cv-awards">
+                <li class="cv-award-item">
+                  <h3>NRT RECHARGE Fellow <small>Portland State University</small></h3>
+                  <span class="cv-date">2026 – 2028</span>
+                  <p>
+                    NSF Research Traineeship: Research and Education for Cascading Hazards And Resilient Group
+                    Engagement. A graduate training program on the causes and consequences of, and community responses
+                    to, cascading natural hazards.
+                    <a href="https://sites.google.com/pdx.edu/psunrt/home">Program site</a>.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>NSF RTG Undergraduate Fellowship <small>Portland State University</small></h3>
+                  <span class="cv-date">Summer 2025</span>
+                  <p>
+                    Merit-based fellowship from the NSF Research Training Group in Computation- and Data-Enabled
+                    Science, to carry out original research in wildfire forecasting with deep learning as part of a
+                    multidisciplinary team.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>Ronald E. McNair Post-Baccalaureate Achievement Scholar <small>Portland State University</small></h3>
+                  <span class="cv-date">2024</span>
+                  <p>
+                    Federally funded national program that prepares undergraduates for doctoral study through
+                    intensive, faculty-mentored research.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>
+                    NSF Undergraduate Research Fellow
+                    <small>Center for Climate and Aerosol Research, Portland State University</small>
+                  </h3>
+                  <span class="cv-date">Summer 2024</span>
+                  <p>
+                    NSF-funded, ten-week summer research program (REU) at the Center for Climate and Aerosol Research
+                    (CCAR): independent, faculty-mentored research in atmospheric science.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>Goforth Semiconductor Microelectronics Scholarship <small>Portland State University</small></h3>
+                  <span class="cv-date">Summer 2024</span>
+                  <p>
+                    NSF-funded scholarship supporting STEM coursework and professional development for technical
+                    careers in the Pacific Northwest's “Silicon Forest” semiconductor industry.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>Mercer Family Foundation Scholar, three times</h3>
+                  <span class="cv-date">2023 – 2025</span>
+                  <p>
+                    Scholarship for mathematics and physics majors at Oregon universities, awarded on academic merit
+                    and commitment to scientific research.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>PSU EAGLES S-STEM Scholarship <small>Portland State University</small></h3>
+                  <span class="cv-date">2025 – 2026</span>
+                  <p>Competitive, merit- and need-based NSF-funded scholarship for excellence in STEM.</p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>Jarvis Research Fellow <small>Western Washington University</small></h3>
+                  <span class="cv-date">2021</span>
+                  <p>
+                    Merit-based $7,000 college-wide award (Jarvis Memorial Summer Research Award) for intensive,
+                    faculty-mentored research in the College of Science and Engineering.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>Internal ASCME Research Assistantship <small>Western Washington University</small></h3>
+                  <span class="cv-date">Summer 2020</span>
+                  <p>Competitive research assistantship for faculty-mentored research in experimental physics.</p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>Mickey and Carole Ghio Science Scholarship <small>Western Washington University</small></h3>
+                  <span class="cv-date">2020 – 2021</span>
+                  <p>
+                    Competitive scholarship from the College of Science and Engineering recognizing academic
+                    achievement and professional promise.
+                  </p>
+                </li>
+                <li class="cv-award-item">
+                  <h3>
+                    Multicultural Achievement Program (MAP) Scholarship <small>Western Washington University</small>
+                  </h3>
+                  <span class="cv-date">2020 – 2021</span>
+                  <p>
+                    Awarded for academic achievement, leadership and commitment to multicultural issues, through an
+                    application and essay process.
+                  </p>
+                </li>
+              </ul>
             </section>
 
             <!-- Teaching -->
-            <section class="cv-section">
-              <h2 class="cv-section-title">
-                <i class="fas fa-chalkboard-teacher"></i> Teaching Experience
+            <section class="cv-section" aria-labelledby="teaching-h">
+              <h2 class="cv-section-title" id="teaching-h">
+                <i class="fas fa-chalkboard-user" aria-hidden="true"></i> Teaching &amp; Mentoring
               </h2>
 
               <div class="cv-item">
@@ -640,15 +477,11 @@
                     <h3>University Studies Peer Mentor</h3>
                     <p class="cv-institution">Portland State University</p>
                   </div>
-                  <span class="cv-date"
-                    >Fall 2024, Winter 2025, Fall 2025, Winter 2026</span
-                  >
+                  <span class="cv-date">Fall 2024, Winter 2025,<br />Fall 2025, Winter 2026</span>
                 </div>
                 <p class="cv-description">
-                  Lead small group mentoring sessions for first-year students
-                  enrolled in a required University Studies at Portland State
-                  University, focusing on academic success strategies, time
-                  management, and campus resources.
+                  Lead small-group mentoring sessions for first-year students in Portland State's required University
+                  Studies courses, focusing on strategies for academic success, time management and campus resources.
                 </p>
               </div>
 
@@ -656,226 +489,149 @@
                 <div class="cv-item-header">
                   <div>
                     <h3>Math and Physics Tutor</h3>
-                    <p class="cv-institution">
-                      Lead single and group tutoring session for problems in
-                      math and physics classes ranging from Precalculus, Single
-                      and Multivariable Calculus, Linear Algebra, Differential
-                      Equations, Group Theory and Real Analysis
-                    </p>
                   </div>
-                  <span class="cv-date"
-                    >Fall 2022 - Fall 2023, Winter 2025 - Summer 2025
-                  </span>
+                  <span class="cv-date">Fall 2022 – Fall 2023,<br />Winter 2025 – Summer 2025</span>
                 </div>
                 <p class="cv-description">
-                  Led weekly recitation sections, graded assignments, and held
-                  office hours for 80+ students.
+                  Led one-on-one and group tutoring sessions for mathematics and physics courses: precalculus, single
+                  and multivariable calculus, linear algebra, differential equations, group theory and real analysis.
                 </p>
               </div>
             </section>
           </div>
 
           <!-- Sidebar -->
-          <div class="cv-sidebar">
-            <!-- Contact Info -->
+          <aside class="cv-sidebar" aria-label="Contact and skills">
             <div class="cv-sidebar-section">
-              <h3>Contact</h3>
-              <div class="cv-contact">
-                <div class="cv-contact-item">
-                  <i class="fas fa-envelope"></i>
+              <h2>Contact</h2>
+              <ul class="cv-contact">
+                <li>
+                  <i class="fas fa-envelope" aria-hidden="true"></i>
                   <a href="mailto:acamaro@pdx.edu">acamaro@pdx.edu</a>
-                </div>
-                <div class="cv-contact-item">
-                  <i class="fas fa-map-marker-alt"></i>
+                </li>
+                <li>
+                  <i class="fas fa-location-dot" aria-hidden="true"></i>
                   <span>Portland, OR, USA</span>
-                </div>
-                <div class="cv-contact-item">
-                  <i class="fab fa-github"></i>
-                  <a href="https://github.com/yourusername" target="_blank"
-                    >@AcamaroCutcher</a
-                  >
-                </div>
-                <div class="cv-contact-item">
-                  <i class="fab fa-linkedin"></i>
-                  <a
-                    href="https://www.linkedin.com/in/acamaro-cutcher-649052254/"
-                    target="_blank"
-                    >Acamaro Cutcher</a
-                  >
-                </div>
-                <div class="cv-contact-item">
-                  <i class="fas fa-graduation-cap"></i>
-                  <a
-                    href="https://scholar.google.com/citations?user=yourid"
-                    target="_blank"
-                    >Google Scholar</a
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Technical Skills -->
-            <div class="cv-sidebar-section">
-              <h3>Technical Skills</h3>
-              <div class="skill-group">
-                <h4>Programming Languages</h4>
-                <div class="skill-bar-container">
-                  <div class="skill-bar">
-                    <span class="skill-name">Python</span>
-                    <div class="skill-progress" style="width: 60%"></div>
-                  </div>
-                  <div class="skill-bar">
-                    <span class="skill-name">C/C++</span>
-                    <div class="skill-progress" style="width: 40%"></div>
-                  </div>
-                  <div class="skill-bar">
-                    <span class="skill-name">Java</span>
-                    <div class="skill-progress" style="width: 30%"></div>
-                  </div>
-                  <div class="skill-bar">
-                    <span class="skill-name">Bash</span>
-                    <div class="skill-progress" style="width: 40%"></div>
-                  </div>
-                  <div class="skill-bar">
-                    <span class="skill-name">Mathematica</span>
-                    <div class="skill-progress" style="width: 40%"></div>
-                  </div>
-                  <div class="skill-bar">
-                    <span class="skill-name">HTML/CSS</span>
-                    <div class="skill-progress" style="width: 40%"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="cv-sidebar-section">
-              <h3>Acamaro Knowledge</h3>
-
-              <div class="skill-group">
-                <h4>Mathematics</h4>
-                <div class="cv-skill-tags">
-                  <span class="tag">Single and Multivariable Calculus</span>
-                  <span class="tag">Differential Equations</span>
-                  <span class="tag">Abstract Algebra / Rings and Fields</span>
-                  <span class="tag">Real Analysis</span>
-                  <span class="tag">Complex Analysis</span>
-                  <span class="tag"
-                    >Advanced Linear Algebra / Spectral Analysis</span
-                  >
-                  <span class="tag">Number Theory</span>
-                  <span class="tag">Discrete Mathematics</span>
-                  <span class="tag"></span>
-                  <span class="tag"></span>
-                </div>
-              </div>
-
-              <div class="skill-group">
-                <h4>Computer Science</h4>
-                <div class="cv-skill-tags">
-                  <span class="tag">Data Structures</span>
-                  <span class="tag">Algorithms</span>
-                  <span class="tag">Operating Systems</span>
-                  <span class="tag">Cloud Computing</span>
-                  <span class="tag">Network Protocols</span>
-                  <span class="tag">Programing Languages</span>
-                  <span class="tag">Web development</span>
-                  <span class="tag">Software Engineering</span>
-                  <span class="tag">Deep Learning</span>
-                </div>
-              </div>
-
-              <div class="skill-group">
-                <h4>Physics</h4>
-                <div class="cv-skill-tags">
-                  <span class="tag">Classical Mechanics</span>
-                  <span class="tag">Electromagnetism</span>
-                  <span class="tag">Quantum Mechanics</span>
-                  <span class="tag">Statistical Mechanics</span>
-                  <span class="tag">Thermodynamics</span>
-                  <span class="tag">Computational Physics</span>
-                  <span class="tag">Electronics</span>
-                  <span class="tag">Thin Film Fabrication (AFM/XRR)</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="cv-sidebar-section">
-              <h3>Frameworks & Tools</h3>
-              <div class="skill-group">
-                <div class="cv-skill-tags">
-                  <span class="tag">NumPy</span>
-                  <span class="tag">SciPy</span>
-                  <span class="tag">TensorFlow</span>
-                  <span class="tag">Matplotlib</span>
-                  <span class="tag">Git</span>
-                  <span class="tag">Docker</span>
-                  <span class="tag">LaTeX</span>
-                  <span class="tag">Jupyter</span>
-                  <span class="tag">Linux</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Languages -->
-            <div class="cv-sidebar-section">
-              <h3>Languages</h3>
-              <div class="cv-language">
-                <div class="language-item">
-                  <span>English</span>
-                  <span class="language-level">Fluent</span>
-                </div>
-                <div class="language-item">
-                  <span>Spanish</span>
-                  <span class="language-level">Fluent</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Certifications -->
-            <!-- <div class="cv-sidebar-section">
-              <h3>Certifications</h3>
-              <ul class="cv-cert-list">
-                <li>
-                  <i class="fas fa-certificate"></i>
-                  AWS Certified Solutions Architect
                 </li>
                 <li>
-                  <i class="fas fa-certificate"></i>
-                  Deep Learning Specialization
+                  <i class="fas fa-globe" aria-hidden="true"></i>
+                  <a href="https://acamaro.com/">acamaro.com</a>
                 </li>
                 <li>
-                  <i class="fas fa-certificate"></i>
-                  Advanced Python Programming
+                  <i class="fab fa-github" aria-hidden="true"></i>
+                  <a href="https://github.com/AcamaroCutcher">github.com/AcamaroCutcher</a>
+                </li>
+                <li>
+                  <i class="fab fa-linkedin" aria-hidden="true"></i>
+                  <a href="https://www.linkedin.com/in/acamaro-cutcher-649052254/">LinkedIn</a>
+                </li>
+                <li>
+                  <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                  <a href="https://scholar.google.com/citations?user=OsKdb4IAAAAJ&amp;hl=en">Google Scholar</a>
                 </li>
               </ul>
-            </div> -->
+            </div>
 
-            <!-- Interests -->
             <div class="cv-sidebar-section">
-              <h3>Research Interests</h3>
+              <h2>Technical skills</h2>
+              <h3>Programming</h3>
               <div class="cv-skill-tags">
-                <span class="tag">Physics Informed Neural Networks</span>
-                <span class="tag">Numerical Methods</span>
-                <span class="tag">Optimization</span>
-                <span class="tag">Data Science</span>
-                <span class="tag">High Performance Computing</span>
-                <span class="tag">Scientific Computing</span>
-                <span class="tag">Experimental Physics</span>
+                <span class="tag">Python</span>
+                <span class="tag">C / C++</span>
+                <span class="tag">Java</span>
+                <span class="tag">Bash</span>
+                <span class="tag">Mathematica</span>
+                <span class="tag">HTML / CSS</span>
+              </div>
+              <h3>Frameworks &amp; tools</h3>
+              <div class="cv-skill-tags">
+                <span class="tag">NumPy</span>
+                <span class="tag">SciPy</span>
+                <span class="tag">TensorFlow</span>
+                <span class="tag">Matplotlib</span>
+                <span class="tag">Git</span>
+                <span class="tag">Docker</span>
+                <span class="tag">LaTeX</span>
+                <span class="tag">Jupyter</span>
+                <span class="tag">Linux</span>
               </div>
             </div>
-          </div>
+
+            <div class="cv-sidebar-section">
+              <h2>Academic knowledge</h2>
+              <h3>Mathematics</h3>
+              <div class="cv-skill-tags">
+                <span class="tag">Single &amp; multivariable calculus</span>
+                <span class="tag">Differential equations</span>
+                <span class="tag">Abstract algebra, rings &amp; fields</span>
+                <span class="tag">Real analysis</span>
+                <span class="tag">Complex analysis</span>
+                <span class="tag">Advanced linear algebra &amp; spectral analysis</span>
+                <span class="tag">Number theory</span>
+                <span class="tag">Discrete mathematics</span>
+              </div>
+              <h3>Computer science</h3>
+              <div class="cv-skill-tags">
+                <span class="tag">Data structures</span>
+                <span class="tag">Algorithms</span>
+                <span class="tag">Operating systems</span>
+                <span class="tag">Cloud computing</span>
+                <span class="tag">Network protocols</span>
+                <span class="tag">Programming languages</span>
+                <span class="tag">Web development</span>
+                <span class="tag">Software engineering</span>
+                <span class="tag">Deep learning</span>
+              </div>
+              <h3>Physics</h3>
+              <div class="cv-skill-tags">
+                <span class="tag">Classical mechanics</span>
+                <span class="tag">Electromagnetism</span>
+                <span class="tag">Quantum mechanics</span>
+                <span class="tag">Statistical mechanics</span>
+                <span class="tag">Thermodynamics</span>
+                <span class="tag">Computational physics</span>
+                <span class="tag">Electronics</span>
+                <span class="tag">Thin-film fabrication (AFM / XRR)</span>
+              </div>
+            </div>
+
+            <div class="cv-sidebar-section">
+              <h2>Languages</h2>
+              <ul class="cv-language">
+                <li><span>English</span> <span class="language-level">Fluent</span></li>
+                <li><span>Spanish</span> <span class="language-level">Fluent</span></li>
+              </ul>
+            </div>
+
+            <div class="cv-sidebar-section">
+              <h2>Research interests</h2>
+              <div class="cv-skill-tags">
+                <span class="tag">Physics-informed neural networks</span>
+                <span class="tag">Numerical methods</span>
+                <span class="tag">Optimization</span>
+                <span class="tag">Data science</span>
+                <span class="tag">High-performance computing</span>
+                <span class="tag">Scientific computing</span>
+                <span class="tag">Experimental physics</span>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- Footer -->
-    <footer class="footer no-print">
-      <div class="container">
-        <div class="footer-bottom">
-          <p>&copy; 2026 Acamaro Cutcher. All rights reserved.</p>
-        </div>
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p>&copy; <span data-year>2026</span> Acamaro Cutcher</p>
+        <ul class="footer-nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="projects/index.html">Projects &amp; papers</a></li>
+          <li><a href="files/cv_acamaro_cutcher.pdf">CV (PDF)</a></li>
+        </ul>
       </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js" defer></script>
   </body>
 </html>

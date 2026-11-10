@@ -70,7 +70,7 @@ To give it its own card colors, add one line to `library.css` next to the others
 
 ```css
 .lib-art-geology { --a: #92400e; --b: #d97706; }
-.lib-field-geology { color: #92400e; }  body.dark-mode .lib-field-geology { color: #fbbf24; }
+.lib-field-geology { color: #92400e; }  .dark-mode .lib-field-geology { color: #fbbf24; }
 ```
 
 Without that line it falls back to the site's blue and purple, which also works.

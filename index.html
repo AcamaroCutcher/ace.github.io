@@ -1,18 +1,39 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acamaro Cutcher: wildfire modeling with machine learning</title>
     <meta
       name="description"
-      content="Personal Portfolio - Research, Blog, and CV"
+      content="Acamaro Cutcher is a PhD student in mathematics at Portland State University, building fast machine-learning surrogate models of wildfire. Research, projects and CV."
     />
-    <meta name="author" content="Your Name" />
-    <title>Acamaro Cutcher - Portfolio</title>
+    <meta name="author" content="Acamaro Cutcher" />
+    <link rel="canonical" href="https://acamaro.com/" />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+
+    <!-- Link previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Acamaro Cutcher" />
+    <meta property="og:title" content="Acamaro Cutcher: wildfire modeling with machine learning" />
+    <meta
+      property="og:description"
+      content="PhD student in mathematics at Portland State University, building fast machine-learning surrogate models of wildfire. Research, projects and CV."
+    />
+    <meta property="og:url" content="https://acamaro.com/" />
+    <meta property="og:image" content="https://acamaro.com/projects/thumbs/cascadia.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+    <script src="js/theme-init.js"></script>
 
     <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
 
@@ -23,833 +44,661 @@
     />
 
     <!-- Styles -->
+    <link rel="stylesheet" href="projects/forest-park-wildfires/vendor/katex/katex.min.css" />
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/theme.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Acamaro Cutcher",
+        "url": "https://acamaro.com/",
+        "image": "https://acamaro.com/images/profile.jpg",
+        "jobTitle": "PhD student in mathematics",
+        "email": "mailto:acamaro@pdx.edu",
+        "affiliation": { "@type": "CollegeOrUniversity", "name": "Portland State University" },
+        "address": { "@type": "PostalAddress", "addressLocality": "Portland", "addressRegion": "OR", "addressCountry": "US" },
+        "knowsAbout": ["Wildfire modeling", "Scientific computing", "Machine learning", "Mathematics", "Physics"],
+        "knowsLanguage": ["en", "es"],
+        "sameAs": [
+          "https://github.com/AcamaroCutcher",
+          "https://www.linkedin.com/in/acamaro-cutcher-649052254/",
+          "https://scholar.google.com/citations?user=OsKdb4IAAAAJ&hl=en"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-      <div class="container nav-container">
-        <a href="#" class="logo">Acamaro Cutcher</a>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
 
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar" aria-label="Main">
+      <div class="container nav-container">
+        <a href="#home" class="logo">
+          <span class="logo-mark" aria-hidden="true">AC</span>
+          Acamaro Cutcher
+        </a>
 
         <ul class="nav-menu" id="navMenu">
-          <li><a href="#home" class="nav-link active">Home</a></li>
-          <li><a href="#about" class="nav-link">About</a></li>
+          <li><a href="#work" class="nav-link">Work</a></li>
           <li><a href="#research" class="nav-link">Research</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
           <li><a href="projects/index.html" class="nav-link">Projects</a></li>
-          <li><a href="#blog" class="nav-link">Blog</a></li>
-          <li><a href="#gallery" class="nav-link">Gallery</a></li>
           <li><a href="cv.html" class="nav-link">CV</a></li>
           <li><a href="#contact" class="nav-link">Contact</a></li>
         </ul>
 
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <i class="fas fa-moon"></i>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+          <i class="fas fa-moon" aria-hidden="true"></i>
+        </button>
+
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-      <div class="container hero-container">
-        <div class="hero-content">
-          <h1 class="hero-title">
-            <span class="greeting">Hello, I'm</span>
-            <span class="name">Acamaro Cutcher</span>
-          </h1>
-          <p class="hero-subtitle">Researcher | Developer | Innovator</p>
-          <p class="hero-description">
-            Exploring the intersection of computational science, mathematics,
-            physics and technology. Passionate about research, coding, building
-            and sharing knowledge.
-          </p>
-          <div class="hero-cta">
-            <a href="#contact" class="btn btn-primary">Get in Touch</a>
-            <a href="cv.html" class="btn btn-secondary">View CV</a>
-          </div>
-          <div class="social-links">
-            <a
-              href="https://github.com/AcamaroCutcher"
-              target="_blank"
-              rel="noopener"
-              aria-label="GitHub"
-            >
-              <i class="fab fa-github"></i>
-            </a>
-            <a
-              href="https://www.linkedin.com/in/acamaro-cutcher-649052254/"
-              target="_blank"
-              rel="noopener"
-              aria-label="LinkedIn"
-            >
-              <i class="fab fa-linkedin"></i>
-            </a>
-            <a href="mailto:acamaro@pdx.edu" aria-label="Email">
-              <i class="fas fa-envelope"></i>
-            </a>
-            <a
-              href="https://scholar.google.com/citations?user=yourid"
-              target="_blank"
-              rel="noopener"
-              aria-label="Google Scholar"
-            >
-              <i class="fas fa-graduation-cap"></i>
-            </a>
-          </div>
-        </div>
-        <div class="hero-image">
-          <div class="profile-image-container">
-            <img
-              src="images/profile.png"
-              alt="Acamaro Cutcher"
-              class="profile-image"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="scroll-indicator">
-        <a href="#about" aria-label="Scroll to about section">
-          <i class="fas fa-chevron-down"></i>
-        </a>
-      </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="section about-section">
-      <div class="container">
-        <h2 class="section-title">About Me</h2>
-        <div class="about-content">
-          <div class="about-text">
-            <p class="lead">
-              I'm a passionate researcher and developer specializing in
-              computational atmospheric science, mathematical modeling, and
-              software development.
+    <main id="main">
+      <!-- Hero -->
+      <section id="home" class="hero">
+        <canvas class="hero-canvas" aria-hidden="true"></canvas>
+        <div class="container hero-container">
+          <div class="hero-content">
+            <p class="eyebrow">PhD student · Mathematics · Portland State University</p>
+            <h1 class="hero-title">Acamaro Cutcher</h1>
+            <p class="hero-lede">
+              I model wildfires with machine learning, building fast surrogate models for operational use.
             </p>
-            <p>
-              My current work focuses on wildfire forecasting, combining
-              foundations of physics, mathematics and computational to create
-              predictive models. I enjoy tackling complex problems and learning
-              from others.
+            <p class="hero-description">
+              I'm a first-year PhD student in mathematics at Portland State University. My research uses machine
+              learning to learn how wildfires spread, and turns that into surrogate models fast enough to run when a
+              forecast is needed. Before this I worked on molecular dynamics at Los Alamos National Laboratory,
+              monsoon forecasting, finite group theory and thin-film plasmonics.
             </p>
-            <p>
-              When I'm not researching, you can find me tinkering with
-              Electronics or Code, traveling around the world, attending
-              conferences, and addressing humanitarian emergencies.
+            <p class="hero-now">
+              <span class="pulse" aria-hidden="true"></span>
+              <span>
+                <strong>Now:</strong> NRT RECHARGE Fellow at Portland State, an NSF research traineeship on
+                cascading natural hazards and community resilience.
+              </span>
             </p>
+            <div class="hero-cta">
+              <a href="#work" class="btn btn-primary">See my work <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+              <a href="cv.html" class="btn btn-secondary"><i class="fas fa-file-lines" aria-hidden="true"></i> CV</a>
+              <a href="mailto:acamaro@pdx.edu" class="btn btn-secondary">
+                <i class="fas fa-envelope" aria-hidden="true"></i> Email me
+              </a>
+            </div>
+            <ul class="social-links" aria-label="Profiles">
+              <li>
+                <a href="https://github.com/AcamaroCutcher" rel="noopener">
+                  <i class="fab fa-github" aria-hidden="true"></i> GitHub
+                </a>
+              </li>
+              <li>
+                <a href="https://www.linkedin.com/in/acamaro-cutcher-649052254/" rel="noopener">
+                  <i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn
+                </a>
+              </li>
+              <li>
+                <a href="https://scholar.google.com/citations?user=OsKdb4IAAAAJ&amp;hl=en" rel="noopener">
+                  <i class="fas fa-graduation-cap" aria-hidden="true"></i> Google Scholar
+                </a>
+              </li>
+              <li>
+                <a href="https://www.youtube.com/@acamarocutcher8845" rel="noopener">
+                  <i class="fab fa-youtube" aria-hidden="true"></i> YouTube
+                </a>
+              </li>
+            </ul>
           </div>
 
-          <div class="skills-section">
-            <h3>Technical Skills</h3>
-
-            <div class="skills-grid">
-              <div class="skill-category">
-                <h4><i class="fas fa-code"></i> Programming</h4>
-                <div class="skill-tags">
-                  <span class="tag">Python</span>
-                  <span class="tag">C/C++</span>
-                  <span class="tag">Java</span>
-                  <span class="tag">Assembly</span>
-                  <span class="tag">Bash</span>
-                  <span class="tag">Mathematica</span>
-                </div>
-              </div>
-
-              <div class="skill-category">
-                <h4><i class="fas fa-flask"></i> Scientific Computing</h4>
-                <div class="skill-tags">
-                  <span class="tag">NumPy</span>
-                  <span class="tag">SciPy</span>
-                  <span class="tag">Matplotlib</span>
-                  <span class="tag">Plotly</span>
-                  <span class="tag">TensorFlow</span>
-                  <span class="tag">Keras</span>
-                </div>
-              </div>
-
-              <div class="skill-category">
-                <h4><i class="fas fa-tools"></i> Tools & Frameworks</h4>
-                <div class="skill-tags">
-                  <span class="tag">Git</span>
-                  <span class="tag">Docker</span>
-                  <span class="tag">LaTeX</span>
-                  <span class="tag">Jupyter</span>
-                  <span class="tag">Linux</span>
-                  <span class="tag">Slurm</span>
-                </div>
-              </div>
-
-              <div class="skill-category">
-                <h4><i class="fas fa-database"></i> Analytics</h4>
-                <div class="skill-tags">
-                  <span class="tag">Data Analysis</span>
-                  <span class="tag">Visualization</span>
-                  <span class="tag">Modeling</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="knowledge-section">
-              <h3>Academic Knowledge</h3>
-              <div class="knowledge-grid">
-                <div class="knowledge-category">
-                  <h4><span class="icon-pi">π</span> Mathematics</h4>
-                  <div class="knowledge-tags">
-                    <span class="tag"
-                      >Advance Linear Algebra / Spectral Analysis</span
-                    >
-                    <span class="tag">Single and Multivariable Calculus</span>
-                    <span class="tag">Differential Equations</span>
-                    <span class="tag">Abstract Algebra</span>
-                    <span class="tag">Real Analysis</span>
-                    <span class="tag">Complex Analysis</span>
-                    <span class="tag">Number Theory</span>
-                    <span class="tag">Discrete Mathematics</span>
-                  </div>
-                </div>
-
-                <div class="knowledge-category">
-                  <h4><i class="fas fa-laptop"></i>Computer Science</h4>
-                  <div class="knowledge-tags">
-                    <span class="tag">Data Structures</span>
-                    <span class="tag">Algorithms</span>
-                    <span class="tag">Operating Systems</span>
-                    <span class="tag">Cloud Computing</span>
-                    <span class="tag">Network Protocols</span>
-                    <span class="tag">Programming Languages</span>
-                    <span class="tag">Web Development</span>
-                    <span class="tag">Software Engineering</span>
-                    <span class="tag">Deep Learning</span>
-                  </div>
-                </div>
-
-                <div class="knowledge-category">
-                  <h4><i class="fas fa-phi"></i>Physics</h4>
-                  <div class="knowledge-tags">
-                    <span class="tag">Classical Mechanics</span>
-                    <span class="tag">Quantum Mechanics</span>
-                    <span class="tag">Thermodynamics</span>
-                    <span class="tag">Electromagnetism</span>
-                    <span class="tag">Computational Physics</span>
-                    <span class="tag">Basic Electronics</span>
-                    <span class="tag">Thin Film Fabrication</span>
-                  </div>
-                </div>
-
-                <div class="knowledge-category">
-                  <h4><i class="fas fa-language"></i>Languages</h4>
-                  <div class="knowledge-tags">
-                    <span class="tag">Spanish</span>
-                    <span class="tag">English</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Research Section -->
-    <section id="research" class="section research-section">
-      <div class="container">
-        <h2 class="section-title">Research & Projects</h2>
-        <p class="section-subtitle">
-          Selected work in computational science, physics and mathematics
-        </p>
-
-        <div class="research-grid">
-          <!-- Cascadia earthquake visualizations -->
-
-          <article class="research-card">
-            <div class="research-header">
-              <h3>
-                Cascadia Earthquake Probabilities: Interactive
-                Visualizations
-              </h3>
-              <span class="research-status completed">Completed</span>
-            </div>
-            <p class="research-description">
-              A set of ten interactive explainers built around USGS Fact Sheet
-              2025–3050, which estimates the chances of damaging earthquakes in
-              the Pacific Northwest over the next 50 years. The pages reproduce
-              the report's Poisson and Brownian passage-time probabilities, run
-              Monte Carlo simulations of possible futures on a regional map,
-              test the Gutenberg–Richter rule against 45 years of USGS catalog
-              data, place every M4+ quake at its true depth in a rotatable 3D
-              model of the subducting Juan de Fuca plate (Slab2), and trace
-              10,000 years of great Cascadia earthquakes from turbidite records
-              and the 1700 tsunami that reached Japan.
-            </p>
-            <div class="research-tags">
-              <span class="tag">JavaScript</span>
-              <span class="tag">D3 / Canvas</span>
-              <span class="tag">Data Visualization</span>
-              <span class="tag">Probability</span>
-              <span class="tag">Seismology</span>
-            </div>
-            <div class="research-links">
-              <a href="projects/cascadia/index.html" class="btn-link">
-                <i class="fas fa-chart-line"></i> Explore
-              </a>
-              <a
-                href="https://doi.org/10.3133/fs20253050"
-                class="btn-link"
-                target="_blank"
-              >
-                <i class="fas fa-file-pdf"></i> USGS Report
-              </a>
-            </div>
-          </article>
-
-          <!-- Research Project 1 -->
-
-          <article class="research-card">
-            <div class="research-header">
-              <h3>
-                Modified Fourier Neural Operators for Direct Wildfire Spread
-                Prediction: A FourCastNet Adaptation
-              </h3>
-              <span class="research-status current">Current</span>
-            </div>
-            <p class="research-description">
-              Structural Adaptation of FourCastNet for Direct Wildfire Spread
-              Modeling This research re-engineers the FourCastNet
-              architecture—originally designed for global weather emulation—to
-              serve as a direct solver for wildfire propagation. Unlike
-              traditional approaches that use FourCastNet solely for atmospheric
-              inputs, this project modifies the internal tokenization and latent
-              space to integrate static and dynamic fire drivers, including fuel
-              moisture, vegetation density (LANDFIRE), and high-resolution
-              topography. By expanding the model's input channels and retraining
-              the Adaptive Fourier Neural Operator (AFNO) on historical fire
-              perimeters, the system learns to predict the evolution of the fire
-              front as a discrete state-space variable. This approach leverages
-              FourCastNet’s characteristic speed to generate subseasonal
-              fire-spread ensembles up to 80,000 times faster than coupled
-              physics models like WRF-SFIRE.
-            </p>
-            <div class="research-tags">
-              <span class="tag">Python</span>
-              <span class="tag">Deep Learning</span>
-              <span class="tag">Dynamical Models</span>
-            </div>
-            <div class="research-links">
-              <a href="research/project1.html" class="btn-link">
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a href="papers/project1.pdf" class="btn-link" target="_blank">
-                <i class="fas fa-file-pdf"></i> Paper
-              </a>
-              <a
-                href="https://github.com/PSU-CS-Wildfire-Capstone-Sp-S-25"
-                class="btn-link"
-                target="_blank"
-              >
-                <i class="fab fa-github"></i> Code
-              </a>
-            </div>
-          </article>
-
-          <!-- Research Project 2 -->
-
-          <article class="research-card">
-            <div class="research-header">
-              <h3>
-                Hybrid Data-Driven and Dynamical Forecasting of the South Asian
-                Monsoon Intraseasonal Oscillation
-              </h3>
-              <span class="research-status current">Current</span>
-            </div>
-            <p class="research-description">
-              Advancing Monsoon Forecasting through Data-Driven Oscillatory
-              Modes Current dynamical models often struggle to predict the
-              active and break phases of the South Asian monsoon, which are
-              driven by northward-propagating rainfall anomalies known as MISOs.
-              My research introduces Ensemble Oscillation Correction (EnOC) to
-              overcome these limitations. By leveraging the near-regularity of
-              climate oscillations, this methodology refines traditional
-              physics-based forecasts with data-driven insights. The result is a
-              more accurate tool for agricultural and hydrological planning,
-              providing reliable rainfall predictions three to four weeks in
-              advance—a timeframe previously considered unreliable by standard
-              meteorological models.
-            </p>
-            <div class="research-tags">
-              <span class="tag">Python/Julia</span>
-              <span class="tag">Data-driven Forecasting</span>
-              <span class="tag">Machine Learning</span>
-              <span class="tag">Dynamical Models</span>
-            </div>
-            <div class="research-links">
-              <a href="research/project1.html" class="btn-link">
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a href="papers/project1.pdf" class="btn-link" target="_blank">
-                <i class="fas fa-file-pdf"></i> Paper
-              </a>
-              <a
-                href="https://github.com/PSU-CS-Wildfire-Capstone-Sp-S-25"
-                class="btn-link"
-                target="_blank"
-              >
-                <i class="fab fa-github"></i> Code
-              </a>
-            </div>
-          </article>
-
-          <!-- Research Project 3 -->
-
-          <article class="research-card">
-            <div class="research-header">
-              <h3>Minimal Group Embeddings</h3>
-              <span class="research-status completed">Completed</span>
-            </div>
-            <p class="research-description">
-              This project focuses on the classification of small finite groups
-              and the determination of their minimal embedding degree. By
-              utilizing the Sylow Theorems, I analyzed the prime power subgroups
-              for each order to verify group structures and non-simplicity.
-              Building upon Cayley’s Theorem, which guarantees an embedding into
-              \(S_{|G|}\), I calculated the minimum \(n\) such that
-              \(G\hookrightarrow S_{n}\), often finding degrees significantly
-              smaller than the group's order.
-            </p>
-            <div class="research-tags">
-              <span class="tag">Abstract Algebra</span>
-              <span class="tag">Group Theory</span>
-              <span class="tag">Sylow Theorems</span>
-              <span class="tag">Math Honors Thesis</span>
-            </div>
-            <div class="research-links">
-              <a
-                href="https://drive.google.com/file/d/11QWF4rAGJPW7M9WVvOir8p_0_IKP1gID/view?usp=sharing"
-                class="btn-link"
-              >
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a
-                href="papers/401_Honors_Project_Minimal_Group_Embeddings.pdf"
-                class="btn-link"
-                target="_blank"
-              >
-                <i class="fas fa-file-pdf"></i> Paper
-              </a>
-            </div>
-          </article>
-
-          <!-- Research Project 4 -->
-          <article class="research-card">
-            <div class="research-header">
-              <h3>
-                Multiscale Theoretical Modeling of Surface Plasmon Polaritons
-                (SPPs): From Fundamentals to Integrated Photonic Applications.
-              </h3>
-              <span class="research-status completed">Completed</span>
-            </div>
-            <p class="research-description">
-              Theoretical investigation of SPP dispersion relations by applying
-              Bloch’s Theorem to the fundamental Maxwell’s equations. By
-              treating the multilayer as a 1D plasmonic crystal, this model
-              identifies how periodic modulation creates unique band structures
-              and forbidden gaps. The findings provide a roadmap for tailoring
-              the optical response of superllatice metal-insulator-metal
-              devices, bridging the gap between analytical theory and functional
-              nanophotonic device design.
-            </p>
-            <div class="research-tags">
-              <span class="tag">Maxwell's Equations</span>
-              <span class="tag">Dispersion Relation</span>
-              <span class="tag">Electric Fields</span>
-              <span class="tag">Bloch Theorem</span>
-              <span class="tag">Solid State Physics</span>
-              <span class="tag">Mathematica</span>
-            </div>
-            <div class="research-links">
-              <a href="research/project4.html" class="btn-link">
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a
-                href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0276522"
-                class="btn-link"
-              >
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a
-                href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=OsKdb4IAAAAJ&citation_for_view=OsKdb4IAAAAJ:u5HHmVD_uO8C"
-                class="btn-link"
-                target="_blank"
-              >
-                <i class="fas fa-cloud"></i> Google Drive
-              </a>
-            </div>
-          </article>
-
-          <!-- Research Project 5 -->
-          <article class="research-card">
-            <div class="research-header">
-              <h3>
-                Excitation of “forbidden” guided-wave plasmon polariton modes
-                via direct reflectance using a low refractive index polymer
-                coupling layer.
-              </h3>
-              <span class="research-status completed">Completed</span>
-            </div>
-            <p class="research-description">
-              Experimental investigation of plasmonic modes in
-              metal-insulator-metal thin film structures using a low refractive
-              index polymer coupling layer. By employing angle-resolved
-              reflectance spectroscopy, we successfully excited and
-              characterized "forbidden" guided-wave plasmon polariton modes that
-              are typically inaccessible through conventional methods. The study
-              reveals how the polymer layer modifies the coupling conditions,
-              enabling direct excitation of these modes. Our findings provide
-              new insights into light-matter interactions in complex thin film
-              systems and open up avenues for advanced photonic device
-              applications.
-            </p>
-            <div class="research-tags">
-              <span class="tag">Thin Film Devices</span>
-              <span class="tag">AFM/XRR</span>
-              <span class="tag">Solid State Physics</span>
-            </div>
-            <div class="research-links">
-              <a href="research/project3.html" class="btn-link">
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a
-                href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0276522"
-                class="btn-link"
-              >
-                <i class="fas fa-book"></i> Read More
-              </a>
-              <a
-                href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=OsKdb4IAAAAJ&citation_for_view=OsKdb4IAAAAJ:u5HHmVD_uO8C"
-                class="btn-link"
-                target="_blank"
-              >
-                <i class="fas fa-cloud"></i> Google Drive
-              </a>
-            </div>
-          </article>
-        </div>
-
-        <div class="research-more">
-          <a href="projects/index.html" class="btn btn-primary">
-            <i class="fas fa-layer-group"></i> Browse all projects &amp; papers
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Blog Section -->
-    <section id="blog" class="section blog-section">
-      <div class="container">
-        <h2 class="section-title">Blog & Notes</h2>
-        <p class="section-subtitle">
-          Technical articles, tutorials, and research notes
-        </p>
-
-        <div class="blog-filters">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="tutorial">Tutorials</button>
-          <button class="filter-btn" data-filter="research">
-            Research Notes
-          </button>
-          <button class="filter-btn" data-filter="code">Code</button>
-          <button class="filter-btn" data-filter="visualization">
-            Visualizations
-          </button>
-        </div>
-
-        <div class="blog-grid">
-          <!-- Blog Post 1 -->
-          <article class="blog-card" data-category="tutorial code">
-            <div class="blog-image">
+          <div class="hero-image">
+            <div class="profile-image-container">
               <img
-                src="images/blog/python-tutorial.jpg"
-                alt="Python Tutorial"
+                src="images/profile.jpg"
+                alt="Acamaro Cutcher beside a river in Berlin"
+                class="profile-image"
+                width="720"
+                height="720"
+                fetchpriority="high"
               />
             </div>
-            <div class="blog-content">
-              <div class="blog-meta">
-                <span class="blog-date"
-                  ><i class="far fa-calendar"></i> Jan 1, 2026</span
-                >
-                <span class="blog-read-time"
-                  ><i class="far fa-clock"></i> 5 min read</span
-                >
-              </div>
-              <h3>Advanced Python Techniques for Scientific Computing</h3>
-              <p>
-                Exploring NumPy broadcasting, vectorization, and performance
-                optimization techniques.
+            <p class="hero-caption">Berlin, 2024</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Featured interactive work -->
+      <section id="work" class="section">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">Projects</p>
+              <h2 class="section-title">Paper visualizations and project drafts</h2>
+              <p class="section-subtitle">
+                These pages are AI-generated. Each one is either a visualization of a published paper or a draft of
+                a project in progress.
               </p>
-              <div class="blog-tags">
+            </div>
+            <a href="projects/index.html" class="btn-link">
+              All projects &amp; papers <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          <div class="work-grid">
+            <article class="work-card reveal" style="--i: 0">
+              <div class="work-thumb">
+                <img
+                  src="projects/thumbs/cascadia.jpg"
+                  alt=""
+                  width="1760"
+                  height="1404"
+                  loading="lazy"
+                  style="object-position: 30% 30%"
+                />
+              </div>
+              <div class="work-body">
+                <p class="work-kicker">
+                  <span>Visualization of a paper</span><span aria-hidden="true">·</span><span>AI-generated</span>
+                </p>
+                <h3><a href="projects/cascadia/index.html">Cascadia Earthquake Probabilities</a></h3>
+                <p>
+                  Ten interactive explainers for USGS Fact Sheet 2025–3050. Reproduce the 50-year odds of a damaging
+                  Pacific Northwest earthquake, roll thousands of Monte Carlo futures on a map, and rotate a 3-D model
+                  of the subducting Juan de Fuca plate.
+                </p>
+                <span class="work-go">Explore <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+              </div>
+            </article>
+
+            <article class="work-card reveal" style="--i: 1">
+              <div class="work-thumb">
+                <img
+                  src="projects/thumbs/forest-park-wildfires.jpg"
+                  alt=""
+                  width="1100"
+                  height="481"
+                  loading="lazy"
+                />
+              </div>
+              <div class="work-body">
+                <p class="work-kicker">
+                  <span>Project draft</span><span aria-hidden="true">·</span><span>AI-generated</span>
+                </p>
+                <h3><a href="projects/forest-park-wildfires/index.html">Forest Park Wildfires</a></h3>
+                <p>
+                  How could a fire in Portland's Forest Park spread into the neighborhoods around it? A 30 m fuel map,
+                  26 years of fire weather, 4,000 simulated fires, and a WRF-SFIRE handbook with a live 3-D fire
+                  simulator.
+                </p>
+                <span class="work-go">Explore <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+              </div>
+            </article>
+
+            <article class="work-card reveal" style="--i: 2">
+              <div class="work-thumb">
+                <div class="work-art" aria-hidden="true"><span><span class="k">program</span> fire
+  <span class="k">use</span> mpi_f08
+  <span class="k">real</span>(wp), <span class="k">allocatable</span> :: fuel(:,:)
+  <span class="c">!$omp parallel do</span>
+  <span class="k">do</span> j = <span class="n">1</span>, ny
+    fuel(:, j) = burn(fuel(:, j), dt)
+  <span class="k">end do</span>
+<span class="k">end program</span> fire</span></div>
+              </div>
+              <div class="work-body">
+                <p class="work-kicker">
+                  <span>Course draft</span><span aria-hidden="true">·</span><span>AI-generated</span>
+                </p>
+                <h3><a href="projects/fortran-firetec/index.html">Fortran for FIRETEC</a></h3>
+                <p>
+                  A hands-on course in the Fortran behind Los Alamos' HIGRAD/FIRETEC wildfire model: from a first
+                  program to arrays, matrix algebra, a small fire model, and parallel computing with OpenMP and MPI.
+                </p>
+                <span class="work-go">Start the course <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Research -->
+      <section id="research" class="section section-alt">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">Research</p>
+              <h2 class="section-title">Research projects</h2>
+              <p class="section-subtitle">
+                Wildfire surrogates, molecular dynamics, monsoon forecasting, pure mathematics and plasmonics.
+              </p>
+            </div>
+          </div>
+
+          <ol class="research-list">
+            <li class="research-item reveal">
+              <figure class="research-figure">
+                <svg class="fig fig-fire" viewBox="0 0 280 120" role="img" aria-label="Fire fronts spreading from an ignition point, pushed by the wind"><path class="front hot" d="M261.2 62.0 Q261.2 62.0 253.1 74.2 Q245.0 86.4 223.0 94.0 Q200.9 101.6 176.8 105.2 Q152.6 108.8 121.9 110.8 Q91.2 112.9 68.3 107.1 Q45.5 101.4 22.8 94.0 Q0.1 86.6 2.8 74.3 Q5.6 62.0 8.1 50.8 Q10.7 39.6 25.9 29.9 Q41.2 20.3 64.5 12.5 Q87.8 4.7 121.3 8.0 Q154.7 11.2 176.2 17.7 Q197.6 24.2 221.3 30.9 Q245.0 37.6 253.1 49.8 Z" fill="none" stroke-width="1.6"/><path class="front hot" d="M234.0 62.0 Q234.0 62.0 241.0 74.5 Q248.1 87.1 228.6 96.6 Q209.1 106.1 180.9 107.4 Q152.6 108.7 122.0 110.7 Q91.3 112.6 67.9 107.3 Q44.4 102.0 24.5 93.8 Q4.6 85.7 -4.2 73.8 Q-13.1 62.0 5.4 52.2 Q23.9 42.4 39.2 34.9 Q54.5 27.5 71.5 16.7 Q88.4 5.9 121.3 9.1 Q154.1 12.4 181.6 15.2 Q209.1 17.9 214.0 30.5 Q218.9 43.0 226.4 52.5 Z" fill="none" stroke-width="1.6"/><path class="front hot" d="M265.5 62.0 Q265.5 62.0 258.6 74.9 Q251.6 87.8 221.9 92.3 Q192.2 96.9 171.7 101.4 Q151.2 106.0 119.8 112.1 Q88.4 118.1 63.0 111.9 Q37.5 105.7 20.8 95.8 Q4.0 85.8 4.7 73.9 Q5.4 62.0 5.8 50.3 Q6.2 38.7 23.4 29.3 Q40.6 20.0 65.6 15.0 Q90.6 10.0 121.2 13.4 Q151.8 16.8 176.5 19.5 Q201.2 22.2 216.8 31.2 Q232.4 40.2 249.0 51.1 Z" fill="none" stroke-width="1.6"/><path class="front hot" d="M237.9 62.0 Q237.9 62.0 237.8 73.4 Q237.6 84.9 218.7 92.9 Q199.7 101.0 177.6 107.7 Q155.6 114.4 122.9 114.6 Q90.2 114.7 71.9 105.9 Q53.6 97.0 40.2 89.0 Q26.7 81.0 5.9 71.5 Q-15.0 62.0 1.6 51.6 Q18.2 41.2 33.9 33.0 Q49.5 24.8 68.3 14.0 Q87.1 3.3 120.8 7.5 Q154.4 11.8 182.7 14.4 Q210.9 17.0 223.1 28.3 Q235.3 39.6 236.6 50.8 Z" fill="none" stroke-width="1.6"/><circle class="spark fill-hot" cx="118" cy="62" r="3"/><path class="soft" d="M214 22h34m-7-5 7 5-7 5" fill="none" stroke-width="1.2"/><text x="214" y="14">wind</text></svg>
+                <div class="research-eq" data-tex="\begin{aligned}v_{t+1}(x)=\sigma\Big(&amp;Wv_t(x)\\&amp;+\mathcal{F}^{-1}\big[R_\phi\cdot\mathcal{F}v_t\big](x)\Big)\end{aligned}"></div>
+                <figcaption>One Fourier neural operator layer: a learned filter applied in frequency space.</figcaption>
+              </figure>
+              <div>
+                <p class="research-meta"><span class="research-status current">Current</span><span class="research-when">2025 – present · Portland State University, Mathematics &amp; Statistics</span></p>
+                <h3>Modified Fourier Neural Operators for Direct Wildfire Spread Prediction: A FourCastNet Adaptation</h3>
+                <p class="research-description">
+                  Re-engineers FourCastNet, a global weather emulator, into a direct solver for wildfire spread. Fuel
+                  moisture, LANDFIRE vegetation density and high-resolution topography are added to the model's input
+                  channels, and its Adaptive Fourier Neural Operator is retrained on historical fire perimeters so that
+                  it learns how the fire front evolves. FourCastNet produces global weather ensembles about 80,000 times
+                  faster than numerical models (<a href="https://arxiv.org/abs/2208.05419">Kurth et al., 2022</a>); the
+                  goal is a surrogate that brings that speed to fire-spread ensembles, which coupled physics models
+                  such as WRF-SFIRE compute too slowly for operational use.
+                </p>
+                <div class="research-tags"><span class="tag">Python</span><span class="tag">Deep learning</span><span class="tag">Neural operators</span><span class="tag">Surrogate models</span><span class="tag">HPC</span></div>
+                <div class="research-links">
+                  <a href="https://github.com/PSU-CS-Wildfire-Capstone-Sp-S-25" class="btn-link"><i class="fab fa-github" aria-hidden="true"></i> PSU wildfire capstone code</a>
+                  <a href="projects/forest-park-wildfires/index.html" class="btn-link"><i class="fas fa-fire" aria-hidden="true"></i> Related: Forest Park Wildfires</a>
+                </div>
+              </div>
+            </li>
+            <li class="research-item reveal">
+              <figure class="research-figure">
+                <svg class="fig fig-atoms" viewBox="0 0 280 120" role="img" aria-label="Tin atoms: an ordered crystal on the left and a disordered melt on the right"><g class="solid fill-cool"><circle cx="22" cy="18" r="5"/><circle cx="40" cy="18" r="5"/><circle cx="58" cy="18" r="5"/><circle cx="76" cy="18" r="5"/><circle cx="94" cy="18" r="5"/><circle cx="112" cy="18" r="5"/><circle cx="130" cy="18" r="5"/><circle cx="31" cy="39" r="5"/><circle cx="49" cy="39" r="5"/><circle cx="67" cy="39" r="5"/><circle cx="85" cy="39" r="5"/><circle cx="103" cy="39" r="5"/><circle cx="121" cy="39" r="5"/><circle cx="139" cy="39" r="5"/><circle cx="22" cy="60" r="5"/><circle cx="40" cy="60" r="5"/><circle cx="58" cy="60" r="5"/><circle cx="76" cy="60" r="5"/><circle cx="94" cy="60" r="5"/><circle cx="112" cy="60" r="5"/><circle cx="130" cy="60" r="5"/><circle cx="31" cy="81" r="5"/><circle cx="49" cy="81" r="5"/><circle cx="67" cy="81" r="5"/><circle cx="85" cy="81" r="5"/><circle cx="103" cy="81" r="5"/><circle cx="121" cy="81" r="5"/><circle cx="139" cy="81" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="40" cy="102" r="5"/><circle cx="58" cy="102" r="5"/><circle cx="76" cy="102" r="5"/><circle cx="94" cy="102" r="5"/><circle cx="112" cy="102" r="5"/><circle cx="130" cy="102" r="5"/></g><g class="liquid fill-hot" opacity="0.85"><circle cx="198" cy="28" r="5"/><circle cx="230" cy="21" r="5"/><circle cx="219" cy="48" r="5"/><circle cx="172" cy="61" r="5"/><circle cx="170" cy="54" r="5"/><circle cx="173" cy="22" r="5"/><circle cx="208" cy="90" r="5"/><circle cx="178" cy="35" r="5"/><circle cx="227" cy="101" r="5"/><circle cx="223" cy="50" r="5"/><circle cx="262" cy="18" r="5"/><circle cx="250" cy="41" r="5"/><circle cx="180" cy="25" r="5"/><circle cx="196" cy="89" r="5"/><circle cx="184" cy="68" r="5"/><circle cx="229" cy="48" r="5"/><circle cx="220" cy="20" r="5"/><circle cx="172" cy="33" r="5"/><circle cx="233" cy="53" r="5"/><circle cx="197" cy="68" r="5"/><circle cx="210" cy="42" r="5"/><circle cx="244" cy="78" r="5"/><circle cx="190" cy="67" r="5"/><circle cx="217" cy="95" r="5"/><circle cx="237" cy="40" r="5"/><circle cx="262" cy="25" r="5"/><circle cx="207" cy="84" r="5"/><circle cx="181" cy="59" r="5"/><circle cx="170" cy="75" r="5"/><circle cx="241" cy="67" r="5"/></g><path class="interface soft" d="M152 6v108" stroke-width="1.2" stroke-dasharray="3 4"/><text x="22" y="117">solid</text><text x="236" y="117">melt</text></svg>
+                <div class="research-eq" data-tex="\begin{aligned} m_i\,\ddot{\mathbf r}_i&amp;=-\nabla_{\mathbf r_i}E_\theta(\mathbf r_1,\dots,\mathbf r_N)\\ \tau&amp;=\inf\{\,t\ge 0: q(t)\ge q^{*}\}\end{aligned}"></div>
+                <figcaption>Molecular dynamics on a learned potential Eθ, and the first-passage time τ of an order parameter q.</figcaption>
+              </figure>
+              <div>
+                <p class="research-meta"><span class="research-when">Summer 2026 · Los Alamos National Laboratory</span></p>
+                <h3>Melting of Tin from Molecular Dynamics with a Hybrid Machine-Learned Potential</h3>
+                <p class="research-description">
+                  Molecular dynamics simulations of tin in LAMMPS, driven by a hybrid machine-learned interatomic potential.
+                  First-passage-time dynamics, the statistics of how long the system takes to first cross from one
+                  state to another, are used to understand how tin melts.
+                </p>
+                <div class="research-tags"><span class="tag">LAMMPS</span><span class="tag">Molecular dynamics</span><span class="tag">Machine-learned potentials</span><span class="tag">First-passage times</span></div>
+              </div>
+            </li>
+            <li class="research-item reveal">
+              <figure class="research-figure">
+                <svg class="fig fig-monsoon" viewBox="0 0 280 120" role="img" aria-label="An ensemble of oscillating forecasts and the corrected forecast"><path class="soft" d="M14 60h252" stroke-width="0.8" stroke-dasharray="2 4" fill="none"/><path class="draw d1 soft" pathLength="1" d="M14.0 45.6 L18.5 39.7 L23.0 35.0 L27.5 31.9 L32.0 30.5 L36.5 30.9 L41.0 33.1 L45.5 37.0 L50.0 42.2 L54.5 48.5 L59.0 55.5 L63.5 62.8 L68.0 70.0 L72.5 76.5 L77.0 82.1 L81.5 86.4 L86.0 89.2 L90.5 90.3 L95.0 89.7 L99.5 87.4 L104.0 83.6 L108.5 78.5 L113.0 72.5 L117.5 66.0 L122.0 59.4 L126.5 53.0 L131.0 47.3 L135.5 42.7 L140.0 39.4 L144.5 37.7 L149.0 37.6 L153.5 39.2 L158.0 42.4 L162.5 47.0 L167.0 52.8 L171.5 59.4 L176.0 66.4 L180.5 73.4 L185.0 80.1 L189.5 86.1 L194.0 91.0 L198.5 94.5 L203.0 96.5 L207.5 97.0 L212.0 95.8 L216.5 93.2 L221.0 89.3 L225.5 84.4 L230.0 78.9 L234.5 73.0 L239.0 67.3 L243.5 62.0 L248.0 57.6 L252.5 54.2 L257.0 52.3 L261.5 51.8 L266.0 52.9" fill="none" stroke-width="1" opacity="0.7"/><path class="draw d2 soft" pathLength="1" d="M14.0 70.1 L18.5 63.9 L23.0 57.6 L27.5 51.3 L32.0 45.6 L36.5 40.8 L41.0 37.2 L45.5 34.9 L50.0 34.1 L54.5 34.9 L59.0 37.1 L63.5 40.7 L68.0 45.3 L72.5 50.7 L77.0 56.6 L81.5 62.6 L86.0 68.2 L90.5 73.3 L95.0 77.3 L99.5 80.2 L104.0 81.7 L108.5 81.7 L113.0 80.2 L117.5 77.2 L122.0 73.1 L126.5 67.9 L131.0 62.0 L135.5 55.8 L140.0 49.6 L144.5 43.7 L149.0 38.5 L153.5 34.2 L158.0 31.2 L162.5 29.5 L167.0 29.2 L171.5 30.4 L176.0 32.8 L180.5 36.3 L185.0 40.7 L189.5 45.7 L194.0 50.9 L198.5 56.0 L203.0 60.7 L207.5 64.5 L212.0 67.4 L216.5 69.0 L221.0 69.3 L225.5 68.2 L230.0 65.7 L234.5 62.0 L239.0 57.2 L243.5 51.7 L248.0 45.7 L252.5 39.5 L257.0 33.5 L261.5 28.0 L266.0 23.3" fill="none" stroke-width="1" opacity="0.7"/><path class="draw d3 soft" pathLength="1" d="M14.0 33.4 L18.5 29.1 L23.0 26.7 L27.5 26.4 L32.0 28.1 L36.5 31.7 L41.0 37.0 L45.5 43.7 L50.0 51.4 L54.5 59.5 L59.0 67.7 L63.5 75.4 L68.0 82.1 L72.5 87.5 L77.0 91.2 L81.5 93.0 L86.0 92.9 L90.5 90.8 L95.0 87.0 L99.5 81.5 L104.0 74.9 L108.5 67.5 L113.0 59.7 L117.5 52.1 L122.0 45.1 L126.5 39.1 L131.0 34.5 L135.5 31.6 L140.0 30.6 L144.5 31.4 L149.0 34.2 L153.5 38.6 L158.0 44.4 L162.5 51.3 L167.0 58.9 L171.5 66.6 L176.0 74.2 L180.5 81.0 L185.0 86.7 L189.5 91.0 L194.0 93.7 L198.5 94.5 L203.0 93.6 L207.5 90.8 L212.0 86.6 L216.5 81.0 L221.0 74.5 L225.5 67.6 L230.0 60.5 L234.5 53.8 L239.0 48.0 L243.5 43.2 L248.0 40.0 L252.5 38.3 L257.0 38.5 L261.5 40.4 L266.0 43.9" fill="none" stroke-width="1" opacity="0.7"/><path class="draw d4 soft" pathLength="1" d="M14.0 78.8 L18.5 74.5 L23.0 69.4 L27.5 63.8 L32.0 57.9 L36.5 52.2 L41.0 46.9 L45.5 42.5 L50.0 39.1 L54.5 37.0 L59.0 36.3 L63.5 37.0 L68.0 39.1 L72.5 42.3 L77.0 46.6 L81.5 51.6 L86.0 57.1 L90.5 62.6 L95.0 67.9 L99.5 72.6 L104.0 76.4 L108.5 79.2 L113.0 80.7 L117.5 80.8 L122.0 79.5 L126.5 77.0 L131.0 73.3 L135.5 68.7 L140.0 63.5 L144.5 57.9 L149.0 52.3 L153.5 47.0 L158.0 42.3 L162.5 38.6 L167.0 35.9 L171.5 34.5 L176.0 34.4 L180.5 35.5 L185.0 37.9 L189.5 41.3 L194.0 45.6 L198.5 50.3 L203.0 55.3 L207.5 60.2 L212.0 64.6 L216.5 68.4 L221.0 71.3 L225.5 73.0 L230.0 73.5 L234.5 72.8 L239.0 70.8 L243.5 67.6 L248.0 63.6 L252.5 58.8 L257.0 53.5 L261.5 48.1 L266.0 42.9" fill="none" stroke-width="1" opacity="0.7"/><path class="draw d5 cool" pathLength="1" d="M14.0 60.0 L18.5 52.7 L23.0 45.9 L27.5 39.9 L32.0 35.2 L36.5 32.1 L41.0 30.6 L45.5 30.9 L50.0 33.0 L54.5 36.7 L59.0 41.8 L63.5 48.0 L68.0 54.8 L72.5 61.9 L77.0 68.9 L81.5 75.3 L86.0 80.8 L90.5 84.9 L95.0 87.5 L99.5 88.5 L104.0 87.7 L108.5 85.2 L113.0 81.3 L117.5 76.0 L122.0 69.9 L126.5 63.1 L131.0 56.3 L135.5 49.6 L140.0 43.7 L144.5 38.8 L149.0 35.1 L153.5 33.1 L158.0 32.6 L162.5 33.8 L167.0 36.6 L171.5 40.8 L176.0 46.1 L180.5 52.2 L185.0 58.8 L189.5 65.4 L194.0 71.6 L198.5 77.1 L203.0 81.5 L207.5 84.6 L212.0 86.2 L216.5 86.2 L221.0 84.6 L225.5 81.6 L230.0 77.2 L234.5 71.8 L239.0 65.8 L243.5 59.4 L248.0 53.1 L252.5 47.3 L257.0 42.3 L261.5 38.3 L266.0 35.7" fill="none" stroke-width="2.2"/><text x="14" y="14">rainfall anomaly</text><text x="226" y="114">lead time</text></svg>
+                <div class="research-eq" data-tex="\hat{\mathbf x}=\sum_{i=1}^{N}w_i\,\mathbf x_i,\qquad d_i=\lVert P\mathbf x_i-\mathbf y\rVert"></div>
+                <figcaption>Ensemble members xᵢ are weighted by their distance dᵢ from the data-driven forecast y in the oscillation subspace.</figcaption>
+              </figure>
+              <div>
+                <p class="research-meta"><span class="research-status current">Current</span><span class="research-when">2024 – present · McNair Scholars / CCAR REU, Portland State University</span></p>
+                <h3>Hybrid Data-Driven and Dynamical Forecasting of the South Asian Monsoon Intraseasonal Oscillation</h3>
+                <p class="research-description">
+                  Dynamical models struggle to predict the active and break phases of the South Asian monsoon, which
+                  are driven by northward-propagating rainfall anomalies known as MISOs. This project works with
+                  Ensemble Oscillation Correction (EnOC), a method introduced by
+                  <a href="https://doi.org/10.1175/JCLI-D-20-0624.1">Bach et al. (2021)</a> and applied to the monsoon
+                  in <a href="https://doi.org/10.1073/pnas.2312573121">Bach et al. (2024)</a>. It uses the
+                  near-regularity of the oscillation to correct physics-based ensemble forecasts with data-driven ones,
+                  improving rainfall prediction three to four weeks ahead, a range that matters for agricultural and
+                  hydrological planning.
+                </p>
+                <div class="research-tags"><span class="tag">Python / Julia</span><span class="tag">Data-driven forecasting</span><span class="tag">Dynamical models</span><span class="tag">Climate</span></div>
+                <div class="research-links">
+                  <a href="https://github.com/AcamaroCutcher/ensemble_oscillation_correction.jl" class="btn-link"><i class="fab fa-github" aria-hidden="true"></i> Code (my fork of EnOC.jl)</a>
+                </div>
+              </div>
+            </li>
+            <li class="research-item reveal">
+              <figure class="research-figure">
+                <svg class="fig fig-group" viewBox="0 0 280 120" role="img" aria-label="A symmetric figure whose rotations and reflections form a finite group"><g class="wheel"><polygon class="ink" points="140.0,14.0 179.8,37.0 179.8,83.0 140.0,106.0 100.2,83.0 100.2,37.0" fill="none" stroke-width="1.4"/><path class="soft" d="M140.0 14.0 L179.8 83.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M140.0 14.0 L140.0 106.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M140.0 14.0 L100.2 83.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M179.8 37.0 L140.0 106.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M179.8 37.0 L100.2 83.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M179.8 37.0 L100.2 37.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M179.8 83.0 L100.2 83.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M179.8 83.0 L100.2 37.0" stroke-width="0.6" opacity="0.6"/><path class="soft" d="M140.0 106.0 L100.2 37.0" stroke-width="0.6" opacity="0.6"/><circle class="fill-cool" cx="140.0" cy="14.0" r="4"/><circle class="fill-cool" cx="179.8" cy="37.0" r="4"/><circle class="fill-cool" cx="179.8" cy="83.0" r="4"/><circle class="fill-cool" cx="140.0" cy="106.0" r="4"/><circle class="fill-cool" cx="100.2" cy="83.0" r="4"/><circle class="fill-cool" cx="100.2" cy="37.0" r="4"/></g><g class="wheel rev"><polygon class="hot" points="140.0,38.0 159.1,71.0 120.9,71.0" fill="none" stroke-width="1.6"/><circle class="fill-hot" cx="140.0" cy="38.0" r="3"/><circle class="fill-hot" cx="159.1" cy="71.0" r="3"/><circle class="fill-hot" cx="120.9" cy="71.0" r="3"/></g><text x="14" y="16">G</text><text x="250" y="16">Sₙ</text><path class="soft" d="M28 13h214m-6-4 6 4-6 4" fill="none" stroke-width="0.9"/></svg>
+                <div class="research-eq" data-tex="\mu(G)=\min\{\,n : G\hookrightarrow S_n\,\}\;\le\;|G|"></div>
+                <figcaption>The minimal embedding degree of a finite group G; Cayley’s theorem gives the upper bound.</figcaption>
+              </figure>
+              <div>
+                <p class="research-meta"><span class="research-status completed">Completed</span><span class="research-when">2023 – 2024 · Math honors thesis, LSAMP research scholar, Portland State University</span></p>
+                <h3>Minimal Group Embeddings</h3>
+                <p class="research-description">
+                  Classifies small finite groups and finds their minimal embedding degree: the smallest
+                  <em>n</em> for which <em>G</em> embeds in the symmetric group <em>S<sub>n</sub></em>. Cayley's theorem
+                  guarantees an embedding into <em>S</em><sub>|<em>G</em>|</sub>; using the Sylow theorems to pin down
+                  each group's structure, the minimal degree often turns out to be far smaller than the group's order.
+                </p>
+                <div class="research-tags"><span class="tag">Abstract algebra</span><span class="tag">Group theory</span><span class="tag">Sylow theorems</span></div>
+                <div class="research-links">
+                  <a href="papers/401_Honors_Project_Minimal_Group_Embeddings.pdf" class="btn-link"><i class="fas fa-file-pdf" aria-hidden="true"></i> Thesis (PDF)</a>
+                  <a href="https://drive.google.com/file/d/11QWF4rAGJPW7M9WVvOir8p_0_IKP1gID/view?usp=sharing" class="btn-link"><i class="fab fa-google-drive" aria-hidden="true"></i> Google Drive</a>
+                </div>
+              </div>
+            </li>
+            <li class="research-item reveal">
+              <figure class="research-figure">
+                <svg class="fig fig-spp" viewBox="0 0 280 120" role="img" aria-label="A surface wave travelling along a metal and insulator multilayer"><rect class="fill-cool" x="0" y="62" width="280" height="12" opacity="0.28"/><rect class="fill-panel" x="0" y="72" width="280" height="12" opacity="1"/><rect class="fill-cool" x="0" y="82" width="280" height="12" opacity="0.28"/><rect class="fill-panel" x="0" y="92" width="280" height="12" opacity="1"/><rect class="fill-cool" x="0" y="102" width="280" height="12" opacity="0.28"/><rect class="fill-panel" x="0" y="112" width="280" height="12" opacity="1"/><g class="wave"><path class="hot" d="M-40 62 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0 q10 -22 20 0 q10 22 20 0" fill="none" stroke-width="2"/></g><path class="soft" d="M0 62h280" stroke-width="1"/><text x="10" y="16">dielectric</text><text x="10" y="116">metal / insulator superlattice</text></svg>
+                <div class="research-eq" data-tex="k_{\mathrm{SPP}}=\frac{\omega}{c}\sqrt{\frac{\varepsilon_m\,\varepsilon_d}{\varepsilon_m+\varepsilon_d}}"></div>
+                <figcaption>Dispersion of a surface plasmon polariton at a single metal–dielectric interface.</figcaption>
+              </figure>
+              <div>
+                <p class="research-meta"><span class="research-status completed">Completed</span><span class="research-when">Western Washington University, Physics &amp; Astronomy</span></p>
+                <h3>Multiscale Theoretical Modeling of Surface Plasmon Polaritons: From Fundamentals to Integrated Photonic Applications</h3>
+                <p class="research-description">
+                  Derives surface plasmon polariton dispersion relations by applying Bloch's theorem to Maxwell's
+                  equations, treating a metal–insulator multilayer as a one-dimensional plasmonic crystal. The model
+                  shows how periodic modulation creates band structures and forbidden gaps, a guide for tailoring the
+                  optical response of superlattice metal–insulator–metal devices.
+                </p>
+                <div class="research-tags"><span class="tag">Maxwell's equations</span><span class="tag">Bloch's theorem</span><span class="tag">Solid-state physics</span><span class="tag">Mathematica</span></div>
+                <div class="research-links">
+                  <a href="https://github.com/AcamaroCutcher/Surface-Plasmon-Polariton-Computational-Research-WWU" class="btn-link"><i class="fab fa-github" aria-hidden="true"></i> Code</a>
+                </div>
+              </div>
+            </li>
+            <li class="research-item reveal">
+              <figure class="research-figure">
+                <svg class="fig fig-refl" viewBox="0 0 280 120" role="img" aria-label="A light beam swept in angle onto a thin film, and reflectance with a dip where a mode is excited"><rect class="fill-panel" x="14" y="96" width="96" height="6"/><rect class="fill-cool" x="14" y="102" width="96" height="5" opacity="0.5"/><rect class="fill-panel" x="14" y="107" width="96" height="5"/><g class="beam"><path class="hot" d="M62 96 L62 22" stroke-width="2" fill="none"/></g><path class="soft" d="M62 96V30" stroke-width="0.8" stroke-dasharray="2 3"/><circle class="fill-hot blink" cx="62" cy="96" r="3"/><text x="68" y="34">θ</text><path class="soft" d="M150 24v84h124" fill="none" stroke-width="1"/><path class="draw ink" pathLength="1" d="M150.0 30.0 L152.0 30.1 L154.0 30.2 L156.0 30.3 L158.0 30.4 L160.0 30.5 L162.0 30.6 L164.0 30.7 L166.0 30.8 L168.0 30.9 L170.0 31.0 L172.0 31.1 L174.0 31.2 L176.0 31.3 L178.0 31.4 L180.0 31.5 L182.0 31.6 L184.0 31.7 L186.0 31.8 L188.0 31.9 L190.0 32.0 L192.0 32.1 L194.0 32.2 L196.0 32.3 L198.0 32.5 L200.0 32.8 L202.0 33.4 L204.0 34.7 L206.0 37.3 L208.0 42.1 L210.0 49.8 L212.0 60.4 L214.0 73.0 L216.0 84.9 L218.0 93.2 L220.0 95.4 L222.0 90.7 L224.0 80.8 L226.0 68.5 L228.0 56.7 L230.0 47.4 L232.0 41.1 L234.0 37.5 L236.0 35.7 L238.0 34.9 L240.0 34.7 L242.0 34.7 L244.0 34.7 L246.0 34.8 L248.0 34.9 L250.0 35.0 L252.0 35.1 L254.0 35.2 L256.0 35.3 L258.0 35.4 L260.0 35.5 L262.0 35.6 L264.0 35.7 L266.0 35.8 L268.0 35.9 L270.0 36.0" fill="none" stroke-width="1.8"/><text x="154" y="20">R</text><text x="262" y="118">θ</text><text x="196" y="106">mode</text></svg>
+                <div class="research-eq" data-tex="k_x=\frac{\omega}{c}\,n\sin\theta"></div>
+                <figcaption>The in-plane wavevector of the light is set by the angle of incidence θ.</figcaption>
+              </figure>
+              <div>
+                <p class="research-meta"><span class="research-status completed">Published</span><span class="research-when">PLOS ONE, 2022 · Western Washington University</span></p>
+                <h3>Excitation of “Forbidden” Guided-Wave Plasmon Polariton Modes via Direct Reflectance Using a Low Refractive Index Polymer Coupling Layer</h3>
+                <p class="research-description">
+                  An experimental study of plasmonic modes in metal–insulator–metal thin films. With a low-index
+                  polymer coupling layer and angle-resolved reflectance spectroscopy, we excited and characterized
+                  guided-wave plasmon polariton modes that conventional methods cannot reach, and showed how the
+                  polymer layer changes the coupling conditions. Co-authored with nine colleagues at Western
+                  Washington University.
+                </p>
+                <div class="research-tags"><span class="tag">Thin-film devices</span><span class="tag">AFM / XRR</span><span class="tag">Spectroscopy</span></div>
+                <div class="research-links">
+                  <a href="https://doi.org/10.1371/journal.pone.0276522" class="btn-link"><i class="fas fa-file-lines" aria-hidden="true"></i> Paper (open access)</a>
+                  <a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=en&amp;user=OsKdb4IAAAAJ&amp;citation_for_view=OsKdb4IAAAAJ:u5HHmVD_uO8C" class="btn-link"><i class="fas fa-graduation-cap" aria-hidden="true"></i> Google Scholar</a>
+                </div>
+              </div>
+            </li>
+          </ol>
+
+          <div class="research-more">
+            <a href="projects/index.html" class="btn btn-secondary">
+              Browse the full library <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section id="about" class="section">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">About</p>
+              <h2 class="section-title">A little about me</h2>
+            </div>
+          </div>
+
+          <div class="about-content">
+            <div class="about-text reveal">
+              <p class="lead">
+                I'm a first-year PhD student in mathematics at Portland State University, working on wildfire
+                modeling with machine learning.
+              </p>
+              <p>
+                My research focuses on learning fast surrogate models of wildfire: models that reproduce what
+                expensive physics simulations predict, quickly enough to be used operationally. It combines physics,
+                mathematics and computation, and I like learning from the people I work on it with.
+              </p>
+              <p>
+                When I'm not doing research you can find me tinkering with electronics or code, traveling, attending
+                conferences, and helping respond to humanitarian emergencies.
+              </p>
+              <p>
+                <a href="cv.html" class="btn-link">Read my full CV <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+              </p>
+            </div>
+
+            <dl class="facts reveal">
+              <div>
+                <dt>Now</dt>
+                <dd>
+                  PhD student, Mathematics
+                  <small>Portland State University · NRT RECHARGE Fellow</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Degrees</dt>
+                <dd>
+                  B.S. in Mathematics (Honors), Physics, Computer Science, and General Science
+                  <small>Portland State University</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Summer 2026</dt>
+                <dd>
+                  Los Alamos National Laboratory
+                  <small>Molecular dynamics of melting tin</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Published</dt>
+                <dd>
+                  Co-author, <em>PLOS ONE</em> (2022)
+                  <small>Guided-wave plasmon polariton modes in thin films</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Languages</dt>
+                <dd>English and Spanish</dd>
+              </div>
+              <div>
+                <dt>Based in</dt>
+                <dd>Portland, Oregon</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="skills-grid">
+            <div class="skill-category reveal" style="--i: 0">
+              <h3><i class="fas fa-code" aria-hidden="true"></i> Programming</h3>
+              <div class="skill-tags">
                 <span class="tag">Python</span>
+                <span class="tag">C / C++</span>
+                <span class="tag">Java</span>
+                <span class="tag">Bash</span>
+                <span class="tag">Mathematica</span>
+                <span class="tag">Assembly</span>
+              </div>
+            </div>
+
+            <div class="skill-category reveal" style="--i: 1">
+              <h3><i class="fas fa-flask" aria-hidden="true"></i> Scientific computing</h3>
+              <div class="skill-tags">
                 <span class="tag">NumPy</span>
-                <span class="tag">Performance</span>
-              </div>
-              <a href="blog/python-scientific-computing.html" class="btn-link">
-                Read Article <i class="fas fa-arrow-right"></i>
-              </a>
-            </div>
-          </article>
-
-          <!-- Blog Post 2 -->
-          <article class="blog-card" data-category="visualization research">
-            <div class="blog-image">
-              <img src="images/blog/3d-viz.jpg" alt="3D Visualization" />
-            </div>
-            <div class="blog-content">
-              <div class="blog-meta">
-                <span class="blog-date"
-                  ><i class="far fa-calendar"></i> Dec 28, 2025</span
-                >
-                <span class="blog-read-time"
-                  ><i class="far fa-clock"></i> 8 min read</span
-                >
-              </div>
-              <h3>Interactive 3D Visualizations with Three.js and Python</h3>
-              <p>
-                Creating stunning 3D scientific visualizations for web and
-                presentations.
-              </p>
-              <div class="blog-tags">
-                <span class="tag">Three.js</span>
+                <span class="tag">SciPy</span>
+                <span class="tag">Matplotlib</span>
+                <span class="tag">Plotly</span>
+                <span class="tag">TensorFlow</span>
+                <span class="tag">Keras</span>
+                <span class="tag">Data analysis</span>
                 <span class="tag">Visualization</span>
-                <span class="tag">WebGL</span>
-              </div>
-              <a href="blog/3d-visualizations.html" class="btn-link">
-                Read Article <i class="fas fa-arrow-right"></i>
-              </a>
-            </div>
-          </article>
-
-          <!-- Blog Post 3 -->
-          <article class="blog-card" data-category="research code">
-            <div class="blog-image">
-              <img src="images/blog/latex-math.jpg" alt="LaTeX Mathematics" />
-            </div>
-            <div class="blog-content">
-              <div class="blog-meta">
-                <span class="blog-date"
-                  ><i class="far fa-calendar"></i> Dec 20, 2025</span
-                >
-                <span class="blog-read-time"
-                  ><i class="far fa-clock"></i> 6 min read</span
-                >
-              </div>
-              <h3>Mathematical Modeling: From Theory to Implementation</h3>
-              <p>
-                Step-by-step guide to implementing mathematical models with code
-                examples and LaTeX equations.
-              </p>
-              <div class="blog-tags">
-                <span class="tag">Mathematics</span>
-                <span class="tag">LaTeX</span>
                 <span class="tag">Modeling</span>
               </div>
-              <a href="blog/mathematical-modeling.html" class="btn-link">
-                Read Article <i class="fas fa-arrow-right"></i>
-              </a>
             </div>
-          </article>
-        </div>
-      </div>
-    </section>
 
-    <!-- Gallery Section -->
-    <section id="gallery" class="section gallery-section">
-      <div class="container">
-        <h2 class="section-title">Gallery</h2>
-        <p class="section-subtitle">
-          Moments from research, travel, and conferences
-        </p>
-
-        <div class="gallery-tabs">
-          <button class="gallery-tab active" data-gallery="all">All</button>
-          <button class="gallery-tab" data-gallery="conferences">
-            Conferences
-          </button>
-          <button class="gallery-tab" data-gallery="travel">Travel</button>
-          <button class="gallery-tab" data-gallery="personal">Personal</button>
-        </div>
-
-        <div class="gallery-grid">
-          <!-- Gallery items will be populated here -->
-          <div class="gallery-item" data-category="conferences">
-            <img
-              src="images/gallery/conference1.jpg"
-              alt="Conference presentation"
-            />
-            <div class="gallery-overlay">
-              <h4>International Conference 2025</h4>
-              <p>Presenting research findings</p>
-            </div>
-          </div>
-
-          <div class="gallery-item" data-category="travel">
-            <img src="images/gallery/travel1.jpg" alt="Travel photo" />
-            <div class="gallery-overlay">
-              <h4>Research Trip</h4>
-              <p>Beautiful scenery during fieldwork</p>
-            </div>
-          </div>
-
-          <div class="gallery-item" data-category="personal">
-            <img src="images/gallery/personal1.jpg" alt="Personal photo" />
-            <div class="gallery-overlay">
-              <h4>Lab Work</h4>
-              <p>Working on experiments</p>
-            </div>
-          </div>
-
-          <!-- Add more gallery items as needed -->
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="section contact-section">
-      <div class="container">
-        <h2 class="section-title">Get In Touch</h2>
-        <p class="section-subtitle">I'd love to hear from you!</p>
-
-        <div class="contact-content">
-          <div class="contact-info">
-            <h3>Contact Information</h3>
-            <div class="contact-item">
-              <i class="fas fa-envelope"></i>
-              <div>
-                <h4>Email</h4>
-                <a href="mailto:acamaro@pdx.edu">acamaro@pdx.edu</a>
+            <div class="skill-category reveal" style="--i: 2">
+              <h3><i class="fas fa-server" aria-hidden="true"></i> Tools &amp; HPC</h3>
+              <div class="skill-tags">
+                <span class="tag">Linux</span>
+                <span class="tag">Slurm</span>
+                <span class="tag">Git</span>
+                <span class="tag">Docker</span>
+                <span class="tag">LaTeX</span>
+                <span class="tag">Jupyter</span>
               </div>
             </div>
-            <div class="contact-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <div>
-                <h4>Location</h4>
-                <p>Portland, OR, USA</p>
+
+            <div class="skill-category reveal" style="--i: 0">
+              <h3><i class="fas fa-square-root-variable" aria-hidden="true"></i> Mathematics</h3>
+              <div class="skill-tags">
+                <span class="tag">Linear algebra &amp; spectral analysis</span>
+                <span class="tag">Differential equations</span>
+                <span class="tag">Abstract algebra</span>
+                <span class="tag">Real analysis</span>
+                <span class="tag">Complex analysis</span>
+                <span class="tag">Number theory</span>
+                <span class="tag">Discrete mathematics</span>
               </div>
             </div>
-            <div class="contact-item">
-              <i class="fab fa-github"></i>
-              <div>
-                <h4>GitHub</h4>
-                <a href="https://github.com/AcamaroCutcher" target="_blank"
-                  >@AcamaroCutcher</a
-                >
+
+            <div class="skill-category reveal" style="--i: 1">
+              <h3><i class="fas fa-atom" aria-hidden="true"></i> Physics</h3>
+              <div class="skill-tags">
+                <span class="tag">Classical mechanics</span>
+                <span class="tag">Electromagnetism</span>
+                <span class="tag">Quantum mechanics</span>
+                <span class="tag">Thermodynamics</span>
+                <span class="tag">Computational physics</span>
+                <span class="tag">Electronics</span>
+                <span class="tag">Thin-film fabrication</span>
               </div>
             </div>
-            <div class="contact-item">
-              <i class="fab fa-linkedin"></i>
-              <div>
-                <h4>LinkedIn</h4>
-                <a
-                  href="https://www.linkedin.com/in/acamaro-cutcher-649052254/"
-                  target="_blank"
-                  >Acamaro Cutcher</a
-                >
+
+            <div class="skill-category reveal" style="--i: 2">
+              <h3><i class="fas fa-laptop-code" aria-hidden="true"></i> Computer science</h3>
+              <div class="skill-tags">
+                <span class="tag">Data structures &amp; algorithms</span>
+                <span class="tag">Operating systems</span>
+                <span class="tag">Cloud computing</span>
+                <span class="tag">Network protocols</span>
+                <span class="tag">Software engineering</span>
+                <span class="tag">Deep learning</span>
+                <span class="tag">Web development</span>
               </div>
             </div>
           </div>
-
-          <form class="contact-form" id="contactForm">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" name="name" required />
-            </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" required />
-            </div>
-            <div class="form-group">
-              <label for="subject">Subject</label>
-              <input type="text" id="subject" name="subject" required />
-            </div>
-            <div class="form-group">
-              <label for="message">Message</label>
-              <textarea
-                id="message"
-                name="message"
-                rows="5"
-                required
-              ></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-paper-plane"></i> Send Message
-            </button>
-          </form>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- Recognition -->
+      <section id="recognition" class="section section-alt">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">Recognition</p>
+              <h2 class="section-title">Fellowships &amp; scholarships</h2>
+            </div>
+            <a href="cv.html#awards" class="btn-link">
+              Full list, with details, in my CV <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          <ul class="honors-list">
+            <li>
+              <span class="honor-name">
+                NRT RECHARGE Fellow
+                <small>NSF Research Traineeship on cascading hazards, Portland State University</small>
+              </span>
+              <span class="honor-year">2026 – 2028</span>
+            </li>
+            <li>
+              <span class="honor-name">
+                NSF RTG Undergraduate Fellowship
+                <small>Computation- and Data-Enabled Science, Portland State University</small>
+              </span>
+              <span class="honor-year">2025</span>
+            </li>
+            <li>
+              <span class="honor-name">
+                Ronald E. McNair Scholar
+                <small>Post-Baccalaureate Achievement Program</small>
+              </span>
+              <span class="honor-year">2024</span>
+            </li>
+            <li>
+              <span class="honor-name">
+                NSF Undergraduate Research Fellow
+                <small>Center for Climate and Aerosol Research, Portland State University</small>
+              </span>
+              <span class="honor-year">2024</span>
+            </li>
+            <li>
+              <span class="honor-name">
+                Mercer Family Foundation Scholar, three times
+                <small>Mathematics and physics</small>
+              </span>
+              <span class="honor-year">2023 – 2025</span>
+            </li>
+            <li>
+              <span class="honor-name">
+                PSU EAGLES S-STEM Scholarship
+                <small>NSF-funded, Portland State University</small>
+              </span>
+              <span class="honor-year">2025 – 2026</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="section">
+        <div class="container">
+          <div class="contact-card">
+            <div>
+              <p class="eyebrow">Contact</p>
+              <h2>Let's talk.</h2>
+              <p>
+                Questions about a project, a collaboration idea, or an opportunity in wildfire modeling or
+                scientific machine learning? Email is the best way to reach me.
+              </p>
+              <div class="contact-email">
+                <a href="mailto:acamaro@pdx.edu" class="btn btn-primary">
+                  <i class="fas fa-envelope" aria-hidden="true"></i> acamaro@pdx.edu
+                </a>
+                <button type="button" class="copy-btn" data-copy="acamaro@pdx.edu">
+                  <i class="far fa-copy" aria-hidden="true"></i> <span data-copy-label>Copy address</span>
+                </button>
+              </div>
+            </div>
+
+            <ul class="contact-list">
+              <li>
+                <a href="https://github.com/AcamaroCutcher" rel="noopener">
+                  <i class="fab fa-github" aria-hidden="true"></i> GitHub <small>@AcamaroCutcher →</small>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.linkedin.com/in/acamaro-cutcher-649052254/" rel="noopener">
+                  <i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn <small>Acamaro Cutcher →</small>
+                </a>
+              </li>
+              <li>
+                <a href="https://scholar.google.com/citations?user=OsKdb4IAAAAJ&amp;hl=en" rel="noopener">
+                  <i class="fas fa-graduation-cap" aria-hidden="true"></i> Google Scholar <small>Publications →</small>
+                </a>
+              </li>
+              <li>
+                <span class="row">
+                  <i class="fas fa-location-dot" aria-hidden="true"></i> Portland, Oregon, USA
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-section">
-            <h3>Acamaro Cutcher</h3>
-            <p>Researcher | Developer | Innovator</p>
-            <div class="social-links">
-              <a
-                href="https://github.com/AcamaroCutcher"
-                target="_blank"
-                aria-label="GitHub"
-              >
-                <i class="fab fa-github"></i>
-              </a>
-              <a
-                href="https://www.linkedin.com/in/acamaro-cutcher-649052254/"
-                target="_blank"
-                aria-label="LinkedIn"
-              >
-                <i class="fab fa-linkedin"></i>
-              </a>
-              <a href="mailto:acamaro@pdx.edu" aria-label="Email">
-                <i class="fas fa-envelope"></i>
-              </a>
-              <a
-                href="https://scholar.google.com/citations?user=OsKdb4IAAAAJ&hl=en"
-                target="_blank"
-                aria-label="Google Scholar"
-              >
-                <i class="fas fa-graduation-cap"></i>
-              </a>
-            </div>
-          </div>
-          <div class="footer-section">
-            <h4>Quick Links</h4>
-            <ul>
-              <li><a href="#about">About</a></li>
-              <li><a href="#research">Research</a></li>
-              <li><a href="projects/index.html">Projects</a></li>
-              <li><a href="#blog">Blog</a></li>
-              <li><a href="cv.html">CV</a></li>
-            </ul>
-          </div>
-          <div class="footer-section">
-            <h4>Resources</h4>
-            <ul>
-              <li><a href="projects/index.html?type=paper">Publications</a></li>
-              <li><a href="talks.html">Talks & Presentations</a></li>
-              <li><a href="teaching.html">Teaching</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>&copy; 2026 Acamaro Cutcher. All rights reserved.</p>
-        </div>
+      <div class="container footer-inner">
+        <p>&copy; <span data-year>2026</span> Acamaro Cutcher</p>
+        <ul class="footer-nav">
+          <li><a href="projects/index.html">Projects &amp; papers</a></li>
+          <li><a href="projects/index.html?type=paper">Publications</a></li>
+          <li><a href="projects/index.html?type=interactive">Interactive</a></li>
+          <li><a href="cv.html">CV</a></li>
+          <li><a href="https://github.com/AcamaroCutcher/ace.github.io" rel="noopener">Site source</a></li>
+        </ul>
       </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="js/main.js"></script>
+    <script src="projects/forest-park-wildfires/vendor/katex/katex.min.js" defer></script>
+    <script src="js/main.js" defer></script>
   </body>
 </html>

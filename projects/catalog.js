@@ -94,32 +94,47 @@ window.PROJECT_LIBRARY = {
       ],
     },
     {
+      id: 'tin-melting-md',
+      title: 'Melting of Tin from Molecular Dynamics with a Hybrid Machine-Learned Potential',
+      summary: 'Summer 2026 at Los Alamos National Laboratory: molecular dynamics simulations of tin in LAMMPS with a ' +
+        'hybrid machine-learned interatomic potential, using first-passage-time dynamics to understand how tin melts.',
+      disciplines: ['physics', 'ml'],
+      types: ['research'],
+      year: 2026,
+      tags: ['LAMMPS', 'Molecular Dynamics', 'Machine-Learned Potentials', 'First-Passage Times', 'Los Alamos National Laboratory'],
+      links: [],
+    },
+    {
       id: 'wildfire-fno',
       title: 'Modified Fourier Neural Operators for Direct Wildfire Spread Prediction: A FourCastNet Adaptation',
       summary: 'Re-engineers FourCastNet, originally a global weather emulator, into a direct solver for wildfire ' +
         'propagation. Static and dynamic fire drivers (fuel moisture, LANDFIRE vegetation density, high-resolution ' +
-        'topography) are added to the input channels, and the AFNO is retrained on historical fire perimeters, ' +
-        'producing fire-spread ensembles up to 80,000× faster than coupled physics models like WRF-SFIRE.',
+        'topography) are added to the input channels, and the AFNO is retrained on historical fire perimeters. ' +
+        'FourCastNet runs global weather ensembles about 80,000× faster than numerical models (Kurth et al., 2022); ' +
+        'the goal is to bring that speed to fire-spread ensembles, which coupled physics models like WRF-SFIRE compute slowly.',
       disciplines: ['ml', 'earth'],
       types: ['research', 'code'],
       status: 'current',
       tags: ['Python', 'Deep Learning', 'Neural Operators', 'Wildfire'],
       links: [
-        { label: 'Code', href: 'https://github.com/PSU-CS-Wildfire-Capstone-Sp-S-25', icon: 'fa-github', brand: true, primary: true },
+        { label: 'PSU wildfire capstone code', href: 'https://github.com/PSU-CS-Wildfire-Capstone-Sp-S-25', icon: 'fa-github', brand: true, primary: true },
+        { label: 'FourCastNet paper', href: 'https://arxiv.org/abs/2208.05419', icon: 'fa-file-lines' },
       ],
     },
     {
       id: 'monsoon-enoc',
       title: 'Hybrid Data-Driven and Dynamical Forecasting of the South Asian Monsoon Intraseasonal Oscillation',
-      summary: 'Ensemble Oscillation Correction (EnOC) uses the near-regularity of monsoon intraseasonal oscillations to ' +
-        'correct physics-based forecasts with data-driven modes, extending reliable rainfall prediction to three to ' +
-        'four weeks ahead for agricultural and hydrological planning.',
+      summary: 'Works with Ensemble Oscillation Correction (EnOC; Bach et al., 2021, 2024), which uses the near-regularity ' +
+        'of monsoon intraseasonal oscillations to correct physics-based ensemble forecasts with data-driven modes, ' +
+        'improving rainfall prediction three to four weeks ahead for agricultural and hydrological planning.',
       disciplines: ['earth', 'ml'],
       types: ['research', 'code'],
       status: 'current',
       tags: ['Python / Julia', 'Data-driven Forecasting', 'Climate', 'Dynamical Models'],
       links: [
-        { label: 'Code', href: 'https://github.com/AcamaroCutcher/ensemble_oscillation_correction.jl', icon: 'fa-github', brand: true, primary: true },
+        { label: 'Code (EnOC.jl fork)', href: 'https://github.com/AcamaroCutcher/ensemble_oscillation_correction.jl', icon: 'fa-github', brand: true, primary: true },
+        { label: 'Method paper', href: 'https://doi.org/10.1175/JCLI-D-20-0624.1', icon: 'fa-file-lines' },
+        { label: 'Monsoon paper (PNAS)', href: 'https://doi.org/10.1073/pnas.2312573121', icon: 'fa-file-lines' },
       ],
     },
     {
@@ -131,6 +146,7 @@ window.PROJECT_LIBRARY = {
       disciplines: ['math'],
       types: ['paper'],
       status: 'completed',
+      year: 2024,
       tags: ['Abstract Algebra', 'Group Theory', 'Sylow Theorems', 'Honors Thesis'],
       links: [
         { label: 'Paper (PDF)', href: '../papers/401_Honors_Project_Minimal_Group_Embeddings.pdf', icon: 'fa-file-pdf', primary: true },
@@ -161,9 +177,10 @@ window.PROJECT_LIBRARY = {
       disciplines: ['physics'],
       types: ['paper'],
       status: 'completed',
+      year: 2022,
       tags: ['Thin Film Devices', 'AFM / XRR', 'Spectroscopy', 'PLOS ONE'],
       links: [
-        { label: 'Paper (PLOS ONE)', href: 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0276522', icon: 'fa-file-lines', primary: true },
+        { label: 'Paper (PLOS ONE)', href: 'https://doi.org/10.1371/journal.pone.0276522', icon: 'fa-file-lines', primary: true },
         { label: 'Google Scholar', href: 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=OsKdb4IAAAAJ&citation_for_view=OsKdb4IAAAAJ:u5HHmVD_uO8C', icon: 'fa-graduation-cap' },
       ],
     },

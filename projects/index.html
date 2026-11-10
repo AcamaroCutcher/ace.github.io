@@ -10,9 +10,27 @@
     <meta name="author" content="Acamaro Cutcher" />
     <title>Projects &amp; Papers - Acamaro Cutcher</title>
 
+    <link rel="canonical" href="https://acamaro.com/projects/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Acamaro Cutcher" />
+    <meta property="og:title" content="Projects &amp; Papers - Acamaro Cutcher" />
+    <meta
+      property="og:description"
+      content="Research, publications and interactive tools, organized by field: Earth science, physics, mathematics and machine learning."
+    />
+    <meta property="og:url" content="https://acamaro.com/projects/" />
+    <meta property="og:image" content="https://acamaro.com/projects/thumbs/cascadia.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+
+    <script src="../js/theme-init.js"></script>
+
     <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <!-- Icons -->
@@ -26,30 +44,33 @@
     <link rel="stylesheet" href="library.css" />
   </head>
   <body>
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-      <div class="container nav-container">
-        <a href="../index.html" class="logo">Acamaro Cutcher</a>
+    <a class="skip-link" href="#main">Skip to content</a>
 
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar" aria-label="Main">
+      <div class="container nav-container">
+        <a href="../index.html" class="logo">
+          <span class="logo-mark" aria-hidden="true">AC</span>
+          Acamaro Cutcher
+        </a>
 
         <ul class="nav-menu" id="navMenu">
-          <li><a href="../index.html#home" class="nav-link">Home</a></li>
-          <li><a href="../index.html#about" class="nav-link">About</a></li>
+          <li><a href="../index.html#work" class="nav-link">Work</a></li>
           <li><a href="../index.html#research" class="nav-link">Research</a></li>
-          <li><a href="index.html" class="nav-link active">Projects</a></li>
-          <li><a href="../index.html#blog" class="nav-link">Blog</a></li>
-          <li><a href="../index.html#gallery" class="nav-link">Gallery</a></li>
+          <li><a href="../index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html" class="nav-link active" aria-current="page">Projects</a></li>
           <li><a href="../cv.html" class="nav-link">CV</a></li>
           <li><a href="../index.html#contact" class="nav-link">Contact</a></li>
         </ul>
 
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <i class="fas fa-moon"></i>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+          <i class="fas fa-moon" aria-hidden="true"></i>
+        </button>
+
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </nav>
@@ -66,7 +87,7 @@
       </div>
     </header>
 
-    <main class="lib-main">
+    <main class="lib-main" id="main">
       <div class="container">
         <div class="lib-controls" role="search">
           <div class="lib-filter-row">
@@ -96,10 +117,13 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <div class="container">
-        <div class="footer-bottom">
-          <p>&copy; 2026 Acamaro Cutcher. All rights reserved.</p>
-        </div>
+      <div class="container footer-inner">
+        <p>&copy; <span data-year>2026</span> Acamaro Cutcher</p>
+        <ul class="footer-nav">
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="../cv.html">CV</a></li>
+          <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
       </div>
     </footer>
 

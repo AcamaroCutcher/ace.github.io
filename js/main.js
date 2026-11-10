@@ -1,356 +1,249 @@
-// ======================
-// Theme Toggle
-// ======================
+/*
+ * Shared behavior for the home page, CV and Projects & Papers library:
+ * theme toggle, mobile menu, navbar shadow, current-section highlight, scroll reveal.
+ * Every block checks that its elements exist, so pages can leave parts out.
+ */
+(function () {
+  'use strict';
 
-const themeToggle = document.getElementById('themeToggle');
-const body = document.body;
-const themeIcon = themeToggle.querySelector('i');
+  var root = document.documentElement;
+  var THEME_KEY = 'quake-viz-theme'; // shared with projects/*/theme.js
 
-// Check for saved theme preference or default to light mode
-const currentTheme = localStorage.getItem('theme') || 'light';
-if (currentTheme === 'dark') {
-    body.classList.add('dark-mode');
-    themeIcon.classList.remove('fa-moon');
-    themeIcon.classList.add('fa-sun');
-}
+  // ---------- Theme toggle ----------
+  var themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    var icon = themeToggle.querySelector('i');
+    var syncToggle = function () {
+      var dark = root.classList.contains('dark-mode');
+      if (icon) icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+      themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggle.setAttribute('aria-pressed', String(dark));
+    };
+    syncToggle();
+    themeToggle.addEventListener('click', function () {
+      var dark = !root.classList.contains('dark-mode');
+      root.classList.toggle('dark-mode', dark);
+      try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (e) { /* storage unavailable */ }
+      syncToggle();
+    });
+    // Follow the operating system while the visitor has not chosen a theme
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onSystemChange = function (e) {
+      var saved = null;
+      try { saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('theme'); } catch (err) { /* ignore */ }
+      if (!saved) { root.classList.toggle('dark-mode', e.matches); syncToggle(); }
+    };
+    if (mq.addEventListener) mq.addEventListener('change', onSystemChange);
+  }
 
-themeToggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
+  // ---------- Mobile menu ----------
+  var menuToggle = document.getElementById('mobileMenuToggle');
+  var navMenu = document.getElementById('navMenu');
+  if (menuToggle && navMenu) {
+    var setMenu = function (open) {
+      navMenu.classList.toggle('active', open);
+      menuToggle.classList.toggle('active', open);
+      menuToggle.setAttribute('aria-expanded', String(open));
+    };
+    menuToggle.setAttribute('aria-controls', 'navMenu');
+    setMenu(false);
+    menuToggle.addEventListener('click', function () { setMenu(!navMenu.classList.contains('active')); });
+    navMenu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && navMenu.classList.contains('active')) { setMenu(false); menuToggle.focus(); }
+    });
+    document.addEventListener('click', function (e) {
+      if (navMenu.classList.contains('active') && !e.target.closest('.navbar')) setMenu(false);
+    });
+  }
 
-    if (body.classList.contains('dark-mode')) {
-        themeIcon.classList.remove('fa-moon');
-        themeIcon.classList.add('fa-sun');
-        localStorage.setItem('theme', 'dark');
+  // ---------- Navbar shadow once the page scrolls ----------
+  var navbar = document.getElementById('navbar');
+  if (navbar) {
+    var onScroll = function () { navbar.classList.toggle('scrolled', window.scrollY > 8); };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // ---------- Highlight the section being read (home page) ----------
+  var sectionLinks = {};
+  document.querySelectorAll('.nav-link[href^="#"]').forEach(function (a) {
+    sectionLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var ids = Object.keys(sectionLinks);
+  if (ids.length && 'IntersectionObserver' in window) {
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        ids.forEach(function (id) { sectionLinks[id].classList.remove('active'); });
+        sectionLinks[entry.target.id].classList.add('active');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ids.forEach(function (id) { var el = document.getElementById(id); if (el) spy.observe(el); });
+  }
+
+  // ---------- Scroll reveal ----------
+  var revealEls = document.querySelectorAll('.reveal');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (revealEls.length) {
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      revealEls.forEach(function (el) { el.classList.add('in'); });
     } else {
-        themeIcon.classList.remove('fa-sun');
-        themeIcon.classList.add('fa-moon');
-        localStorage.setItem('theme', 'light');
-    }
-});
-
-// ======================
-// Mobile Navigation
-// ======================
-
-const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-const navMenu = document.getElementById('navMenu');
-
-mobileMenuToggle.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    mobileMenuToggle.classList.toggle('active');
-});
-
-// Close mobile menu when clicking on a link
-const navLinks = document.querySelectorAll('.nav-link');
-navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        mobileMenuToggle.classList.remove('active');
-    });
-});
-
-// ======================
-// Navbar Scroll Effect
-// ======================
-
-const navbar = document.getElementById('navbar');
-let lastScroll = 0;
-
-window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-
-    if (currentScroll > 100) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-
-    lastScroll = currentScroll;
-});
-
-// ======================
-// Active Navigation Link
-// ======================
-
-// Update active nav link on scroll
-const sections = document.querySelectorAll('section[id]');
-
-function updateActiveLink() {
-    const scrollY = window.pageYOffset;
-
-    sections.forEach(section => {
-        const sectionHeight = section.offsetHeight;
-        const sectionTop = section.offsetTop - 100;
-        const sectionId = section.getAttribute('id');
-        const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-
-        if (navLink && scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-            navLinks.forEach(link => link.classList.remove('active'));
-            navLink.classList.add('active');
-        }
-    });
-}
-
-window.addEventListener('scroll', updateActiveLink);
-
-// ======================
-// Smooth Scroll
-// ======================
-
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-
-        if (target) {
-            const offsetTop = target.offsetTop - 70;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-            });
-        }
-    });
-});
-
-// ======================
-// Blog Filters
-// ======================
-
-const filterButtons = document.querySelectorAll('.filter-btn');
-const blogCards = document.querySelectorAll('.blog-card');
-
-filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        // Update active button
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        const filterValue = button.getAttribute('data-filter');
-
-        // Filter blog cards
-        blogCards.forEach(card => {
-            const categories = card.getAttribute('data-category');
-
-            if (filterValue === 'all' || categories.includes(filterValue)) {
-                card.style.display = 'block';
-                card.style.animation = 'fadeIn 0.5s';
-            } else {
-                card.style.display = 'none';
-            }
+      var revealer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) { entry.target.classList.add('in'); revealer.unobserve(entry.target); }
         });
+      }, { rootMargin: '0px 0px -8% 0px' });
+      revealEls.forEach(function (el) { revealer.observe(el); });
+    }
+  }
+
+  // ---------- Copy email address ----------
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    var label = btn.querySelector('[data-copy-label]');
+    var original = label ? label.textContent : '';
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      var done = function (ok) {
+        if (!label) return;
+        label.textContent = ok ? 'Copied' : text;
+        setTimeout(function () { label.textContent = original; }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+      } else {
+        done(false);
+      }
     });
-});
+  });
 
-// ======================
-// Gallery Tabs
-// ======================
+  // ---------- Print button (CV) ----------
+  document.querySelectorAll('[data-print]').forEach(function (btn) {
+    btn.addEventListener('click', function () { window.print(); });
+  });
 
-const galleryTabs = document.querySelectorAll('.gallery-tab');
-const galleryItems = document.querySelectorAll('.gallery-item');
+  // ---------- External links open in a new tab ----------
+  document.querySelectorAll('a[href^="http"]').forEach(function (link) {
+    if (link.hostname && link.hostname !== window.location.hostname) {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
 
-galleryTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        // Update active tab
-        galleryTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+  // ---------- Equations (KaTeX, loaded on pages that have [data-tex]) ----------
+  var texEls = document.querySelectorAll('[data-tex]');
+  if (texEls.length) {
+    var typeset = function () {
+      if (!window.katex) return;
+      texEls.forEach(function (el) {
+        try {
+          window.katex.render(el.getAttribute('data-tex'), el, { displayMode: true, throwOnError: false });
+        } catch (e) { /* leave the fallback text in place */ }
+      });
+    };
+    if (window.katex) typeset(); else window.addEventListener('load', typeset);
+  }
 
-        const galleryFilter = tab.getAttribute('data-gallery');
+  // ---------- Reading progress bar ----------
+  var bar = document.querySelector('.scroll-progress');
+  if (bar) {
+    var ticking = false;
+    var paint = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, window.scrollY / max) : 0) + ')';
+      ticking = false;
+    };
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(paint); }
+    }, { passive: true });
+    paint();
+  }
 
-        // Filter gallery items
-        galleryItems.forEach(item => {
-            const category = item.getAttribute('data-category');
-
-            if (galleryFilter === 'all' || category === galleryFilter) {
-                item.style.display = 'block';
-                item.style.animation = 'fadeIn 0.5s';
-            } else {
-                item.style.display = 'none';
-            }
-        });
+  // ---------- Featured cards: light follows the pointer ----------
+  document.querySelectorAll('.work-card').forEach(function (card) {
+    card.addEventListener('pointermove', function (e) {
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
     });
-});
+  });
 
-// ======================
-// Contact Form
-// ======================
+  // ---------- Hero: a small fire-spread simulation on the graph-paper grid ----------
+  // A stochastic cellular automaton: each burning cell can ignite its neighbors, with a wind
+  // bias. Cells glow, cool, and the grid regrows before the next ignition. Decorative only.
+  var canvas = document.querySelector('.hero-canvas');
+  if (canvas && canvas.getContext && !reduceMotion) {
+    var ctx = canvas.getContext('2d');
+    var CELL = 32, cols = 0, rows = 0, heat, state, burning, wind, running = false, visible = true, last = 0, idle = 0;
 
-const contactForm = document.getElementById('contactForm');
-
-if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        // Get form data
-        const formData = new FormData(contactForm);
-        const data = Object.fromEntries(formData);
-
-        // Here you can add your form submission logic
-        // For now, we'll just show an alert
-        console.log('Form submitted:', data);
-        alert('Thank you for your message! I will get back to you soon.');
-
-        // Reset form
-        contactForm.reset();
-
-        // You can integrate with services like:
-        // - Formspree (https://formspree.io/)
-        // - EmailJS (https://www.emailjs.com/)
-        // - Netlify Forms
-        // - Your own backend API
-    });
-}
-
-// ======================
-// Scroll Animations
-// ======================
-
-// Intersection Observer for fade-in animations
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+    var resize = function () {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(w / CELL); rows = Math.ceil(h / CELL);
+      heat = new Float32Array(cols * rows); state = new Uint8Array(cols * rows); burning = [];
+      idle = 20;
+    };
+    var ignite = function () {
+      state.fill(0); burning = [];
+      // start on the right-hand side, where the mask lets the canvas show
+      var c = Math.floor(cols * (0.55 + Math.random() * 0.35)), r = Math.floor(rows * (0.15 + Math.random() * 0.6));
+      var a = Math.random() * Math.PI * 2;
+      wind = [Math.cos(a), Math.sin(a)];
+      var i = r * cols + c; state[i] = 1; heat[i] = 1; burning.push(i);
+    };
+    var step = function () {
+      if (!burning.length) { if (--idle <= 0) { ignite(); idle = 26; } return; }
+      var next = [];
+      for (var k = 0; k < burning.length; k++) {
+        var i = burning[k], c = i % cols, r = (i - c) / cols, spreading = false;
+        for (var d = 0; d < 4; d++) {
+          var dc = d === 0 ? 1 : d === 1 ? -1 : 0, dr = d === 2 ? 1 : d === 3 ? -1 : 0;
+          var nc = c + dc, nr = r + dr;
+          if (nc < 0 || nr < 0 || nc >= cols || nr >= rows) continue;
+          var j = nr * cols + nc;
+          if (state[j]) continue;
+          var p = 0.2 + 0.22 * (dc * wind[0] + dr * wind[1]);
+          if (Math.random() < p) { state[j] = 1; heat[j] = 1; next.push(j); } else { spreading = true; }
         }
-    });
-}, observerOptions);
-
-// Observe elements for animation
-document.addEventListener('DOMContentLoaded', () => {
-    const animateElements = document.querySelectorAll('.research-card, .blog-card, .skill-category');
-
-    animateElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = `all 0.6s ease ${index * 0.1}s`;
-        observer.observe(el);
-    });
-});
-
-// ======================
-// Gallery Lightbox
-// ======================
-
-const galleryImages = document.querySelectorAll('.gallery-item');
-
-galleryImages.forEach(item => {
-    item.addEventListener('click', () => {
-        const img = item.querySelector('img');
-        const overlay = item.querySelector('.gallery-overlay');
-
-        if (img && img.src) {
-            // Create lightbox
-            const lightbox = document.createElement('div');
-            lightbox.className = 'lightbox';
-            lightbox.innerHTML = `
-                <div class="lightbox-content">
-                    <span class="lightbox-close">&times;</span>
-                    <img src="${img.src}" alt="${img.alt}">
-                    <div class="lightbox-caption">
-                        ${overlay ? overlay.innerHTML : ''}
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(lightbox);
-            document.body.style.overflow = 'hidden';
-
-            // Close lightbox
-            const closeBtn = lightbox.querySelector('.lightbox-close');
-            closeBtn.addEventListener('click', () => {
-                document.body.removeChild(lightbox);
-                document.body.style.overflow = 'auto';
-            });
-
-            // Close on background click
-            lightbox.addEventListener('click', (e) => {
-                if (e.target === lightbox) {
-                    document.body.removeChild(lightbox);
-                    document.body.style.overflow = 'auto';
-                }
-            });
-        }
-    });
-});
-
-// ======================
-// Utility Functions
-// ======================
-
-// Add lightbox styles dynamically
-const lightboxStyles = document.createElement('style');
-lightboxStyles.textContent = `
-    .lightbox {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.95);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        animation: fadeIn 0.3s;
+        if (spreading && Math.random() < 0.72) next.push(i); else state[i] = 2;
+      }
+      burning = next.length > 420 ? [] : next;
+    };
+    var draw = function (t) {
+      if (!running) return;
+      requestAnimationFrame(draw);
+      if (t - last < 110) return;
+      last = t;
+      step();
+      var dark = root.classList.contains('dark-mode');
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      for (var i = 0; i < heat.length; i++) {
+        var hgt = heat[i];
+        if (hgt <= 0.01) continue;
+        var c = i % cols, r = (i - c) / cols;
+        // hot cells are amber, cooling cells fade toward ash
+        var g = Math.round(90 + 110 * hgt);
+        ctx.fillStyle = 'rgba(' + (dark ? 255 : 234) + ',' + g + ',' + (dark ? 60 : 40) + ',' + (hgt * (dark ? 0.34 : 0.26)).toFixed(3) + ')';
+        ctx.fillRect(c * CELL + 1, r * CELL + 1, CELL - 1, CELL - 1);
+        heat[i] = hgt * 0.955;
+      }
+    };
+    var setRunning = function () {
+      var should = visible && !document.hidden;
+      if (should && !running) { running = true; requestAnimationFrame(draw); }
+      if (!should) running = false;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', setRunning);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; setRunning(); }).observe(canvas);
     }
+    setRunning();
+  }
 
-    .lightbox-content {
-        position: relative;
-        max-width: 90%;
-        max-height: 90%;
-        animation: fadeInUp 0.4s;
-    }
-
-    .lightbox-content img {
-        max-width: 100%;
-        max-height: 80vh;
-        object-fit: contain;
-        border-radius: 0.5rem;
-    }
-
-    .lightbox-close {
-        position: absolute;
-        top: -2rem;
-        right: 0;
-        font-size: 2rem;
-        color: white;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .lightbox-close:hover {
-        transform: scale(1.2);
-    }
-
-    .lightbox-caption {
-        color: white;
-        text-align: center;
-        margin-top: 1rem;
-    }
-`;
-document.head.appendChild(lightboxStyles);
-
-// ======================
-// Loading Animation
-// ======================
-
-window.addEventListener('load', () => {
-    document.body.classList.add('loaded');
-});
-
-// ======================
-// External Link Handler
-// ======================
-
-// Add target="_blank" to external links
-document.querySelectorAll('a[href^="http"]').forEach(link => {
-    if (!link.href.includes(window.location.hostname)) {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener noreferrer');
-    }
-});
+  // ---------- Footer year ----------
+  document.querySelectorAll('[data-year]').forEach(function (el) { el.textContent = new Date().getFullYear(); });
+})();

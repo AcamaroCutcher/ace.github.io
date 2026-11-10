@@ -1,79 +1,118 @@
-/* ======================
-   Dark Mode Theme
-   ====================== */
+/*
+ * Dark mode, second iteration: neutral charcoal with a warm ember accent.
+ * The grays match the dark theme of the interactive projects (Cascadia, Forest Park), so moving
+ * between the home page and a project no longer changes the background color.
+ *
+ * js/theme-init.js puts the "dark-mode" class on <html> before the page paints. It follows the
+ * operating system until the visitor picks a theme.
+ */
 
-body.dark-mode {
-    /* Dark Mode Colors */
-    --primary-color: #60a5fa;
-    --secondary-color: #a78bfa;
-    --accent-color: #22d3ee;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --border-color: #334155;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+.dark-mode {
+  --primary-color: #ffa35c;
+  --primary-strong: #ffb97f;
+  --secondary-color: #3fbf5a;
+  --accent-color: #ff7a3d;
+  --warm-color: #ffa35c;
+  --text-primary: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #141413;
+  --bg-tertiary: #222221;
+  --border-color: #2c2c2a;
+  --on-primary: #1a0f05;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
 }
 
-/* Smooth transition for theme changes */
-body {
-    transition: background-color 0.3s ease, color 0.3s ease;
+.dark-mode .research-status.current {
+  background-color: rgba(255, 163, 92, 0.14);
+  color: #ffb97f;
 }
 
-/* Theme-specific adjustments */
-body.dark-mode .research-status.current {
-    background-color: #1e3a8a;
-    color: #93c5fd;
+.dark-mode .research-status.completed {
+  background-color: rgba(63, 191, 90, 0.14);
+  color: #7fd992;
 }
 
-body.dark-mode .research-status.completed {
-    background-color: #064e3b;
-    color: #6ee7b7;
+/* Hero: a low ember glow instead of the blue wash */
+.dark-mode .hero,
+.dark-mode .page-header {
+  background:
+    radial-gradient(680px 340px at 88% 0%, rgba(255, 122, 61, 0.13), transparent 70%),
+    radial-gradient(520px 320px at 0% 100%, rgba(255, 163, 92, 0.06), transparent 70%),
+    var(--bg-secondary);
 }
 
-body.dark-mode .tag {
-    background-color: var(--bg-tertiary);
-    color: var(--text-secondary);
+.dark-mode .hero::after,
+.dark-mode .page-header::after {
+  opacity: 0.5;
 }
 
-body.dark-mode .filter-btn:not(.active),
-body.dark-mode .gallery-tab:not(.active) {
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
+.dark-mode .hero-now,
+.dark-mode .social-links a,
+.dark-mode .btn-secondary {
+  background-color: #1a1a19;
 }
 
-/* Code blocks styling for dark mode */
-body.dark-mode pre {
-    background-color: #1e293b;
-    border: 1px solid #334155;
+.dark-mode .work-card,
+.dark-mode .skill-category,
+.dark-mode .facts,
+.dark-mode .research-figure {
+  background-color: #1a1a19;
 }
 
-body.dark-mode code {
-    background-color: #1e293b;
-    color: #e2e8f0;
+.dark-mode .logo-mark {
+  background: var(--primary-color);
+  color: var(--on-primary);
 }
 
-/* Syntax highlighting base colors for dark mode */
-body.dark-mode .token.comment {
-    color: #64748b;
+/* The contact card is dark in both themes; lift it off the dark page */
+.dark-mode .contact-card {
+  background: #1a1a19;
+  border: 1px solid var(--border-color);
 }
 
-body.dark-mode .token.keyword {
-    color: #c792ea;
+.dark-mode .contact-card .eyebrow,
+.dark-mode .contact-list i:first-child {
+  color: var(--primary-color);
 }
 
-body.dark-mode .token.string {
-    color: #c3e88d;
+.dark-mode .contact-list,
+.dark-mode .contact-list li {
+  border-color: var(--border-color);
 }
 
-body.dark-mode .token.function {
-    color: #82aaff;
+.dark-mode .work-art {
+  background: #141413;
 }
 
-body.dark-mode .token.number {
-    color: #f78c6c;
+.dark-mode .work-art .k {
+  color: #ffb97f;
+}
+
+.dark-mode .work-art .n {
+  color: #7fd992;
+}
+
+/* Light screenshots look harsh on charcoal: tone them down until hovered */
+.dark-mode .work-thumb img {
+  filter: brightness(0.86) saturate(0.95);
+  transition: transform 0.6s ease, filter var(--transition-base);
+}
+
+.dark-mode .work-card:hover .work-thumb img {
+  filter: none;
+}
+
+/* Research illustrations: keep a second, cool color so two-color figures stay readable */
+.dark-mode .fig .cool {
+  stroke: #6aa9ff;
+}
+
+.dark-mode .fig .fill-cool {
+  fill: #6aa9ff;
 }
