@@ -35,6 +35,22 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'containers',
+      title: 'Containers & Docker',
+      summary: 'A hands-on guide to containers: what they are and how they differ from virtual machines, everyday Docker commands, writing Dockerfiles, and using containers to run programs and databases without installing them, to host websites with a database and HTTPS in Docker Compose, to run open AI models privately and keep AI agents in a sandbox, and to take reproducible research environments to HPC clusters with Apptainer and Slurm. Eight lessons with downloadable examples, exercises and a cheat sheet.',
+      disciplines: ['ml'],
+      types: ['code', 'interactive'],
+      status: 'completed',
+      year: 2026,
+      featured: false,
+      tags: ['Docker', 'Containers', 'Docker Compose', 'AI agents', 'Apptainer', 'HPC', 'DevOps'],
+      links: [
+        { label: 'Start the course', href: 'containers/index.html', icon: 'fa-arrow-right', primary: true },
+        { label: 'AI models & agents', href: 'containers/ai-agents/index.html', icon: 'fa-robot' },
+        { label: 'Cheat sheet', href: 'containers/safety-cheatsheet/index.html#cheat', icon: 'fa-list-check' },
+      ],
+    },
+    {
       id: 'repairfaq',
       title: 'RepairFAQ: Sam\u2019s Repair & Laser FAQs, Preserved',
       summary: 'An unaltered mirror of repairfaq.org, the Sci.Electronics.Repair FAQ and Sam\u2019s Laser FAQ by Samuel M. Goldwasser and Filip M. Gieszczykiewicz, kept online so this knowledge survives. It follows the authors\u2019 fair-use terms: pages are byte-for-byte copies with source links, and only fonts and colors are restyled. A separate companion adds search across 4,405 pages, a 3D helium-neon laser, and all 667 of Sam\u2019s ASCII circuit diagrams redrawn as animated schematics and orbitable 3D circuit boards.',
@@ -49,6 +65,8 @@ window.PROJECT_LIBRARY = {
         { label: 'Open the companion', href: 'https://acamarocutcher.github.io/repairfaq/', icon: 'fa-arrow-right', primary: true },
         { label: 'Diagram explorer', href: 'https://acamarocutcher.github.io/repairfaq/companion/diagrams.html', icon: 'fa-diagram-project' },
         { label: 'Original site', href: 'https://www.repairfaq.org/', icon: 'fa-up-right-from-square' },
+        // Private: Cloudflare Access lets in only the owner's email. Not a public copy.
+        { label: 'My study edition (private, sign-in)', href: 'https://repairfaq-study.pages.dev/', icon: 'fa-lock' },
       ],
     },
     {
