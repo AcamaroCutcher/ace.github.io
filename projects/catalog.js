@@ -35,6 +35,25 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'agents',
+      title: 'Agents: from AIMA to Claude to Robots',
+      summary: 'An AI-written interactive companion to Russell & Norvig\u2019s Artificial Intelligence: A Modern Approach (3rd and 4th editions), from rational agents to building your own. Eleven lessons (starting with a background toolkit of history, Python, math and computing) plus an Agent Lab where you write agents in Python and pass seven graded levels, from a vacuum robot to tools that real Claude calls. 45+ widgets and an agent terminal: a vacuum world and five agent architectures racing in one apartment, A* on the book\u2019s Romania map, a wumpus-world agent that proves where it is safe, value iteration and Q-learning on the 4\u00d73 world, how LLMs like Claude work (BPE, sampling, attention, live training, a 150-line GPT), a line-by-line replay of a Claude Code-style agent loop, MCP written from scratch for a simulated microscope, and an LLM-driven robot with Arduino firmware. Every Python example can be edited and run right in the browser, and a live mode lets you watch real Claude drive the coding agent and the robot with your own API key.',
+      disciplines: ['ml'],
+      types: ['interactive', 'code'],
+      status: 'completed',
+      year: 2026,
+      featured: false,
+      tags: ['AI agents', 'AIMA', 'Search', 'Reinforcement learning', 'LLMs', 'Claude', 'MCP', 'Robotics'],
+      links: [
+        { label: 'Start the course', href: 'agents/index.html', icon: 'fa-arrow-right', primary: true },
+        { label: 'Agent Lab', href: 'agents/lab/index.html', icon: 'fa-flask' },
+        { label: 'How LLMs work', href: 'agents/06-inside-an-llm/index.html', icon: 'fa-brain' },
+        { label: 'Build an agent', href: 'agents/07-llm-agents/index.html', icon: 'fa-robot' },
+        { label: 'Build a robot', href: 'agents/09-build-a-robot/index.html', icon: 'fa-gears' },
+        { label: 'All code (.zip)', href: 'agents/code/agents-course-code.zip', icon: 'fa-file-zipper' },
+      ],
+    },
+    {
       id: 'containers',
       title: 'Containers & Docker',
       summary: 'A hands-on guide to containers: what they are and how they differ from virtual machines, everyday Docker commands, writing Dockerfiles, and using containers to run programs and databases without installing them, to host websites with a database and HTTPS in Docker Compose, to run open AI models privately and keep AI agents in a sandbox, and to take reproducible research environments to HPC clusters with Apptainer and Slurm. Eight interactive lessons: a Docker playground that runs in the browser, a build-cache simulator, a request-flow diagram, an agent-loop replay, a sandbox you can attack, quizzes, downloadable examples and a cheat sheet.',

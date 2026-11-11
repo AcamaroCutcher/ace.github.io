@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Lab · Agent Lab · Agents course</title>
+<meta name="description" content="Seven levels. In each one you write the agent program in Python, the environment runs it, and you watch the replay: a vacuum cleaner, a maze runner, a battery-powered robot, a wumpus hunter, a blind robot, and finally tools that real Claude calls. Everything runs in your browser.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="Agent Lab" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">Agent Lab</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="swarm" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="swarm" aria-hidden="true"></div><p class="kicker">Agent Lab · Hands-on</p><h1>Agent Lab</h1><p class="lede">Seven levels. In each one you write the agent program in Python, the environment runs it, and you watch the replay: a vacuum cleaner, a maze runner, a battery-powered robot, a wumpus hunter, a blind robot, and finally tools that real Claude calls. Everything runs in your browser.</p><div class="chips"><span class="chip">~120 min</span><span class="chip"><b>1</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout wide-layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#lab" data-kind="interactive">1 The lab</a></li><li><a href="#how" data-kind="concept">2 How the lab works</a></li><li><a href="#next" data-kind="build">3 After the lab</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content">
+
+<section id="lab" aria-labelledby="lab-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="lab-h"><span class="n">1</span>The lab</h2><p class="sub">Pick a level, edit agent.py on the left, press Run & check. Your code is saved in this browser.</p></header>
+<div class="widget" data-widget="agentlab" data-eager><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="how" aria-labelledby="how-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="how-h"><span class="n">2</span>How the lab works</h2></header>
+<div class="prose">
+<p>Every level is the loop from lesson 01, written in Python: the <b>environment</b> produces a <span class="g" data-g="percept">percept</span>, calls your <code>program(percept)</code>, applies the action you return, updates the score, and repeats. Your <code>agent.py</code> is the <span class="g" data-g="agent program">agent program</span>; the level file is the environment and the <span class="g" data-g="performance measure">performance measure</span>. When you press <b>Run &amp; check</b>, the page sends both files to a copy of Python running in your browser (Pyodide, in a background thread), collects the score and a recording of the first episode, and replays it.</p>
+<ul>
+<li><b>Memory:</b> variables at the top of <code>agent.py</code> persist between calls. The level reloads your file at the start of every episode, so each episode starts fresh. That is a <span class="g" data-g="model-based agent">model-based agent</span>'s internal state.</li>
+<li><b>Tests:</b> each level runs several episodes (all start states, several mazes, many caves) so that an agent cannot pass by luck.</li>
+<li><b>Same code as the lessons:</b> the apartment and robot levels import <code>agent_zoo.py</code> and <code>robot_agent.py</code>, the exact files from lessons 02 and 09.</li>
+</ul>
+</div>
+<div class="callout tip"><b>Run a level on your computer</b><p>Download your <code>agent.py</code> (button above the editor) and a level file (for example <a href="levels/level3_maze.py" download>level3_maze.py</a> and <a href="levels/lab_common.py" download>lab_common.py</a>), put them in one folder, and run <code>python level3_maze.py</code>. The apartment and robot levels also need <a href="../code/agent_zoo.py" download>agent_zoo.py</a> and <a href="../code/robot_agent.py" download>robot_agent.py</a>.</p></div>
+</section>
+
+<section id="next" aria-labelledby="next-h"><header class="sec-head"><div class="tags"><span class="kind build">Build it</span></div><h2 id="next-h"><span class="n">3</span>After the lab</h2></header>
+<div class="prose">
+<ul>
+<li>Swap your hand-written <code>program</code> for an LLM: in the robot level, write a program that sends the percept to Claude and parses its reply. That is exactly <code>ClaudeBrain</code> in <code>robot_agent.py</code>.</li>
+<li>Level 7 is the bridge to real agents: the functions you wrote are tools, and the same file could become an MCP server (lesson 08) with the decorator shown there.</li>
+<li>Make your own level: copy a level file, change the world and the performance measure, and send it to a friend.</li>
+</ul>
+</div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../live.js"></script><script src="../lab.js"></script>
+</body>
+</html>

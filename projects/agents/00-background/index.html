@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>00 · Background toolkit · Agents course</title>
+<meta name="description" content="Everything the other lessons assume, in one place: where AI and agents come from, the Python you need (with cells you can run), the math behind search, probability and neural networks, and the computing basics behind APIs, tools and devices. Skim what you know; play with what you don&#x27;t.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="00" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">00 · Background toolkit</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="net" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="net" aria-hidden="true"></div><p class="kicker">Lesson 00 · Start here</p><h1>Background toolkit</h1><p class="lede">Everything the other lessons assume, in one place: where AI and agents come from, the Python you need (with cells you can run), the math behind search, probability and neural networks, and the computing basics behind APIs, tools and devices. Skim what you know; play with what you don't.</p><div class="chips"><span class="chip">AIMA <b>3e & 4e Ch. 1</b></span><span class="chip">AIMA <b>Appendix A</b></span><span class="chip">~60 min</span><span class="chip"><b>11</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#history" data-kind="interactive">1 Where AI and agents come from</a></li><li><a href="#python" data-kind="code">2 The Python you need</a></li><li><a href="#math" data-kind="math">3 The math you need</a></li><li><a href="#computing" data-kind="interactive">4 The computing you need</a></li><li><a href="#pseudocode" data-kind="concept">5 How to read AIMA&#x27;s pseudocode</a></li><li><a href="#check" data-kind="check">6 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content">
+
+<section id="history" aria-labelledby="history-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e/4e §1.1–1.3</span></div><h2 id="history-h"><span class="n">1</span>Where AI and agents come from</h2></header>
+<div class="prose">
+<p>AIMA opens by asking what AI even is. Researchers have aimed at four different targets: systems that <b>think like humans</b> (cognitive science), <b>act like humans</b> (the Turing test), <b>think rationally</b> (logic and the "laws of thought") and <b>act rationally</b>. The book, and this course, takes the last view: AI is the study of <b><span class="g" data-g="rational agent">rational agents</span></b>, systems that act to achieve the best expected outcome. It is the most general target, and the one that can be made precise and measured.</p>
+<p>Click through the timeline. Notice how ideas return: search and logic from the 1950s and 60s, probability from the 80s and 90s, learning from data since the 2010s, and now all of them combined in LLM agents that plan, use tools and act.</p>
+</div>
+<div class="widget" data-widget="timeline"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="python" aria-labelledby="python-h"><header class="sec-head"><div class="tags"><span class="kind code">Code</span></div><h2 id="python-h"><span class="n">2</span>The Python you need</h2></header>
+<div class="prose">
+<p>The course's programs use only basic Python. If a cell below looks unfamiliar, run it, change a number, and run it again: the cells execute real Python in your browser (the first run loads it, about 10 MB). The <a href="https://docs.python.org/3/tutorial/">official Python tutorial</a> covers anything else.</p>
+<h3>Functions, if/else and tuples: an agent program is just a function</h3>
+</div>
+<div class="widget" data-widget="pycell" data-title="An agent program is a function from percept to action"><pre class="pycell-src" hidden>def reflex_vacuum(percept):
+    location, status = percept          # unpack a tuple
+    if status == &quot;Dirty&quot;:
+        return &quot;Suck&quot;
+    elif location == &quot;A&quot;:
+        return &quot;Right&quot;
+    else:
+        return &quot;Left&quot;
+
+for p in [(&quot;A&quot;, &quot;Dirty&quot;), (&quot;A&quot;, &quot;Clean&quot;), (&quot;B&quot;, &quot;Clean&quot;)]:
+    print(p, &quot;-&gt;&quot;, reflex_vacuum(p))</pre></div>
+<div class="prose"><h3>Lists, dictionaries and sets: the world and the agent's memory</h3></div>
+<div class="widget" data-widget="pycell" data-title="Collections"><pre class="pycell-src" hidden>world = {&quot;A&quot;: &quot;Dirty&quot;, &quot;B&quot;: &quot;Clean&quot;}      # dict: key -&gt; value
+world[&quot;A&quot;] = &quot;Clean&quot;
+visited = {(0, 0), (0, 1)}               # set: fast &quot;have I been here?&quot;
+path = [&quot;Arad&quot;, &quot;Sibiu&quot;, &quot;Fagaras&quot;]       # list: ordered
+path.append(&quot;Bucharest&quot;)
+print(world, (0, 1) in visited, &quot; -&gt; &quot;.join(path))
+squares = [x * x for x in range(6) if x % 2 == 0]   # list comprehension
+print(squares)</pre></div>
+<div class="prose"><h3>State that persists: closures and classes</h3><p>A <span class="g" data-g="model-based agent">model-based agent</span> needs memory between calls. Python offers two styles; the course uses both.</p></div>
+<div class="widget" data-widget="pycell" data-title="Two ways to give an agent memory"><pre class="pycell-src" hidden>def make_counter_agent():
+    seen = 0                     # lives on between calls: a closure
+    def program(percept):
+        nonlocal seen
+        seen += 1
+        return f&quot;percept #{seen}: {percept}&quot;
+    return program
+
+agent = make_counter_agent()
+print(agent(&quot;ping&quot;)); print(agent(&quot;pong&quot;))
+
+class CounterAgent:              # the same thing as a class
+    def __init__(self):
+        self.seen = 0
+    def __call__(self, percept):
+        self.seen += 1
+        return f&quot;percept #{self.seen}: {percept}&quot;
+
+a = CounterAgent()
+print(a(&quot;ping&quot;)); print(a(&quot;pong&quot;))</pre></div>
+<div class="prose"><h3>Queues, stacks and priority queues: the heart of search</h3><p>Breadth-first search uses a queue (first in, first out), depth-first a stack (last in, first out), and uniform-cost search and A* a priority queue (smallest first). Lesson 03 is built on these three lines.</p></div>
+<div class="widget" data-widget="pycell" data-title="deque and heapq"><pre class="pycell-src" hidden>from collections import deque
+import heapq
+
+q = deque([&quot;a&quot;, &quot;b&quot;]); q.append(&quot;c&quot;)
+print(&quot;queue pops&quot;, q.popleft())          # a: first in, first out
+
+stack = [&quot;a&quot;, &quot;b&quot;]; stack.append(&quot;c&quot;)
+print(&quot;stack pops&quot;, stack.pop())          # c: last in, first out
+
+frontier = []
+for cost, city in [(140, &quot;Sibiu&quot;), (118, &quot;Timisoara&quot;), (75, &quot;Zerind&quot;)]:
+    heapq.heappush(frontier, (cost, city))
+print(&quot;priority queue pops&quot;, heapq.heappop(frontier))   # (75, &#x27;Zerind&#x27;): cheapest first</pre></div>
+<div class="prose"><h3>JSON: how agents and APIs talk</h3></div>
+<div class="widget" data-widget="pycell" data-title="JSON round trip"><pre class="pycell-src" hidden>import json
+tool_call = {&quot;type&quot;: &quot;tool_use&quot;, &quot;name&quot;: &quot;read_file&quot;, &quot;input&quot;: {&quot;path&quot;: &quot;calc.py&quot;}}
+text = json.dumps(tool_call)          # Python -&gt; JSON text (what goes over the network)
+print(text)
+back = json.loads(text)               # JSON text -&gt; Python
+print(back[&quot;input&quot;][&quot;path&quot;])</pre></div>
+</section>
+
+<section id="math" aria-labelledby="math-h"><header class="sec-head"><div class="tags"><span class="kind math">Math</span><span class="aima">3e/4e Ch. 12–13 (probability), App. A</span></div><h2 id="math-h"><span class="n">3</span>The math you need</h2></header>
+<div class="prose">
+<p>Four ideas carry most of the course: <b>expected value</b> (rational choice under uncertainty), <b>vectors and dot products</b> (embeddings and attention), <b>exp, log and softmax</b> (turning scores into probabilities), and <b>gradient descent</b> (how networks learn). Each widget below makes one of them tangible.</p>
+<h3>Probability and expected value</h3>
+<p>A random variable's <b>expected value</b> is the average outcome you would see over many repetitions: E[X] = Σ x · P(x). A <span class="g" data-g="rational agent">rational agent</span> maximizes <em>expected</em> performance, and the Bellman equation in lesson 05 is a sum of probabilities times values. The <b>law of large numbers</b> says the running average of many trials approaches the expected value; watch it happen.</p>
+</div>
+<div class="widget" data-widget="dice"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="prose">
+<h3>Vectors and the dot product</h3>
+<p>A vector is a list of numbers; in an LLM every token becomes a vector with thousands of entries (an <span class="g" data-g="embedding">embedding</span>). The <b>dot product</b> a · b = Σ aᵢbᵢ = |a||b| cos θ measures how aligned two vectors are: large and positive when they point the same way, zero when perpendicular, negative when opposed. Attention (lesson 06) is built from dot products between query and key vectors.</p>
+</div>
+<div class="widget" data-widget="vectors"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="prose">
+<h3>exp, log and softmax</h3>
+<p>The exponential function turns any number into a positive one, and grows fast; the logarithm undoes it. <b><span class="g" data-g="softmax">Softmax</span></b> uses exp to turn a list of scores into probabilities that sum to 1, exaggerating differences. Cross-entropy loss is −log of the probability given to the right answer: 0 when certain and right, large when confident and wrong.</p>
+</div>
+<div class="widget" data-widget="softmax"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="prose">
+<h3>Derivatives and gradient descent</h3>
+<p>The derivative tells you which way is downhill. <b>Gradient descent</b> repeatedly takes a step against the derivative: x ← x − η · f′(x), where η is the learning rate. Training a neural network is this, in billions of dimensions at once. Too small a step is slow; too large a step overshoots and diverges.</p>
+</div>
+<div class="widget" data-widget="descent"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Also handy</th><th>In one line</th><th>Where it shows up</th></tr></thead>
+<tbody>
+<tr><td>Big-O notation</td><td>How cost grows with input size: O(b<sup>d</sup>) explodes, O(n log n) does not</td><td>Lesson 03 (search complexity)</td></tr>
+<tr><td>Conditional probability</td><td>P(A | B) = P(A and B) / P(B): probability of A once you know B</td><td>Lesson 04 (wumpus), 05 (transition model)</td></tr>
+<tr><td>Bayes' rule</td><td>P(cause | effect) = P(effect | cause) P(cause) / P(effect)</td><td>Sensor models, diagnosis (AIMA Ch. 12–13)</td></tr>
+<tr><td>Matrices</td><td>Tables of numbers; multiplying a vector by a matrix mixes its entries</td><td>Lesson 06 (Q, K, V and every layer)</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="computing" aria-labelledby="computing-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="computing-h"><span class="n">4</span>The computing you need</h2></header>
+<div class="prose">
+<p>Agents act through software and hardware interfaces. These are the ones the course uses:</p>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Idea</th><th>What it is</th><th>Where it shows up</th></tr></thead>
+<tbody>
+<tr><td>Terminal / shell</td><td>A text interface to the computer: <code>ls</code>, <code>cd</code>, <code>python file.py</code>, <code>pip install ...</code></td><td>Running every example; what Claude Code's Bash tool drives</td></tr>
+<tr><td>Process, stdin, stdout</td><td>A running program reads text from standard input and writes to standard output; pipes (<code>a | b</code>) connect them</td><td>MCP's stdio transport (lesson 08)</td></tr>
+<tr><td>Environment variables</td><td>Named settings a program inherits, such as <code>ANTHROPIC_API_KEY</code>; keep secrets there, never in code</td><td>Lesson 07</td></tr>
+<tr><td>JSON</td><td>The text format for structured data: objects <code>{}</code>, arrays <code>[]</code>, strings, numbers, true/false/null</td><td>Tool calls, MCP messages, API bodies</td></tr>
+<tr><td>HTTP API</td><td>A program on a server you call with a request (method, URL, headers, JSON body) and that answers with a status code and JSON</td><td>The Claude API (below), Ollama, lab instruments</td></tr>
+<tr><td>Serial port (UART)</td><td>A two-wire text link to microcontrollers, usually over USB at a fixed speed such as 115200 baud</td><td>The robot (lesson 09)</td></tr>
+<tr><td>Containers</td><td>A packaged, isolated environment for a program</td><td><a href="../../containers/index.html">Containers course</a>; sandboxing agents</td></tr>
+</tbody></table></div>
+<div class="prose"><h3>Anatomy of an API call</h3><p>Build a request to the Claude Messages API and see exactly what travels over the network and what comes back. Nothing is sent: this is a dissection. Lesson 07 makes real calls.</p></div>
+<div class="widget" data-widget="httpbuilder"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="pseudocode" aria-labelledby="pseudocode-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span><span class="aima">3e/4e Appendix B</span></div><h2 id="pseudocode-h"><span class="n">5</span>How to read AIMA's pseudocode</h2></header>
+<div class="prose">
+<p>The book writes algorithms in a compact pseudocode. Its conventions, mapped to Python:</p>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Book</th><th>Meaning</th><th>Python</th></tr></thead>
+<tbody>
+<tr><td><code>x ← 5</code></td><td>assignment</td><td><code>x = 5</code></td></tr>
+<tr><td><code>function NAME(args) returns a type</code></td><td>a function definition</td><td><code>def name(args):</code></td></tr>
+<tr><td><code>persistent: table</code></td><td>a variable that keeps its value between calls</td><td>a closure, a class attribute or a module-level variable</td></tr>
+<tr><td><code>for each s in S do</code></td><td>a loop</td><td><code>for s in S:</code></td></tr>
+<tr><td>Indentation</td><td>block structure</td><td>Indentation, exactly as in Python</td></tr>
+<tr><td><code>APPEND</code>, <code>LOOKUP</code>, <code>POP</code></td><td>Capitalized words are operations on data structures</td><td><code>.append()</code>, <code>dict[...]</code>, <code>heapq.heappop()</code></td></tr>
+</tbody></table></div>
+<div class="bridge" data-notes="{&quot;p&quot;: &quot;&lt;b&gt;persistent&lt;/b&gt; variables become variables in the enclosing function (a closure): they survive between calls to &lt;code&gt;program&lt;/code&gt;.&quot;, &quot;f&quot;: &quot;The agent program. The Python factory &lt;code&gt;TableDrivenAgent(table)&lt;/code&gt; creates one, with its own memory.&quot;, &quot;a&quot;: &quot;Record the new percept: the agent&#x27;s whole history.&quot;, &quot;l&quot;: &quot;LOOKUP with a default: unknown histories map to NoOp. The table is a Python dict keyed by tuples of percepts.&quot;, &quot;r&quot;: &quot;Return the action.&quot;}"><div class="pane"><div class="pane-head"><span>Book-style pseudocode (paraphrased from Fig. 2.7)</span></div><pre><span class="bl" data-k="p">persistent: percepts, a sequence, initially empty</span><span class="bl" data-k="p">            table, indexed by percept sequences</span><span class="bl" data-k="f">function <b>TABLE-DRIVEN-AGENT</b>(percept) returns an action</span><span class="bl" data-k="a">  append percept to the end of percepts</span><span class="bl" data-k="l">  action ← <b>LOOKUP</b>(percepts, table)</span><span class="bl" data-k="r">  return action</span></pre></div><div class="pane py"><div class="pane-head"><span>vacuum_world.py · TableDrivenAgent</span></div><pre><span class="bl" data-k="f">def TableDrivenAgent(table):</span><span class="bl" data-k="p">    percepts = []</span><span class="bl" data-k="f">    def program(percept):</span><span class="bl" data-k="a">        percepts.append(percept)</span><span class="bl" data-k="l">        return table.get(tuple(percepts), &quot;NoOp&quot;)</span><span class="bl" data-k="r">    return program</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">6</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Which definition of AI does AIMA adopt?&quot;, &quot;o&quot;: [&quot;Thinking like humans&quot;, &quot;Acting rationally: agents that do the right thing given what they know&quot;, &quot;Passing the Turing test&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The rational-agent approach is general and can be defined precisely.&quot;}, {&quot;q&quot;: &quot;Which data structure gives breadth-first search its order?&quot;, &quot;o&quot;: [&quot;A stack (last in, first out)&quot;, &quot;A queue (first in, first out)&quot;, &quot;A set&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Stack \u2192 depth-first; priority queue \u2192 uniform-cost and A*.&quot;}, {&quot;q&quot;: &quot;A bet pays 10 with probability 0.2 and 0 otherwise. Its expected value is\u2026&quot;, &quot;o&quot;: [&quot;0.2&quot;, &quot;2&quot;, &quot;10&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;E = 10 \u00d7 0.2 + 0 \u00d7 0.8 = 2.&quot;}, {&quot;q&quot;: &quot;Two embedding vectors point in nearly the same direction. Their dot product is\u2026&quot;, &quot;o&quot;: [&quot;large and positive&quot;, &quot;close to zero&quot;, &quot;negative&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;a \u00b7 b = |a||b| cos \u03b8, and cos \u03b8 \u2248 1.&quot;}, {&quot;q&quot;: &quot;In gradient descent, a learning rate that is far too large tends to\u2026&quot;, &quot;o&quot;: [&quot;converge faster and more precisely&quot;, &quot;overshoot and diverge&quot;, &quot;have no effect&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Each step jumps past the minimum by more than it gained.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a class="next" href="../01-agents-and-environments/index.html"><small>Next →</small><b>01 · Agents &amp; environments</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l00.js"></script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 · Inside a large language model · Agents course</title>
+<meta name="description" content="Claude is a transformer that predicts the next token, trained on a huge amount of text and then shaped by feedback. Take each piece apart: tokenizer, next-token probabilities, attention, the transformer block, training by gradient descent, and the chat format. Then train a small GPT on your laptop.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="06" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">06 · How LLMs work</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="tokens" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="tokens" aria-hidden="true"></div><p class="kicker">Lesson 06 · Part III · How Claude works</p><h1>Inside a large language model</h1><p class="lede">Claude is a transformer that predicts the next token, trained on a huge amount of text and then shaped by feedback. Take each piece apart: tokenizer, next-token probabilities, attention, the transformer block, training by gradient descent, and the chat format. Then train a small GPT on your laptop.</p><div class="chips"><span class="chip">AIMA <b>4e Ch. 21, 24</b></span><span class="chip">~90 min</span><span class="chip"><b>7</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#big" data-kind="concept">6.1 The whole machine in one picture</a></li><li><a href="#tokens" data-kind="interactive">6.2 Tokens: how text becomes numbers</a></li><li><a href="#next" data-kind="interactive">6.3 Next-token prediction, sampling and temperature</a></li><li><a href="#attention" data-kind="math">6.4 Attention: how tokens look at each other</a></li><li><a href="#block" data-kind="concept">6.5 The transformer block and the size of a model</a></li><li><a href="#training" data-kind="interactive">6.6 Training: gradient descent on next-token loss</a></li><li><a href="#gpt" data-kind="build">6.7 Build it: a working GPT in 150 lines</a></li><li><a href="#assistant" data-kind="concept">6.8 From a text predictor to an assistant</a></li><li><a href="#limits" data-kind="concept">6.9 What follows from this design</a></li><li><a href="#check" data-kind="check">6.10 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>Vectors and dot products, exp and log, gradient descent (<a href="../00-background/index.html#math">Lesson 00</a>)</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="token">token</span></span><span><span class="g" data-g="attention">attention</span></span><span><span class="g" data-g="softmax">softmax</span></span><span><span class="g" data-g="transformer">transformer</span></span><span><span class="g" data-g="pretraining">pretraining</span></span></div></div><div><h3>Read alongside</h3><ul><li>AIMA 4e Ch. 21 and 24 (3e predates transformers)</li></ul></div></aside>
+
+<section id="big" aria-labelledby="big-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">4e §24.1–24.4</span></div><h2 id="big-h"><span class="n">6.1</span>The whole machine in one picture</h2></header>
+<div class="prose">
+<p>Strip away the product and an <span class="g" data-g="llm">LLM</span> is one function: given a sequence of <span class="g" data-g="token">tokens</span>, it returns a probability for every possible next token. Everything else (chatting, writing code, calling tools) comes from running that function in a loop: pick a next token, append it, run again.</p>
+<p>Press <b>Generate next token</b> and follow one step through the pipeline. The probabilities in this demo come from a tiny statistical model trained on this page's own text, so it runs instantly in your browser; in Claude, the box in the middle is a deep <span class="g" data-g="transformer">transformer</span> with a very large number of learned parameters. The <em>shape</em> of the computation is the same.</p>
+</div>
+<div class="widget" data-widget="pipeline"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout key"><b>Key idea</b><p>An LLM does not retrieve answers from a database or run a hidden program for each task. It computes a distribution over the next token from the tokens it is given, and that one skill, scaled up enormously, produces everything you see.</p></div>
+<div class="callout book"><b>What is public, and what is not</b><p>Anthropic has described Claude as a transformer-based language model, pretrained on a large text corpus and then fine-tuned with methods including reinforcement learning from human feedback and Constitutional AI. Details such as its number of parameters, exact architecture and training data mix are not public. This lesson explains the standard, published design that models of this family share, and says so whenever it describes something Claude-specific.</p></div>
+</section>
+
+<section id="tokens" aria-labelledby="tokens-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="tokens-h"><span class="n">6.2</span>Tokens: how text becomes numbers</h2></header>
+<div class="prose">
+<p>Neural networks work on numbers, so text is first cut into <span class="g" data-g="token">tokens</span> and each token is replaced by an integer ID. Modern LLMs use <b>subword</b> tokens, learned from data with algorithms like <b>byte-pair encoding</b> (BPE): start from single characters (or bytes), then repeatedly merge the most frequent adjacent pair into a new token. Common words become a single token; rare words are split into pieces; any string can still be represented.</p>
+<p>Move the slider to learn more merges and watch the test sentence get shorter in tokens. This is exactly the algorithm in <code>bpe.py</code>.</p>
+</div>
+<div class="widget" data-widget="bpe"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout tip"><b>Why you care as an agent builder</b><ul>
+<li>Pricing, speed and the <span class="g" data-g="context window">context window</span> are all measured in tokens, not words. English averages roughly 3–4 characters per token; code, numbers and other languages often use more tokens per character.</li>
+<li>Tokenization explains classic LLM quirks: counting letters in a word is hard when the model sees "strawberry" as a few chunks, not ten letters.</li>
+</ul></div>
+<div class="code" data-run data-file="bpe.py" data-full="1" data-argv="" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">bpe.py</span><a href="../code/bpe.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+bpe.py - byte-pair encoding, the way language models (including Claude) cut text into tokens.
+
+A model doesn&#x27;t read letters or words. It reads integer token IDs. BPE learns the token
+vocabulary from data:
+
+    1. start with single characters (real tokenizers start with the 256 possible bytes)
+    2. count every adjacent pair of tokens in the training text
+    3. merge the most frequent pair into one new token; remember the merge
+    4. repeat until the vocabulary is big enough (real models: ~50,000 - 200,000 tokens)
+
+Encoding new text replays the merges in the order they were learned.
+Claude&#x27;s own tokenizer is not public, but it is a learned subword tokenizer of this family.
+
+Run:  python bpe.py
+No packages needed.
+&quot;&quot;&quot;
+from collections import Counter
+
+TEXT = &quot;&quot;&quot;an agent perceives its environment through sensors and acts upon that environment
+through actuators. a rational agent selects the action that is expected to maximize its
+performance measure. the agent program runs on the agent architecture. a learning agent
+can improve its performance. an agent that plans considers the future consequences of actions.&quot;&quot;&quot;
+
+
+def pair_counts(words):
+    counts = Counter()
+    for word, freq in words.items():
+        for a, b in zip(word, word[1:]):
+            counts[(a, b)] += freq
+    return counts
+
+
+def merge_word(word, pair):
+    out, i = [], 0
+    while i &lt; len(word):
+        if i &lt; len(word) - 1 and (word[i], word[i + 1]) == pair:
+            out.append(word[i] + word[i + 1])
+            i += 2
+        else:
+            out.append(word[i])
+            i += 1
+    return tuple(out)
+
+
+def train(text, num_merges):
+    # pre-split on spaces and mark word starts with &quot;_&quot; (GPT-style tokenizers use a similar trick)
+    words = Counter(tuple(&quot;_&quot; + w) for w in text.split())
+    merges = []
+    for _ in range(num_merges):
+        counts = pair_counts(words)
+        if not counts:
+            break
+        best = max(counts, key=lambda p: (counts[p], p))   # ties broken deterministically
+        merges.append(best)
+        words = Counter({merge_word(w, best): f for w, f in words.items()})
+    return merges
+
+
+def encode(text, merges):
+    tokens = []
+    for w in text.split():
+        word = tuple(&quot;_&quot; + w)
+        for pair in merges:
+            word = merge_word(word, pair)
+        tokens.extend(word)
+    return tokens
+
+
+if __name__ == &quot;__main__&quot;:
+    merges = train(TEXT, 40)
+    print(&quot;First 12 merges learned:&quot;)
+    for i, (a, b) in enumerate(merges[:12]):
+        print(f&quot;  {i + 1:2d}. {a!r} + {b!r} -&gt; {a + b!r}&quot;)
+    vocab = sorted({t for t in encode(TEXT, merges)})
+    ids = {t: i for i, t in enumerate(vocab)}
+    sample = &quot;the agent acts rationally&quot;
+    toks = encode(sample, merges)
+    print(f&quot;\n{sample!r}\n  tokens: {toks}\n  {len(sample)} characters -&gt; {len(toks)} tokens&quot;)
+    print(&quot;  ids:   &quot;, [ids.get(t, -1) for t in toks], &quot;  (-1 = not in this tiny vocabulary)&quot;)</pre></div>
+</section>
+
+<section id="next" aria-labelledby="next-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="next-h"><span class="n">6.3</span>Next-token prediction, sampling and temperature</h2></header>
+<div class="prose">
+<p>The model's output for each position is a vector of <span class="g" data-g="logits">logits</span>, one score per token in the vocabulary. <span class="g" data-g="softmax">Softmax</span> turns scores into probabilities. Then the program that runs the model <b>samples</b> a token from that distribution. Choices here change the output a lot:</p>
+<ul>
+<li><b>Greedy</b> decoding always takes the most likely token. Deterministic, but often repetitive.</li>
+<li><b><span class="g" data-g="temperature">Temperature</span></b> <var>T</var> divides the logits before softmax: <var>T</var> &lt; 1 sharpens the distribution (safer, blander), <var>T</var> &gt; 1 flattens it (more surprising, more errors).</li>
+<li><b>Top-k</b> keeps only the <var>k</var> most likely tokens before sampling.</li>
+</ul>
+<p>The widget below is a character-level <b>n-gram model</b>: it predicts the next character from the previous <var>n</var>−1 characters by counting how often each continuation appeared in its training text (the corpus is shown below the widget). An LLM replaces counting with a neural network that generalizes, but the interface (context in, distribution out, sample) is identical.</p>
+</div>
+<div class="eq">P(token <var>i</var>) = exp(<var>z<sub>i</sub></var> / <var>T</var>) / Σ<sub><var>j</var></sub> exp(<var>z<sub>j</sub></var> / <var>T</var>)<span class="lbl">Softmax with temperature T over the logits z.</span></div>
+<div class="widget" data-widget="ngram"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="attention" aria-labelledby="attention-h"><header class="sec-head"><div class="tags"><span class="kind math">Math</span><span class="aima">4e §24.4</span></div><h2 id="attention-h"><span class="n">6.4</span>Attention: how tokens look at each other</h2></header>
+<div class="prose">
+<p>An n-gram model only sees a fixed short window, and it cannot know that in "the robot saw the wall, so <em>it</em> stopped" the word "it" refers to the robot. <b><span class="g" data-g="attention">Self-attention</span></b> solves this. Every token is represented by a vector (its <span class="g" data-g="embedding">embedding</span> plus position information). For each token, the network computes three vectors with learned matrices:</p>
+<ul>
+<li>a <b>query</b> <var>q</var>: "what am I looking for?"</li>
+<li>a <b>key</b> <var>k</var>: "what do I contain?"</li>
+<li>a <b>value</b> <var>v</var>: "what will I pass on if you attend to me?"</li>
+</ul>
+<p>The token's output is a weighted average of all values, weighted by how well its query matches each key:</p>
+</div>
+<div class="eq">Attention(Q, K, V) = softmax( Q Kᵀ / √<var>d</var> ) V<span class="lbl">Scaled dot-product attention (Vaswani et al., 2017). In a language model a causal mask hides future tokens, so position t only attends to positions ≤ t.</span></div>
+<div class="prose"><p>Drag the query (the purple arrow) and the keys in the 2-D example below. Watch the dot products, the softmax weights, and the output (the star), which is the weighted average of the values. The <b>sharpness</b> slider plays the role of 1/√<var>d</var>: larger scores make attention focus on one key.</p></div>
+<div class="widget" data-widget="attention"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="prose">
+<p>Real models use vectors with thousands of dimensions, and many <b>attention heads</b> in parallel (each with its own Q, K, V matrices), so different heads can track different relations: one follows grammar, another tracks which object a pronoun refers to, another copies a name seen earlier. The heads' outputs are concatenated and mixed by another learned matrix.</p>
+</div>
+</section>
+
+<section id="block" aria-labelledby="block-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="block-h"><span class="n">6.5</span>The transformer block and the size of a model</h2></header>
+<div class="prose">
+<p>A transformer is a stack of identical <b>blocks</b>. Each block does two things to every position's vector, each wrapped in a <b>residual connection</b> (the input is added back to the output) and a normalization layer:</p>
+<ol>
+<li><b>Causal self-attention</b>: mix in information from earlier positions.</li>
+<li><b>A feed-forward network (MLP)</b>: transform each position's vector on its own; this is where much of the model's stored knowledge appears to live.</li>
+</ol>
+<p>After the last block, a final layer maps each vector to logits over the vocabulary. That is the entire architecture: <code>tiny_gpt.py</code> below implements it in about 60 lines. What makes frontier models powerful is scale (width, depth, data and compute) and training, not a secret extra component. Count parameters yourself:</p>
+</div>
+<div class="widget" data-widget="params"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="training" aria-labelledby="training-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="training-h"><span class="n">6.6</span>Training: gradient descent on next-token loss</h2></header>
+<div class="prose">
+<p>All those parameters start as random numbers. <b><span class="g" data-g="pretraining">Pretraining</span></b> adjusts them so that the model assigns high probability to the actual next token in a huge amount of text. The measure is <b>cross-entropy loss</b>: −log P(correct next token), averaged over positions. Each training step computes the loss on a batch of text, computes its gradient with respect to every parameter (backpropagation), and moves each parameter a little downhill. Repeat for trillions of tokens.</p>
+<p>The widget trains the smallest possible neural language model, a <b>bigram network</b> (one weight matrix: previous character → logits for the next), live in your browser. Watch the loss fall from random guessing (ln of the vocabulary size) toward the best a bigram model can do, and watch the samples go from noise to word-like strings.</p>
+</div>
+<div class="widget" data-widget="train"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout key"><b>Key idea</b><p>Nobody programs the knowledge in. Predicting the next token well, over enough varied text, forces the network to learn spelling, grammar, facts, styles and patterns of reasoning, because all of them help predict what comes next.</p></div>
+</section>
+
+<section id="gpt" aria-labelledby="gpt-h"><header class="sec-head"><div class="tags"><span class="kind build">Build it</span></div><h2 id="gpt-h"><span class="n">6.7</span>Build it: a working GPT in 150 lines</h2></header>
+<div class="prose"><p>This is a complete transformer language model in PyTorch: tokenizer (characters), embeddings, causal multi-head attention, MLP blocks with residuals and layer norm, training loop, and sampling with temperature and top-k. It trains in about a minute on a laptop CPU. Hover the left side to see where each idea from this lesson lives in the code.</p></div>
+<div class="bridge" data-notes="{&quot;t&quot;: &quot;Characters are the simplest tokenizer: a vocabulary of ~25 symbols. Real models use BPE with ~100,000 tokens.&quot;, &quot;d&quot;: &quot;Every position in a sequence is a training example: predict character i+1 from characters 0..i. One sequence of 64 characters gives 64 examples at once.&quot;, &quot;e&quot;: &quot;Embeddings are learned lookup tables. Attention by itself ignores order, so position is added in.&quot;, &quot;a&quot;: &quot;The attention formula from section 6.4, for several heads at once. &lt;code&gt;masked_fill&lt;/code&gt; with −∞ makes softmax give zero weight to future positions.&quot;, &quot;b&quot;: &quot;Residual connections: each sublayer adds a correction to the running vector rather than replacing it. This is what lets very deep stacks train.&quot;, &quot;h&quot;: &quot;The last vector at each position is mapped to one score per vocabulary token.&quot;, &quot;l&quot;: &quot;Average −log P(correct next token). Random guessing gives ln(vocabulary size).&quot;, &quot;g&quot;: &quot;Autoregressive generation: only the last position&#x27;s prediction is used, a token is sampled, appended, and the model runs again.&quot;}"><div class="pane"><div class="pane-head"><span>Idea from this lesson</span></div><pre><span class="bl" data-k="t">Tokenizer: characters → integer IDs</span><span class="bl" data-k="d">Training pairs: input = text, target = text shifted by one</span><span class="bl" data-k="e">Token embedding + position embedding</span><span class="bl" data-k="a">Causal self-attention: softmax(QKᵀ/√d) V, future masked</span><span class="bl" data-k="b">Block: x + attention(norm(x)), then x + <b>MLP</b>(norm(x))</span><span class="bl" data-k="h">Final layer → logits over the vocabulary</span><span class="bl" data-k="l">Loss: cross-entropy on the next token</span><span class="bl" data-k="g">Generation: sample, append, repeat</span></pre></div><div class="pane py"><div class="pane-head"><span>tiny_gpt.py</span></div><pre><span class="bl" data-k="t">stoi = {c: i for i, c in enumerate(chars)}</span><span class="bl" data-k="t">encode = lambda s: [stoi[c] for c in s]</span><span class="bl" data-k="d">y = torch.stack([source[i + 1:i + BLOCK + 1] for i in ix])</span><span class="bl" data-k="e">x = self.tok(idx) + self.pos(torch.arange(T, device=idx.device))</span><span class="bl" data-k="a">att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1))</span><span class="bl" data-k="a">att = att.masked_fill(self.mask[:, :, :T, :T] == 0, float(&quot;-inf&quot;))</span><span class="bl" data-k="a">att = F.softmax(att, dim=-1)</span><span class="bl" data-k="a">y = (att @ v).transpose(1, 2).contiguous().view(B, T, C)</span><span class="bl" data-k="b">x = x + self.attn(self.ln1(x))</span><span class="bl" data-k="b">x = x + self.mlp(self.ln2(x))</span><span class="bl" data-k="h">logits = self.head(self.ln(self.blocks(x)))</span><span class="bl" data-k="l">loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))</span><span class="bl" data-k="g">logits = logits[:, -1, :] / temperature</span><span class="bl" data-k="g">probs = F.softmax(logits, dim=-1)</span><span class="bl" data-k="g">nxt = torch.multinomial(probs, 1)</span><span class="bl" data-k="g">idx = torch.cat([idx, nxt], dim=1)</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+<div class="code" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">tiny_gpt.py</span><a href="../code/tiny_gpt.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+tiny_gpt.py - a complete, trainable GPT-style language model in about 150 lines of PyTorch.
+
+This is the same architecture family as Claude, scaled down by a factor of roughly a million:
+token embeddings + position embeddings -&gt; N transformer blocks (causal self-attention + MLP)
+-&gt; a linear layer that scores every possible next token. Training is next-token prediction
+with cross-entropy loss. Generation samples one token at a time and feeds it back in.
+
+What it does NOT have (and Claude does): billions of parameters, trillions of training tokens,
+a learned subword tokenizer, instruction tuning and RLHF / Constitutional AI, tool use.
+
+Run:  pip install torch
+      python tiny_gpt.py                    # trains on the built-in text for ~1-3 minutes on a laptop CPU
+      python tiny_gpt.py my_corpus.txt      # or on any plain-text file (a few hundred KB is plenty)
+
+Inspired by Andrej Karpathy&#x27;s nanoGPT (now succeeded by his nanochat) and his &quot;Let&#x27;s build GPT&quot;
+lecture, which are the next step.
+&quot;&quot;&quot;
+import math
+import sys
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+torch.manual_seed(0)
+
+# ------------------------------------------------------------------ hyperparameters
+BLOCK = 64        # context length: how many previous characters the model can see
+EMBED = 96        # width of every token vector
+HEADS = 4         # attention heads per block
+LAYERS = 3        # transformer blocks
+STEPS = 2000
+BATCH = 32
+LR = 3e-3
+
+def default_text(n=4000, seed=0):
+    &quot;&quot;&quot;Sentences from a tiny grammar. The model can&#x27;t memorize them all, so it must learn the
+    pattern: spelling, word order, and which words go together.&quot;&quot;&quot;
+    import random
+    rng = random.Random(seed)
+    who = [&quot;the robot&quot;, &quot;the agent&quot;, &quot;a small rover&quot;, &quot;the vacuum&quot;, &quot;my drone&quot;, &quot;the arm&quot;]
+    verb = [&quot;moves to&quot;, &quot;looks at&quot;, &quot;drives toward&quot;, &quot;maps&quot;, &quot;cleans&quot;, &quot;avoids&quot;, &quot;inspects&quot;]
+    what = [&quot;the kitchen&quot;, &quot;a red box&quot;, &quot;the charging dock&quot;, &quot;the wall&quot;, &quot;the door&quot;, &quot;a sample&quot;]
+    why = [&quot;because the battery is low&quot;, &quot;to reach its goal&quot;, &quot;after it senses dirt&quot;,
+           &quot;when the path is clear&quot;, &quot;while it plans&quot;, &quot;before it stops&quot;]
+    return &quot;&quot;.join(f&quot;{rng.choice(who)} {rng.choice(verb)} {rng.choice(what)} {rng.choice(why)}. &quot;
+                   for _ in range(n))
+
+
+# ------------------------------------------------------------------ data: characters as tokens
+text = open(sys.argv[1], encoding=&quot;utf-8&quot;).read() if len(sys.argv) &gt; 1 else default_text()
+chars = sorted(set(text))
+stoi = {c: i for i, c in enumerate(chars)}
+itos = {i: c for c, i in stoi.items()}
+encode = lambda s: [stoi[c] for c in s]
+decode = lambda ids: &quot;&quot;.join(itos[i] for i in ids)
+data = torch.tensor(encode(text), dtype=torch.long)
+split = int(0.9 * len(data))
+train_data, val_data = data[:split], data[split:]
+
+
+def batch(source):
+    ix = torch.randint(len(source) - BLOCK - 1, (BATCH,))
+    x = torch.stack([source[i:i + BLOCK] for i in ix])
+    y = torch.stack([source[i + 1:i + BLOCK + 1] for i in ix])    # targets: the next character
+    return x, y
+
+
+# ------------------------------------------------------------------ the model
+class CausalSelfAttention(nn.Module):
+    &quot;&quot;&quot;Every position looks at earlier positions and takes a weighted average of their values.
+
+    weights = softmax( Q K^T / sqrt(d) ), with future positions masked out (the &quot;causal&quot; part).
+    &quot;&quot;&quot;
+
+    def __init__(self):
+        super().__init__()
+        self.qkv = nn.Linear(EMBED, 3 * EMBED)
+        self.proj = nn.Linear(EMBED, EMBED)
+        self.register_buffer(&quot;mask&quot;, torch.tril(torch.ones(BLOCK, BLOCK)).view(1, 1, BLOCK, BLOCK))
+
+    def forward(self, x):
+        B, T, C = x.shape
+        q, k, v = self.qkv(x).split(EMBED, dim=2)
+        # (B, T, C) -&gt; (B, heads, T, head_size)
+        q, k, v = [t.view(B, T, HEADS, C // HEADS).transpose(1, 2) for t in (q, k, v)]
+        att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1))
+        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, float(&quot;-inf&quot;))
+        att = F.softmax(att, dim=-1)
+        y = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        return self.proj(y)
+
+
+class Block(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.ln1, self.ln2 = nn.LayerNorm(EMBED), nn.LayerNorm(EMBED)
+        self.attn = CausalSelfAttention()
+        self.mlp = nn.Sequential(nn.Linear(EMBED, 4 * EMBED), nn.GELU(), nn.Linear(4 * EMBED, EMBED))
+
+    def forward(self, x):
+        x = x + self.attn(self.ln1(x))     # residual connections let information flow straight through
+        x = x + self.mlp(self.ln2(x))
+        return x
+
+
+class TinyGPT(nn.Module):
+    def __init__(self, vocab):
+        super().__init__()
+        self.tok = nn.Embedding(vocab, EMBED)       # token id -&gt; vector
+        self.pos = nn.Embedding(BLOCK, EMBED)       # position -&gt; vector
+        self.blocks = nn.Sequential(*[Block() for _ in range(LAYERS)])
+        self.ln = nn.LayerNorm(EMBED)
+        self.head = nn.Linear(EMBED, vocab)         # vector -&gt; a score (logit) for every next token
+
+    def forward(self, idx, targets=None):
+        T = idx.size(1)
+        x = self.tok(idx) + self.pos(torch.arange(T, device=idx.device))
+        logits = self.head(self.ln(self.blocks(x)))
+        loss = None
+        if targets is not None:
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+        return logits, loss
+
+    @torch.no_grad()
+    def generate(self, idx, n, temperature=0.8, top_k=None):
+        for _ in range(n):
+            logits, _ = self(idx[:, -BLOCK:])
+            logits = logits[:, -1, :] / temperature           # only the last position predicts the future
+            if top_k:
+                v, _ = torch.topk(logits, top_k)
+                logits[logits &lt; v[:, [-1]]] = -float(&quot;inf&quot;)
+            probs = F.softmax(logits, dim=-1)
+            nxt = torch.multinomial(probs, 1)                 # sample, don&#x27;t just take the max
+            idx = torch.cat([idx, nxt], dim=1)
+        return idx
+
+
+model = TinyGPT(len(chars))
+print(f&quot;vocabulary: {len(chars)} characters, parameters: {sum(p.numel() for p in model.parameters()):,}&quot;)
+opt = torch.optim.AdamW(model.parameters(), lr=LR)
+
+
+@torch.no_grad()
+def val_loss():
+    model.eval()
+    losses = [model(*batch(val_data))[1].item() for _ in range(10)]
+    model.train()
+    return sum(losses) / len(losses)
+
+
+for step in range(STEPS + 1):
+    x, y = batch(train_data)
+    _, loss = model(x, y)
+    opt.zero_grad(set_to_none=True)
+    loss.backward()
+    opt.step()
+    if step % 250 == 0:
+        print(f&quot;step {step:5d}   train loss {loss.item():.3f}   val loss {val_loss():.3f}&quot;
+              f&quot;   (random guessing = {math.log(len(chars)):.3f})&quot;)
+
+prompt = &quot;the robot&quot;
+out = model.generate(torch.tensor([encode(prompt)]), 200)
+print(&quot;\n--- sample ---\n&quot; + decode(out[0].tolist()))</pre></div>
+<div class="code" data-lang="text" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">python tiny_gpt.py (about a minute on a laptop CPU)</span><button type="button" data-copy>Copy</button></div><pre>vocabulary: 25 characters, parameters: 346,681
+step     0   train loss 3.322   val loss 2.816   (random guessing = 3.219)
+step   250   train loss 0.198   val loss 0.216   (random guessing = 3.219)
+...
+step  2000   train loss 0.196   val loss 0.191   (random guessing = 3.219)
+
+--- sample ---
+the robot inspects a sample while it plans. the arm maps the charging dock to reach its goal. my drone moves to the wall before it stops. a small rover maps the wall because the battery is low.</pre></div>
+<div class="prose"><p>The loss stops at about 0.19, not 0: the training sentences pick words at random from small lists, so the first letter of each new word is genuinely unpredictable. A model can only remove the uncertainty that is actually predictable. The sample shows the model has learned the grammar and produces sentences it never saw.</p></div>
+<div class="callout tip"><b>Next steps</b><ol>
+<li>Train on a real text (a public-domain book from Project Gutenberg): <code>python tiny_gpt.py book.txt</code>. Increase <code>LAYERS</code>, <code>EMBED</code> and <code>STEPS</code> if you have a GPU.</li>
+<li>Replace the character tokenizer with your <code>bpe.py</code>.</li>
+<li>Follow Andrej Karpathy's free lecture "Let's build GPT: from scratch, in code, spelled out" and his nanoGPT repository, which this file is modeled on (its README now points to the successor project, nanochat).</li>
+</ol></div>
+</section>
+
+<section id="assistant" aria-labelledby="assistant-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="assistant-h"><span class="n">6.8</span>From a text predictor to an assistant</h2></header>
+<div class="prose">
+<p>A model fresh from pretraining (a <em>base model</em>) continues text; it does not answer questions helpfully or follow instructions reliably. Turning it into an assistant like Claude takes further training stages. The broad recipe used across the field, and described publicly by Anthropic for Claude, is:</p>
+<ol>
+<li><b>Pretraining</b> on a very large, diverse corpus to predict the next token.</li>
+<li><b><span class="g" data-g="fine-tuning">Supervised fine-tuning</span></b> on example conversations that show the desired behavior.</li>
+<li><b>Reinforcement learning from feedback</b>: <span class="g" data-g="rlhf">RLHF</span> with human preference comparisons, and Anthropic's <span class="g" data-g="constitutional ai">Constitutional AI</span>, where an AI model critiques and compares responses according to a written set of principles (lesson 05 explains the RL part). Models are also trained to use tools and to reason step by step.</li>
+</ol>
+<p>Even after all this, the model is still a next-token predictor; it has learned that in a conversation formatted a certain way, the most likely continuation of an assistant turn is a helpful, honest answer, or a request to use a tool.</p>
+</div>
+<div class="widget" data-widget="chatformat"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout warn"><b>Illustrative, not literal</b><p>The "model's view" tab shows the idea: the whole conversation, including tool definitions and results, becomes one sequence of tokens with special markers between turns. Claude's actual internal formatting is not public, so the markers here are made up for teaching.</p></div>
+</section>
+
+<section id="limits" aria-labelledby="limits-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="limits-h"><span class="n">6.9</span>What follows from this design</h2></header>
+<div class="prose">
+<ul>
+<li><b>The context window is the only working memory.</b> Everything the model uses in a reply must be in the tokens it is given: system prompt, tool definitions, the conversation, tool results. Recent Claude models accept up to about a million tokens, but every token costs time and money, and long contexts must still be managed (lesson 07).</li>
+<li><b>Knowledge has a cutoff.</b> The weights only know what was in the training data, up to a date. For anything newer or specific to you, the agent must look it up with tools.</li>
+<li><b>Plausible is not the same as true.</b> The training objective rewards likely text. Models are trained to be honest and to say when they are unsure, but checking (running the code, reading the source) beats trusting.</li>
+<li><b>Reasoning costs tokens.</b> When a model "thinks" before answering, it generates intermediate reasoning tokens; that is extra computation the model can use for hard problems. Modern Claude models do this adaptively, thinking more on harder problems.</li>
+<li><b>Sampling makes outputs vary.</b> The same prompt can give different answers. Agents must be robust to that: validate tool inputs, check results, retry.</li>
+</ul>
+</div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">6.10</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;What does an LLM compute at each step?&quot;, &quot;o&quot;: [&quot;The final answer to the user&#x27;s question&quot;, &quot;A probability for every possible next token, given the tokens so far&quot;, &quot;A search over a database of documents&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Everything else comes from running that in a loop and from what the surrounding program does with it.&quot;}, {&quot;q&quot;: &quot;BPE starts from characters and repeatedly\u2026&quot;, &quot;o&quot;: [&quot;merges the most frequent adjacent pair into a new token&quot;, &quot;splits the longest word in half&quot;, &quot;assigns one token per dictionary word&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;Frequent strings become single tokens; rare ones stay split.&quot;}, {&quot;q&quot;: &quot;Lowering the temperature below 1\u2026&quot;, &quot;o&quot;: [&quot;makes the distribution flatter and output more random&quot;, &quot;makes the distribution sharper and output more predictable&quot;, &quot;changes which tokens are in the vocabulary&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Dividing logits by T &lt; 1 exaggerates their differences.&quot;}, {&quot;q&quot;: &quot;In attention, the output for a token is\u2026&quot;, &quot;o&quot;: [&quot;the key of the most similar token&quot;, &quot;a weighted average of value vectors, weighted by softmax of query\u00b7key scores&quot;, &quot;the sum of all embeddings&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;softmax(QK\u1d40/\u221ad)V.&quot;}, {&quot;q&quot;: &quot;Why does the tiny GPT&#x27;s loss stop around 0.19 instead of reaching 0?&quot;, &quot;o&quot;: [&quot;It is too small to learn anything&quot;, &quot;Some next characters are genuinely random in the training data, so no model can predict them&quot;, &quot;The learning rate is too high&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Loss has a floor equal to the true unpredictability of the data.&quot;}, {&quot;q&quot;: &quot;How does Claude &#x27;remember&#x27; a file it read earlier in a coding session?&quot;, &quot;o&quot;: [&quot;The file is written into its weights&quot;, &quot;The file&#x27;s contents are in its context window as a tool result&quot;, &quot;It does not; it rereads its training data&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Weights are fixed during use; the context is the working memory.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../05-decisions-and-learning/index.html"><small>← Previous</small><b>05 · MDPs &amp; reinforcement learning</b></a><a class="next" href="../07-llm-agents/index.html"><small>Next →</small><b>07 · LLM agents &amp; Claude Code</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l06.js"></script>
+</body>
+</html>

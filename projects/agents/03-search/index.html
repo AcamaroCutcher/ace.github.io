@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 · Solving problems by searching · Agents course</title>
+<meta name="description" content="A goal-based agent that can imagine the results of its actions can plan by searching. One algorithm, best-first search, becomes breadth-first, uniform-cost, greedy or A* depending on a single line: how it orders its frontier.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="03" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">03 · Search</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="search" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="search" aria-hidden="true"></div><p class="kicker">Lesson 03 · Part II · Classic AI</p><h1>Solving problems by searching</h1><p class="lede">A goal-based agent that can imagine the results of its actions can plan by searching. One algorithm, best-first search, becomes breadth-first, uniform-cost, greedy or A* depending on a single line: how it orders its frontier.</p><div class="chips"><span class="chip">AIMA <b>3e Ch. 3</b></span><span class="chip">AIMA <b>4e Ch. 3</b></span><span class="chip">~70 min</span><span class="chip"><b>3</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#formulate" data-kind="concept">3.1 Problem-solving agents</a></li><li><a href="#trees" data-kind="concept">3.2 Search trees, nodes and the frontier</a></li><li><a href="#romania" data-kind="interactive">3.3 Romania: watch the frontier</a></li><li><a href="#bridge" data-kind="concept">3.4 Best-first search: book ↔ code</a></li><li><a href="#uninformed" data-kind="concept">3.5 Uninformed strategies</a></li><li><a href="#heuristics" data-kind="math">3.6 Heuristics and A*</a></li><li><a href="#grid" data-kind="interactive">3.7 Grid lab: draw a world, race the algorithms</a></li><li><a href="#puzzle" data-kind="interactive">3.8 The 8-puzzle: heuristics you can feel</a></li><li><a href="#code" data-kind="code">3.9 search.py</a></li><li><a href="#llm" data-kind="concept">3.10 Search in robots and in LLM agents</a></li><li><a href="#check" data-kind="check">3.11 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>Goal-based agents (Lesson 02)</li><li>Queues, stacks and priority queues (<a href="../00-background/index.html#python">Lesson 00</a>)</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="frontier">frontier</span></span><span><span class="g" data-g="heuristic">heuristic</span></span><span><span class="g" data-g="admissible">admissible</span></span><span><span class="g" data-g="astar">A* search</span></span></div></div><div><h3>Read alongside</h3><ul><li>AIMA Ch. 3 (both editions)</li></ul></div></aside>
+
+<section id="formulate" aria-labelledby="formulate-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §3.1</span></div><h2 id="formulate-h"><span class="n">3.1</span>Problem-solving agents</h2></header>
+<div class="prose">
+<p>A <b>problem-solving agent</b> is a <span class="g" data-g="goal-based agent">goal-based agent</span> in an environment that is (assumed to be) fully observable, deterministic and known. In such a world the agent can plan a whole sequence of actions in its head before moving. It works in four phases:</p>
+<ol>
+<li><b>Goal formulation:</b> decide what you want (be in Bucharest tomorrow).</li>
+<li><b>Problem formulation:</b> decide which states and actions to consider (cities and roads, not every step of the steering wheel). This is <em>abstraction</em>, and choosing it well is half the work.</li>
+<li><b>Search:</b> simulate action sequences in the model until one reaches the goal.</li>
+<li><b>Execution:</b> carry out the solution. Because the world is assumed deterministic, the agent can execute with its eyes closed (an <em>open-loop</em> system). If that assumption may fail, it must watch percepts and re-plan (closed loop), which is what real robots do.</li>
+</ol>
+</div>
+<div class="callout def"><b>A search problem has five parts</b>
+<ul>
+<li><b>States</b> and an <b>initial state</b>: <code>In(Arad)</code></li>
+<li><b>Goal test</b> (one or more goal states): <code>In(Bucharest)</code></li>
+<li><b>ACTIONS(s)</b>: the actions applicable in s: drive to any neighboring city</li>
+<li><b>Transition model</b> RESULT(s, a): the state after doing a in s</li>
+<li><b>ACTION-COST(s, a, s′)</b>: the road distance. A solution's cost is the sum along its path; an <b>optimal</b> solution has the lowest cost.</li>
+</ul></div>
+<div class="prose"><p>Look at the class <code>RouteProblem</code> in <code>search.py</code> at the end of this lesson: it is exactly these five parts as five methods. Any problem you can write in this shape (route finding, the 8-puzzle, robot motion, scheduling) can be solved by the same search code.</p></div>
+</section>
+
+<section id="trees" aria-labelledby="trees-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e §3.3 / 4e §3.3</span></div><h2 id="trees-h"><span class="n">3.2</span>Search trees, nodes and the frontier</h2></header>
+<div class="prose">
+<p>Search algorithms grow a <b>search tree</b> whose root is the initial state. A <span class="g" data-g="node">node</span> in the tree stores a state, a pointer to its parent, the action that led to it and the <b>path cost</b> <var>g(n)</var> from the root. Different nodes can contain the same state (Arad → Sibiu → Arad is a legal but silly path).</p>
+<p>The algorithm keeps a <span class="g" data-g="frontier">frontier</span>: nodes that have been generated but not yet <span class="g" data-g="expand">expanded</span>. It repeatedly picks one node from the frontier, checks whether it is a goal, and if not, expands it by generating its children. <b>The only difference between search algorithms is which frontier node they pick next.</b> To avoid wasting work on repeated states, a graph search also keeps a table of states already <b>reached</b> and the cheapest path found to each.</p>
+</div>
+<div class="callout key"><b>Key idea</b><p>Breadth-first, uniform-cost, greedy and A* are the same loop with a different priority <var>f(n)</var> for the frontier: depth, path cost <var>g</var>, heuristic <var>h</var>, and <var>g + h</var>.</p></div>
+</section>
+
+<section id="romania" aria-labelledby="romania-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e Fig. 3.2, 3.22–3.24 / 4e Fig. 3.1, 3.16–3.18</span></div><h2 id="romania-h"><span class="n">3.3</span>Romania: watch the frontier</h2></header>
+<div class="prose"><p>The book's running example: drive from Arad to Bucharest. Numbers on the roads are distances in km; the number under each city is its straight-line distance to Bucharest, the heuristic <var>h</var>. Press <b>Step</b> to expand one node at a time and watch the frontier table: it is the priority queue, sorted by <var>f</var>. Then try greedy search and see it take the 450 km route through Fagaras.</p></div>
+<div class="widget" data-widget="romania"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="bridge" aria-labelledby="bridge-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span><span class="aima">4e Fig. 3.7</span></div><h2 id="bridge-h"><span class="n">3.4</span>Best-first search: book ↔ code</h2></header>
+<div class="bridge" data-notes="{&quot;a&quot;: &quot;The whole algorithm is parameterized by &lt;b&gt;f&lt;/b&gt;, the evaluation function. Pass &lt;code&gt;lambda n: n.path_cost&lt;/code&gt; and you get uniform-cost search; &lt;code&gt;lambda n: n.path_cost + h(n.state)&lt;/code&gt; gives A*.&quot;, &quot;b&quot;: &quot;The root of the search tree.&quot;, &quot;c&quot;: &quot;The &lt;b&gt;frontier&lt;/b&gt; is a priority queue. Python&#x27;s &lt;code&gt;heapq&lt;/code&gt; is a binary heap; the &lt;code&gt;counter&lt;/code&gt; breaks ties first-in-first-out so the order is deterministic.&quot;, &quot;d&quot;: &quot;&lt;b&gt;reached&lt;/b&gt; remembers the best node found for each state, so we never keep a worse path to a state we already know.&quot;, &quot;e&quot;: &quot;Loop until there is nothing left to try.&quot;, &quot;f&quot;: &quot;Take the most promising node: lowest f.&quot;, &quot;g&quot;: &quot;Goal test when a node is &lt;b&gt;popped&lt;/b&gt;, not when generated. This is what makes uniform-cost and A* optimal: a cheaper path to the goal might still be on the frontier.&quot;, &quot;h&quot;: &quot;Generate the children (successor states) of the node.&quot;, &quot;i&quot;: &quot;The child&#x27;s state.&quot;, &quot;j&quot;: &quot;Only keep the child if it is a new state or a cheaper path to a known one: graph search.&quot;, &quot;k&quot;: &quot;Record the better path.&quot;, &quot;l&quot;: &quot;Add it to the frontier at priority f(child).&quot;, &quot;m&quot;: &quot;Frontier empty: no solution exists.&quot;}"><div class="pane"><div class="pane-head"><span>Book-style pseudocode (paraphrased from 4e Fig. 3.7)</span></div><pre><span class="bl" data-k="a">function <b>BEST-FIRST-SEARCH</b>(problem, f) returns a solution node or failure</span><span class="bl" data-k="b">  node ← <b>NODE</b>(<b>STATE</b> = problem.<b>INITIAL</b>)</span><span class="bl" data-k="c">  frontier ← priority queue ordered by f, containing node</span><span class="bl" data-k="d">  reached ← table {problem.<b>INITIAL</b>: node}</span><span class="bl" data-k="e">  while not <b>IS-EMPTY</b>(frontier) do</span><span class="bl" data-k="f">    node ← <b>POP</b>(frontier)</span><span class="bl" data-k="g">    if problem.<b>IS-GOAL</b>(node.<b>STATE</b>) then return node</span><span class="bl" data-k="h">    for each child in <b>EXPAND</b>(problem, node) do</span><span class="bl" data-k="i">      s ← child.<b>STATE</b></span><span class="bl" data-k="j">      if s not in reached or child.<b>PATH-COST</b> &lt; reached[s].<b>PATH-COST</b> then</span><span class="bl" data-k="k">        reached[s] ← child</span><span class="bl" data-k="l">        add child to frontier</span><span class="bl" data-k="m">  return failure</span></pre></div><div class="pane py"><div class="pane-head"><span>search.py · best_first_search</span></div><pre><span class="bl" data-k="a">def best_first_search(problem, f, early_goal_test=False):</span><span class="bl" data-k="b">    node = Node(problem.initial)</span><span class="bl" data-k="c">    counter = itertools.count()</span><span class="bl" data-k="c">    frontier = [(f(node), next(counter), node)]</span><span class="bl" data-k="d">    reached = {problem.initial: node}</span><span class="bl" data-k="e">    while frontier:</span><span class="bl" data-k="f">        _, _, node = heapq.heappop(frontier)</span><span class="bl" data-k="g">        if problem.is_goal(node.state):</span><span class="bl" data-k="g">            return node, len(expanded), expanded</span><span class="bl" data-k="h">        for child in expand(problem, node):</span><span class="bl" data-k="i">            s = child.state</span><span class="bl" data-k="j">            if s not in reached or child.path_cost &lt; reached[s].path_cost:</span><span class="bl" data-k="k">                reached[s] = child</span><span class="bl" data-k="l">                heapq.heappush(frontier, (f(child), next(counter), child))</span><span class="bl" data-k="m">    return None, len(expanded), expanded</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+</section>
+
+<section id="uninformed" aria-labelledby="uninformed-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e §3.4 / 4e §3.4</span></div><h2 id="uninformed-h"><span class="n">3.5</span>Uninformed strategies</h2></header>
+<div class="prose">
+<p>Uninformed (blind) strategies use no knowledge about where the goal is; they only know how to generate successors and recognize a goal. They differ in their frontier discipline. The book compares them on four criteria: <b>completeness</b> (finds a solution if one exists), <b>cost optimality</b> (finds the cheapest), <b>time</b> and <b>space</b> complexity, in terms of the branching factor <var>b</var>, the depth of the shallowest solution <var>d</var>, the maximum depth <var>m</var>, the optimal cost <var>C*</var> and the smallest action cost <var>ε</var>.</p>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Strategy</th><th>Frontier</th><th>Complete?</th><th>Optimal?</th><th>Time</th><th>Space</th></tr></thead>
+<tbody>
+<tr><td><span class="g" data-g="bfs">Breadth-first</span></td><td>FIFO queue</td><td>Yes (finite <var>b</var>)</td><td>Only if all steps cost the same</td><td>O(b<sup>d</sup>)</td><td>O(b<sup>d</sup>)</td></tr>
+<tr><td><span class="g" data-g="ucs">Uniform-cost</span></td><td>Priority on <var>g</var></td><td>Yes (costs ≥ ε &gt; 0)</td><td>Yes</td><td>O(b<sup>1+⌊C*/ε⌋</sup>)</td><td>same</td></tr>
+<tr><td><span class="g" data-g="dfs">Depth-first</span></td><td>LIFO stack</td><td>No (yes in finite graphs)</td><td>No</td><td>O(b<sup>m</sup>)</td><td>O(bm)</td></tr>
+<tr><td>Iterative deepening</td><td>DFS with growing depth limit</td><td>Yes</td><td>Only if all steps cost the same</td><td>O(b<sup>d</sup>)</td><td>O(bd)</td></tr>
+</tbody></table></div>
+<div class="prose"><p>Exponential growth is the enemy. With <var>b</var> = 10 and a million nodes per second, depth 10 takes about three hours and needs terabytes of memory for breadth-first search. That is why we need knowledge: heuristics.</p></div>
+</section>
+
+<section id="heuristics" aria-labelledby="heuristics-h"><header class="sec-head"><div class="tags"><span class="kind math">Math</span><span class="aima">3e §3.5–3.6 / 4e §3.5–3.6</span></div><h2 id="heuristics-h"><span class="n">3.6</span>Heuristics and A*</h2></header>
+<div class="prose">
+<p>An <b>informed</b> search uses a <span class="g" data-g="heuristic">heuristic</span> <var>h(n)</var>: an estimate of the cost of the cheapest path from <var>n</var> to a goal. Straight-line distance is a heuristic for road distance: easy to compute, and never more than the true distance.</p>
+</div>
+<div class="eq"><var>f</var>(<var>n</var>) = <var>g</var>(<var>n</var>) + <var>h</var>(<var>n</var>)<span class="lbl">A*: cost so far + estimated cost to go = estimated cost of the cheapest solution through n</span></div>
+<div class="prose">
+<ul>
+<li><b><span class="g" data-g="admissible">Admissible</span>:</b> <var>h</var> never overestimates. Then A* (tree search) returns an optimal solution. Intuition: an optimistic estimate cannot make A* skip the true best path, because that path's <var>f</var> is never above the optimal cost.</li>
+<li><b><span class="g" data-g="consistent">Consistent</span>:</b> <var>h(n) ≤ c(n, a, n′) + h(n′)</var>, the triangle inequality. Every consistent heuristic is admissible, <var>f</var> never decreases along a path, and A* graph search is optimal and never needs to re-open a state.</li>
+<li><b>Dominance:</b> if <var>h₂(n) ≥ h₁(n)</var> everywhere and both are admissible, <var>h₂</var> is better: A* with <var>h₂</var> never expands more nodes. Bigger is better, as long as it stays admissible.</li>
+<li><b>Weighted A*</b> uses <var>g + W·h</var> with <var>W</var> &gt; 1: it trusts the heuristic more, expands fewer nodes, and gives up optimality (bounded by a factor <var>W</var>). Try it in the grid lab.</li>
+<li><b>Greedy best-first</b> uses only <var>h</var>: fast, often good, not optimal (Romania: 450 km instead of 418).</li>
+</ul>
+<p>Good heuristics often come from <b>relaxed problems</b>: remove a constraint and solve the easier problem exactly. Grid distance ignoring walls (Manhattan distance) is the exact cost of a relaxed problem with no walls, so it is admissible.</p>
+</div>
+</section>
+
+<section id="grid" aria-labelledby="grid-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="grid-h"><span class="n">3.7</span>Grid lab: draw a world, race the algorithms</h2></header>
+<div class="prose"><p>Draw walls (black) and mud (brown, cost 5 instead of 1), drag the start and goal, pick an algorithm and press <b>Search</b>. Shades show the order in which squares were expanded. <b>Race all</b> runs every algorithm on your map and compares path cost with nodes expanded. Things to try: mud between start and goal (breadth-first walks through it, uniform-cost goes around); a long wall (greedy runs into it); Weighted A* with W = 5.</p></div>
+<div class="widget" data-widget="gridsearch"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="puzzle" aria-labelledby="puzzle-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e/4e §3.2, §3.6</span></div><h2 id="puzzle-h"><span class="n">3.8</span>The 8-puzzle: heuristics you can feel</h2></header>
+<div class="prose"><p>The book's other classic example. A state is an arrangement of eight tiles; an action slides a tile into the gap. Two admissible heuristics: <b>h₁</b>, the number of misplaced tiles, and <b>h₂</b>, the sum of the Manhattan distances of the tiles from their goal squares. Shuffle, try to solve it yourself, then race the algorithms. Watch how many states each one expands: with a deep shuffle, A* with h₂ expands a small fraction of what uniform-cost search does, and both find the same optimal number of moves.</p></div>
+<div class="widget" data-widget="puzzle8"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="code" aria-labelledby="code-h"><header class="sec-head"><div class="tags"><span class="kind code">Code</span></div><h2 id="code-h"><span class="n">3.9</span>search.py</h2></header>
+<div class="prose"><p>All of the book's main algorithms in one file. Note how short <code>uniform_cost</code>, <code>greedy</code> and <code>astar</code> are: each is one call to <code>best_first_search</code> with a different <var>f</var>.</p></div>
+<div class="code" data-run data-file="search.py" data-full="1" data-argv="" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">search.py</span><a href="../code/search.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+search.py - AIMA Chapter 3: problem-solving agents and search.
+
+One generic BEST-FIRST-SEARCH (AIMA 4e Figure 3.7) gives you every algorithm in the chapter by
+changing only the priority f(n) used to order the frontier:
+
+    breadth-first   f(n) = depth(n)          (FIFO queue)
+    uniform-cost    f(n) = g(n)              (path cost so far; Dijkstra&#x27;s algorithm)
+    greedy          f(n) = h(n)              (estimated cost to the goal)
+    A*              f(n) = g(n) + h(n)
+    weighted A*     f(n) = g(n) + W*h(n)     (W &gt; 1: faster, not always optimal)
+
+The example is the book&#x27;s road map of Romania (3e Figure 3.2, 4e Figure 3.1) with straight-line
+distances to Bucharest as the heuristic (3e Figure 3.22, 4e Figure 3.16).
+
+Run:  python search.py
+No packages needed.
+&quot;&quot;&quot;
+import heapq
+import itertools
+
+# ---------------------------------------------------------------------- the problem
+ROADS = {  # undirected road distances in km (AIMA 3e Fig. 3.2, 4e Fig. 3.1)
+    (&quot;Arad&quot;, &quot;Zerind&quot;): 75, (&quot;Arad&quot;, &quot;Sibiu&quot;): 140, (&quot;Arad&quot;, &quot;Timisoara&quot;): 118,
+    (&quot;Zerind&quot;, &quot;Oradea&quot;): 71, (&quot;Oradea&quot;, &quot;Sibiu&quot;): 151, (&quot;Timisoara&quot;, &quot;Lugoj&quot;): 111,
+    (&quot;Lugoj&quot;, &quot;Mehadia&quot;): 70, (&quot;Mehadia&quot;, &quot;Drobeta&quot;): 75, (&quot;Drobeta&quot;, &quot;Craiova&quot;): 120,
+    (&quot;Craiova&quot;, &quot;Rimnicu Vilcea&quot;): 146, (&quot;Craiova&quot;, &quot;Pitesti&quot;): 138, (&quot;Sibiu&quot;, &quot;Fagaras&quot;): 99,
+    (&quot;Sibiu&quot;, &quot;Rimnicu Vilcea&quot;): 80, (&quot;Rimnicu Vilcea&quot;, &quot;Pitesti&quot;): 97,
+    (&quot;Fagaras&quot;, &quot;Bucharest&quot;): 211, (&quot;Pitesti&quot;, &quot;Bucharest&quot;): 101, (&quot;Bucharest&quot;, &quot;Giurgiu&quot;): 90,
+    (&quot;Bucharest&quot;, &quot;Urziceni&quot;): 85, (&quot;Urziceni&quot;, &quot;Hirsova&quot;): 98, (&quot;Hirsova&quot;, &quot;Eforie&quot;): 86,
+    (&quot;Urziceni&quot;, &quot;Vaslui&quot;): 142, (&quot;Vaslui&quot;, &quot;Iasi&quot;): 92, (&quot;Iasi&quot;, &quot;Neamt&quot;): 87,
+}
+SLD_BUCHAREST = {  # straight-line distance to Bucharest: an admissible heuristic
+    &quot;Arad&quot;: 366, &quot;Bucharest&quot;: 0, &quot;Craiova&quot;: 160, &quot;Drobeta&quot;: 242, &quot;Eforie&quot;: 161, &quot;Fagaras&quot;: 176,
+    &quot;Giurgiu&quot;: 77, &quot;Hirsova&quot;: 151, &quot;Iasi&quot;: 226, &quot;Lugoj&quot;: 244, &quot;Mehadia&quot;: 241, &quot;Neamt&quot;: 234,
+    &quot;Oradea&quot;: 380, &quot;Pitesti&quot;: 100, &quot;Rimnicu Vilcea&quot;: 193, &quot;Sibiu&quot;: 253, &quot;Timisoara&quot;: 329,
+    &quot;Urziceni&quot;: 80, &quot;Vaslui&quot;: 199, &quot;Zerind&quot;: 374,
+}
+
+
+class RouteProblem:
+    &quot;&quot;&quot;The five parts of a search problem (AIMA Section 3.1).&quot;&quot;&quot;
+
+    def __init__(self, initial, goal, roads):
+        self.initial = initial                       # 1. initial state
+        self.goal = goal
+        self.neighbors = {}
+        for (a, b), d in roads.items():
+            self.neighbors.setdefault(a, {})[b] = d
+            self.neighbors.setdefault(b, {})[a] = d
+
+    def actions(self, state):                        # 2. ACTIONS(s): drive to a neighbor
+        return sorted(self.neighbors[state])
+
+    def result(self, state, action):                 # 3. RESULT(s, a): transition model
+        return action
+
+    def is_goal(self, state):                        # 4. goal test
+        return state == self.goal
+
+    def action_cost(self, s, a, s2):                 # 5. ACTION-COST(s, a, s&#x27;)
+        return self.neighbors[s][s2]
+
+
+class Node:
+    def __init__(self, state, parent=None, path_cost=0.0, depth=0):
+        self.state, self.parent, self.path_cost, self.depth = state, parent, path_cost, depth
+
+    def path(self):
+        node, out = self, []
+        while node:
+            out.append(node.state)
+            node = node.parent
+        return out[::-1]
+
+
+def expand(problem, node):
+    for a in problem.actions(node.state):
+        s2 = problem.result(node.state, a)
+        cost = node.path_cost + problem.action_cost(node.state, a, s2)
+        yield Node(s2, node, cost, node.depth + 1)
+
+
+def best_first_search(problem, f, early_goal_test=False):
+    &quot;&quot;&quot;AIMA 4e Figure 3.7. Returns (goal node or None, number of nodes expanded, expansion order).&quot;&quot;&quot;
+    node = Node(problem.initial)
+    counter = itertools.count()                      # tie-breaker: first in, first out
+    frontier = [(f(node), next(counter), node)]
+    reached = {problem.initial: node}
+    expanded = []
+    while frontier:
+        _, _, node = heapq.heappop(frontier)
+        if problem.is_goal(node.state):
+            return node, len(expanded), expanded
+        expanded.append(node.state)
+        for child in expand(problem, node):
+            s = child.state
+            if s not in reached or child.path_cost &lt; reached[s].path_cost:
+                reached[s] = child
+                if early_goal_test and problem.is_goal(s):   # breadth-first can stop here
+                    return child, len(expanded), expanded
+                heapq.heappush(frontier, (f(child), next(counter), child))
+    return None, len(expanded), expanded
+
+
+def breadth_first(problem):
+    # breadth-first never revisits a reached state, even through a cheaper path
+    node = Node(problem.initial)
+    if problem.is_goal(node.state):
+        return node, 0, []
+    frontier, reached, expanded = [node], {problem.initial}, []
+    while frontier:
+        node = frontier.pop(0)
+        expanded.append(node.state)
+        for child in expand(problem, node):
+            if problem.is_goal(child.state):
+                return child, len(expanded), expanded
+            if child.state not in reached:
+                reached.add(child.state)
+                frontier.append(child)
+    return None, len(expanded), expanded
+
+
+def uniform_cost(problem):
+    return best_first_search(problem, lambda n: n.path_cost)
+
+
+def greedy(problem, h):
+    return best_first_search(problem, lambda n: h(n.state))
+
+
+def astar(problem, h, weight=1.0):
+    return best_first_search(problem, lambda n: n.path_cost + weight * h(n.state))
+
+
+if __name__ == &quot;__main__&quot;:
+    problem = RouteProblem(&quot;Arad&quot;, &quot;Bucharest&quot;, ROADS)
+    h = SLD_BUCHAREST.get
+    runs = [
+        (&quot;breadth-first&quot;, breadth_first(problem)),
+        (&quot;uniform-cost&quot;, uniform_cost(problem)),
+        (&quot;greedy best-first&quot;, greedy(problem, h)),
+        (&quot;A*&quot;, astar(problem, h)),
+        (&quot;weighted A* (W=2)&quot;, astar(problem, h, 2.0)),
+    ]
+    for name, (node, n_expanded, order) in runs:
+        print(f&quot;{name:18s} cost {node.path_cost:4.0f} km   expanded {n_expanded:2d}   path: {&#x27; -&gt; &#x27;.join(node.path())}&quot;)
+    print(&quot;\nA* expansion order (compare with AIMA Figure 3.18 in 4e / 3.24 in 3e):&quot;)
+    _, _, order = astar(problem, h)
+    print(&quot;  &quot; + &quot;, &quot;.join(order))</pre></div>
+<div class="code" data-lang="text" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">python search.py</span><button type="button" data-copy>Copy</button></div><pre>breadth-first      cost  450 km   expanded  5   path: Arad -&gt; Sibiu -&gt; Fagaras -&gt; Bucharest
+uniform-cost       cost  418 km   expanded 12   path: Arad -&gt; Sibiu -&gt; Rimnicu Vilcea -&gt; Pitesti -&gt; Bucharest
+greedy best-first  cost  450 km   expanded  3   path: Arad -&gt; Sibiu -&gt; Fagaras -&gt; Bucharest
+A*                 cost  418 km   expanded  5   path: Arad -&gt; Sibiu -&gt; Rimnicu Vilcea -&gt; Pitesti -&gt; Bucharest
+weighted A* (W=2)  cost  450 km   expanded  3   path: Arad -&gt; Sibiu -&gt; Fagaras -&gt; Bucharest
+
+A* expansion order (compare with AIMA Figure 3.18 in 4e / 3.24 in 3e):
+  Arad, Sibiu, Rimnicu Vilcea, Fagaras, Pitesti</pre></div>
+<div class="callout tip"><b>Exercises</b><ol>
+<li>Add depth-first search with a stack and run it from Arad. What path does it find, and why depends on the order of <code>actions()</code>?</li>
+<li>Write <code>EightPuzzle</code> with the same five methods and solve it with A* using (a) misplaced tiles and (b) Manhattan distance. Count expanded nodes. Which heuristic dominates?</li>
+<li>Make a heuristic that is admissible but not consistent on the Romania map. Can you make A* graph search return a non-optimal path?</li>
+</ol></div>
+</section>
+
+<section id="llm" aria-labelledby="llm-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span></div><h2 id="llm-h"><span class="n">3.10</span>Search in robots and in LLM agents</h2></header>
+<div class="prose">
+<p><b>Robots</b> use exactly this machinery. A mobile robot's map is a grid or graph, and A* (or relatives like D* Lite, which re-plans quickly when the map changes) plans its path; lesson 09 uses it. Robot arms search in a continuous configuration space with sampling planners such as RRT.</p>
+<p><b>LLM agents</b> mostly do not run an explicit search algorithm. When Claude Code fixes a bug, it does something closer to <em>greedy best-first search with a learned heuristic</em>: at each step the model proposes the action that looks most promising given everything in its context, observes the result, and continues. It backtracks when a result is bad ("that didn't work, let me try…"). Research systems add explicit search on top of LLMs (sampling several candidate steps and scoring them, as in tree-of-thought methods), which is A*-like thinking with the LLM as both successor function and heuristic.</p>
+</div>
+<div class="callout key"><b>Why this lesson still matters for LLM agents</b><p>When you build an agent and it loops, wanders or gives up too early, the diagnosis is usually in this chapter's vocabulary: no memory of reached states (it retries the same failed command), a bad heuristic (it chases the wrong file), no cost model (it takes an expensive path), or no completeness guarantee (it never considers the right action).</p></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">3.11</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Which single change turns uniform-cost search into A*?&quot;, &quot;o&quot;: [&quot;Use a stack instead of a queue&quot;, &quot;Order the frontier by g(n) + h(n) instead of g(n)&quot;, &quot;Test for the goal when nodes are generated&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Same best-first loop, different f.&quot;}, {&quot;q&quot;: &quot;Why does uniform-cost search test for the goal when a node is &lt;em&gt;popped&lt;/em&gt; rather than when it is generated?&quot;, &quot;o&quot;: [&quot;It is faster&quot;, &quot;A cheaper path to the goal may still be waiting on the frontier&quot;, &quot;Python&#x27;s heapq requires it&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Generated-time testing can return a goal reached by an expensive path (breadth-first does exactly that on Romania: 450 km).&quot;}, {&quot;q&quot;: &quot;A heuristic that never overestimates the true cost to the goal is called\u2026&quot;, &quot;o&quot;: [&quot;Consistent&quot;, &quot;Admissible&quot;, &quot;Dominant&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Admissible. Consistent is the stronger triangle-inequality condition.&quot;}, {&quot;q&quot;: &quot;On the Romania map, greedy best-first search returns Arad \u2192 Sibiu \u2192 Fagaras \u2192 Bucharest. Why is it not optimal?&quot;, &quot;o&quot;: [&quot;Straight-line distance is not admissible&quot;, &quot;It ignores the cost already traveled, g(n)&quot;, &quot;It explores too many nodes&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Fagaras looks closer to Bucharest (h = 176) but the road from it is long. f = h alone cannot notice.&quot;}, {&quot;q&quot;: &quot;h\u2081 and h\u2082 are both admissible and h\u2082(n) \u2265 h\u2081(n) for all n. Which should A* use?&quot;, &quot;o&quot;: [&quot;h\u2081, it is safer&quot;, &quot;h\u2082, it never expands more nodes&quot;, &quot;Their average&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;h\u2082 dominates h\u2081.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../02-agent-programs/index.html"><small>← Previous</small><b>02 · Agent programs</b></a><a class="next" href="../04-knowledge/index.html"><small>Next →</small><b>04 · Knowledge-based agents</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l03.js"></script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>08 · Connecting agents to the real world · Agents course</title>
+<meta name="description" content="How does a language model end up moving a microscope stage or a motor? Through a stack of ordinary layers: tool, driver, protocol, firmware. Follow a request down the stack, speak the Model Context Protocol by hand, run an autofocus agent on a simulated microscope, and see where each kind of failure must be caught.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="08" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">08 · Instruments, devices &amp; MCP</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="world" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="scope" aria-hidden="true"></div><p class="kicker">Lesson 08 · Part IV · Agents in the world</p><h1>Connecting agents to the real world</h1><p class="lede">How does a language model end up moving a microscope stage or a motor? Through a stack of ordinary layers: tool, driver, protocol, firmware. Follow a request down the stack, speak the Model Context Protocol by hand, run an autofocus agent on a simulated microscope, and see where each kind of failure must be caught.</p><div class="chips"><span class="chip">AIMA <b>3e Ch. 25</b></span><span class="chip">AIMA <b>4e Ch. 26</b></span><span class="chip">~80 min</span><span class="chip"><b>3</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#stack" data-kind="interactive">8.1 From words to watts: the layer stack</a></li><li><a href="#mcp" data-kind="concept">8.2 The Model Context Protocol</a></li><li><a href="#wire" data-kind="interactive">8.3 Speak MCP by hand</a></li><li><a href="#server" data-kind="code">8.4 An MCP server from scratch</a></li><li><a href="#microscope" data-kind="interactive">8.5 An autofocus agent on a simulated microscope</a></li><li><a href="#instruments" data-kind="concept">8.6 How real instruments and devices are connected</a></li><li><a href="#safety" data-kind="concept">8.7 Rules for agents that touch hardware</a></li><li><a href="#check" data-kind="check">8.8 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>Lesson 07</li><li>Processes, stdin and stdout (<a href="../00-background/index.html#computing">Lesson 00</a>)</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="mcp">MCP</span></span><span><span class="g" data-g="json-rpc">JSON-RPC</span></span><span><span class="g" data-g="scpi">SCPI</span></span><span><span class="g" data-g="least privilege">least privilege</span></span></div></div><div><h3>Read alongside</h3><ul><li>modelcontextprotocol.io; AIMA 3e Ch. 25 / 4e Ch. 26 (robot hardware)</li></ul></div></aside>
+
+<section id="stack" aria-labelledby="stack-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="stack-h"><span class="n">8.1</span>From words to watts: the layer stack</h2></header>
+<div class="prose">
+<p>A model only produces text. To affect the physical world, that text passes through a chain of programs and wires, each of which you can build, test and secure separately:</p>
+<ol>
+<li><b>Model</b>: decides to call <code>set_focus(z_um=120)</code>.</li>
+<li><b>Harness</b>: checks permissions, logs the call, may ask a human.</li>
+<li><b>Tool code</b>: validates inputs against hard limits and translates the call into device commands. Often lives in an <b>MCP server</b>.</li>
+<li><b>Driver and protocol</b>: a vendor SDK, a <code>VISA</code>/<code>SCPI</code> session, a USB serial port, a TCP socket, a ROS 2 topic.</li>
+<li><b>Firmware</b>: the microcontroller or instrument controller: motion profiles, timeouts, interlocks.</li>
+<li><b>Hardware</b>: motors, limit switches, the emergency stop.</li>
+</ol>
+<p>Send a normal request down the stack, then inject faults and see which layer catches each one, and what the model is told.</p>
+</div>
+<div class="widget" data-widget="stack"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout key"><b>Key idea</b><p>The model is not the safety system. Each layer enforces what it can know: the tool knows the legal range of z, the firmware knows the motion is taking too long, the limit switch knows the stage is at its end. The model gets a clear error message and can adapt.</p></div>
+</section>
+
+<section id="mcp" aria-labelledby="mcp-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="mcp-h"><span class="n">8.2</span>The Model Context Protocol</h2></header>
+<div class="prose">
+<p>If every AI application had to write its own integration for every instrument, database and service, you would need N × M integrations. The <b><span class="g" data-g="mcp">Model Context Protocol</span></b> (MCP), an open protocol introduced by Anthropic in November 2024 and now supported by many AI applications, turns that into N + M: write one <b>MCP server</b> for your microscope, and any MCP-capable <b>host</b> (Claude Code, Claude Desktop, IDEs, your own agent) can use it.</p>
+<ul>
+<li><b>Host</b>: the AI application; it contains one <b>client</b> per server connection.</li>
+<li><b>Server</b>: a program that offers <b>tools</b> (actions the model can call), <b>resources</b> (data the application can read, like files or instrument status) and <b>prompts</b> (reusable templates).</li>
+<li><b>Transport</b>: <b>stdio</b> (the host starts the server as a subprocess and talks over stdin/stdout, one JSON message per line) or <b>Streamable HTTP</b> for remote servers.</li>
+<li><b>Messages</b>: <span class="g" data-g="json-rpc">JSON-RPC 2.0</span>. A handshake (<code>initialize</code>), discovery (<code>tools/list</code>), and calls (<code>tools/call</code>).</li>
+</ul>
+<p>The host takes each server's tool list and passes it to the model as ordinary tool definitions. When the model calls one, the host forwards it as <code>tools/call</code> and returns the result as a <code>tool_result</code>. To the model, MCP tools look exactly like the tools in lesson 07.</p>
+</div>
+</section>
+
+<section id="wire" aria-labelledby="wire-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="wire-h"><span class="n">8.3</span>Speak MCP by hand</h2></header>
+<div class="prose"><p>The client on the left is you. Pick a message (or edit the JSON) and press <b>Send</b>; the server on the right is a JavaScript port of <code>mcp_microscope_scratch.py</code> with the same validation. Do the handshake first, list the tools, then call them. Try <code>set_focus</code> with z = 900.</p></div>
+<div class="widget" data-widget="mcpwire"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="server" aria-labelledby="server-h"><header class="sec-head"><div class="tags"><span class="kind code">Code</span></div><h2 id="server-h"><span class="n">8.4</span>An MCP server from scratch</h2></header>
+<div class="prose"><p>Here is the server you just talked to, in Python with no packages: a dictionary of tools (description, input schema, handler), a dispatcher for the JSON-RPC methods, and a loop over stdin. Swap the <code>Microscope</code> class for real driver calls and nothing else changes.</p></div>
+<div class="code" data-run data-file="mcp_microscope_scratch.py" data-full="1" data-argv="" data-stdin="{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;initialize&quot;,&quot;params&quot;:{&quot;protocolVersion&quot;:&quot;2025-06-18&quot;,&quot;capabilities&quot;:{},&quot;clientInfo&quot;:{&quot;name&quot;:&quot;me&quot;,&quot;version&quot;:&quot;0&quot;}}}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;notifications/initialized&quot;}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:2,&quot;method&quot;:&quot;tools/list&quot;}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:3,&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;name&quot;:&quot;set_focus&quot;,&quot;arguments&quot;:{&quot;z_um&quot;:120}}}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:4,&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;name&quot;:&quot;measure_sharpness&quot;,&quot;arguments&quot;:{}}}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:5,&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;name&quot;:&quot;set_focus&quot;,&quot;arguments&quot;:{&quot;z_um&quot;:900}}}
+" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">mcp_microscope_scratch.py</span><a href="../code/mcp_microscope_scratch.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+mcp_microscope_scratch.py - an MCP server written from scratch, with no SDK, to show what the
+Model Context Protocol actually is on the wire.
+
+MCP lets any agent (Claude Code, Claude Desktop, your own agent) discover and call tools that
+live in a separate program. The &quot;stdio&quot; transport is simple:
+
+    * the agent starts this program and talks to it over stdin/stdout
+    * every message is one line of JSON-RPC 2.0 (no newlines inside a message)
+    * logs go to stderr, never stdout (stdout is reserved for protocol messages)
+
+The tools drive a SIMULATED microscope: a motorized stage (x, y) and a focus drive (z).
+Swap the Microscope class for real driver calls (a vendor SDK, PyVISA/SCPI, a serial port)
+and the agent side does not change at all. That is the point of the protocol.
+
+Try it by hand:
+    python mcp_microscope_scratch.py
+    {&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;initialize&quot;,&quot;params&quot;:{&quot;protocolVersion&quot;:&quot;2025-06-18&quot;,&quot;capabilities&quot;:{},&quot;clientInfo&quot;:{&quot;name&quot;:&quot;me&quot;,&quot;version&quot;:&quot;0&quot;}}}
+    {&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;notifications/initialized&quot;}
+    {&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:2,&quot;method&quot;:&quot;tools/list&quot;}
+    {&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:3,&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;name&quot;:&quot;set_focus&quot;,&quot;arguments&quot;:{&quot;z_um&quot;:120}}}
+
+Use it from Claude Code:   claude mcp add microscope -- python /full/path/mcp_microscope_scratch.py
+No packages needed. For real servers, use the official SDK (see mcp_microscope_sdk.py).
+&quot;&quot;&quot;
+import json
+import math
+import random
+import sys
+
+SUPPORTED_VERSIONS = [&quot;2025-11-25&quot;, &quot;2025-06-18&quot;, &quot;2025-03-26&quot;, &quot;2024-11-05&quot;]
+
+
+def log(*a):
+    print(*a, file=sys.stderr, flush=True)
+
+
+# ------------------------------------------------------------------ the &quot;hardware&quot;
+class Microscope:
+    &quot;&quot;&quot;A fake instrument. The sample is tilted, so the best focus depends on where you look.&quot;&quot;&quot;
+    X_LIMIT, Z_MIN, Z_MAX = 5000.0, 0.0, 300.0
+
+    def __init__(self):
+        self.x = self.y = 0.0
+        self.z = 50.0
+        self.rng = random.Random(0)
+
+    def best_focus(self):
+        return 120.0 + 0.004 * self.x - 0.002 * self.y
+
+    def sharpness(self):
+        d = (self.z - self.best_focus()) / 15.0
+        return round(min(1.0, max(0.0, math.exp(-d * d) + self.rng.gauss(0, 0.01))), 4)
+
+
+scope = Microscope()
+
+# ------------------------------------------------------------------ tools: schema + handler
+TOOLS = {
+    &quot;get_status&quot;: {
+        &quot;description&quot;: &quot;Report the stage position (x, y) and focus height z, all in micrometres.&quot;,
+        &quot;inputSchema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}},
+        &quot;run&quot;: lambda a: {&quot;x_um&quot;: scope.x, &quot;y_um&quot;: scope.y, &quot;z_um&quot;: scope.z},
+    },
+    &quot;move_stage&quot;: {
+        &quot;description&quot;: f&quot;Move the sample stage to an absolute position. Limits: |x|, |y| &lt;= {Microscope.X_LIMIT:.0f} um.&quot;,
+        &quot;inputSchema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;required&quot;: [&quot;x_um&quot;, &quot;y_um&quot;],
+                        &quot;properties&quot;: {&quot;x_um&quot;: {&quot;type&quot;: &quot;number&quot;}, &quot;y_um&quot;: {&quot;type&quot;: &quot;number&quot;}}},
+    },
+    &quot;set_focus&quot;: {
+        &quot;description&quot;: f&quot;Move the focus drive to height z (um), between {Microscope.Z_MIN:.0f} and {Microscope.Z_MAX:.0f}.&quot;,
+        &quot;inputSchema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;required&quot;: [&quot;z_um&quot;], &quot;properties&quot;: {&quot;z_um&quot;: {&quot;type&quot;: &quot;number&quot;}}},
+    },
+    &quot;measure_sharpness&quot;: {
+        &quot;description&quot;: &quot;Capture an image and return its sharpness from 0 (blurry) to 1 (in focus).&quot;,
+        &quot;inputSchema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}},
+        &quot;run&quot;: lambda a: {&quot;sharpness&quot;: scope.sharpness(), &quot;z_um&quot;: scope.z},
+    },
+}
+
+
+def move_stage(a):
+    x, y = float(a[&quot;x_um&quot;]), float(a[&quot;y_um&quot;])
+    if abs(x) &gt; Microscope.X_LIMIT or abs(y) &gt; Microscope.X_LIMIT:      # safety check lives HERE,
+        raise ValueError(f&quot;({x}, {y}) is outside the stage limits&quot;)    # not in the model&#x27;s good intentions
+    scope.x, scope.y = x, y
+    return {&quot;x_um&quot;: x, &quot;y_um&quot;: y}
+
+
+def set_focus(a):
+    z = float(a[&quot;z_um&quot;])
+    if not Microscope.Z_MIN &lt;= z &lt;= Microscope.Z_MAX:
+        raise ValueError(f&quot;z = {z} is outside {Microscope.Z_MIN}-{Microscope.Z_MAX} um (objective could hit the sample)&quot;)
+    scope.z = z
+    return {&quot;z_um&quot;: z}
+
+
+TOOLS[&quot;move_stage&quot;][&quot;run&quot;] = move_stage
+TOOLS[&quot;set_focus&quot;][&quot;run&quot;] = set_focus
+
+
+# ------------------------------------------------------------------ JSON-RPC dispatch
+def handle(msg):
+    method, params, mid = msg.get(&quot;method&quot;), msg.get(&quot;params&quot;) or {}, msg.get(&quot;id&quot;)
+    if mid is None:                            # a notification: never answered
+        log(&quot;notification:&quot;, method)
+        return None
+    if method == &quot;initialize&quot;:
+        asked = params.get(&quot;protocolVersion&quot;)
+        result = {
+            &quot;protocolVersion&quot;: asked if asked in SUPPORTED_VERSIONS else SUPPORTED_VERSIONS[0],
+            &quot;capabilities&quot;: {&quot;tools&quot;: {}},
+            &quot;serverInfo&quot;: {&quot;name&quot;: &quot;microscope-from-scratch&quot;, &quot;version&quot;: &quot;0.1.0&quot;},
+        }
+    elif method == &quot;ping&quot;:
+        result = {}
+    elif method == &quot;tools/list&quot;:
+        result = {&quot;tools&quot;: [{&quot;name&quot;: n, &quot;description&quot;: t[&quot;description&quot;], &quot;inputSchema&quot;: t[&quot;inputSchema&quot;]}
+                            for n, t in TOOLS.items()]}
+    elif method == &quot;tools/call&quot;:
+        tool = TOOLS.get(params.get(&quot;name&quot;))
+        if tool is None:
+            return {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: mid, &quot;error&quot;: {&quot;code&quot;: -32602, &quot;message&quot;: f&quot;Unknown tool: {params.get(&#x27;name&#x27;)}&quot;}}
+        try:
+            out, is_error = json.dumps(tool[&quot;run&quot;](params.get(&quot;arguments&quot;) or {})), False
+        except (ValueError, KeyError, TypeError) as e:
+            out, is_error = f&quot;Error: {e}&quot;, True     # tool errors go back to the MODEL, so it can adapt
+        result = {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: out}], &quot;isError&quot;: is_error}
+    else:
+        return {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: mid, &quot;error&quot;: {&quot;code&quot;: -32601, &quot;message&quot;: f&quot;Method not found: {method}&quot;}}
+    return {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: mid, &quot;result&quot;: result}
+
+
+def main():
+    log(&quot;microscope MCP server ready (stdio)&quot;)
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            msg = json.loads(line)
+        except json.JSONDecodeError:
+            reply = {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: None, &quot;error&quot;: {&quot;code&quot;: -32700, &quot;message&quot;: &quot;Parse error&quot;}}
+        else:
+            reply = handle(msg)
+        if reply is not None:
+            sys.stdout.write(json.dumps(reply) + &quot;\n&quot;)
+            sys.stdout.flush()
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</pre></div>
+<div class="code" data-lang="text" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">Tested by piping JSON-RPC lines into it</span><button type="button" data-copy>Copy</button></div><pre>$ printf &#x27;%s\n&#x27; &#x27;{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;initialize&quot;,&quot;params&quot;:{&quot;protocolVersion&quot;:&quot;2025-06-18&quot;,&quot;capabilities&quot;:{},&quot;clientInfo&quot;:{&quot;name&quot;:&quot;me&quot;,&quot;version&quot;:&quot;0&quot;}}}&#x27; \
+    &#x27;{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;notifications/initialized&quot;}&#x27; \
+    &#x27;{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:5,&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;name&quot;:&quot;set_focus&quot;,&quot;arguments&quot;:{&quot;z_um&quot;:900}}}&#x27; | python mcp_microscope_scratch.py
+{&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;result&quot;: {&quot;protocolVersion&quot;: &quot;2025-06-18&quot;, &quot;capabilities&quot;: {&quot;tools&quot;: {}}, &quot;serverInfo&quot;: {&quot;name&quot;: &quot;microscope-from-scratch&quot;, &quot;version&quot;: &quot;0.1.0&quot;}}}
+{&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 5, &quot;result&quot;: {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;Error: z = 900.0 is outside 0.0-300.0 um (objective could hit the sample)&quot;}], &quot;isError&quot;: true}}</pre></div>
+<div class="code" data-lang="bash" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">Connect it to Claude Code, or Claude Desktop</span><button type="button" data-copy>Copy</button></div><pre># Claude Code: register the server (stdio), then ask Claude to &quot;autofocus the microscope&quot;
+claude mcp add microscope -- python /full/path/to/mcp_microscope_scratch.py
+
+# Claude Desktop: add to claude_desktop_config.json, then restart the app
+#   { &quot;mcpServers&quot;: { &quot;microscope&quot;: { &quot;command&quot;: &quot;python&quot;,
+#       &quot;args&quot;: [&quot;/full/path/to/mcp_microscope_scratch.py&quot;] } } }</pre></div>
+<div class="prose"><p>For real servers, use the official SDK: it handles the protocol details, generates schemas from type hints, and supports resources, prompts and HTTP transport. The same server in 50 lines:</p></div>
+<div class="code" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">mcp_microscope_sdk.py</span><a href="../code/mcp_microscope_sdk.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+mcp_microscope_sdk.py - the same microscope server, written with the official MCP Python SDK.
+
+Compare with mcp_microscope_scratch.py: the SDK writes the JSON-RPC plumbing and builds each
+tool&#x27;s JSON schema from the Python type hints and docstring. You only write the tools.
+
+Run:  pip install &quot;mcp[cli]&quot;          (needs Python 3.10+)
+      python mcp_microscope_sdk.py      (speaks MCP over stdio; normally an agent starts it)
+      claude mcp add microscope -- python /full/path/mcp_microscope_sdk.py
+
+Note: this file was written against the SDK&#x27;s documented FastMCP interface but was not run
+while preparing this course (the machine only had Python 3.9). The from-scratch version was.
+&quot;&quot;&quot;
+import math
+import random
+
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP(&quot;microscope&quot;)
+
+X_LIMIT, Z_MIN, Z_MAX = 5000.0, 0.0, 300.0
+state = {&quot;x&quot;: 0.0, &quot;y&quot;: 0.0, &quot;z&quot;: 50.0}
+rng = random.Random(0)
+
+
+@mcp.tool()
+def get_status() -&gt; dict:
+    &quot;&quot;&quot;Report the stage position (x, y) and focus height z, all in micrometres.&quot;&quot;&quot;
+    return {&quot;x_um&quot;: state[&quot;x&quot;], &quot;y_um&quot;: state[&quot;y&quot;], &quot;z_um&quot;: state[&quot;z&quot;]}
+
+
+@mcp.tool()
+def move_stage(x_um: float, y_um: float) -&gt; dict:
+    &quot;&quot;&quot;Move the sample stage to an absolute position. Limits: |x|, |y| &lt;= 5000 um.&quot;&quot;&quot;
+    if abs(x_um) &gt; X_LIMIT or abs(y_um) &gt; X_LIMIT:
+        raise ValueError(f&quot;({x_um}, {y_um}) is outside the stage limits&quot;)
+    state[&quot;x&quot;], state[&quot;y&quot;] = x_um, y_um
+    return {&quot;x_um&quot;: x_um, &quot;y_um&quot;: y_um}
+
+
+@mcp.tool()
+def set_focus(z_um: float) -&gt; dict:
+    &quot;&quot;&quot;Move the focus drive to height z in micrometres, between 0 and 300.&quot;&quot;&quot;
+    if not Z_MIN &lt;= z_um &lt;= Z_MAX:
+        raise ValueError(f&quot;z = {z_um} is outside {Z_MIN}-{Z_MAX} um&quot;)
+    state[&quot;z&quot;] = z_um
+    return {&quot;z_um&quot;: z_um}
+
+
+@mcp.tool()
+def measure_sharpness() -&gt; dict:
+    &quot;&quot;&quot;Capture an image and return its sharpness from 0 (blurry) to 1 (in focus).&quot;&quot;&quot;
+    best = 120.0 + 0.004 * state[&quot;x&quot;] - 0.002 * state[&quot;y&quot;]
+    d = (state[&quot;z&quot;] - best) / 15.0
+    value = min(1.0, max(0.0, math.exp(-d * d) + rng.gauss(0, 0.01)))
+    return {&quot;sharpness&quot;: round(value, 4), &quot;z_um&quot;: state[&quot;z&quot;]}
+
+
+if __name__ == &quot;__main__&quot;:
+    mcp.run()          # stdio transport by default</pre></div>
+</section>
+
+<section id="microscope" aria-labelledby="microscope-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="microscope-h"><span class="n">8.5</span>An autofocus agent on a simulated microscope</h2></header>
+<div class="prose">
+<p>A classic instrument task: find the focus. The tools are the ones from the MCP server. The image is rendered with blur that grows with the distance from best focus, and sharpness is computed from the actual pixels (the variance of the Laplacian, a standard focus measure). The sample is tilted, so the best focus changes as the stage moves.</p>
+<p>Use the tools by hand, or press <b>Run autofocus agent</b>: it does what an LLM agent would be told to do (coarse sweep, then refine around the best value), and logs each step as a tool call. In a real deployment the plan would come from the model; the tools, limits and measurements would be exactly these.</p>
+</div>
+<div class="widget" data-widget="microscope"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="instruments" aria-labelledby="instruments-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e §25.1–25.3 / 4e §26.1–26.3</span></div><h2 id="instruments-h"><span class="n">8.6</span>How real instruments and devices are connected</h2></header>
+<div class="prose"><p>Whatever the device, your tool code talks to it through one of a handful of interfaces. Pick the one your device offers; wrap it in tools with validated inputs; expose the tools through MCP or directly to your agent.</p></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Interface</th><th>Typical devices</th><th>Python entry point</th></tr></thead>
+<tbody>
+<tr><td><span class="g" data-g="scpi">SCPI</span> over VISA (USB, Ethernet, GPIB)</td><td>Oscilloscopes, multimeters, power supplies, function generators, many spectrometers</td><td><code>pyvisa</code>: <code>inst.query("*IDN?")</code></td></tr>
+<tr><td>Vendor SDK or remote-control API</td><td>Microscopes (optical and electron), cameras, stages, spectrometers</td><td>The vendor's Python or .NET library; often a socket or COM interface</td></tr>
+<tr><td>USB serial (UART)</td><td>Arduino and other microcontrollers, 3-D printers (G-code), lab pumps, GPS</td><td><code>pyserial</code>: <code>ser.write(b"M 150 150 500\n")</code></td></tr>
+<tr><td>Network APIs (HTTP/REST, MQTT, OPC UA)</td><td>Lab equipment with web interfaces, IoT sensors, industrial controllers (PLCs)</td><td><code>requests</code>, <code>paho-mqtt</code>, <code>asyncua</code></td></tr>
+<tr><td><span class="g" data-g="ros 2">ROS 2</span> topics, services and actions</td><td>Mobile robots, robot arms, drones</td><td><code>rclpy</code> (lesson 09)</td></tr>
+<tr><td>Lab-automation frameworks</td><td>Whole experiments: synchrotron beamlines, quantum devices</td><td>Bluesky/ophyd, QCoDeS, PyMeasure</td></tr>
+<tr><td>GUI only (no API)</td><td>Old instrument software</td><td>"Computer use": the model operates the screen with mouse and keyboard. Slow and fragile; run it in a VM.</td></tr>
+</tbody></table></div>
+<div class="code" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">Sketch: a multimeter as an agent tool, over SCPI (not run here: needs a real instrument)</span><button type="button" data-copy>Copy</button></div><pre>import pyvisa
+
+rm = pyvisa.ResourceManager()
+print(rm.list_resources())                       # find your instrument&#x27;s address here
+dmm = rm.open_resource(&quot;USB0::0x2A8D::0x1301::MY12345678::INSTR&quot;)
+print(dmm.query(&quot;*IDN?&quot;))                        # every SCPI instrument answers: maker, model, serial, firmware
+
+RANGES = {0.1, 1, 10, 100, 1000}                  # volts; check your meter&#x27;s manual
+
+def measure_dc_voltage(range_v: float) -&gt; str:
+    &quot;&quot;&quot;Tool: measure DC voltage. range_v must be one of 0.1, 1, 10, 100, 1000 volts.&quot;&quot;&quot;
+    if range_v not in RANGES:
+        return f&quot;Error: range_v must be one of {sorted(RANGES)}&quot;
+    return dmm.query(f&quot;MEAS:VOLT:DC? {range_v}&quot;).strip() + &quot; V&quot;   # standard SCPI measurement query</pre></div>
+<div class="callout tip"><b>About electron microscopes and other big instruments</b><p>Research groups have connected LLM agents to microscopes and other lab instruments using exactly this pattern: the instrument's control software exposes an API, a small server wraps the safe operations as tools, and the agent plans experiments with them. Expect the vendor API to be the hard part; start with read-only tools (status, image capture), add motion only with limits enforced in code, and keep a human in the loop for anything that can damage the sample or the instrument.</p></div>
+</section>
+
+<section id="safety" aria-labelledby="safety-h"><header class="sec-head"><div class="tags"><span class="kind safety">Safety</span></div><h2 id="safety-h"><span class="n">8.7</span>Rules for agents that touch hardware</h2></header>
+<div class="prose">
+<ol>
+<li><b>Simulate first.</b> Every tool should have a simulated backend (like <code>Microscope</code> and <code>SimRobot</code> in the code here). Develop and test the agent against it.</li>
+<li><b>Limits in code, at the lowest layer that can enforce them.</b> Ranges in the tool, timeouts and interlocks in firmware, physical limit switches and a hardware emergency stop. Prompts are advice, not enforcement.</li>
+<li><b>Small, reversible steps.</b> Tools that move a bounded amount per call (<code>drive(cm ≤ 100)</code>) are safer than "go to the kitchen".</li>
+<li><b>Read-only by default.</b> Give monitoring tools freely; give actuation tools deliberately, and require approval for anything irreversible.</li>
+<li><b>Clear errors.</b> A refused action should explain why ("z = 900 is outside 0–300 µm"), so the model can choose a valid action instead of retrying blindly.</li>
+<li><b>Log everything</b>: every tool call, argument, result and timestamp.</li>
+</ol>
+</div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">8.8</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;What does an MCP server provide to an AI application?&quot;, &quot;o&quot;: [&quot;A language model&quot;, &quot;Tools (and resources and prompts) that the application can discover and call over JSON-RPC&quot;, &quot;A GPU&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The host lists the server&#x27;s tools and offers them to the model like any other tools.&quot;}, {&quot;q&quot;: &quot;In the stdio transport, where must an MCP server write its log messages?&quot;, &quot;o&quot;: [&quot;stdout&quot;, &quot;stderr&quot;, &quot;A web page&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;stdout carries protocol messages; anything else there corrupts the stream.&quot;}, {&quot;q&quot;: &quot;The model calls set_focus(z_um=900) but the safe range is 0\u2013300. Where should this be caught?&quot;, &quot;o&quot;: [&quot;Nowhere; trust the model&quot;, &quot;In the tool code that validates inputs (and, if possible, also in firmware and with limit switches)&quot;, &quot;Only in the system prompt&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Defense in depth: the lowest layer that knows the limit enforces it, and returns a clear error.&quot;}, {&quot;q&quot;: &quot;Why does the autofocus agent measure sharpness from the image instead of trusting a stored focus value?&quot;, &quot;o&quot;: [&quot;Because the sample is tilted and conditions change: perceiving beats assuming&quot;, &quot;Because the model cannot do arithmetic&quot;, &quot;Because MCP requires it&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;A closed loop (act, sense, adjust) is robust to an imperfect model of the world.&quot;}, {&quot;q&quot;: &quot;Your instrument only has a Windows GUI, no API. What is the option of last resort?&quot;, &quot;o&quot;: [&quot;Computer use: the model operates the GUI from screenshots, ideally inside a VM&quot;, &quot;Rewrite the firmware&quot;, &quot;SCPI&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;It works, but it is slow and fragile; prefer any real API.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../07-llm-agents/index.html"><small>← Previous</small><b>07 · LLM agents &amp; Claude Code</b></a><a class="next" href="../09-build-a-robot/index.html"><small>Next →</small><b>09 · Build a robot</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l08.js"></script>
+</body>
+</html>

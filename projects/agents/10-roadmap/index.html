@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10 · Roadmap, AIMA map and glossary · Agents course</title>
+<meta name="description" content="Where to go from here: a ladder of projects from a vacuum agent to an LLM-driven robot, a twelve-week study plan alongside the book, a map from every AIMA chapter to this course, every term in one searchable glossary, and the best next resources.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="10" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">10 · Roadmap &amp; reference</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="net" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="net" aria-hidden="true"></div><p class="kicker">Lesson 10 · Reference</p><h1>Roadmap, AIMA map and glossary</h1><p class="lede">Where to go from here: a ladder of projects from a vacuum agent to an LLM-driven robot, a twelve-week study plan alongside the book, a map from every AIMA chapter to this course, every term in one searchable glossary, and the best next resources.</p><div class="chips"><span class="chip">AIMA <b>3e & 4e, all chapters</b></span><span class="chip">~20 min</span><span class="chip"><b>2</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#ladder" data-kind="interactive">10.1 The project ladder</a></li><li><a href="#plan" data-kind="concept">10.2 A twelve-week plan with the book</a></li><li><a href="#map" data-kind="concept">10.3 AIMA chapter map</a></li><li><a href="#glossary" data-kind="interactive">10.4 Glossary</a></li><li><a href="#reading" data-kind="concept">10.5 Where to go next</a></li><li><a href="#check" data-kind="check">10.6 Final check</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content">
+
+<section id="ladder" aria-labelledby="ladder-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="ladder-h"><span class="n">10.1</span>The project ladder</h2></header>
+<div class="prose"><p>Each rung reuses the one below it. Tick them off as you go (saved only in this browser). If you get stuck on a rung, the lesson link has the code and a simulator.</p></div>
+<div class="widget" data-widget="ladder"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="plan" aria-labelledby="plan-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="plan-h"><span class="n">10.2</span>A twelve-week plan with the book</h2></header>
+<div class="prose"><p>About five to eight hours a week. Read the AIMA sections first, then do the lesson and run its code; or reverse the order if the book feels too dense. Chapter numbers are for the 4th edition, with the 3rd in parentheses where they differ.</p></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Week</th><th>Read in AIMA</th><th>Do here</th><th>Build</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Ch. 1, Ch. 2.1–2.3</td><td>Lesson 01</td><td>Run and modify <code>vacuum_world.py</code> (exercises)</td></tr>
+<tr><td>2</td><td>Ch. 2.4</td><td>Lesson 02</td><td><code>agent_zoo.py</code>: add memory to the reflex agent</td></tr>
+<tr><td>3</td><td>Ch. 3.1–3.4</td><td>Lesson 03, sections 1–5</td><td>Depth-first search and the 8-puzzle in <code>search.py</code></td></tr>
+<tr><td>4</td><td>Ch. 3.5–3.6</td><td>Lesson 03, rest</td><td>Compare heuristics on the 8-puzzle; count expansions</td></tr>
+<tr><td>5</td><td>Ch. 7.1–7.4</td><td>Lesson 04</td><td>Add the arrow to <code>wumpus_kb.py</code></td></tr>
+<tr><td>6</td><td>Ch. 12.1–12.7 (3e: 13)</td><td>Lesson 04, probability section</td><td>1,000 random wumpus worlds: measure success rate</td></tr>
+<tr><td>7</td><td>Ch. 17.1–17.2</td><td>Lesson 05, sections 1–5</td><td>Policy iteration in <code>mdp.py</code></td></tr>
+<tr><td>8</td><td>Ch. 22.1–22.3 (3e: 21)</td><td>Lesson 05, rest</td><td>Q-learning on a 10×10 cliff world</td></tr>
+<tr><td>9</td><td>Ch. 21, 24 (4e only)</td><td>Lesson 06</td><td>Train <code>tiny_gpt.py</code> on a book; swap in your BPE tokenizer</td></tr>
+<tr><td>10</td><td>Anthropic's tool-use docs</td><td>Lesson 07</td><td><code>mini_agent.py</code> with Claude; add a search tool and a budget</td></tr>
+<tr><td>11</td><td>MCP docs; Ch. 26.1–26.3 (3e: 25)</td><td>Lesson 08</td><td>Wrap a real device (even an Arduino LED) in an MCP server</td></tr>
+<tr><td>12</td><td>Ch. 26 (3e: 25)</td><td>Lesson 09</td><td>Build and bring up the robot; run it with the reflex brain, then with Claude</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="map" aria-labelledby="map-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="map-h"><span class="n">10.3</span>AIMA chapter map</h2></header>
+<div class="prose"><p>The two editions share the first chapters; after Chapter 10 the numbering diverges. Topics in bold are covered by a lesson here.</p></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Topic</th><th>3rd edition</th><th>4th edition</th><th>Lesson</th></tr></thead>
+<tbody>
+<tr><td><b>Intelligent agents</b></td><td>Ch. 2</td><td>Ch. 2</td><td><a href="../01-agents-and-environments/index.html">01</a>, <a href="../02-agent-programs/index.html">02</a></td></tr>
+<tr><td><b>Solving problems by searching</b></td><td>Ch. 3</td><td>Ch. 3</td><td><a href="../03-search/index.html">03</a></td></tr>
+<tr><td>Local search, search in complex environments</td><td>Ch. 4</td><td>Ch. 4</td><td></td></tr>
+<tr><td>Adversarial search and games</td><td>Ch. 5</td><td>Ch. 5</td><td></td></tr>
+<tr><td>Constraint satisfaction</td><td>Ch. 6</td><td>Ch. 6</td><td></td></tr>
+<tr><td><b>Logical agents</b></td><td>Ch. 7</td><td>Ch. 7</td><td><a href="../04-knowledge/index.html">04</a></td></tr>
+<tr><td>First-order logic, inference</td><td>Ch. 8–9</td><td>Ch. 8–9</td><td>04 (briefly)</td></tr>
+<tr><td>Planning</td><td>Ch. 10–11</td><td>Ch. 11</td><td>04 (briefly)</td></tr>
+<tr><td>Knowledge representation</td><td>Ch. 12</td><td>Ch. 10</td><td></td></tr>
+<tr><td><b>Quantifying uncertainty</b> (wumpus revisited)</td><td>Ch. 13</td><td>Ch. 12</td><td><a href="../04-knowledge/index.html#probability">04</a></td></tr>
+<tr><td>Probabilistic reasoning (Bayes nets), over time</td><td>Ch. 14–15</td><td>Ch. 13–15</td><td></td></tr>
+<tr><td>Making simple decisions</td><td>Ch. 16</td><td>Ch. 16</td><td></td></tr>
+<tr><td><b>Making complex decisions (MDPs)</b></td><td>Ch. 17</td><td>Ch. 17</td><td><a href="../05-decisions-and-learning/index.html">05</a></td></tr>
+<tr><td>Multiagent decision making</td><td>(Ch. 17)</td><td>Ch. 18</td><td></td></tr>
+<tr><td>Learning from examples</td><td>Ch. 18</td><td>Ch. 19</td><td></td></tr>
+<tr><td><b>Deep learning</b></td><td>(Ch. 18, briefly)</td><td>Ch. 21</td><td><a href="../06-inside-an-llm/index.html">06</a></td></tr>
+<tr><td><b>Reinforcement learning</b></td><td>Ch. 21</td><td>Ch. 22</td><td><a href="../05-decisions-and-learning/index.html#rl">05</a></td></tr>
+<tr><td><b>Natural language, deep learning for NLP (transformers)</b></td><td>Ch. 22–23 (before transformers)</td><td>Ch. 23–24</td><td><a href="../06-inside-an-llm/index.html">06</a></td></tr>
+<tr><td>Perception, computer vision</td><td>Ch. 24</td><td>Ch. 25</td><td></td></tr>
+<tr><td><b>Robotics</b></td><td>Ch. 25</td><td>Ch. 26</td><td><a href="../08-real-world/index.html">08</a>, <a href="../09-build-a-robot/index.html">09</a></td></tr>
+<tr><td>Philosophy, ethics and safety of AI</td><td>Ch. 26–27</td><td>Ch. 27–28</td><td>07, 08 (safety sections)</td></tr>
+<tr><td><b>LLM agents, tool use, MCP</b></td><td colspan="2">Newer than both editions</td><td><a href="../07-llm-agents/index.html">07</a>, <a href="../08-real-world/index.html">08</a></td></tr>
+</tbody></table></div>
+<div class="callout tip"><b>If you have the 3rd edition</b><p>Everything in Parts I–II of this course matches it closely. It predates transformers and modern LLMs, so lessons 06–08 are your main source for that material, together with Chapter 24 of the 4th edition if you can borrow it.</p></div>
+</section>
+
+<section id="glossary" aria-labelledby="glossary-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="glossary-h"><span class="n">10.4</span>Glossary</h2></header>
+<div class="prose"><p>Every dotted-underlined term in the course, in one place.</p></div>
+<div class="widget" data-widget="glossary"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="reading" aria-labelledby="reading-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="reading-h"><span class="n">10.5</span>Where to go next</h2></header>
+<div class="table-wrap"><table>
+<thead><tr><th>Resource</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><a href="https://aima.cs.berkeley.edu/">aima.cs.berkeley.edu</a></td><td>The book's official site: table of contents, pseudocode for every algorithm, figures, errata.</td></tr>
+<tr><td><a href="https://github.com/aimacode/aima-python">github.com/aimacode/aima-python</a></td><td>Python implementations of the book's algorithms, with notebooks. Compare them with the files here.</td></tr>
+<tr><td><a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> (Anthropic, Dec. 2024)</td><td>Workflows vs. agents, the main patterns, and tool design (lesson 07).</td></tr>
+<tr><td><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Claude tool use documentation</a></td><td>The exact request and response format behind <code>mini_agent.py</code>, client and server tools.</td></tr>
+<tr><td><a href="https://code.claude.com/docs/en/overview">Claude Code documentation</a></td><td>Tools, permissions, hooks, memory, subagents, MCP: the production version of lesson 07.</td></tr>
+<tr><td><a href="https://modelcontextprotocol.io/">modelcontextprotocol.io</a></td><td>The MCP specification, SDKs and example servers (lesson 08).</td></tr>
+<tr><td><a href="https://github.com/karpathy/nanoGPT">karpathy/nanoGPT</a> and its successor nanochat</td><td>The next step after <code>tiny_gpt.py</code>; pair with Karpathy's "Let's build GPT" lecture.</td></tr>
+<tr><td><a href="https://ollama.com/library/qwen3">Ollama model library</a></td><td>Small local models with tool support for the robot (lesson 09).</td></tr>
+<tr><td><a href="https://docs.ros.org/">docs.ros.org</a></td><td>ROS 2 tutorials, for when your robot outgrows one Arduino.</td></tr>
+<tr><td><a href="../../containers/index.html">Containers &amp; Docker course</a> (this site)</td><td>Run agents inside containers so they only touch what you allow.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">10.6</span>Final check</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;You want an agent to help you analyze data from a lab instrument. Which design follows this course&#x27;s advice?&quot;, &quot;o&quot;: [&quot;Give the LLM a shell on the lab PC and a good prompt&quot;, &quot;Wrap read-only instrument queries as validated tools (maybe in an MCP server), test against a simulator, add actuation tools later with limits and approval&quot;, &quot;Let the model write firmware for the instrument&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Least privilege, simulation first, limits in code, humans for consequential actions.&quot;}, {&quot;q&quot;: &quot;In AIMA&#x27;s terms, what is Claude Code?&quot;, &quot;o&quot;: [&quot;A simple reflex agent&quot;, &quot;A model-based, goal-directed agent: the LLM decides, the harness perceives and acts through tools, the context window is its state&quot;, &quot;A knowledge base&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Lessons 02 and 07.&quot;}, {&quot;q&quot;: &quot;Your robot&#x27;s LLM brain sometimes asks to drive into walls. Best fix?&quot;, &quot;o&quot;: [&quot;A longer system prompt&quot;, &quot;Keep the clearance check in the body and the obstacle stop in firmware; return clear refusals so the model adapts&quot;, &quot;Use a larger model&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The model is not the safety system.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../09-build-a-robot/index.html"><small>← Previous</small><b>09 · Build a robot</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l10.js"></script>
+</body>
+</html>

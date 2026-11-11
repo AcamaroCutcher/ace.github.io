@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 · Knowledge, logic and inference · Agents course</title>
+<meta name="description" content="An agent that can reason from what it knows can act safely in a world it cannot see. Explore the wumpus world with an agent that proves which squares are safe, build the book&#x27;s truth table yourself, and see why LLMs know a lot but prove nothing.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="04" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">04 · Knowledge-based agents</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="logic" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="logic" aria-hidden="true"></div><p class="kicker">Lesson 04 · Part II · Classic AI</p><h1>Knowledge, logic and inference</h1><p class="lede">An agent that can reason from what it knows can act safely in a world it cannot see. Explore the wumpus world with an agent that proves which squares are safe, build the book's truth table yourself, and see why LLMs know a lot but prove nothing.</p><div class="chips"><span class="chip">AIMA <b>3e Ch. 7, §13.6</b></span><span class="chip">AIMA <b>4e Ch. 7, §12.7</b></span><span class="chip">~60 min</span><span class="chip"><b>2</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#kb" data-kind="concept">4.1 Knowledge-based agents</a></li><li><a href="#wumpus" data-kind="concept">4.2 The wumpus world</a></li><li><a href="#explore" data-kind="interactive">4.3 An agent that proves where it is safe</a></li><li><a href="#logic" data-kind="math">4.4 Logic, models and entailment</a></li><li><a href="#tt" data-kind="interactive">4.5 Build the truth table</a></li><li><a href="#inference" data-kind="concept">4.6 Beyond enumeration: proofs, SAT and planning</a></li><li><a href="#probability" data-kind="math">4.7 When logic is not enough: probability</a></li><li><a href="#llm" data-kind="concept">4.8 Do LLMs have a knowledge base?</a></li><li><a href="#code" data-kind="code">4.9 wumpus_kb.py</a></li><li><a href="#check" data-kind="check">4.10 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>Lesson 03</li><li>Boolean logic: and, or, not, implies</li><li>Probability basics for §4.6 (<a href="../00-background/index.html#math">Lesson 00</a>)</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="knowledge base">knowledge base</span></span><span><span class="g" data-g="entailment">entailment</span></span><span><span class="g" data-g="model checking">model checking</span></span></div></div><div><h3>Read alongside</h3><ul><li>AIMA §7.1–7.4; 3e §13.6 / 4e §12.7</li></ul></div></aside>
+
+<section id="kb" aria-labelledby="kb-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §7.1</span></div><h2 id="kb-h"><span class="n">4.1</span>Knowledge-based agents</h2></header>
+<div class="prose">
+<p>The agents so far kept knowledge in special-purpose forms: a vacuum's map, a search problem's transition model. A <b>knowledge-based agent</b> keeps it in a general form: a <span class="g" data-g="knowledge base">knowledge base</span> (KB), a set of <b>sentences</b> in a formal language. The agent interacts with it through two operations:</p>
+<ul>
+<li><b>TELL</b> adds a sentence: what the agent perceived, or a fact about the world ("there is no breeze in [1,1]").</li>
+<li><b>ASK</b> poses a question, answered by <b>inference</b>: deriving new sentences that follow from the KB ("is [1,2] safe?").</li>
+</ul>
+<p>The appeal is that the agent's designer can describe <em>what</em> is true about the world (declaratively) and let a general inference procedure work out <em>what to do</em>. The same reasoning engine works for any world you can describe.</p>
+</div>
+<div class="bridge" data-notes="{&quot;a&quot;: &quot;One call per time step: the agent receives a percept.&quot;, &quot;b&quot;: &quot;&lt;b&gt;TELL&lt;/b&gt; the KB what was perceived. In the Python, &lt;code&gt;kb.tell&lt;/code&gt; stores breeze/stench for this square; every later question is answered from these stored facts.&quot;, &quot;c&quot;: &quot;&lt;b&gt;ASK&lt;/b&gt; the KB which squares are provably safe, then choose an action (go to the nearest one). This is where inference happens: &lt;code&gt;safe_squares()&lt;/code&gt; runs model checking.&quot;, &quot;d&quot;: &quot;Record the action taken (the Python keeps the path).&quot;, &quot;e&quot;: &quot;Advance time.&quot;}"><div class="pane"><div class="pane-head"><span>Book-style pseudocode (paraphrased from Fig. 7.1)</span></div><pre><span class="bl" data-k="a">function <b>KB-AGENT</b>(percept) returns an action</span><span class="bl" data-k="b">  <b>TELL</b>(KB, <b>MAKE-PERCEPT-SENTENCE</b>(percept, t))</span><span class="bl" data-k="c">  action ← <b>ASK</b>(KB, <b>MAKE-ACTION-QUERY</b>(t))</span><span class="bl" data-k="d">  <b>TELL</b>(KB, <b>MAKE-ACTION-SENTENCE</b>(action, t))</span><span class="bl" data-k="e">  t ← t + 1</span><span class="bl" data-k="f">  return action</span></pre></div><div class="pane py"><div class="pane-head"><span>wumpus_kb.py · run()</span></div><pre><span class="bl" data-k="a">for step in range(max_steps):</span><span class="bl" data-k="a">    p = world.percept(here)</span><span class="bl" data-k="b">    kb.tell(here, p)</span><span class="bl" data-k="c">    safe = kb.safe_squares()</span><span class="bl" data-k="c">    options = [(len(route(here, c, known_safe) or []), c) for c in safe]</span><span class="bl" data-k="c">    _, target = min(options)</span><span class="bl" data-k="d">    path += leg[1:]</span><span class="bl" data-k="e">    here = target</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+</section>
+
+<section id="wumpus" aria-labelledby="wumpus-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §7.2</span></div><h2 id="wumpus-h"><span class="n">4.2</span>The wumpus world</h2></header>
+<div class="prose">
+<p>The book's test bed is a cave of 4×4 rooms. Somewhere there is gold; somewhere there is the <b>wumpus</b>, a beast that eats anyone who enters its room; some rooms contain bottomless <b>pits</b> (each room other than the start has one with probability 0.2). The agent starts in [1,1] and sees nothing directly. It only gets local percepts:</p>
+<ul>
+<li>a <b>Stench</b> in rooms next to the wumpus (not diagonally);</li>
+<li>a <b>Breeze</b> in rooms next to a pit;</li>
+<li><b>Glitter</b> in the room with the gold (plus Bump and Scream, which this simplified version leaves out).</li>
+</ul>
+<p>In the full book version the agent turns, moves forward, grabs, shoots its single arrow and climbs out; the performance measure is +1000 for leaving with the gold, −1000 for dying, −1 per action and −10 for the arrow. The environment is partially observable, deterministic, sequential, static, discrete and single-agent (the wumpus does not move): the difficulty is purely <b>reasoning under partial observability</b>.</p>
+</div>
+</section>
+
+<section id="explore" aria-labelledby="explore-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e Fig. 7.3–7.4 / 4e Fig. 7.3–7.4</span></div><h2 id="explore-h"><span class="n">4.3</span>An agent that proves where it is safe</h2></header>
+<div class="prose"><p>The agent below TELLs its KB every percept and ASKs which unvisited rooms are safe. Numbers are the probability of danger computed from the KB (how is explained in section 4.6); <b>OK</b> means danger is ruled out in <em>every</em> world consistent with what it has felt. Step through the book's world, or generate random ones; you can also click a highlighted room to move there yourself.</p></div>
+<div class="widget" data-widget="wumpus"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout book"><b>Follow along in the book</b><p>The book's world (Fig. 7.2) plays out exactly as its Figures 7.3 and 7.4 describe: no breeze in [1,1] makes [1,2] and [2,1] safe; a breeze in [2,1] and a stench in [1,2] together let the agent deduce the wumpus is in [1,3] and the pit in [3,1], so [2,2] is safe. (This agent visits [1,2] before [2,1], the reverse of the book's order, and reaches the same conclusions.)</p></div>
+</section>
+
+<section id="logic" aria-labelledby="logic-h"><header class="sec-head"><div class="tags"><span class="kind math">Math</span><span class="aima">3e/4e §7.3–7.4</span></div><h2 id="logic-h"><span class="n">4.4</span>Logic, models and entailment</h2></header>
+<div class="prose">
+<p>A <b>logic</b> has a syntax (which sentences are well formed), and a semantics (when a sentence is true). In propositional logic, sentences are built from symbols such as <code>P₁,₂</code> ("there is a pit in [1,2]") and <code>B₁,₁</code> ("there is a breeze in [1,1]") with the connectives ¬ (not), ∧ (and), ∨ (or), ⇒ (implies) and ⇔ (if and only if).</p>
+<p>A <b>model</b> is a possible world: an assignment of true or false to every symbol. A sentence is true in some models and false in others. The central idea of the chapter is <span class="g" data-g="entailment">entailment</span>:</p>
+</div>
+<div class="eq">KB ⊨ α &nbsp; if and only if &nbsp; α is true in every model in which KB is true &nbsp;(M(KB) ⊆ M(α))<span class="lbl">"α follows from the KB": whatever the world is like, if the KB is right, α is right too.</span></div>
+<div class="prose">
+<p>The simplest way to decide entailment is <span class="g" data-g="model checking">model checking</span>: enumerate all models, keep those where the KB is true, and check α in each. With <var>n</var> symbols there are 2<sup><var>n</var></sup> models, so it is exponential, but it is <b>sound</b> (it never derives something false) and <b>complete</b> (it derives everything that is entailed). The agent above uses it on the few rooms next to visited ones.</p>
+<p>The book's example KB after the agent has visited [1,1] and [2,1]:</p>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Rule</th><th>Sentence</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>R₁</td><td><code>¬P₁,₁</code></td><td>No pit in the start room</td></tr>
+<tr><td>R₂</td><td><code>B₁,₁ ⇔ (P₁,₂ ∨ P₂,₁)</code></td><td>A breeze in [1,1] means a pit next to it (and vice versa)</td></tr>
+<tr><td>R₃</td><td><code>B₂,₁ ⇔ (P₁,₁ ∨ P₂,₂ ∨ P₃,₁)</code></td><td>The same rule for [2,1]</td></tr>
+<tr><td>R₄</td><td><code>¬B₁,₁</code></td><td>Percept: no breeze in [1,1]</td></tr>
+<tr><td>R₅</td><td><code>B₂,₁</code></td><td>Percept: breeze in [2,1]</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="tt" aria-labelledby="tt-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e Fig. 7.9 / 4e Fig. 7.9</span></div><h2 id="tt-h"><span class="n">4.5</span>Build the truth table</h2></header>
+<div class="prose"><p>Seven symbols, so 2⁷ = 128 models. Choose a query α and press <b>Check</b>: the table enumerates every model, marks the ones where KB is true, and checks α in each. This is the book's TT-ENTAILS, running in your browser.</p></div>
+<div class="widget" data-widget="truthtable"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="inference" aria-labelledby="inference-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e §7.5–7.7, Ch. 10 / 4e §7.5–7.7, Ch. 11</span></div><h2 id="inference-h"><span class="n">4.6</span>Beyond enumeration: proofs, SAT and planning</h2></header>
+<div class="prose">
+<p>Enumerating models is hopeless for large KBs, so the chapter develops faster methods:</p>
+<ul>
+<li><b>Theorem proving</b> applies inference rules (modus ponens, and-elimination, <b>resolution</b>) to derive α directly, without listing models. Resolution is complete for propositional logic.</li>
+<li><b>Forward and backward chaining</b> work in linear time for <b>Horn clauses</b> (rules of the form <code>A ∧ B ⇒ C</code>), the basis of rule engines and Prolog.</li>
+<li><b>SAT solvers</b> (DPLL, WalkSAT, and modern CDCL solvers) decide satisfiability for millions of clauses; checking KB ⊨ α is the same as checking that KB ∧ ¬α is unsatisfiable.</li>
+<li><b>First-order logic</b> (Ch. 8–9) adds objects, relations and quantifiers ("every square adjacent to a pit is breezy" in one sentence instead of sixteen).</li>
+<li><b>Planning</b> (3e Ch. 10, 4e Ch. 11) describes actions by preconditions and effects (the PDDL language) and searches for plans with domain-independent heuristics.</li>
+</ul>
+</div>
+</section>
+
+<section id="probability" aria-labelledby="probability-h"><header class="sec-head"><div class="tags"><span class="kind math">Math</span><span class="aima">3e §13.6 / 4e §12.7</span></div><h2 id="probability-h"><span class="n">4.7</span>When logic is not enough: probability</h2></header>
+<div class="prose">
+<p>Logic answers "true in all models", "false in all models", or "unknown". When the agent is boxed in and every move is risky, "unknown" is useless; it needs to know <em>how likely</em> each danger is. The book revisits the wumpus world with probabilities: each room has a pit with prior probability 0.2. Weigh each consistent model by its prior, and the probability of a pit in a room is the weighted fraction of consistent models that have one:</p>
+</div>
+<div class="eq">P(pit in X | percepts) = Σ<sub>consistent models with a pit in X</sub> 0.2<sup>#pits</sup> 0.8<sup>#no-pits</sup> &nbsp;/&nbsp; Σ<sub>all consistent models</sub> 0.2<sup>#pits</sup> 0.8<sup>#no-pits</sup><span class="lbl">Only rooms next to visited rooms matter; the others cancel out.</span></div>
+<div class="prose"><p>In the book's example (breezes in [1,2] and [2,1]), this gives about <b>0.31</b> for [1,3] and [3,1] and <b>0.86</b> for [2,2]. Load <b>Book: breezy start</b> in the explorer above to see these numbers appear. The Python agent computes exactly this in <code>pit_probabilities()</code>: it is model checking with weights.</p></div>
+</section>
+
+<section id="llm" aria-labelledby="llm-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span></div><h2 id="llm-h"><span class="n">4.8</span>Do LLMs have a knowledge base?</h2></header>
+<div class="prose">
+<p>Claude knows a vast amount, but not in the form of this chapter. Its knowledge is <b>implicit</b>: spread across billions of numerical weights learned from text, not stored as sentences it can enumerate. That has consequences you should design for:</p>
+<ul>
+<li><b>No soundness guarantee.</b> A logical inference procedure never derives a false conclusion from true premises. An LLM produces the most plausible continuation, which is usually right but can be fluent and wrong ("hallucination"). It also cannot list everything it "knows" or prove that it does not know something.</li>
+<li><b>No TELL after training.</b> You cannot add a fact to the weights during a conversation. What plays the role of TELL is the <b>context</b>: put the fact in the prompt or a tool result, and the model can use it for the rest of the conversation.</li>
+<li><b>Grounding with tools.</b> Good agents compensate the way a knowledge-based agent would: they <em>look things up</em> (read the file, search the documentation: retrieval, often called RAG) and <em>check</em> (run the tests, call a calculator, run a SAT solver or theorem prover as a tool) instead of trusting recall.</li>
+</ul>
+</div>
+<div class="callout key"><b>Design rule for your agents</b><p>Use the LLM for what it is good at (understanding requests, choosing which tool to use, writing code and explanations) and give it tools for what logic and computation are good at (exact facts, proofs, arithmetic, checking constraints). A safety check such as "never drive closer than 15 cm to an obstacle" belongs in code, not in the prompt (lesson 08).</p></div>
+</section>
+
+<section id="code" aria-labelledby="code-h"><header class="sec-head"><div class="tags"><span class="kind code">Code</span></div><h2 id="code-h"><span class="n">4.9</span>wumpus_kb.py</h2></header>
+<div class="code" data-run data-file="wumpus_kb.py" data-full="1" data-argv="" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">wumpus_kb.py</span><a href="../code/wumpus_kb.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+wumpus_kb.py - a knowledge-based agent in the wumpus world (AIMA Chapter 7, and the
+probabilistic version in 3e Section 13.6 / 4e Section 12.7).
+
+The agent never sees pits or the wumpus. It only feels a Breeze next to a pit and smells a
+Stench next to the wumpus. From those percepts it reasons about which squares are safe.
+
+Inference here is MODEL CHECKING (AIMA&#x27;s TT-ENTAILS idea): enumerate every possible world
+(every placement of pits and of the one wumpus on the squares we haven&#x27;t visited), keep the
+ones consistent with what we have perceived, and ask:
+
+    &quot;Is there a pit in [x,y]?&quot;  is entailed false  &lt;=&gt;  no consistent world has a pit there.
+
+Weighting each consistent world by its prior (each square has a pit with probability 0.2)
+gives the probability of a pit, exactly as in the book&#x27;s probabilistic wumpus example.
+
+Run:  python wumpus_kb.py            (the world of AIMA Figure 7.2)
+No packages needed.
+&quot;&quot;&quot;
+import itertools
+from collections import deque
+
+N = 4
+PIT_PRIOR = 0.2
+
+
+def neighbors(c):
+    x, y = c
+    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        if 1 &lt;= x + dx &lt;= N and 1 &lt;= y + dy &lt;= N:
+            yield (x + dx, y + dy)
+
+
+class World:
+    &quot;&quot;&quot;The true environment (the agent can&#x27;t look inside).&quot;&quot;&quot;
+
+    def __init__(self, pits, wumpus, gold):
+        self.pits, self.wumpus, self.gold = set(pits), wumpus, gold
+
+    def percept(self, c):
+        return {
+            &quot;breeze&quot;: any(n in self.pits for n in neighbors(c)),
+            &quot;stench&quot;: any(n == self.wumpus for n in neighbors(c)),
+            &quot;glitter&quot;: c == self.gold,
+        }
+
+
+class KnowledgeBase:
+    def __init__(self):
+        self.visited = {}           # square -&gt; percept dict (what TELL put into the KB)
+
+    def tell(self, square, percept):
+        self.visited[square] = percept
+
+    def unknown(self):
+        return [(x, y) for x in range(1, N + 1) for y in range(1, N + 1) if (x, y) not in self.visited]
+
+    # ---- ASK: probability of a pit / the wumpus in each unknown square -----------------
+    def pit_probabilities(self):
+        frontier = sorted({n for v in self.visited for n in neighbors(v) if n not in self.visited})
+        weights = {c: 0.0 for c in frontier}
+        total = 0.0
+        for bits in itertools.product((False, True), repeat=len(frontier)):    # 2^|frontier| worlds
+            pits = {c for c, b in zip(frontier, bits) if b}
+            if all(any(n in pits for n in neighbors(v)) == p[&quot;breeze&quot;] for v, p in self.visited.items()):
+                w = 1.0
+                for b in bits:
+                    w *= PIT_PRIOR if b else 1 - PIT_PRIOR
+                total += w
+                for c in pits:
+                    weights[c] += w
+        probs = {c: weights[c] / total for c in frontier}
+        for c in self.unknown():           # squares not next to anything we&#x27;ve felt: just the prior
+            probs.setdefault(c, PIT_PRIOR)
+        return probs
+
+    def wumpus_probabilities(self):
+        cands = [c for c in self.unknown()
+                 if all((c in neighbors(v)) == p[&quot;stench&quot;] for v, p in self.visited.items())]
+        return {c: (1 / len(cands) if c in cands else 0.0) for c in self.unknown()}
+
+    def safe_squares(self):
+        pp, wp = self.pit_probabilities(), self.wumpus_probabilities()
+        return {c for c in self.unknown() if pp[c] == 0 and wp[c] == 0}
+
+
+def route(start, goal, allowed):
+    &quot;&quot;&quot;Breadth-first path through squares we know are safe.&quot;&quot;&quot;
+    q, parent = deque([start]), {start: None}
+    while q:
+        c = q.popleft()
+        if c == goal:
+            break
+        for n in neighbors(c):
+            if n not in parent and (n in allowed or n == goal):
+                parent[n] = c
+                q.append(n)
+    if goal not in parent:
+        return None
+    path, c = [], goal
+    while c:
+        path.append(c)
+        c = parent[c]
+    return path[::-1]
+
+
+def show(kb, here):
+    pp, wp = kb.pit_probabilities(), kb.wumpus_probabilities()
+    for y in range(N, 0, -1):
+        cells = []
+        for x in range(1, N + 1):
+            c = (x, y)
+            if c == here:
+                cells.append(&quot;  A  &quot;)
+            elif c in kb.visited:
+                p = kb.visited[c]
+                cells.append(&quot; &quot; + (&quot;B&quot; if p[&quot;breeze&quot;] else &quot;.&quot;) + (&quot;S&quot; if p[&quot;stench&quot;] else &quot;.&quot;) + &quot;  &quot;)
+            elif pp[c] == 0 and wp[c] == 0:
+                cells.append(&quot; OK  &quot;)
+            else:
+                cells.append(f&quot;{max(pp[c], wp[c]):.2f} &quot;)
+        print(&quot;   |&quot; + &quot;|&quot;.join(cells) + &quot;|&quot;)
+
+
+def run(world, max_steps=30):
+    kb, here, path = KnowledgeBase(), (1, 1), [(1, 1)]
+    for step in range(max_steps):
+        p = world.percept(here)
+        kb.tell(here, p)                                         # TELL the KB what we perceive
+        print(f&quot;\nStep {step}: at {here}, percept {p}&quot;)
+        if p[&quot;glitter&quot;]:
+            print(&quot;Glitter! Grab the gold and climb out the way we came.&quot;)
+            return path
+        show(kb, here)
+        safe = kb.safe_squares()                                 # ASK the KB
+        known_safe = set(kb.visited) | safe
+        options = [(len(route(here, c, known_safe) or []), c) for c in safe]
+        options = [o for o in options if o[0] &gt; 0]
+        if options:
+            _, target = min(options)
+            print(f&quot;   safe unexplored squares: {sorted(safe)}  -&gt;  go to {target}&quot;)
+        else:
+            pp, wp = kb.pit_probabilities(), kb.wumpus_probabilities()
+            reachable = [c for c in kb.unknown() if route(here, c, set(kb.visited))]
+            target = min(reachable, key=lambda c: 1 - (1 - pp[c]) * (1 - wp[c]))
+            risk = 1 - (1 - pp[target]) * (1 - wp[target])
+            print(f&quot;   nothing is provably safe; least risky square is {target} (risk {risk:.2f})&quot;)
+            if risk &gt; 0.5:
+                print(&quot;   too risky: climb out without the gold&quot;)
+                return path
+        leg = route(here, target, known_safe)
+        path += leg[1:]
+        here = target
+        if here in world.pits or here == world.wumpus:
+            print(f&quot;   ... and the agent died in {here}&quot;)
+            return path
+    return path
+
+
+if __name__ == &quot;__main__&quot;:
+    # AIMA Figure 7.2: pits in (3,1), (3,3), (4,4); wumpus in (1,3); gold in (2,3)
+    world = World(pits={(3, 1), (3, 3), (4, 4)}, wumpus=(1, 3), gold=(2, 3))
+    print(&quot;Legend: A agent, B breeze felt, S stench felt, OK provably safe, number = risk&quot;)
+    run(world)</pre></div>
+<div class="callout tip"><b>Exercises</b><ol>
+<li>Add the arrow: if the wumpus's location is certain (probability 1), shoot it from a neighboring room and mark it dead. When does this unlock rooms that were otherwise unreachable?</li>
+<li>Replace the enumeration in <code>pit_probabilities</code> with a SAT solver query (e.g. the <code>pycosat</code> package): KB ∧ P<sub>x,y</sub> unsatisfiable ⇒ the room has no pit.</li>
+<li>Run 1,000 random worlds. How often does the agent get the gold, die, or climb out empty-handed? How does it change if the risk threshold is 0.3 instead of 0.5?</li>
+</ol></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">4.10</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;KB \u22a8 \u03b1 means\u2026&quot;, &quot;o&quot;: [&quot;\u03b1 is true in at least one model of the KB&quot;, &quot;\u03b1 is true in every model in which the KB is true&quot;, &quot;\u03b1 appears as a sentence in the KB&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Entailment: M(KB) \u2286 M(\u03b1).&quot;}, {&quot;q&quot;: &quot;In the book&#x27;s example (no breeze in [1,1], breeze in [2,1]), what does the KB entail about [2,2]?&quot;, &quot;o&quot;: [&quot;There is a pit in [2,2]&quot;, &quot;There is no pit in [2,2]&quot;, &quot;Neither: some models of the KB have a pit there and some do not&quot;], &quot;a&quot;: 2, &quot;e&quot;: &quot;Of the 3 models of the KB, two have P\u2082,\u2082 true and one false. It does entail \u00acP\u2081,\u2082.&quot;}, {&quot;q&quot;: &quot;Why is model checking &#x27;complete&#x27; but impractical for large problems?&quot;, &quot;o&quot;: [&quot;It sometimes derives false sentences&quot;, &quot;It must enumerate 2\u207f models for n symbols&quot;, &quot;It only works for Horn clauses&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Sound and complete, but exponential.&quot;}, {&quot;q&quot;: &quot;With pit prior 0.2 and breezes in [1,2] and [2,1], the probability of a pit in [2,2] is about\u2026&quot;, &quot;o&quot;: [&quot;0.20&quot;, &quot;0.31&quot;, &quot;0.86&quot;], &quot;a&quot;: 2, &quot;e&quot;: &quot;One pit in [2,2] explains both breezes, so most of the probability mass goes there.&quot;}, {&quot;q&quot;: &quot;What is the closest thing an LLM agent has to TELL during a conversation?&quot;, &quot;o&quot;: [&quot;Fine-tuning the weights&quot;, &quot;Putting the fact in its context (prompt or tool result)&quot;, &quot;Raising the temperature&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Weights are fixed at inference time; the context is the agent&#x27;s working knowledge.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../03-search/index.html"><small>← Previous</small><b>03 · Search</b></a><a class="next" href="../05-decisions-and-learning/index.html"><small>Next →</small><b>05 · MDPs &amp; reinforcement learning</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l04.js"></script>
+</body>
+</html>

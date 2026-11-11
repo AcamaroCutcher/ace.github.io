@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · Agents and environments · Agents course</title>
+<meta name="description" content="What an agent is, what it means for one to behave rationally, and how to describe the world it lives in. Everything later in the course, from A* to Claude Code to a robot, is an instance of the picture on this page.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="01" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">01 · Agents &amp; environments</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="vacuum" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="vacuum" aria-hidden="true"></div><p class="kicker">Lesson 01 · Part I · Foundations</p><h1>Agents and environments</h1><p class="lede">What an agent is, what it means for one to behave rationally, and how to describe the world it lives in. Everything later in the course, from A* to Claude Code to a robot, is an instance of the picture on this page.</p><div class="chips"><span class="chip">AIMA <b>3e §2.1–2.3</b></span><span class="chip">AIMA <b>4e §2.1–2.3</b></span><span class="chip">~50 min</span><span class="chip"><b>4</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#what" data-kind="concept">1.1 What is an agent?</a></li><li><a href="#function" data-kind="concept">1.2 Agent function vs. agent program</a></li><li><a href="#vacuum" data-kind="interactive">1.3 The vacuum world</a></li><li><a href="#bridge" data-kind="concept">1.4 From the book&#x27;s pseudocode to Python</a></li><li><a href="#rational" data-kind="concept">1.5 Rationality: doing the right thing</a></li><li><a href="#peas" data-kind="interactive">1.6 Task environments: PEAS</a></li><li><a href="#properties" data-kind="concept">1.7 Seven properties of environments</a></li><li><a href="#code" data-kind="code">1.8 Run it yourself</a></li><li><a href="#check" data-kind="check">1.9 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>A little Python: functions, if/else, dictionaries (<a href="../00-background/index.html#python">Lesson 00</a>)</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="agent">agent</span></span><span><span class="g" data-g="percept">percept</span></span><span><span class="g" data-g="rational agent">rational agent</span></span><span><span class="g" data-g="peas">PEAS</span></span></div></div><div><h3>Read alongside</h3><ul><li>AIMA Ch. 1 (skim) and Ch. 2.1–2.3</li></ul></div></aside>
+
+<section id="what" aria-labelledby="what-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §2.1</span></div><h2 id="what-h"><span class="n">1.1</span>What is an agent?</h2></header>
+<div class="prose">
+<p>Russell and Norvig build the whole book around one idea: an <b><span class="g" data-g="agent">agent</span></b> is anything that <b>perceives</b> its <span class="g" data-g="environment">environment</span> through <span class="g" data-g="sensor">sensors</span> and <b>acts</b> on that environment through <span class="g" data-g="actuator">actuators</span>. That is all. The definition is deliberately broad, so that a thermostat, a chess program, a robot vacuum, a self-driving car and an AI coding assistant are all described by the same picture.</p>
+<p>At each moment the agent receives a <b><span class="g" data-g="percept">percept</span></b>: what its sensors report right now. Everything it has ever perceived is its <b><span class="g" data-g="percept sequence">percept sequence</span></b>. Its job is to choose an <b>action</b>. The question the whole field tries to answer is: <em>what should go in the box with the question mark?</em></p>
+</div>
+<div class="widget" data-widget="agentfig"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout key"><b>Key idea</b><p>An agent is defined by what it perceives, what it can do, and how it chooses. AI, in the book's framing, is the study of how to build the chooser: the <b>agent program</b>.</p></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Agent</th><th>Sensors (percepts)</th><th>Actuators (actions)</th></tr></thead>
+<tbody>
+<tr><td>You</td><td>eyes, ears, skin</td><td>hands, legs, voice</td></tr>
+<tr><td>Robot vacuum</td><td>bump sensor, cliff sensor, dirt sensor, wheel encoders</td><td>wheels, brushes, suction</td></tr>
+<tr><td>Wheeled robot (lesson 09)</td><td>ultrasonic range finder</td><td>two DC motors</td></tr>
+<tr><td>Claude Code</td><td>your messages, file contents and command output returned by its tools</td><td>tool calls: read or edit a file, run a shell command; text replies</td></tr>
+<tr><td>Microscope autofocus agent (lesson 08)</td><td>camera image, stage position</td><td>stage motors, focus drive</td></tr>
+</tbody></table></div>
+<div class="callout tip"><b>Why this matters for you</b><p>When you build an agent later, the first design decision is exactly this table: <em>which percepts will it get, and which actions will it be allowed to take?</em> For an LLM agent, the actions are the tools you give it, and that choice is also your main safety lever.</p></div>
+</section>
+
+<section id="function" aria-labelledby="function-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §2.1, §2.4</span></div><h2 id="function-h"><span class="n">1.2</span>Agent function vs. agent program</h2></header>
+<div class="prose">
+<p>The book separates two things that are easy to blur:</p>
+<ul>
+<li>The <b><span class="g" data-g="agent function">agent function</span></b> is a mathematical object: a table that says which action to take for <em>every possible percept sequence</em>. It describes behavior from the outside.</li>
+<li>The <b><span class="g" data-g="agent program">agent program</span></b> is real code that runs on a physical <span class="g" data-g="architecture">architecture</span> (a computer with sensors and motors). It receives <em>one</em> percept at a time and returns one action. It implements the function.</li>
+</ul>
+<p>Why not just write the table? Because it is astronomically large. In the two-square vacuum world below there are 4 possible percepts. An agent that lives for <var>T</var> steps needs one row for every possible history: 4 + 4² + … + 4<sup>T</sup> rows. That is 1,364 rows for five steps and about 1.4 million for ten. For a taxi's camera, the table would have more rows than there are atoms in the universe. The challenge of AI is to write <b>small programs that produce rational behavior</b>, not giant lookup tables.</p>
+</div>
+<div class="eq">rows(<var>T</var>) = <var>P</var> + <var>P</var><sup>2</sup> + … + <var>P</var><sup><var>T</var></sup><span class="lbl">P possible percepts, lifetime T steps. With P = 4: T = 1 → 4, T = 2 → 20, T = 5 → 1,364, T = 10 → 1,398,100, T = 20 → 1.47 × 10¹².</span></div>
+<div class="widget" data-widget="tablesize"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="vacuum" aria-labelledby="vacuum-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e/4e §2.1, Fig. 2.2–2.3</span></div><h2 id="vacuum-h"><span class="n">1.3</span>The vacuum world</h2></header>
+<div class="prose">
+<p>The book's first example is tiny on purpose: two squares, <b>A</b> and <b>B</b>, each clean or dirty, and a vacuum that is in one of them. The percept is <code>[location, status]</code>, e.g. <code>[A, Dirty]</code>. The actions are <code>Left</code>, <code>Right</code>, <code>Suck</code> (and doing nothing, <code>NoOp</code>). The performance measure awards one point for each clean square at each time step.</p>
+<p>Try the agents below. Then pick <b>Your rule table</b>: the four rows are a complete agent function for an agent that only looks at the current percept, so you are literally designing an agent by filling in the table. Can you beat the reflex agent when moving costs a point?</p>
+</div>
+<div class="widget" data-widget="vacuum"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout book"><b>Connect to the book</b><p>The "Simple reflex" agent is the book's REFLEX-VACUUM-AGENT (3e Fig. 2.8, 4e Fig. 2.8). The "Model-based" agent keeps a memory of both squares and is a version of the MODEL-BASED-REFLEX-AGENT in Fig. 2.12. Press <b>Evaluate all 8 worlds</b> to run every start state for 10 steps: the averages are exactly what <code>vacuum_world.py</code> prints at the end of this lesson.</p></div>
+</section>
+
+<section id="bridge" aria-labelledby="bridge-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span><span class="aima">Fig. 2.8, 2.12</span></div><h2 id="bridge-h"><span class="n">1.4</span>From the book's pseudocode to Python</h2></header>
+<div class="prose"><p>AIMA writes agent programs in pseudocode. Here is the reflex vacuum agent next to the Python in <code>vacuum_world.py</code>. Hover a line on either side to see its partner.</p></div>
+<div class="bridge" data-notes="{&quot;f&quot;: &quot;&lt;b&gt;The agent program&lt;/b&gt;: a function from the &lt;em&gt;current&lt;/em&gt; percept to an action. In Python it is returned by a factory, so each agent can carry private state if it needs to.&quot;, &quot;p&quot;: &quot;&lt;b&gt;The percept&lt;/b&gt; is a pair. The agent cannot see the other square: the world is &lt;em&gt;partially observable&lt;/em&gt;.&quot;, &quot;d&quot;: &quot;&lt;b&gt;Condition-action rule&lt;/b&gt;: if the square is dirty, suck. This rule alone guarantees the current square ends up clean.&quot;, &quot;a&quot;: &quot;Otherwise move to the other square. The agent has no memory, so it will keep shuttling back and forth forever, even when everything is clean.&quot;, &quot;b&quot;: &quot;The mirror rule for square B.&quot;}"><div class="pane"><div class="pane-head"><span>Book-style pseudocode (paraphrased)</span></div><pre><span class="bl" data-k="f">function <b>REFLEX-VACUUM-AGENT</b>(percept) returns an action</span><span class="bl" data-k="p">  (location, status) ← percept</span><span class="bl" data-k="d">  if status = Dirty then return Suck</span><span class="bl" data-k="a">  else if location = A then return Right</span><span class="bl" data-k="b">  else if location = B then return Left</span></pre></div><div class="pane py"><div class="pane-head"><span>vacuum_world.py · SimpleReflexAgent</span></div><pre><span class="bl" data-k="f">def SimpleReflexAgent():</span><span class="bl" data-k="f">    def program(percept):</span><span class="bl" data-k="p">        location, status = percept</span><span class="bl" data-k="d">        if status == &quot;Dirty&quot;:</span><span class="bl" data-k="d">            return &quot;Suck&quot;</span><span class="bl" data-k="a">        if location == &quot;A&quot;:</span><span class="bl" data-k="a">            return &quot;Right&quot;</span><span class="bl" data-k="b">        return &quot;Left&quot;</span><span class="bl" data-k="f">    return program</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+<div class="bridge" data-notes="{&quot;s&quot;: &quot;&lt;b&gt;Internal state&lt;/b&gt;: what the agent believes about parts of the world it cannot currently see. This is the key upgrade over a simple reflex agent.&quot;, &quot;f&quot;: &quot;Same interface as before: one percept in, one action out.&quot;, &quot;u&quot;: &quot;&lt;b&gt;UPDATE-STATE&lt;/b&gt; folds the new percept (and the predicted effect of our own action) into the model. In the book this uses a &lt;em&gt;transition model&lt;/em&gt; and a &lt;em&gt;sensor model&lt;/em&gt;.&quot;, &quot;r&quot;: &quot;&lt;b&gt;RULE-MATCH&lt;/b&gt; chooses a rule using the &lt;em&gt;state&lt;/em&gt;, not just the percept.&quot;, &quot;a&quot;: &quot;The new rule \&quot;everything is known to be clean → rest\&quot; is only possible because of the memory. It is why this agent wins when moving costs points.&quot;}"><div class="pane"><div class="pane-head"><span>Book-style pseudocode (paraphrased)</span></div><pre><span class="bl" data-k="s">persistent: state, the agent&#x27;s idea of the world</span><span class="bl" data-k="f">function <b>MODEL-BASED-REFLEX-AGENT</b>(percept) returns an action</span><span class="bl" data-k="u">  state ← <b>UPDATE-STATE</b>(state, percept)</span><span class="bl" data-k="r">  rule ← <b>RULE-MATCH</b>(state, rules)</span><span class="bl" data-k="a">  return rule.<b>ACTION</b></span></pre></div><div class="pane py"><div class="pane-head"><span>vacuum_world.py · ModelBasedReflexAgent</span></div><pre><span class="bl" data-k="s">model = {&quot;A&quot;: None, &quot;B&quot;: None}       # None = never seen</span><span class="bl" data-k="f">def program(percept):</span><span class="bl" data-k="u">    location, status = percept</span><span class="bl" data-k="u">    model[location] = status</span><span class="bl" data-k="r">    if status == &quot;Dirty&quot;:</span><span class="bl" data-k="u">        model[location] = &quot;Clean&quot;     # ...and from the predicted effect of our action</span><span class="bl" data-k="a">        return &quot;Suck&quot;</span><span class="bl" data-k="r">    if model[&quot;A&quot;] == model[&quot;B&quot;] == &quot;Clean&quot;:</span><span class="bl" data-k="a">        return &quot;NoOp&quot;</span><span class="bl" data-k="a">    return &quot;Right&quot; if location == &quot;A&quot; else &quot;Left&quot;</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+</section>
+
+<section id="rational" aria-labelledby="rational-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §2.2</span></div><h2 id="rational-h"><span class="n">1.5</span>Rationality: doing the right thing</h2></header>
+<div class="prose">
+<p>An agent is judged by the <b>consequences</b> of its behavior. The designer writes down a <b><span class="g" data-g="performance measure">performance measure</span></b> that scores sequences of environment states. Then the book defines:</p>
+</div>
+<blockquote class="quote">For each possible percept sequence, a rational agent should select an action that is expected to maximize its performance measure, given the evidence provided by the percept sequence and whatever built-in knowledge the agent has.<cite>Russell &amp; Norvig, AIMA §2.2</cite></blockquote>
+<div class="prose">
+<p>Four things determine what is rational at any moment: the performance measure, the agent's prior knowledge of the environment, the actions it can perform, and its percept sequence so far. Some consequences that trip people up:</p>
+<ul>
+<li><b>Rational ≠ <span class="g" data-g="omniscience">omniscient</span>.</b> A rational agent maximizes <em>expected</em> performance given what it knows. If you cross the street carefully and a piece of an airplane falls on you, you were still rational.</li>
+<li><b>Rational ≠ successful.</b> Good decisions can have bad outcomes; judge the decision by the information available when it was made.</li>
+<li><b>Measure what you want, not how you want it done.</b> If you reward a vacuum for the amount of dirt it sucks up, a rational vacuum dumps dirt and sucks it up again. Reward clean floors instead. (The same problem appears with LLMs as <em>reward hacking</em>, e.g. "make the tests pass" solved by deleting the tests.)</li>
+<li><b>Information gathering and learning are part of rationality.</b> Looking before crossing the road is a rational action. An agent that relies only on its designer's built-in knowledge lacks <b><span class="g" data-g="autonomy">autonomy</span></b>.</li>
+</ul>
+</div>
+<div class="callout key"><b>Key idea</b><p>"Rational" is always relative to a performance measure, the agent's knowledge, its actions and its percepts. Change any one (try the <em>Moving costs 1 point</em> switch above) and the rational action can change.</p></div>
+</section>
+
+<section id="peas" aria-labelledby="peas-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e/4e §2.3, Fig. 2.4–2.5</span></div><h2 id="peas-h"><span class="n">1.6</span>Task environments: PEAS</h2></header>
+<div class="prose">
+<p>Before designing an agent, write down its task environment as <b><span class="g" data-g="peas">PEAS</span></b>: <b>P</b>erformance measure, <b>E</b>nvironment, <b>A</b>ctuators, <b>S</b>ensors. The book's main example is an automated taxi. Below are several more, including a coding agent and a lab instrument, so you can see that the same four questions apply to the agents you want to build.</p>
+</div>
+<div class="widget" data-widget="peas"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="properties" aria-labelledby="properties-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §2.3, Fig. 2.6</span></div><h2 id="properties-h"><span class="n">1.7</span>Seven properties of environments</h2></header>
+<div class="prose">
+<p>The environment, much more than the agent, decides how hard the problem is. The book classifies environments along these dimensions; each one tells you which techniques you will need:</p>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Dimension</th><th>Easy end</th><th>Hard end</th><th>What the hard end forces you to build</th></tr></thead>
+<tbody>
+<tr><td>Observability</td><td><span class="g" data-g="fully observable">Fully observable</span></td><td><span class="g" data-g="partially observable">Partially observable</span></td><td>Memory, internal state, belief tracking (lessons 02, 04)</td></tr>
+<tr><td>Agents</td><td>Single-agent</td><td><span class="g" data-g="multiagent">Multiagent</span></td><td>Game theory, communication, modeling others</td></tr>
+<tr><td>Determinism</td><td><span class="g" data-g="deterministic">Deterministic</span></td><td><span class="g" data-g="stochastic">Stochastic</span> / nondeterministic</td><td>Probabilities, expected utility, contingency plans (lesson 05)</td></tr>
+<tr><td>Episodes</td><td><span class="g" data-g="episodic">Episodic</span></td><td><span class="g" data-g="sequential">Sequential</span></td><td>Planning ahead; actions have long-term consequences (lessons 03, 05)</td></tr>
+<tr><td>Change</td><td><span class="g" data-g="static">Static</span></td><td><span class="g" data-g="dynamic">Dynamic</span></td><td>Fast decisions; thinking too long is itself an action</td></tr>
+<tr><td>States &amp; time</td><td><span class="g" data-g="discrete">Discrete</span></td><td>Continuous</td><td>Control theory, function approximation (lesson 09)</td></tr>
+<tr><td>Knowledge</td><td><span class="g" data-g="known">Known</span> rules</td><td>Unknown rules</td><td>Learning and exploration (lesson 05)</td></tr>
+</tbody></table></div>
+<div class="callout def"><b>Hardest case</b><p>The real world is partially observable, multiagent, stochastic, sequential, dynamic, continuous and partly unknown. That is why driving and robotics are hard, and why a robot needs fast reflexes underneath slow planning (lesson 09).</p></div>
+</section>
+
+<section id="code" aria-labelledby="code-h"><header class="sec-head"><div class="tags"><span class="kind code">Code</span><span class="aima">Exercise 2.8–2.11 (3e)</span></div><h2 id="code-h"><span class="n">1.8</span>Run it yourself</h2></header>
+<div class="prose">
+<p>Everything above, in about 150 lines of plain Python with no packages. Download it, run <code>python vacuum_world.py</code>, then read it top to bottom: environment, then four agent programs, then the experiment.</p>
+</div>
+<div class="code" data-run data-file="vacuum_world.py" data-full="1" data-argv="" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">vacuum_world.py</span><a href="../code/vacuum_world.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+vacuum_world.py - AIMA Chapter 2 in runnable form.
+
+The two-square vacuum world (AIMA 3e/4e, Section 2.1, Figure 2.2) and four agent programs
+from Section 2.4:
+
+    TableDrivenAgent      looks the whole percept sequence up in a table (Figure 2.7)
+    SimpleReflexAgent     acts on the current percept only (Figure 2.8 / 2.10)
+    ModelBasedReflexAgent remembers what it has seen (Figure 2.12)
+    RandomAgent           a baseline: picks any action
+
+The environment awards +1 for every clean square after every time step (the performance
+measure the book proposes) and, optionally, charges for each move.
+
+Run:  python vacuum_world.py
+No packages needed (Python 3.8+).
+&quot;&quot;&quot;
+import itertools
+import random
+
+LOCATIONS = (&quot;A&quot;, &quot;B&quot;)
+ACTIONS = (&quot;Left&quot;, &quot;Right&quot;, &quot;Suck&quot;, &quot;NoOp&quot;)
+
+
+# ----------------------------------------------------------------------------------------
+# The environment: owns the true state. The agent only ever sees percepts.
+# ----------------------------------------------------------------------------------------
+class VacuumEnvironment:
+    def __init__(self, dirt, location, move_cost=0.0):
+        self.status = dict(dirt)          # {&quot;A&quot;: &quot;Dirty&quot;, &quot;B&quot;: &quot;Clean&quot;}
+        self.location = location          # where the agent is
+        self.move_cost = move_cost
+        self.score = 0.0
+
+    def percept(self):
+        &quot;&quot;&quot;What the sensors report: [location, status of that square]. Partial observability.&quot;&quot;&quot;
+        return (self.location, self.status[self.location])
+
+    def execute(self, action):
+        &quot;&quot;&quot;Transition model: change the world according to the action.&quot;&quot;&quot;
+        if action == &quot;Suck&quot;:
+            self.status[self.location] = &quot;Clean&quot;
+        elif action == &quot;Right&quot;:
+            self.location = &quot;B&quot;
+            self.score -= self.move_cost
+        elif action == &quot;Left&quot;:
+            self.location = &quot;A&quot;
+            self.score -= self.move_cost
+        # NoOp does nothing
+
+    def step(self, agent_program):
+        p = self.percept()
+        a = agent_program(p)
+        self.execute(a)
+        # performance measure: one point per clean square per time step
+        self.score += sum(1 for s in self.status.values() if s == &quot;Clean&quot;)
+        return p, a
+
+
+# ----------------------------------------------------------------------------------------
+# Agent programs. Each is a function: percept -&gt; action (it may keep private state).
+# ----------------------------------------------------------------------------------------
+def TableDrivenAgent(table):
+    &quot;&quot;&quot;AIMA Figure 2.7. Appends each percept to the history and looks the whole history up.&quot;&quot;&quot;
+    percepts = []
+
+    def program(percept):
+        percepts.append(percept)
+        return table.get(tuple(percepts), &quot;NoOp&quot;)
+
+    return program
+
+
+def SimpleReflexAgent():
+    &quot;&quot;&quot;AIMA Figure 2.8 (REFLEX-VACUUM-AGENT): condition-action rules on the current percept.&quot;&quot;&quot;
+    def program(percept):
+        location, status = percept
+        if status == &quot;Dirty&quot;:
+            return &quot;Suck&quot;
+        if location == &quot;A&quot;:
+            return &quot;Right&quot;
+        return &quot;Left&quot;
+
+    return program
+
+
+def ModelBasedReflexAgent():
+    &quot;&quot;&quot;AIMA Figure 2.12. Keeps a model of both squares, so it can stop when it knows all is clean.&quot;&quot;&quot;
+    model = {&quot;A&quot;: None, &quot;B&quot;: None}       # None = never seen
+
+    def program(percept):
+        location, status = percept
+        model[location] = status          # UPDATE-STATE from the percept
+        if status == &quot;Dirty&quot;:
+            model[location] = &quot;Clean&quot;     # ...and from the predicted effect of our action
+            return &quot;Suck&quot;
+        if model[&quot;A&quot;] == model[&quot;B&quot;] == &quot;Clean&quot;:
+            return &quot;NoOp&quot;                 # rule: everything is known to be clean -&gt; rest
+        return &quot;Right&quot; if location == &quot;A&quot; else &quot;Left&quot;
+
+    return program
+
+
+def RandomAgent(seed=None):
+    rng = random.Random(seed)
+    return lambda percept: rng.choice(ACTIONS)
+
+
+# ----------------------------------------------------------------------------------------
+# Experiments
+# ----------------------------------------------------------------------------------------
+def all_start_states():
+    &quot;&quot;&quot;Every combination of dirt and start location: 2 x 2 x 2 = 8 worlds.&quot;&quot;&quot;
+    for a, b, loc in itertools.product((&quot;Clean&quot;, &quot;Dirty&quot;), (&quot;Clean&quot;, &quot;Dirty&quot;), LOCATIONS):
+        yield {&quot;A&quot;: a, &quot;B&quot;: b}, loc
+
+
+def evaluate(make_agent, steps=10, move_cost=0.0):
+    &quot;&quot;&quot;Average score over all 8 start states, like AIMA Exercise 2.8 (3e) asks for.&quot;&quot;&quot;
+    total = 0.0
+    for dirt, loc in all_start_states():
+        env = VacuumEnvironment(dirt, loc, move_cost)
+        agent = make_agent()
+        for _ in range(steps):
+            env.step(agent)
+        total += env.score
+    return total / 8
+
+
+def trace(make_agent, dirt, loc, steps=6):
+    env = VacuumEnvironment(dirt, loc)
+    agent = make_agent()
+    print(f&quot;  start: agent in {loc}, squares {dirt}&quot;)
+    for t in range(steps):
+        p, a = env.step(agent)
+        print(f&quot;  t={t}  percept={p}  -&gt;  action={a:5s}  score={env.score:.0f}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;Simple reflex agent, both squares dirty, starting in A:&quot;)
+    trace(SimpleReflexAgent, {&quot;A&quot;: &quot;Dirty&quot;, &quot;B&quot;: &quot;Dirty&quot;}, &quot;A&quot;)
+
+    # A table for the first two percepts only: it shows why tables explode.
+    # With P possible percepts and lifetime T the table has sum_{t=1..T} P^t rows.
+    P = 4  # (A|B) x (Clean|Dirty)
+    print(&quot;\nTable-driven agent: rows needed for lifetime T =&quot;, [sum(P**t for t in range(1, T + 1)) for T in (1, 2, 5, 10, 20)])
+
+    print(&quot;\nAverage score over the 8 start states (10 steps):&quot;)
+    for cost in (0.0, 1.0):
+        print(f&quot;  move cost = {cost}&quot;)
+        for name, make in [(&quot;simple reflex&quot;, SimpleReflexAgent),
+                           (&quot;model-based reflex&quot;, ModelBasedReflexAgent),
+                           (&quot;random (seed 0)&quot;, lambda: RandomAgent(0))]:
+            print(f&quot;    {name:20s} {evaluate(make, 10, cost):6.2f}&quot;)</pre></div>
+<div class="code" data-lang="text" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">Output (what you should see)</span><button type="button" data-copy>Copy</button></div><pre>Average score over the 8 start states (10 steps):
+  move cost = 0.0
+    simple reflex         19.25
+    model-based reflex    19.25
+    random (seed 0)       13.50
+  move cost = 1.0
+    simple reflex         10.25
+    model-based reflex    18.25
+    random (seed 0)       11.50</pre></div>
+<div class="callout tip"><b>Exercises</b><ol>
+<li>Make dirt reappear: in <code>VacuumEnvironment.step</code>, after the action, make each clean square dirty with probability 0.1. Which agent wins now, and why does the model-based agent's "everything is clean → rest" rule become a weakness?</li>
+<li>Write a <code>TableDrivenAgent</code> table that behaves like the reflex agent for the first two steps. How many entries did you need?</li>
+<li>Change the performance measure to "+10 per <code>Suck</code> on a dirty square". Write an agent that games it if dirt can reappear. This is the vacuum version of reward hacking.</li>
+</ol></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">1.9</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Which is the agent &lt;em&gt;function&lt;/em&gt;, as opposed to the agent &lt;em&gt;program&lt;/em&gt;?&quot;, &quot;o&quot;: [&quot;The Python code that runs on the robot&quot;, &quot;The mapping from every possible percept sequence to an action&quot;, &quot;The robot&#x27;s sensors and motors&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The function is the abstract description of behavior; the program is code that implements it on an architecture.&quot;}, {&quot;q&quot;: &quot;The reflex vacuum agent keeps moving even when both squares are clean. Why?&quot;, &quot;o&quot;: [&quot;Its performance measure rewards moving&quot;, &quot;It sees only the current square and has no memory, so it cannot know the other square is clean&quot;, &quot;The environment is stochastic&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Partial observability plus no internal state. The model-based agent fixes this with memory.&quot;}, {&quot;q&quot;: &quot;An agent maximizes &lt;em&gt;expected&lt;/em&gt; performance but a rare event ruins the outcome. Was it rational?&quot;, &quot;o&quot;: [&quot;No, rational agents always succeed&quot;, &quot;Yes, rationality is judged by the information available when deciding&quot;, &quot;Only if it was also omniscient&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Rational \u2260 omniscient \u2260 successful.&quot;}, {&quot;q&quot;: &quot;For a coding agent like Claude Code, which is a &lt;em&gt;sensor&lt;/em&gt;?&quot;, &quot;o&quot;: [&quot;The tool that edits a file&quot;, &quot;The output returned by running a command&quot;, &quot;The performance measure&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Tool results are percepts: they tell the agent about the state of the repository. Editing is an actuator.&quot;}, {&quot;q&quot;: &quot;Chess played with a clock is usually classified as\u2026&quot;, &quot;o&quot;: [&quot;Fully observable, multiagent, deterministic, sequential, semidynamic, discrete&quot;, &quot;Partially observable, single-agent, stochastic, episodic, dynamic, continuous&quot;, &quot;Fully observable, single-agent, deterministic, episodic, static, discrete&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;The board does not change while you think, but the clock does: semidynamic.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../00-background/index.html"><small>← Previous</small><b>00 · Background toolkit</b></a><a class="next" href="../02-agent-programs/index.html"><small>Next →</small><b>02 · Agent programs</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l01.js"></script>
+</body>
+</html>

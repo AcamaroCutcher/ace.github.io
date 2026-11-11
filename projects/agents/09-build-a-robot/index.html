@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>09 · Build a robot your agent can drive · Agents course</title>
+<meta name="description" content="Put everything together: a two-wheeled robot with an ultrasonic sensor, an Arduino for reflexes, and a Raspberry Pi or laptop running an agent with Claude or a local model. Drive the simulated robot first, then wire, flash and test the real one, step by step.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="09" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">09 · Build a robot</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="world" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="world" aria-hidden="true"></div><p class="kicker">Lesson 09 · Part IV · Agents in the world</p><h1>Build a robot your agent can drive</h1><p class="lede">Put everything together: a two-wheeled robot with an ultrasonic sensor, an Arduino for reflexes, and a Raspberry Pi or laptop running an agent with Claude or a local model. Drive the simulated robot first, then wire, flash and test the real one, step by step.</p><div class="chips"><span class="chip">AIMA <b>3e Ch. 25</b></span><span class="chip">AIMA <b>4e Ch. 26</b></span><span class="chip">~90 min</span><span class="chip"><b>2</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#robots" data-kind="concept">9.1 Robots are agents with bodies</a></li><li><a href="#sim" data-kind="interactive">9.2 Drive the simulated robot</a></li><li><a href="#code" data-kind="build">9.3 The software: robot_agent.py</a></li><li><a href="#hardware" data-kind="build">9.4 The hardware</a></li><li><a href="#bringup" data-kind="build">9.5 Bring-up, one layer at a time</a></li><li><a href="#brains" data-kind="concept">9.6 Which brain: Claude in the cloud or a model on the robot?</a></li><li><a href="#ros" data-kind="concept">9.7 Growing up: ROS 2 and bigger robots</a></li><li><a href="#safety" data-kind="concept">9.8 Physical safety checklist</a></li><li><a href="#check" data-kind="check">9.9 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>Lessons 07–08</li><li>Basic electronics: voltage, current, ground</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="differential drive">differential drive</span></span><span><span class="g" data-g="pwm">PWM</span></span><span><span class="g" data-g="sense-plan-act">sense-plan-act</span></span><span><span class="g" data-g="subsumption">subsumption</span></span></div></div><div><h3>Read alongside</h3><ul><li>AIMA 3e Ch. 25 / 4e Ch. 26</li></ul></div></aside>
+
+<section id="robots" aria-labelledby="robots-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e §25.1, §25.7 / 4e §26.1, §26.9</span></div><h2 id="robots-h"><span class="n">9.1</span>Robots are agents with bodies</h2></header>
+<div class="prose">
+<p>A robot is an agent whose actuators exert forces on the physical world and whose sensors measure it. Everything from lesson 01 applies, in its hardest form: the world is partially observable (sensors are noisy and limited), stochastic (wheels slip, batteries sag), dynamic (people move), continuous, and sometimes multiagent.</p>
+<p>Real robots therefore split control into <b>layers that run at different speeds</b>. AIMA describes a three-layer architecture: a <b>reactive</b> layer for low-level control with millisecond loops; an <b>executive</b> layer that sequences behaviors; and a <b>deliberative</b> layer that plans, slowly, with a model of the world. Our robot maps onto it directly:</p>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Layer</th><th>In our robot</th><th>Speed</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Deliberative (brain)</td><td>The LLM agent: Claude via the API, or a local model</td><td>~1–10 s per decision</td><td>"Explore the room, then report its size"</td></tr>
+<tr><td>Executive (body)</td><td><code>Body</code> in robot_agent.py: tool validation, unit conversion, sequencing</td><td>~10 ms</td><td><code>drive(25)</code> → check clearance → motors for 1.25 s</td></tr>
+<tr><td>Reactive (reflexes)</td><td>The Arduino firmware: motion timeout and obstacle stop</td><td>~1 ms</td><td>Something closer than 15 cm → stop now</td></tr>
+</tbody></table></div>
+<div class="callout key"><b>Key idea</b><p>Never put a fast safety reflex behind a slow brain. An LLM round trip takes seconds; at 20 cm/s the robot moves tens of centimeters in that time. The firmware's obstacle stop is a <span class="g" data-g="simple reflex agent">simple reflex agent</span> (lesson 02), and that is exactly right for its job. This is also the idea behind Rodney Brooks' <span class="g" data-g="subsumption">subsumption architecture</span>.</p></div>
+</section>
+
+<section id="sim" aria-labelledby="sim-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="sim-h"><span class="n">9.2</span>Drive the simulated robot</h2></header>
+<div class="prose">
+<p>A 2 × 2 m room with a box in it, exactly as in <code>SimRobot</code>. The robot sees only straight ahead (the beam); each measurement adds a dot to its map. Four ways to control it:</p>
+<ul>
+<li><b>Manual tools</b>: you are the brain. Call the same four tools the LLM gets. Try driving into the box: the body refuses.</li>
+<li><b>Reflex brain</b>: <code>OfflineBrain</code>, "drive if clear, else turn left". Its output is identical to <code>python robot_agent.py --sim</code>.</li>
+<li><b>LLM-style plan (replay)</b>: a scripted transcript of the kind of step-by-step reasoning an LLM produces for "explore the room and tell me how big it is", executed live through the same safety layer. It is a replay for illustration, not a live model.</li>
+<li><b>Live Claude</b>: paste your own API key and Claude itself drives, one API call per step, through the same body and safety checks. Give it your own goals.</li>
+</ul>
+</div>
+<div class="widget" data-widget="robotsim"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="code" aria-labelledby="code-h"><header class="sec-head"><div class="tags"><span class="kind build">Build it</span></div><h2 id="code-h"><span class="n">9.3</span>The software: robot_agent.py</h2></header>
+<div class="prose"><p>One file, three swappable parts: the <b>robot</b> (<code>SimRobot</code> or <code>SerialRobot</code>), the <b>body</b> (validation), and the <b>brain</b> (<code>OfflineBrain</code>, <code>ClaudeBrain</code>, <code>OllamaBrain</code>). Develop with <code>--sim --brain offline</code>, then swap one part at a time.</p></div>
+<div class="code" data-run data-file="robot_agent.py" data-full="1" data-argv="--sim" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">robot_agent.py</span><a href="../code/robot_agent.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+robot_agent.py - an LLM agent that drives a small wheeled robot.
+
+Three layers, from slow to fast (the same split real robots use):
+
+    1. the BRAIN   an LLM that turns a goal (&quot;find the door&quot;) into tool calls     seconds per step
+    2. the BODY    this file: validates each tool call and turns it into          milliseconds
+                   motor commands; refuses anything outside safe limits
+    3. REFLEXES    the Arduino firmware: motion timeouts and obstacle stops       microseconds
+                   that work even if layers 1 and 2 crash
+
+Backends (the robot):
+    --sim                 a simulated robot in a 2 x 2 m room (default; no hardware needed)
+    --port /dev/ttyACM0   a real robot running robot_firmware.ino   (pip install pyserial)
+
+Brains (the model):
+    --brain offline       a hand-written reflex policy (no API, no network)        [default]
+    --brain claude        Claude via the Anthropic API   (pip install anthropic)
+    --brain ollama        a local model served by Ollama (no internet once the model is pulled)
+
+Examples:
+    python robot_agent.py --sim --brain offline
+    python robot_agent.py --sim --brain claude &quot;explore the room and tell me how big it is&quot;
+    python robot_agent.py --port /dev/ttyACM0 --brain ollama --model qwen3:1.7b &quot;drive forward until something is close&quot;
+
+Tested here: the simulator with the offline brain, and the Claude brain against a mock API.
+Not tested here: the serial backend (no robot attached) and the Ollama brain (no Ollama server).
+&quot;&quot;&quot;
+import argparse
+import json
+import math
+import time
+import urllib.request
+
+MAX_DRIVE_CM, MAX_TURN_DEG, CLEARANCE_CM = 100, 180, 12
+CM_PER_SEC, DEG_PER_SEC, SPEED = 20.0, 90.0, 150    # calibrate these on your robot!
+
+SYSTEM = &quot;&quot;&quot;You control a small two-wheeled robot through tools. You cannot see; your only sense
+is an ultrasonic distance sensor that points forward. Move in small steps, measure often, and
+never drive into something closer than the distance you plan to drive. When the goal is reached
+or impossible, stop moving and report what you found in a few sentences.&quot;&quot;&quot;
+
+TOOLS = [
+    {&quot;name&quot;: &quot;read_distance&quot;, &quot;description&quot;: &quot;Measure the distance in cm to the nearest object straight ahead.&quot;,
+     &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}, &quot;additionalProperties&quot;: False}},
+    {&quot;name&quot;: &quot;drive&quot;, &quot;description&quot;: f&quot;Drive straight. Positive = forward, negative = backward. Max {MAX_DRIVE_CM} cm per call.&quot;,
+     &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;cm&quot;: {&quot;type&quot;: &quot;number&quot;}}, &quot;required&quot;: [&quot;cm&quot;], &quot;additionalProperties&quot;: False}},
+    {&quot;name&quot;: &quot;turn&quot;, &quot;description&quot;: f&quot;Turn in place. Positive = left (counter-clockwise), negative = right. Max {MAX_TURN_DEG} degrees per call.&quot;,
+     &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;degrees&quot;: {&quot;type&quot;: &quot;number&quot;}}, &quot;required&quot;: [&quot;degrees&quot;], &quot;additionalProperties&quot;: False}},
+    {&quot;name&quot;: &quot;stop&quot;, &quot;description&quot;: &quot;Stop the motors immediately.&quot;,
+     &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}, &quot;additionalProperties&quot;: False}},
+]
+
+
+# =============================================================== robots (the body&#x27;s hardware)
+class SimRobot:
+    &quot;&quot;&quot;A point robot in a rectangular room with one box in it. Distances come from ray casting.&quot;&quot;&quot;
+
+    def __init__(self):
+        self.w, self.h = 200.0, 200.0                 # room size in cm
+        self.box = (120.0, 60.0, 160.0, 100.0)        # an obstacle: x0, y0, x1, y1
+        self.x, self.y, self.heading = 30.0, 30.0, 0.0  # start near a corner, facing +x
+
+    def distance(self):
+        best = 400.0
+        dx, dy = math.cos(math.radians(self.heading)), math.sin(math.radians(self.heading))
+        for t in [i * 0.5 for i in range(1, 800)]:    # march along the ray in 0.5 cm steps
+            px, py = self.x + dx * t, self.y + dy * t
+            x0, y0, x1, y1 = self.box
+            if not (0 &lt;= px &lt;= self.w and 0 &lt;= py &lt;= self.h) or (x0 &lt;= px &lt;= x1 and y0 &lt;= py &lt;= y1):
+                best = t
+                break
+        return round(best)
+
+    def motors(self, left, right, ms):
+        if left &gt; 0 and right &gt; 0 and self.distance() &lt; 15:
+            return &quot;ERR obstacle&quot;
+        secs = ms / 1000.0
+        if left == right:
+            d = math.copysign(CM_PER_SEC * secs, left)
+            if d &gt; 0:
+                d = min(d, max(0, self.distance() - 15))  # the firmware reflex stops it short
+            self.x += d * math.cos(math.radians(self.heading))
+            self.y += d * math.sin(math.radians(self.heading))
+        else:
+            self.heading = (self.heading + math.copysign(DEG_PER_SEC * secs, right - left)) % 360
+        return &quot;OK M&quot;
+
+    def stop(self):
+        return &quot;OK S&quot;
+
+    def pose(self):
+        return f&quot;(x={self.x:.0f} cm, y={self.y:.0f} cm, heading={self.heading:.0f} deg)&quot;
+
+
+class SerialRobot:
+    &quot;&quot;&quot;Talks to robot_firmware.ino over USB serial.&quot;&quot;&quot;
+
+    def __init__(self, port):
+        import serial                                  # pip install pyserial
+        self.ser = serial.Serial(port, 115200, timeout=2)
+        time.sleep(2)                                  # most Arduinos reset when the port opens
+        self.ser.reset_input_buffer()
+
+    def _ask(self, cmd):
+        self.ser.write((cmd + &quot;\n&quot;).encode())
+        while True:
+            line = self.ser.readline().decode(errors=&quot;replace&quot;).strip()
+            if not line:
+                return &quot;ERR no reply&quot;
+            if not line.startswith(&quot;EVENT&quot;):           # events are printed but not answers
+                return line
+            print(&quot;   firmware:&quot;, line)
+
+    def distance(self):
+        reply = self._ask(&quot;D&quot;)
+        return int(reply.split()[1]) if reply.startswith(&quot;D &quot;) else 0
+
+    def motors(self, left, right, ms):
+        reply = self._ask(f&quot;M {left} {right} {int(ms)}&quot;)
+        time.sleep(ms / 1000.0 + 0.05)                # wait for the motion to finish
+        return reply
+
+    def stop(self):
+        return self._ask(&quot;S&quot;)
+
+    def pose(self):
+        return &quot;(unknown: a real robot has no GPS; that is what mapping/SLAM is for)&quot;
+
+
+# =============================================================== the body: tools with safety checks
+class Body:
+    def __init__(self, robot):
+        self.robot = robot
+
+    def call(self, name, args):
+        &quot;&quot;&quot;Validate, then act. Returns (text for the model, is_error).&quot;&quot;&quot;
+        if name == &quot;read_distance&quot;:
+            return f&quot;{self.robot.distance()} cm&quot;, False
+        if name == &quot;stop&quot;:
+            return self.robot.stop(), False
+        if name == &quot;drive&quot;:
+            cm = float(args.get(&quot;cm&quot;, 0))
+            if abs(cm) &gt; MAX_DRIVE_CM:
+                return f&quot;Refused: {cm} cm is more than the {MAX_DRIVE_CM} cm limit per call.&quot;, True
+            if cm &gt; 0:
+                free = self.robot.distance()
+                if cm &gt; free - CLEARANCE_CM:
+                    return f&quot;Refused: only {free} cm free ahead; driving {cm} cm would hit something.&quot;, True
+            ms = abs(cm) / CM_PER_SEC * 1000
+            s = SPEED if cm &gt; 0 else -SPEED
+            reply = self.robot.motors(s, s, ms)
+            return f&quot;{reply}; drove {cm} cm. Now {self.robot.pose()}&quot;, reply.startswith(&quot;ERR&quot;)
+        if name == &quot;turn&quot;:
+            deg = float(args.get(&quot;degrees&quot;, 0))
+            if abs(deg) &gt; MAX_TURN_DEG:
+                return f&quot;Refused: turn at most {MAX_TURN_DEG} degrees per call.&quot;, True
+            ms = abs(deg) / DEG_PER_SEC * 1000
+            left, right = (-SPEED, SPEED) if deg &gt; 0 else (SPEED, -SPEED)
+            reply = self.robot.motors(left, right, ms)
+            return f&quot;{reply}; turned {deg} degrees. Now {self.robot.pose()}&quot;, reply.startswith(&quot;ERR&quot;)
+        return f&quot;Unknown tool {name}&quot;, True
+
+
+# =============================================================== brains
+class OfflineBrain:
+    &quot;&quot;&quot;No LLM: a simple reflex agent (AIMA Ch. 2) that explores by &#x27;drive if clear, else turn&#x27;.
+    Its &#x27;tool calls&#x27; have the same shape as an LLM&#x27;s, so the rest of the program is identical.&quot;&quot;&quot;
+
+    def __init__(self, steps=12):
+        self.left = steps
+        self.measured = None
+
+    def start(self, goal):
+        pass
+
+    def next_actions(self, last_results):
+        for name, out, _err, _tid in last_results or []:
+            if name == &quot;read_distance&quot;:
+                self.measured = int(out.split()[0])
+        if self.left &lt;= 0:
+            return &quot;Explored 12 steps with a reflex rule. (An LLM brain would plan instead.)&quot;, []
+        self.left -= 1
+        if self.measured is None:
+            return &quot;Measuring.&quot;, [(&quot;read_distance&quot;, {})]
+        free, self.measured = self.measured, None
+        if free &gt; 40:
+            return f&quot;{free} cm free: driving 25 cm.&quot;, [(&quot;drive&quot;, {&quot;cm&quot;: 25}), (&quot;read_distance&quot;, {})]
+        return f&quot;Only {free} cm free: turning left.&quot;, [(&quot;turn&quot;, {&quot;degrees&quot;: 90}), (&quot;read_distance&quot;, {})]
+
+
+class ClaudeBrain:
+    def __init__(self, model=&quot;claude-opus-5-5&quot;):
+        import anthropic
+        self.client, self.model, self.messages = anthropic.Anthropic(), model, []
+
+    def start(self, goal):
+        self.messages = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: goal}]
+
+    def next_actions(self, last_results):
+        if last_results:
+            self.messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: [
+                {&quot;type&quot;: &quot;tool_result&quot;, &quot;tool_use_id&quot;: tid, &quot;content&quot;: out, &quot;is_error&quot;: err}
+                for (_, out, err, tid) in last_results]})
+        r = self.client.beta.messages.create(
+            model=self.model, max_tokens=4000, system=SYSTEM, tools=TOOLS, messages=self.messages,
+            betas=[&quot;server-side-fallback-2026-07-01&quot;], fallbacks=&quot;default&quot;)
+        self.messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: r.content})
+        text = &quot;&quot;.join(b.text for b in r.content if b.type == &quot;text&quot;)
+        if r.stop_reason == &quot;refusal&quot;:
+            return &quot;The model declined.&quot;, []
+        return text, [(b.name, b.input, b.id) for b in r.content if b.type == &quot;tool_use&quot;]
+
+
+class OllamaBrain:
+    &quot;&quot;&quot;A local model through Ollama&#x27;s HTTP API (https://ollama.com). Pick a model tagged &#x27;tools&#x27;.
+    On a Raspberry Pi 5, models of 1-4 billion parameters are the practical size.&quot;&quot;&quot;
+
+    def __init__(self, model=&quot;qwen3:1.7b&quot;, url=&quot;http://localhost:11434/api/chat&quot;):
+        self.model, self.url, self.messages = model, url, []
+        self.tools = [{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: t[&quot;name&quot;], &quot;description&quot;: t[&quot;description&quot;],
+                                                         &quot;parameters&quot;: t[&quot;input_schema&quot;]}} for t in TOOLS]
+
+    def start(self, goal):
+        self.messages = [{&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: SYSTEM}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: goal}]
+
+    def next_actions(self, last_results):
+        for name, out, _err, _tid in last_results or []:
+            self.messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;content&quot;: out, &quot;tool_name&quot;: name})
+        body = json.dumps({&quot;model&quot;: self.model, &quot;messages&quot;: self.messages, &quot;tools&quot;: self.tools, &quot;stream&quot;: False}).encode()
+        req = urllib.request.Request(self.url, body, {&quot;Content-Type&quot;: &quot;application/json&quot;})
+        msg = json.load(urllib.request.urlopen(req, timeout=300))[&quot;message&quot;]
+        self.messages.append(msg)
+        calls = [(c[&quot;function&quot;][&quot;name&quot;], c[&quot;function&quot;].get(&quot;arguments&quot;) or {}, None) for c in msg.get(&quot;tool_calls&quot;) or []]
+        return msg.get(&quot;content&quot;, &quot;&quot;), calls
+
+
+# =============================================================== the loop
+def run(brain, body, goal, max_steps=25):
+    brain.start(goal)
+    results = None
+    for step in range(1, max_steps + 1):
+        text, calls = brain.next_actions(results)
+        if text:
+            print(f&quot;[{step}] brain: {text.strip()}&quot;)
+        if not calls:
+            break
+        results = []
+        for call in calls:
+            name, args = call[0], call[1]
+            tid = call[2] if len(call) &gt; 2 else None
+            out, err = body.call(name, args)
+            print(f&quot;      {name}({json.dumps(args)}) -&gt; {out}&quot;)
+            results.append((name, out, err, tid))
+    body.robot.stop()
+    print(&quot;motors stopped.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    ap = argparse.ArgumentParser()
+    ap.add_argument(&quot;goal&quot;, nargs=&quot;?&quot;, default=&quot;Explore the room. Find out roughly how big it is, then stop and report.&quot;)
+    ap.add_argument(&quot;--sim&quot;, action=&quot;store_true&quot;, help=&quot;use the simulated robot (default if no --port)&quot;)
+    ap.add_argument(&quot;--port&quot;, help=&quot;serial port of a robot running robot_firmware.ino&quot;)
+    ap.add_argument(&quot;--brain&quot;, choices=[&quot;offline&quot;, &quot;claude&quot;, &quot;ollama&quot;], default=&quot;offline&quot;)
+    ap.add_argument(&quot;--model&quot;, help=&quot;model name for claude/ollama&quot;)
+    a = ap.parse_args()
+    robot = SerialRobot(a.port) if a.port else SimRobot()
+    if a.brain == &quot;claude&quot;:
+        brain = ClaudeBrain(a.model or &quot;claude-opus-5-5&quot;)
+    elif a.brain == &quot;ollama&quot;:
+        brain = OllamaBrain(a.model or &quot;qwen3:1.7b&quot;)
+    else:
+        brain = OfflineBrain()
+    run(brain, Body(robot), a.goal)</pre></div>
+<div class="code" data-lang="bash" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">Run it</span><button type="button" data-copy>Copy</button></div><pre>python robot_agent.py --sim                                # simulator + reflex brain: no hardware, no API
+python robot_agent.py --sim --brain claude &quot;explore the room and tell me how big it is&quot;
+python robot_agent.py --port /dev/ttyACM0 --brain offline  # real robot, reflex brain (find the port: ls /dev/tty*)
+python robot_agent.py --port /dev/ttyACM0 --brain ollama --model qwen3:1.7b &quot;drive forward until something is close&quot;</pre></div>
+<div class="callout warn"><b>What was and was not tested</b><p>The simulator with the reflex brain, and the Claude brain against a mock of the API, were run while writing this course (including the body refusing a 500 cm drive). The serial backend, the Ollama brain and the Arduino firmware were not, because no robot or Ollama server was attached. Expect to adjust pin numbers, the serial port name and the calibration constants for your hardware.</p></div>
+</section>
+
+<section id="hardware" aria-labelledby="hardware-h"><header class="sec-head"><div class="tags"><span class="kind build">Build it</span><span class="aima">3e §25.2 / 4e §26.2</span></div><h2 id="hardware-h"><span class="n">9.4</span>The hardware</h2></header>
+<div class="prose"><p>A first robot that is cheap, safe and easy to debug. Any two-wheel "smart car" chassis kit gives you the frame, motors, wheels and battery holder.</p></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Part</th><th>Role</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Two-wheel robot chassis with 2 DC gear motors and a caster</td><td>Body and <span class="g" data-g="differential drive">differential drive</span></td><td>Common "2WD smart car" kits; 3–6 V yellow TT motors</td></tr>
+<tr><td>Arduino Uno or Nano</td><td>Reflex layer: motors, sensor, safety stops</td><td>Any 5 V Arduino works with the firmware below</td></tr>
+<tr><td>TB6612FNG motor driver board</td><td>Turns Arduino logic signals into motor current</td><td>More efficient than the older L298N; <span class="g" data-g="pwm">PWM</span> sets speed</td></tr>
+<tr><td>HC-SR04 ultrasonic range finder</td><td>The only sensor: distance straight ahead, ~2–400 cm</td><td>Measures the echo time of a 40 kHz pulse</td></tr>
+<tr><td>Battery pack for the motors (e.g. 4–6 AA, or a 2-cell pack with protection)</td><td>Motor power</td><td>Separate from the logic supply; grounds must be connected</td></tr>
+<tr><td>Raspberry Pi 5 (or a laptop on a USB cable to start)</td><td>Brain + body: runs robot_agent.py</td><td>Powered from a USB-C power bank that can supply enough current</td></tr>
+<tr><td>Jumper wires, a small breadboard, a USB cable</td><td>Connections</td><td></td></tr>
+<tr><td>Optional: Pi camera, USB microphone, speaker</td><td>Vision and voice</td><td>Claude accepts images; local speech-to-text and text-to-speech tools exist</td></tr>
+</tbody></table></div>
+<div class="widget" data-widget="wiring"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="code" data-lang="cpp" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">robot_firmware/robot_firmware.ino (Arduino IDE: open, select your board and port, Upload)</span><a href="../code/robot_firmware/robot_firmware.ino" download>Download</a><button type="button" data-copy>Copy</button></div><pre>/*
+ * robot_firmware.ino - the &quot;spinal cord&quot; of a two-wheeled robot (Arduino Uno or Nano).
+ *
+ * The microcontroller does the fast, safety-critical work; the agent on the Raspberry Pi or
+ * laptop does the slow thinking. They talk over USB serial, one text command per line:
+ *
+ *   M &lt;left&gt; &lt;right&gt; &lt;ms&gt;   run the motors (-255..255 each) for at most &lt;ms&gt; milliseconds, then stop
+ *   S                       stop now
+ *   D                       measure the distance ahead in cm with the ultrasonic sensor
+ *   P                       ping (replies OK P)
+ *
+ * Safety lives here, below the AI, where no prompt can change it:
+ *   - every motion ends on its own after &lt;ms&gt; (max 2000), so a crashed agent can&#x27;t leave motors running
+ *   - forward motion is refused, or cut, when something is closer than STOP_CM
+ *
+ * Hardware: TB6612FNG dual motor driver, HC-SR04 ultrasonic sensor, two DC gear motors,
+ * a separate battery for the motors (share ground with the Arduino).
+ * Not compiled while preparing the course: check pin numbers against your own wiring.
+ */
+
+const int PWMA = 5, AIN1 = 7, AIN2 = 8;    // left motor
+const int PWMB = 6, BIN1 = 9, BIN2 = 10;   // right motor
+const int STBY = 4;                        // driver standby: LOW = everything off
+const int TRIG = 11, ECHO = 12;            // ultrasonic sensor
+
+const int STOP_CM = 15;
+const unsigned long MAX_MS = 2000;
+
+unsigned long stopAt = 0;     // when the current motion must end (0 = not moving)
+bool movingForward = false;
+String line;
+
+void setMotor(int pwmPin, int in1, int in2, int speed) {
+  speed = constrain(speed, -255, 255);
+  digitalWrite(in1, speed &gt; 0);
+  digitalWrite(in2, speed &lt; 0);
+  analogWrite(pwmPin, abs(speed));
+}
+
+void stopMotors() {
+  setMotor(PWMA, AIN1, AIN2, 0);
+  setMotor(PWMB, BIN1, BIN2, 0);
+  stopAt = 0;
+  movingForward = false;
+}
+
+int distanceCm() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  unsigned long us = pulseIn(ECHO, HIGH, 25000UL);   // time out after ~4 m
+  if (us == 0) return 400;                           // no echo: treat as &quot;far&quot;
+  return (int)(us / 58UL);                           // sound: ~58 us per cm, there and back
+}
+
+void handle(String cmd) {
+  cmd.trim();
+  if (cmd.length() == 0) return;
+  char op = cmd.charAt(0);
+  if (op == &#x27;S&#x27;) {
+    stopMotors();
+    Serial.println(&quot;OK S&quot;);
+  } else if (op == &#x27;P&#x27;) {
+    Serial.println(&quot;OK P&quot;);
+  } else if (op == &#x27;D&#x27;) {
+    Serial.print(&quot;D &quot;);
+    Serial.println(distanceCm());
+  } else if (op == &#x27;M&#x27;) {
+    int left = 0, right = 0;
+    long ms = 0;
+    if (sscanf(cmd.c_str(), &quot;M %d %d %ld&quot;, &amp;left, &amp;right, &amp;ms) != 3 || ms &lt;= 0) {
+      Serial.println(&quot;ERR usage: M &lt;left&gt; &lt;right&gt; &lt;ms&gt;&quot;);
+      return;
+    }
+    bool forward = left &gt; 0 &amp;&amp; right &gt; 0;
+    if (forward &amp;&amp; distanceCm() &lt; STOP_CM) {
+      Serial.println(&quot;ERR obstacle&quot;);
+      return;
+    }
+    setMotor(PWMA, AIN1, AIN2, left);
+    setMotor(PWMB, BIN1, BIN2, right);
+    stopAt = millis() + min((unsigned long)ms, MAX_MS);
+    movingForward = forward;
+    Serial.println(&quot;OK M&quot;);
+  } else {
+    Serial.println(&quot;ERR unknown command&quot;);
+  }
+}
+
+void setup() {
+  pinMode(PWMA, OUTPUT); pinMode(AIN1, OUTPUT); pinMode(AIN2, OUTPUT);
+  pinMode(PWMB, OUTPUT); pinMode(BIN1, OUTPUT); pinMode(BIN2, OUTPUT);
+  pinMode(STBY, OUTPUT); pinMode(TRIG, OUTPUT); pinMode(ECHO, INPUT);
+  digitalWrite(STBY, HIGH);
+  stopMotors();
+  Serial.begin(115200);
+  Serial.println(&quot;READY&quot;);
+}
+
+void loop() {
+  while (Serial.available()) {               // read a line without blocking the loop
+    char c = Serial.read();
+    if (c == &#x27;\n&#x27;) { handle(line); line = &quot;&quot;; }
+    else if (line.length() &lt; 40) line += c;
+  }
+  if (stopAt &amp;&amp; (long)(millis() - stopAt) &gt;= 0) stopMotors();              // motion timer ran out
+  static unsigned long lastCheck = 0;
+  if (movingForward &amp;&amp; millis() - lastCheck &gt; 60) {                         // reflex: obstacle ahead
+    lastCheck = millis();
+    if (distanceCm() &lt; STOP_CM) { stopMotors(); Serial.println(&quot;EVENT obstacle_stop&quot;); }
+  }
+}</pre></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Command (Pi → Arduino)</th><th>Reply</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>M 150 150 1250</code></td><td><code>OK M</code> or <code>ERR obstacle</code></td><td>Both motors forward at speed 150 for 1.25 s (≈ 25 cm), then stop by themselves</td></tr>
+<tr><td><code>M -150 150 1000</code></td><td><code>OK M</code></td><td>Spin left in place for 1 s (≈ 90°)</td></tr>
+<tr><td><code>D</code></td><td><code>D 87</code></td><td>Distance ahead: 87 cm</td></tr>
+<tr><td><code>S</code></td><td><code>OK S</code></td><td>Stop now</td></tr>
+<tr><td>(unprompted)</td><td><code>EVENT obstacle_stop</code></td><td>The reflex fired during a forward move</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="bringup" aria-labelledby="bringup-h"><header class="sec-head"><div class="tags"><span class="kind build">Build it</span></div><h2 id="bringup-h"><span class="n">9.5</span>Bring-up, one layer at a time</h2></header>
+<div class="prose">
+<p>Build bottom-up and test each layer before adding the next. When something fails, you will know which layer to look at.</p>
+<ol>
+<li><b>Motors alone.</b> Robot on a box with the wheels in the air. Upload the firmware, open the Arduino Serial Monitor at 115200 baud (newline line ending), type <code>M 120 120 500</code>. Both wheels should turn forward for half a second. If one spins backward, swap that motor's two wires.</li>
+<li><b>Sensor.</b> Type <code>D</code> with your hand at different distances. Readings should track a ruler within a few centimeters.</li>
+<li><b>Reflex.</b> Hold your hand 10 cm in front and type <code>M 120 120 2000</code>: the reply must be <code>ERR obstacle</code>. Start a move, then put your hand in front: the wheels must stop and the board prints <code>EVENT obstacle_stop</code>.</li>
+<li><b>Serial from Python.</b> On the Pi: <code>pip install pyserial</code>, then <code>python -m serial.tools.miniterm /dev/ttyACM0 115200</code> and repeat steps 1–2.</li>
+<li><b>Calibrate.</b> On the floor, run <code>M 150 150 2000</code> and measure the distance: <code>CM_PER_SEC</code> = distance / 2. Do the same for turning with <code>M -150 150 2000</code> to get <code>DEG_PER_SEC</code>. Put both numbers in robot_agent.py.</li>
+<li><b>Body + reflex brain.</b> <code>python robot_agent.py --port /dev/ttyACM0</code>. The robot should wander and turn at walls.</li>
+<li><b>LLM brain.</b> Only now: <code>--brain claude</code> or <code>--brain ollama</code>, in an open space, with your hand near the power switch.</li>
+</ol>
+</div>
+</section>
+
+<section id="brains" aria-labelledby="brains-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="brains-h"><span class="n">9.6</span>Which brain: Claude in the cloud or a model on the robot?</h2></header>
+<div class="prose"><p>You asked for a robot that runs its own LLM. That works, with trade-offs. A Raspberry Pi has no large GPU, so it can run only small models, slowly. A cloud model like Claude is far more capable, but needs a network connection and adds a round trip to every decision.</p></div>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>Claude via the API</th><th>Small local model (Ollama on a Pi 5)</th></tr></thead>
+<tbody>
+<tr><td>Reasoning and tool use</td><td>Strong: multi-step plans, recovers from errors, can read camera images</td><td>Basic: simple commands work; long plans and recovery are unreliable</td></tr>
+<tr><td>Speed</td><td>Typically a few seconds per decision</td><td>Slow on a Pi: expect seconds to tens of seconds per reply for 1–4 B parameter models</td></tr>
+<tr><td>Works offline</td><td>No</td><td>Yes</td></tr>
+<tr><td>Privacy</td><td>Requests go to Anthropic's API</td><td>Everything stays on the robot</td></tr>
+<tr><td>Cost</td><td>Pay per token</td><td>Free after the hardware</td></tr>
+<tr><td>In robot_agent.py</td><td><code>ClaudeBrain</code></td><td><code>OllamaBrain</code> (any Ollama model that supports tools)</td></tr>
+</tbody></table></div>
+<div class="code" data-lang="bash" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">A local model on a Raspberry Pi 5 with Ollama (64-bit Raspberry Pi OS)</span><button type="button" data-copy>Copy</button></div><pre>curl -fsSL https://ollama.com/install.sh | sh     # installs the Ollama server
+ollama pull qwen3:1.7b                             # a small model with tool support; try others too
+ollama run qwen3:1.7b &quot;Say hello in five words&quot;    # check it works and see how fast it is
+python robot_agent.py --port /dev/ttyACM0 --brain ollama --model qwen3:1.7b &quot;drive forward until something is close&quot;</pre></div>
+<div class="callout tip"><b>A good design: hybrid</b><p>Keep everything time-critical on the robot (firmware reflexes, and maybe a local model for simple voice commands like "stop" or "come here"), and call Claude for open-ended planning ("find the red box"), sending it camera snapshots through a <code>look()</code> tool that returns an image. Tool results may contain images as well as text.</p></div>
+</section>
+
+<section id="ros" aria-labelledby="ros-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span></div><h2 id="ros-h"><span class="n">9.7</span>Growing up: ROS 2 and bigger robots</h2></header>
+<div class="prose">
+<p>Past a hobby robot, most research and industry robots use <b><span class="g" data-g="ros 2">ROS 2</span></b>, the Robot Operating System: a framework in which each part of the robot is a <em>node</em> (camera driver, lidar driver, mapper, planner, motor controller), exchanging typed messages on <em>topics</em>. Mature packages give you mapping (SLAM), localization and navigation (Nav2) with A*-family planners, the same search from lesson 03. An LLM agent then sits on top, with tools such as <code>navigate_to(place)</code> that send goals to the navigation stack.</p>
+</div>
+<div class="code" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">Sketch: an agent tool that drives a ROS 2 robot (not run here: needs ROS 2)</span><button type="button" data-copy>Copy</button></div><pre>import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
+class LLMDriver(Node):
+    def __init__(self):
+        super().__init__(&quot;llm_driver&quot;)
+        self.cmd = self.create_publisher(Twist, &quot;cmd_vel&quot;, 10)   # the standard velocity topic
+
+    def drive(self, speed_m_s: float, turn_rad_s: float) -&gt; str:
+        &quot;&quot;&quot;Tool: set forward speed and turn rate. Clamped to safe limits.&quot;&quot;&quot;
+        msg = Twist()
+        msg.linear.x = max(-0.2, min(0.2, speed_m_s))
+        msg.angular.z = max(-1.0, min(1.0, turn_rad_s))
+        self.cmd.publish(msg)
+        return f&quot;driving at {msg.linear.x} m/s, turning {msg.angular.z} rad/s&quot;
+
+rclpy.init()
+node = LLMDriver()
+print(node.drive(0.1, 0.0))</pre></div>
+<div class="prose"><p>The research frontier goes further: <b>vision-language-action</b> models are trained to output robot actions directly from camera images and instructions. For your own projects, the layered design in this lesson (LLM plans, code validates, firmware reflexes protect) is the dependable path.</p></div>
+</section>
+
+<section id="safety" aria-labelledby="safety-h"><header class="sec-head"><div class="tags"><span class="kind safety">Safety</span></div><h2 id="safety-h"><span class="n">9.8</span>Physical safety checklist</h2></header>
+<div class="prose"><ul>
+<li>A physical power switch you can reach, and a habit of using it.</li>
+<li>First tests with the wheels off the ground; first floor tests at low speed in an empty space.</li>
+<li>Speed and distance limits in firmware (they are in <code>robot_firmware.ino</code>), not only in Python and never only in the prompt.</li>
+<li>Motion that stops by itself: every command has a timeout, so a crashed program cannot leave the motors running.</li>
+<li>Batteries: use a charger made for the chemistry; never leave lithium packs charging unattended; protect wires from shorts.</li>
+<li>No unattended autonomous runs near people, pets or stairs (the HC-SR04 does not see drop-offs).</li>
+</ul></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">9.9</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Why does the obstacle stop live in the Arduino firmware instead of the LLM&#x27;s instructions?&quot;, &quot;o&quot;: [&quot;The LLM cannot understand distances&quot;, &quot;It must react in milliseconds and keep working if the Pi, the network or the model fails&quot;, &quot;Arduino is more intelligent&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Fast, simple, always-on reflexes belong at the lowest layer.&quot;}, {&quot;q&quot;: &quot;The body refuses drive(80) when the sensor reads 50 cm. What does the LLM receive?&quot;, &quot;o&quot;: [&quot;Nothing; the program crashes&quot;, &quot;A tool_result with is_error and the reason, so it can choose a shorter drive or turn&quot;, &quot;A new system prompt&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Refusals are informative percepts.&quot;}, {&quot;q&quot;: &quot;What is the main trade-off of running a small local model on the Raspberry Pi instead of Claude?&quot;, &quot;o&quot;: [&quot;Local is smarter but needs internet&quot;, &quot;Local works offline and privately but is much weaker and slower at planning&quot;, &quot;There is no difference&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Hybrid designs get some of both.&quot;}, {&quot;q&quot;: &quot;In bring-up, why test motors with the wheels in the air first?&quot;, &quot;o&quot;: [&quot;It is faster&quot;, &quot;A wiring or code mistake cannot drive the robot off a table&quot;, &quot;Motors need to warm up&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Test each layer where its failures are harmless.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../08-real-world/index.html"><small>← Previous</small><b>08 · Instruments, devices &amp; MCP</b></a><a class="next" href="../10-roadmap/index.html"><small>Next →</small><b>10 · Roadmap &amp; reference</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../live.js"></script><script src="../l09.js"></script>
+</body>
+</html>

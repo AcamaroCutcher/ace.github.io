@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 · Decisions under uncertainty and reinforcement learning · Agents course</title>
+<meta name="description" content="When actions do not always do what you intend, a plan is not enough: you need a policy. Solve the book&#x27;s 4×3 world with value iteration, then watch a Q-learning agent discover the same answer by trial and error, the idea behind training LLMs with feedback.">
+<meta name="author" content="Acamaro Cutcher">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235b4fe0'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('quake-viz-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="../agents.css">
+</head>
+<body data-lesson="05" data-root="../">
+<div class="read-bar" aria-hidden="true"></div>
+<div class="topbar">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">Projects</a><span class="sep">/</span><a href="../index.html">Agents</a><span class="sep">/</span><span aria-current="page">05 · MDPs &amp; reinforcement learning</span></nav>
+  <div class="top-actions"><button type="button" class="xp-pill" data-xp title="Your XP and badges">⚡ Lv 1</button><button type="button" class="icon-btn" data-search title="Search the course (Ctrl K or /)">⌕ Search <kbd>Ctrl K</kbd></button><button type="button" class="icon-btn" data-theme-toggle>☾ Dark</button></div>
+</div>
+<header class="banner"><canvas class="banner-fx" data-scene="values" aria-hidden="true"></canvas><div class="banner-inner"><div class="loop-log" data-loop="values" aria-hidden="true"></div><p class="kicker">Lesson 05 · Part II · Classic AI</p><h1>Decisions under uncertainty and reinforcement learning</h1><p class="lede">When actions do not always do what you intend, a plan is not enough: you need a policy. Solve the book's 4×3 world with value iteration, then watch a Q-learning agent discover the same answer by trial and error, the idea behind training LLMs with feedback.</p><div class="chips"><span class="chip">AIMA <b>3e Ch. 17, 21</b></span><span class="chip">AIMA <b>4e Ch. 17, 22</b></span><span class="chip">~70 min</span><span class="chip"><b>4</b> interactive parts</span></div><p class="ai-note">Written with AI assistance (Claude) as a study companion to Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> (3rd and 4th editions). It explains and links to the book; it does not replace it. Section numbers point to both editions.</p></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#mdp" data-kind="concept">5.1 Sequential decisions in a stochastic world</a></li><li><a href="#plan" data-kind="interactive">5.2 Why a fixed plan is not enough</a></li><li><a href="#utility" data-kind="math">5.3 Utilities and the Bellman equation</a></li><li><a href="#vi" data-kind="interactive">5.4 Value iteration, one sweep at a time</a></li><li><a href="#paint" data-kind="interactive">5.5 Paint your own MDP</a></li><li><a href="#bridge" data-kind="concept">5.6 Value iteration: book ↔ code</a></li><li><a href="#rl" data-kind="concept">5.7 Reinforcement learning: no model, only experience</a></li><li><a href="#ql" data-kind="interactive">5.8 Watch a Q-learning agent learn</a></li><li><a href="#llm" data-kind="concept">5.9 From Q-learning to training Claude</a></li><li><a href="#code" data-kind="code">5.10 mdp.py</a></li><li><a href="#check" data-kind="check">5.11 Check yourself</a></li></ol><div class="legend"><span><i style="background:var(--line)"></i>Concept</span><span><i style="background:var(--accent)"></i>Interactive</span><span><i style="background:var(--env)"></i>Code / build</span><span><i style="background:var(--warm)"></i>Math</span><span><i style="background:var(--info)"></i>Check</span></div></nav><main class="content"><aside class="prereq" aria-label="Before you start"><div><h3>Before you start</h3><ul><li>Expected value (<a href="../00-background/index.html#math">Lesson 00</a>)</li><li>Search (Lesson 03)</li></ul></div><div><h3>Key terms in this lesson</h3><div class="terms"><span><span class="g" data-g="mdp">MDP</span></span><span><span class="g" data-g="policy">policy</span></span><span><span class="g" data-g="bellman">Bellman equation</span></span><span><span class="g" data-g="q-learning">Q-learning</span></span></div></div><div><h3>Read alongside</h3><ul><li>AIMA §17.1–17.3; 3e Ch. 21 / 4e Ch. 22</li></ul></div></aside>
+
+<section id="mdp" aria-labelledby="mdp-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e/4e §17.1</span></div><h2 id="mdp-h"><span class="n">5.1</span>Sequential decisions in a stochastic world</h2></header>
+<div class="prose">
+<p>In lesson 03 actions were deterministic, so a plan (a fixed sequence of actions) was a solution. Now actions are unreliable. In the book's 4×3 world, an action moves the agent in the intended direction with probability 0.8, and at right angles with probability 0.1 each; bumping into a wall leaves it where it is. Two squares are terminal: +1 and −1. Every other square gives a small "living reward" R(s) = −0.04, so the agent wants to finish, but not in the −1 square.</p>
+<p>This is a <span class="g" data-g="mdp">Markov decision process</span> (MDP): a fully observable, stochastic, sequential problem defined by</p>
+<ul>
+<li>a set of states <var>s</var> and actions <var>A(s)</var>;</li>
+<li>a <b><span class="g" data-g="transition model">transition model</span></b> <var>P(s′ | s, a)</var>, the probability of reaching <var>s′</var> from <var>s</var> with action <var>a</var> (Markov: it depends only on the current state, not the history);</li>
+<li>a <b><span class="g" data-g="reward">reward</span> function</b>: <var>R(s)</var> in the 3rd edition, <var>R(s, a, s′)</var> in the 4th (same idea, slightly more general).</li>
+</ul>
+<p>A solution is a <b><span class="g" data-g="policy">policy</span></b> π: an action for <em>every</em> state, so that wherever chance puts the agent, it knows what to do next. The optimal policy π* maximizes the expected total reward.</p>
+</div>
+</section>
+
+<section id="plan" aria-labelledby="plan-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e/4e §17.1</span></div><h2 id="plan-h"><span class="n">5.2</span>Why a fixed plan is not enough</h2></header>
+<div class="prose"><p>The obvious plan from the start square [1,1] is Up, Up, Right, Right, Right. In a deterministic world it always works. Here, the book computes its success probability as 0.8⁵ + 0.1⁴ × 0.8 = <b>0.32776</b> (the second term is the lucky path that slides the other way round). Run it a thousand times, and compare with an agent that follows the optimal policy and simply reacts to wherever it lands.</p></div>
+<div class="widget" data-widget="planvspolicy"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="utility" aria-labelledby="utility-h"><header class="sec-head"><div class="tags"><span class="kind math">Math</span><span class="aima">3e §17.1–17.2 / 4e §17.1–17.2</span></div><h2 id="utility-h"><span class="n">5.3</span>Utilities and the Bellman equation</h2></header>
+<div class="prose">
+<p>The <b><span class="g" data-g="utility">utility</span></b> of a state, U(s), is the expected sum of (discounted) rewards the agent will collect from s onward if it acts optimally. A <span class="g" data-g="discount">discount factor</span> γ between 0 and 1 makes rewards sooner worth more than rewards later; with γ = 1 and terminal states, the plain sum is fine.</p>
+<p>Utilities satisfy a beautiful recursive equation: the utility of a state is its immediate reward, plus the discounted expected utility of the next state, if the agent picks the best action:</p>
+</div>
+<div class="eq"><var>U</var>(<var>s</var>) = <var>R</var>(<var>s</var>) + γ · max<sub><var>a</var></sub> Σ<sub><var>s′</var></sub> <var>P</var>(<var>s′</var> | <var>s</var>, <var>a</var>) <var>U</var>(<var>s′</var>)<span class="lbl">The <span class="g" data-g="bellman">Bellman equation</span> (3rd-edition notation; the 4th writes the reward as R(s, a, s′) inside the sum). Once you know U, the optimal policy picks the action that achieves the max.</span></div>
+<div class="prose"><p>There is one such equation per state, and they are nonlinear (because of the max), so we cannot just solve a linear system. Instead, <b><span class="g" data-g="value iteration">value iteration</span></b> starts from U = 0 and applies the equation as an update rule to every state, over and over. Each sweep propagates information one step further from the terminal states, and the values converge to the true utilities.</p></div>
+</section>
+
+<section id="vi" aria-labelledby="vi-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e Fig. 17.2–17.4</span></div><h2 id="vi-h"><span class="n">5.4</span>Value iteration, one sweep at a time</h2></header>
+<div class="prose"><p>Press <b>One sweep</b> a few times and watch value spread backwards from +1. <b>Click any square</b> to see its Bellman update written out with the actual numbers. Then move the sliders: the living reward changes the optimal policy exactly as the book's Figure 17.2 shows (at −2 the agent dives into −1 to stop the pain; near 0 it takes the long safe way round).</p></div>
+<div class="widget" data-widget="valueiter"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="paint" aria-labelledby="paint-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span></div><h2 id="paint-h"><span class="n">5.5</span>Paint your own MDP</h2></header>
+<div class="prose"><p>Now design the world yourself. The default is a "cliff": a row of −1 pits between the start and the goal. Paint walls and pits, move the goal, and change how slippery the floor is. With reliable moves the policy hugs the cliff (shortest path); make moves unreliable and the policy steps away from the edge, because a sideways slip would be fatal. Then release 30 agents and see what happens to them.</p></div>
+<div class="widget" data-widget="mdppaint"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="bridge" aria-labelledby="bridge-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span><span class="aima">3e Fig. 17.4</span></div><h2 id="bridge-h"><span class="n">5.6</span>Value iteration: book ↔ code</h2></header>
+<div class="bridge" data-notes="{&quot;a&quot;: &quot;Input: an MDP (states, actions, transitions, rewards, γ) and a tolerance.&quot;, &quot;b&quot;: &quot;Start with all utilities zero.&quot;, &quot;c&quot;: &quot;Sweep until nothing changes much.&quot;, &quot;d&quot;: &quot;Keep the previous sweep&#x27;s values (U) separate from the new ones (U2): every update in a sweep reads the old values.&quot;, &quot;e&quot;: &quot;Update every state once per sweep.&quot;, &quot;f&quot;: &quot;&lt;b&gt;The Bellman update.&lt;/b&gt; &lt;code&gt;transitions(s, a)&lt;/code&gt; returns the three (probability, next state) pairs: 0.8 intended, 0.1 to each side. Terminal states just keep their reward.&quot;, &quot;g&quot;: &quot;Track the largest change in this sweep.&quot;, &quot;h&quot;: &quot;The book&#x27;s stopping rule guarantees the final error is below ε. With γ = 1 the formula gives a threshold of 0, so the code falls back to a small absolute threshold.&quot;, &quot;i&quot;: &quot;The converged utilities; &lt;code&gt;best_policy(U)&lt;/code&gt; then reads off the best action in each state.&quot;}"><div class="pane"><div class="pane-head"><span>Book-style pseudocode (paraphrased)</span></div><pre><span class="bl" data-k="a">function <b>VALUE-ITERATION</b>(mdp, ε) returns a utility function</span><span class="bl" data-k="b">  U ← 0 for every state;  U′ ← 0</span><span class="bl" data-k="c">  repeat</span><span class="bl" data-k="d">    U ← U′;  δ ← 0</span><span class="bl" data-k="e">    for each state s do</span><span class="bl" data-k="f">      U′[s] ← R(s) + γ max_a Σ_s′ P(s′|s,a) U[s′]</span><span class="bl" data-k="g">      δ ← max(δ, |U′[s] − U[s]|)</span><span class="bl" data-k="h">  until δ &lt; ε(1 − γ)/γ</span><span class="bl" data-k="i">  return U</span></pre></div><div class="pane py"><div class="pane-head"><span>mdp.py · value_iteration</span></div><pre><span class="bl" data-k="a">def value_iteration(living=-0.04, gamma=1.0, eps=1e-6, verbose=False):</span><span class="bl" data-k="b">    U = {s: 0.0 for s in STATES}</span><span class="bl" data-k="c">    while True:</span><span class="bl" data-k="d">        U2, delta = {}, 0.0</span><span class="bl" data-k="e">        for s in STATES:</span><span class="bl" data-k="f">            if s in TERMINALS:</span><span class="bl" data-k="f">                U2[s] = TERMINALS[s]</span><span class="bl" data-k="f">            else:</span><span class="bl" data-k="f">                U2[s] = reward(s, living) + gamma * max(</span><span class="bl" data-k="f">                    sum(p * U[t] for p, t in transitions(s, a)) for a in ACTIONS)</span><span class="bl" data-k="g">            delta = max(delta, abs(U2[s] - U[s]))</span><span class="bl" data-k="d">        U = U2</span><span class="bl" data-k="h">        if delta &lt; (eps * (1 - gamma) / gamma if gamma &lt; 1 else eps):</span><span class="bl" data-k="i">            return U, it</span></pre></div><p class="bridge-note">Hover or tap a line: the matching lines on the other side light up.</p></div>
+<div class="prose"><p><b>Policy iteration</b> (3e §17.3, 4e §17.2) is the main alternative: start with any policy, compute its exact utilities (now a <em>linear</em> system, because the action is fixed), then improve the policy greedily, and repeat. It often converges in a handful of iterations.</p></div>
+</section>
+
+<section id="rl" aria-labelledby="rl-h"><header class="sec-head"><div class="tags"><span class="kind concept">Concept</span><span class="aima">3e Ch. 21 / 4e Ch. 22</span></div><h2 id="rl-h"><span class="n">5.7</span>Reinforcement learning: no model, only experience</h2></header>
+<div class="prose">
+<p>Value iteration needs the transition model <var>P(s′|s,a)</var> and the rewards. What if the agent does not know them? It has to learn from experience: try actions, observe what happens, collect rewards. That is <b>reinforcement learning</b>. The agent is a <span class="g" data-g="learning agent">learning agent</span> whose critic is the reward signal.</p>
+<p><b><span class="g" data-g="q-learning">Q-learning</span></b> learns an action-value function <var>Q(s, a)</var>: the expected utility of doing <var>a</var> in <var>s</var> and acting optimally afterwards. It never builds a model. After every step it nudges its estimate toward a better one, using the reward it just got and its own estimate of the next state (a <em>temporal-difference</em> update):</p>
+</div>
+<div class="eq"><var>Q</var>(<var>s</var>,<var>a</var>) ← <var>Q</var>(<var>s</var>,<var>a</var>) + α · [ <var>R</var>(<var>s</var>) + γ · max<sub><var>a′</var></sub> <var>Q</var>(<var>s′</var>,<var>a′</var>) − <var>Q</var>(<var>s</var>,<var>a</var>) ]<span class="lbl">α is the learning rate. The bracket is the "surprise": how much better or worse things went than expected.</span></div>
+<div class="prose">
+<p>It also faces the <b><span class="g" data-g="exploration">exploration-exploitation dilemma</span></b>: always taking the action that currently looks best (exploiting) can lock in a mediocre habit, while exploring costs reward now. The simplest compromise is <b>ε-greedy</b>: with probability ε take a random action. This is the problem generator of the learning-agent diagram (lesson 02).</p>
+</div>
+</section>
+
+<section id="ql" aria-labelledby="ql-h"><header class="sec-head"><div class="tags"><span class="kind interactive">Interactive</span><span class="aima">3e §21.3 / 4e §22.3</span></div><h2 id="ql-h"><span class="n">5.8</span>Watch a Q-learning agent learn</h2></header>
+<div class="prose"><p>Each square shows four triangles, one per action, colored by Q(s, a). The agent starts knowing nothing. Press <b>Train</b> and watch it explore; the chart tracks how far its utility estimates (max<sub>a</sub> Q) are from the true utilities that value iteration computed. It gets there without ever being told the 0.8/0.1/0.1 transition model.</p></div>
+<div class="widget" data-widget="qlearn"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="llm" aria-labelledby="llm-h"><header class="sec-head"><div class="tags"><span class="kind bridge">Book ↔ Code</span></div><h2 id="llm-h"><span class="n">5.9</span>From Q-learning to training Claude</h2></header>
+<div class="prose">
+<p>The same ideas, at a vastly larger scale, are part of how modern LLMs are trained after pretraining:</p>
+<ul>
+<li><b>The policy is the language model.</b> Its "action" is the next token (or a whole response); its "state" is the text so far.</li>
+<li><b>The reward comes from feedback.</b> In <span class="g" data-g="rlhf">RLHF</span>, people compare pairs of responses; a <em>reward model</em> learns to predict their preferences; the LLM is then optimized with policy-gradient RL to produce responses the reward model scores highly. In Anthropic's <span class="g" data-g="constitutional ai">Constitutional AI</span>, much of the feedback comes from an AI model guided by a written set of principles. Labs also use RL on tasks whose results can be checked automatically, such as code that must pass tests.</li>
+<li><b>Exploration and reward hacking</b> appear exactly as in this chapter. A policy optimized against an imperfect reward finds its loopholes (the vacuum that dumps dirt to suck it up again). A lot of real work goes into rewards that measure what we actually want.</li>
+</ul>
+</div>
+<div class="callout key"><b>Key idea</b><p>RL turns "here is how good that was" into better behavior without anyone writing down the right action. That is why it scales to problems, like writing helpful answers, where nobody can write the policy by hand.</p></div>
+</section>
+
+<section id="code" aria-labelledby="code-h"><header class="sec-head"><div class="tags"><span class="kind code">Code</span></div><h2 id="code-h"><span class="n">5.10</span>mdp.py</h2></header>
+<div class="code" data-run data-file="mdp.py" data-full="1" data-argv="" data-lang="python" data-start="1"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">mdp.py</span><a href="../code/mdp.py" download>Download</a><button type="button" data-copy>Copy</button></div><pre>&quot;&quot;&quot;
+mdp.py - AIMA Chapter 17 (Markov decision processes) and the Q-learning agent of
+Chapter 21 (3e) / 22 (4e), on the book&#x27;s 4x3 world (Figure 17.1).
+
+    . . . +1        (4,3) is a terminal state worth +1, (4,2) is terminal and worth -1,
+    . # . -1        (2,2) is a wall. Every other state gives the &quot;living reward&quot; R(s).
+    S . . .         Actions go in the intended direction with probability 0.8, and at
+                    right angles with probability 0.1 each. Bumping a wall: stay put.
+
+Run:  python mdp.py
+Needs no packages.
+&quot;&quot;&quot;
+import random
+
+COLS, ROWS = 4, 3
+WALLS = {(2, 2)}
+TERMINALS = {(4, 3): 1.0, (4, 2): -1.0}
+ACTIONS = {&quot;Up&quot;: (0, 1), &quot;Down&quot;: (0, -1), &quot;Left&quot;: (-1, 0), &quot;Right&quot;: (1, 0)}
+ARROWS = {&quot;Up&quot;: &quot;^&quot;, &quot;Down&quot;: &quot;v&quot;, &quot;Left&quot;: &quot;&lt;&quot;, &quot;Right&quot;: &quot;&gt;&quot;}
+SIDEWAYS = {&quot;Up&quot;: (&quot;Left&quot;, &quot;Right&quot;), &quot;Down&quot;: (&quot;Left&quot;, &quot;Right&quot;),
+            &quot;Left&quot;: (&quot;Up&quot;, &quot;Down&quot;), &quot;Right&quot;: (&quot;Up&quot;, &quot;Down&quot;)}
+
+STATES = [(x, y) for x in range(1, COLS + 1) for y in range(1, ROWS + 1) if (x, y) not in WALLS]
+
+
+def move(s, a):
+    dx, dy = ACTIONS[a]
+    t = (s[0] + dx, s[1] + dy)
+    if t in WALLS or not (1 &lt;= t[0] &lt;= COLS and 1 &lt;= t[1] &lt;= ROWS):
+        return s
+    return t
+
+
+def transitions(s, a):
+    &quot;&quot;&quot;P(s&#x27; | s, a) as a list of (probability, s&#x27;).&quot;&quot;&quot;
+    left, right = SIDEWAYS[a]
+    return [(0.8, move(s, a)), (0.1, move(s, left)), (0.1, move(s, right))]
+
+
+def reward(s, living):
+    return TERMINALS.get(s, living)
+
+
+def value_iteration(living=-0.04, gamma=1.0, eps=1e-6, verbose=False):
+    &quot;&quot;&quot;AIMA 3e Figure 17.4: repeat the Bellman update until utilities stop changing.
+
+        U(s) &lt;- R(s) + gamma * max_a sum_s&#x27; P(s&#x27;|s,a) U(s&#x27;)
+    &quot;&quot;&quot;
+    U = {s: 0.0 for s in STATES}
+    it = 0
+    while True:
+        it += 1
+        U2, delta = {}, 0.0
+        for s in STATES:
+            if s in TERMINALS:
+                U2[s] = TERMINALS[s]
+            else:
+                U2[s] = reward(s, living) + gamma * max(
+                    sum(p * U[t] for p, t in transitions(s, a)) for a in ACTIONS)
+            delta = max(delta, abs(U2[s] - U[s]))
+        U = U2
+        if verbose and it &lt;= 3:
+            print(f&quot;after iteration {it}:&quot;); show_values(U)
+        # stopping rule from the book; with gamma = 1 we just use a small absolute threshold
+        if delta &lt; (eps * (1 - gamma) / gamma if gamma &lt; 1 else eps):
+            return U, it
+
+
+def best_policy(U):
+    return {s: max(ACTIONS, key=lambda a: sum(p * U[t] for p, t in transitions(s, a)))
+            for s in STATES if s not in TERMINALS}
+
+
+def show_values(U):
+    for y in range(ROWS, 0, -1):
+        row = []
+        for x in range(1, COLS + 1):
+            row.append(&quot;  ####&quot; if (x, y) in WALLS else f&quot;{U[(x, y)]:+6.3f}&quot;)
+        print(&quot;   &quot; + &quot; &quot;.join(row))
+
+
+def show_policy(pi):
+    for y in range(ROWS, 0, -1):
+        row = &quot;&quot;
+        for x in range(1, COLS + 1):
+            s = (x, y)
+            row += &quot; # &quot; if s in WALLS else (&quot; +1&quot; if TERMINALS.get(s) == 1 else &quot; -1&quot; if s in TERMINALS else f&quot; {ARROWS[pi[s]]} &quot;)
+        print(&quot;   &quot; + row)
+
+
+# ------------------------------------------------------------------------- Q-learning
+def q_learning(episodes=5000, living=-0.04, gamma=1.0, alpha=0.1, epsilon=0.1, seed=1):
+    &quot;&quot;&quot;A model-free agent: it never sees P(s&#x27;|s,a); it only tries actions and observes results.
+
+        Q(s,a) &lt;- Q(s,a) + alpha * (r + gamma * max_a&#x27; Q(s&#x27;,a&#x27;) - Q(s,a))
+    &quot;&quot;&quot;
+    rng = random.Random(seed)
+    Q = {(s, a): 0.0 for s in STATES for a in ACTIONS}
+    for s, r in TERMINALS.items():
+        for a in ACTIONS:
+            Q[(s, a)] = r
+    for _ in range(episodes):
+        s = (1, 1)
+        while s not in TERMINALS:
+            if rng.random() &lt; epsilon:                                   # explore
+                a = rng.choice(list(ACTIONS))
+            else:                                                        # exploit
+                a = max(ACTIONS, key=lambda b: Q[(s, b)])
+            r_ = rng.random()                                            # the world rolls the dice
+            p_cum, s2 = 0.0, s
+            for p, t in transitions(s, a):
+                p_cum += p
+                if r_ &lt; p_cum:
+                    s2 = t
+                    break
+            target = reward(s, living) + gamma * max(Q[(s2, b)] for b in ACTIONS)
+            Q[(s, a)] += alpha * (target - Q[(s, a)])
+            s = s2
+    return Q
+
+
+if __name__ == &quot;__main__&quot;:
+    U, iters = value_iteration(-0.04)
+    print(f&quot;Value iteration, R(s) = -0.04, gamma = 1: converged after {iters} iterations&quot;)
+    show_values(U)
+    print(&quot;Optimal policy:&quot;)
+    show_policy(best_policy(U))
+
+    print(&quot;\nHow the policy changes with the living reward (AIMA Figure 17.2):&quot;)
+    for living in (-2.0, -0.2, -0.04, -0.01, 0.0):
+        U, _ = value_iteration(living, gamma=0.999 if living &gt;= 0 else 1.0)
+        print(f&quot;R(s) = {living}&quot;)
+        show_policy(best_policy(U))
+
+    Q = q_learning()
+    U_q = {s: max(Q[(s, a)] for a in ACTIONS) for s in STATES}
+    print(&quot;\nQ-learning after 5000 episodes (estimates of the same utilities):&quot;)
+    show_values(U_q)
+    show_policy({s: max(ACTIONS, key=lambda a: Q[(s, a)]) for s in STATES if s not in TERMINALS})</pre></div>
+<div class="code" data-lang="text" data-start="1" data-nonum><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="fname">python mdp.py (first part)</span><button type="button" data-copy>Copy</button></div><pre>Value iteration, R(s) = -0.04, gamma = 1: converged after 30 iterations
+   +0.812 +0.868 +0.918 +1.000
+   +0.762   #### +0.660 -1.000
+   +0.705 +0.655 +0.611 +0.388
+Optimal policy:
+    &gt;  &gt;  &gt;  +1
+    ^  #  ^  -1
+    ^  &lt;  &lt;  &lt;</pre></div>
+<div class="prose"><p>These are the utilities in the book's figure of the 4×3 world's utilities (3e Fig. 17.3). Your widget above shows the same numbers after enough sweeps.</p></div>
+<div class="callout tip"><b>Exercises</b><ol>
+<li>Implement policy iteration and count iterations to convergence versus value iteration.</li>
+<li>Replace ε-greedy with the book's exploration function (optimistic values for rarely tried actions). Does it learn faster?</li>
+<li>Build a bigger grid (10×10 with a "cliff" of −1 squares along one edge). Compare the routes learned by Q-learning and by SARSA (which updates with the action actually taken). Which one walks next to the cliff?</li>
+</ol></div>
+</section>
+
+<section id="check" aria-labelledby="check-h"><header class="sec-head"><div class="tags"><span class="kind check">Check</span></div><h2 id="check-h"><span class="n">5.11</span>Check yourself</h2></header>
+<div class="widget" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Why is a policy needed instead of a plan in the 4\u00d73 world?&quot;, &quot;o&quot;: [&quot;Plans are too long&quot;, &quot;Actions are stochastic, so the agent may end up anywhere and needs an action for every state&quot;, &quot;The world is partially observable&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The fixed plan succeeds only ~33% of the time; the policy reacts to where chance puts the agent.&quot;}, {&quot;q&quot;: &quot;In the Bellman equation, what does the max over actions represent?&quot;, &quot;o&quot;: [&quot;The agent chooses the best action&quot;, &quot;The environment chooses the worst outcome&quot;, &quot;The average over all actions&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;The sum over s\u2032 is chance (expectation); the max is the agent&#x27;s choice.&quot;}, {&quot;q&quot;: &quot;With living reward R(s) = \u22122, the optimal policy in [3,2] goes straight into \u22121. Why?&quot;, &quot;o&quot;: [&quot;A bug&quot;, &quot;Life is so painful that ending immediately at \u22121 beats any longer route to +1&quot;, &quot;\u03b3 is too small&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Utilities depend on rewards; extreme living costs make any exit attractive (Fig. 17.2).&quot;}, {&quot;q&quot;: &quot;What does Q-learning need that value iteration does not, and vice versa?&quot;, &quot;o&quot;: [&quot;Q-learning needs the transition model; value iteration needs experience&quot;, &quot;Q-learning needs experience (trial and error); value iteration needs the transition model and rewards&quot;, &quot;They need the same things&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Q-learning is model-free.&quot;}, {&quot;q&quot;: &quot;In RLHF, what plays the role of the reward signal?&quot;, &quot;o&quot;: [&quot;The number of tokens generated&quot;, &quot;A reward model trained on human preference comparisons&quot;, &quot;The pretraining loss&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Humans compare responses; a reward model generalizes their preferences; RL optimizes the LLM against it.&quot;}]"><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+<div class="done-row"><span class="w-note">Finished? Mark it, and the course home page tracks your progress (stored only in this browser).</span><button type="button" class="btn" data-mark-done aria-pressed="false">Mark lesson as done</button></div><nav class="pager" aria-label="Lessons"><a href="../04-knowledge/index.html"><small>← Previous</small><b>04 · Knowledge-based agents</b></a><a class="next" href="../06-inside-an-llm/index.html"><small>Next →</small><b>06 · How LLMs work</b></a></nav></main></div>
+<footer class="site-footer">
+  <p>Agents: from AIMA to Claude to robots · <a href="../index.html">Course home</a> · <a href="../../index.html">All projects</a> · <a href="../code/agents-course-code.zip" download>Download all code (.zip)</a></p>
+  <p>AI-generated study material (written with Claude, November 2026), checked against the book and by running every Python example. APIs, model names and hardware change: check current documentation when you build.</p>
+</footer>
+<script src="../search-index.js"></script><script src="../core.js"></script><script src="../l05.js"></script>
+</body>
+</html>
