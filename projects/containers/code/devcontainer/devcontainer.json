@@ -1,0 +1,15 @@
+// Put this file and the Dockerfile in .devcontainer/ at the top of a project,
+// then in VS Code run "Dev Containers: Reopen in Container" (lesson 06).
+{
+  "name": "Claude Code sandbox",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "node",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=claude-config,target=/home/node/.claude,type=volume"
+  ],
+  "customizations": {
+    "vscode": { "extensions": ["anthropic.claude-code"] }
+  }
+}

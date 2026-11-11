@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Containers &amp; Docker, lesson 04: Using containers as a toolbox: one pattern for running any command-line program on your own files, plus databases, other Linux distributions and self-hosted apps.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Running programs and tools · Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Containers &amp; Docker</a><span aria-hidden="true">/</span>
+        <span aria-current="page">04 · Running programs and tools</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 04 of 8</p>
+        <h1>Running programs and tools</h1>
+        <p class="lede">Using containers as a toolbox: one pattern for running any command-line program on your own files, plus databases, other Linux distributions and self-hosted apps.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Running programs and tools">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#pattern">The pattern</a><a href="#examples">Examples</a><a href="#db">Databases</a><a href="#distros">Other Linux systems</a><a href="#apps">Self-hosted apps</a><a href="#trust">Choosing images</a><a href="#ex4">Exercises</a><a href="#quiz">Quiz</a></nav>
+
+<section id="pattern" aria-labelledby="pattern-h"><h2 id="pattern-h">One pattern for any tool</h2>
+<p>Almost every “run a program on my files” task uses the same shape:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">The pattern</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-it</span> <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/work <span class="t-flag">-w</span> /work IMAGE COMMAND ARGS</span></code></pre></div>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Part</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><code>--rm</code></td><td>Throw the container away afterwards. The image stays, so the next run starts at once.</td></tr>
+<tr><td><code>-it</code></td><td>Interactive with a terminal, for tools that ask questions or print colors. Leave it out in scripts.</td></tr>
+<tr><td><code>-v "$PWD":/work</code></td><td>Your current folder appears as <code>/work</code> inside, so the tool can read and write your files.</td></tr>
+<tr><td><code>-w /work</code></td><td>Start the command in that folder, so relative file names just work.</td></tr>
+</tbody></table></div>
+<p>Wrap it in a shell function and a containerized tool feels installed. Add to <code>~/.zshrc</code> or <code>~/.bashrc</code>:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">~/.zshrc</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># drun IMAGE [COMMAND...]: run a container on the current folder</span></span><span class="ln" style="--i:1">drun() { docker <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-it</span> <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/work <span class="t-flag">-w</span> /work <span class="t-str">"$@"</span>; }</span></code></pre></div>
+<div class="widget reveal" data-widget="cmdbuilder"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="callout note reveal"><b>File ownership on Linux</b> Many images run as root, so on a Linux host the files they create in your folder belong to root. Add <code>--user "$(id -u):$(id -g)"</code> to run as yourself. Docker Desktop on a Mac or Windows translates ownership for you.</div>
+</section>
+
+<section id="examples" aria-labelledby="examples-h"><h2 id="examples-h">Examples</h2>
+<h3>Python, any version</h3>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">drun</span> python:3.13 python analysis.py</span><span class="ln" style="--i:1"><span class="t-cmd">drun</span> python:3.9 python old_script.py                     <span class="t-com"># an old project, without touching your own Python</span></span><span class="ln" style="--i:2"><span class="t-cmd">drun</span> python:3.13 sh <span class="t-flag">-c</span> <span class="t-str">"pip install pandas &amp;&amp; python analysis.py"</span>   <span class="t-com"># quick one-off with a package</span></span></code></pre></div>
+<p>If you install the same packages every time, that's the moment to write a three-line Dockerfile (lesson 03) instead.</p>
+<h3>Documents with pandoc and LaTeX</h3>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/data pandoc/latex report.md <span class="t-flag">-o</span> report.pdf</span></code></pre></div>
+<p>The <code>pandoc/latex</code> image already sets <code>/data</code> as its folder and <code>pandoc</code> as its entrypoint, so the arguments go straight to pandoc. A full LaTeX installation is several gigabytes; this way it is one download you can delete later.</p>
+<h3>Compilers: Fortran, C, C++</h3>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">drun</span> gcc:14 gfortran <span class="t-flag">-O2</span> <span class="t-flag">-o</span> hello hello.f90</span><span class="ln" style="--i:1"><span class="t-cmd">drun</span> gcc:14 ./hello</span></code></pre></div>
+<p>The program is a <em>Linux</em> program, so on a Mac it runs inside the container (second line) but not directly in your terminal. That is exactly what you want when the code is headed for a Linux cluster.</p>
+<h3>R and RStudio</h3>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">drun</span> rocker/r-ver:4.4 Rscript model.R</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:8787:8787</span> <span class="t-flag">-e</span> PASSWORD=choose-one <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/home/rstudio/work rocker/rstudio:4.4</span><span class="ln" style="--i:2"><span class="t-com"># RStudio in the browser at http://localhost:8787, user "rstudio"</span></span></code></pre></div>
+<h3>Quick utilities</h3>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">drun</span> alpine sh <span class="t-flag">-c</span> <span class="t-str">"apk add --no-cache imagemagick &amp;&amp; magick photo.png -resize 50% small.png"</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> curlimages/curl <span class="t-flag">-s</span> https://api.github.com/zen</span></code></pre></div>
+</section>
+
+<section id="db" aria-labelledby="db-h"><h2 id="db-h">Databases for development</h2>
+<p>Databases are the classic case: no installer, no background service left running, a fresh copy whenever you want one, and several versions side by side.</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># PostgreSQL, with its data in a volume</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> pg <span class="t-flag">-e</span> POSTGRES_PASSWORD=dev <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:5432:5432</span> <span class="t-flag">-v</span> pgdata:/var/lib/postgresql/data postgres:17</span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">exec</span> <span class="t-flag">-it</span> pg psql <span class="t-flag">-U</span> postgres</span><span class="ln" style="--i:3"> </span><span class="ln" style="--i:4"><span class="t-com"># Redis, MySQL and MongoDB follow the same pattern</span></span><span class="ln" style="--i:5"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> redis <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:6379:6379</span> redis:7</span><span class="ln" style="--i:6"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> mysql <span class="t-flag">-e</span> MYSQL_ROOT_PASSWORD=dev <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:3306:3306</span> <span class="t-flag">-v</span> mysqldata:/var/lib/mysql mysql:8.4</span><span class="ln" style="--i:7"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> mongo <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:27017:27017</span> <span class="t-flag">-v</span> mongodata:/data/db mongo:8</span></code></pre></div>
+<p>Programs on your computer connect to <code>localhost</code> on the published port, as if the database were installed normally.</p>
+</section>
+
+<section id="distros" aria-labelledby="distros-h"><h2 id="distros-h">Try other Linux systems</h2>
+<p>Learning Linux, testing an install script, or checking a bug on another distribution takes seconds:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-it</span> <span class="t-flag">--rm</span> debian:12 bash</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-it</span> <span class="t-flag">--rm</span> fedora:41 bash</span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-it</span> <span class="t-flag">--rm</span> archlinux bash</span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-it</span> <span class="t-flag">--rm</span> alpine:3.20 sh          <span class="t-com"># 8 MB, used as the base of many small images</span></span></code></pre></div>
+</section>
+
+<section id="apps" aria-labelledby="apps-h"><h2 id="apps-h">Self-hosted applications</h2>
+<p>Many complete applications are published as images, which is how people run them on a home server, a NAS or a Raspberry Pi. Each project's documentation gives its <code>docker run</code> or Compose file; usually it's a port, a volume or two, and some settings.</p>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Application</th><th>What it is</th><th>Image</th></tr></thead>
+<tbody>
+<tr><td>Nextcloud</td><td>Your own Dropbox / Google Drive</td><td><code>nextcloud</code></td></tr>
+<tr><td>Jellyfin</td><td>Media server for your films and music</td><td><code>jellyfin/jellyfin</code></td></tr>
+<tr><td>Home Assistant</td><td>Home automation</td><td><code>ghcr.io/home-assistant/home-assistant</code></td></tr>
+<tr><td>Gitea</td><td>A self-hosted GitHub</td><td><code>gitea/gitea</code></td></tr>
+<tr><td>Vaultwarden</td><td>Password manager server (Bitwarden-compatible)</td><td><code>vaultwarden/server</code></td></tr>
+<tr><td>Uptime Kuma</td><td>Watches your websites and alerts you when one is down</td><td><code>louislam/uptime-kuma</code></td></tr>
+</tbody></table></div>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Example: Uptime Kuma</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> kuma <span class="t-flag">--restart</span> unless-stopped <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:3001:3001</span> <span class="t-flag">-v</span> kuma:/app/data louislam/uptime-kuma:1</span><span class="ln" style="--i:1"><span class="t-com"># http://localhost:3001</span></span></code></pre></div>
+<p><code>--restart unless-stopped</code> brings the container back after a crash or a reboot, which is what you want for anything that should always be on.</p>
+<div class="callout note reveal"><b>Desktop programs</b> Containers are made for programs without windows. Some publishers, such as <a href="https://www.linuxserver.io/">linuxserver.io</a>, package Linux desktop apps with a built-in web desktop so you use them in a browser tab. Mac and Windows programs can't run in a Linux container at all.</div>
+</section>
+
+<section id="trust" aria-labelledby="trust-h"><h2 id="trust-h">Choosing images you can trust</h2>
+<p>An image is software from a stranger, with the same risks as any download. Prefer, in order:</p>
+<ol>
+<li><strong>Docker Official Images</strong> (no slash in the name: <code>python</code>, <code>postgres</code>, <code>nginx</code>), maintained with the upstream projects.</li>
+<li>Images published by the <strong>project itself</strong> (<code>pandoc/latex</code>, <code>rocker/…</code>, <code>ghcr.io/home-assistant/…</code>), linked from its own website or GitHub.</li>
+<li><strong>Verified Publisher</strong> and actively updated images. Check the date of the last push and the source repository.</li>
+</ol>
+<p>Pin a version tag (<code>postgres:17</code>, not <code>postgres</code>) so an update never surprises you, and read the Dockerfile when one is linked.</p>
+</section>
+
+<section id="ex4" aria-labelledby="ex4-h"><h2 id="ex4-h">Exercises</h2>
+<ol class="ex">
+<li>Add the <code>drun</code> function to your shell and convert a Markdown file to PDF with pandoc.</li>
+<li>Start PostgreSQL 16 and 17 at the same time (different names, volumes and host ports) and check <code>select version();</code> in each.</li>
+<li>Pick one self-hosted app from the table, run it, and find where its data lives with <code>docker volume inspect</code>.</li>
+</ol>
+</section>
+<section id="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+<div class="widget reveal" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;In &lt;code&gt;docker run --rm -v \&quot;$PWD\&quot;:/work -w /work python:3.13 python a.py&lt;/code&gt;, what does &lt;code&gt;-v \&quot;$PWD\&quot;:/work&lt;/code&gt; do?&quot;, &quot;o&quot;: [&quot;Sets a version&quot;, &quot;Makes your current folder appear as /work inside the container&quot;, &quot;Saves the container as an image&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;That bind mount is how the tool reads and writes your files.&quot;}, {&quot;q&quot;: &quot;Which image is the safest default choice?&quot;, &quot;o&quot;: [&quot;A Docker Official Image such as postgres:17&quot;, &quot;The most-starred random fork&quot;, &quot;Anything tagged :latest&quot;], &quot;a&quot;: 0, &quot;e&quot;: &quot;Official and publisher images are maintained; pinning a version tag avoids surprise upgrades.&quot;}, {&quot;q&quot;: &quot;You compiled a Fortran program with &lt;code&gt;gcc:14&lt;/code&gt; on a Mac. Where does the result run?&quot;, &quot;o&quot;: [&quot;Directly in the Mac terminal&quot;, &quot;Inside a Linux container (or on a Linux machine)&quot;, &quot;Nowhere: containers can&#x27;t compile code&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The compiler in the container makes a Linux program, which is exactly what a Linux cluster needs.&quot;}]"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+</div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../building-images/index.html"><small>← Previous</small><b>03 · Building your own images</b></a>
+      <a class="next" href="../websites/index.html"><small>Next →</small><b>05 · Websites and web apps</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+  <script src="../ctr.js"></script>
+</body>
+</html>

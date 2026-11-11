@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A hands-on, interactive guide to containers and Docker: what they are, running programs, databases and websites, building images, Docker Compose, local AI models, sandboxed AI agents, Jupyter and Apptainer on HPC clusters.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="course.css">
+  <script src="../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">All projects</a><span aria-hidden="true">/</span>
+        <span aria-current="page">Containers &amp; Docker</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Computing · interactive course</p>
+        <h1>Containers &amp; Docker</h1>
+        <p class="lede">What containers are, why nearly all modern software ships in them, and how to use Docker yourself: to try programs without installing them, to run websites and databases, to host AI models and keep AI agents in a sandbox, and to take your research environment to a supercomputer.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-labelledby="try-h">
+        <div class="block-head">
+          <p class="eyebrow">Try it first</p>
+          <h2 id="try-h">Docker in your browser</h2>
+          <p class="lede">Click the suggested commands in order, or type your own. Watch the right-hand side: that is what Docker is doing on your computer.</p>
+        </div>
+        <div class="article wide"><div class="widget reveal" data-widget="playground"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div></div>
+      </section>
+      <section class="block" aria-labelledby="lessons-h">
+        <div class="block-head">
+          <p class="eyebrow">8 lessons</p>
+          <h2 id="lessons-h">Lessons</h2>
+          <p class="lede">Lessons 01 to 03 are the foundation; after them, jump to whichever of 04 to 07 matches what you want to run. Each lesson has interactive parts and ends with a short quiz.</p>
+          <div class="ctr-meter-row"><div class="ctr-meter" data-progress></div><small>0 of 8 lessons done</small></div>
+        </div>
+        <nav class="chapters" aria-label="Lessons">
+        <a class="chapter lesson-card reveal" href="what-is-a-container/index.html" style="--k:0">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">01</span><span class="tag">Concepts</span></div>
+            <h3>What a container is</h3>
+            <p>Containers versus virtual machines, images, layers and registries, what Docker actually does, and installing it on a Mac, Windows or Linux.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="first-containers/index.html" style="--k:1">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">02</span><span class="tag">Hands-on</span></div>
+            <h3>Your first containers</h3>
+            <p>Run, list, stop and remove containers; get a shell inside one; publish ports; pass settings; keep data with volumes and bind mounts; clean up.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="building-images/index.html" style="--k:2">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">03</span><span class="tag">Dockerfiles</span></div>
+            <h3>Building your own images</h3>
+            <p>Write a Dockerfile, understand layers and the build cache, CMD and ENTRYPOINT, multi-stage builds (with a Fortran example), and sharing images on a registry.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="running-programs/index.html" style="--k:3">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">04</span><span class="tag">Toolbox</span></div>
+            <h3>Running programs and tools</h3>
+            <p>Use any program without installing it: Python versions, pandoc, compilers, R, databases, other Linux systems, and self-hosted apps such as Nextcloud or Jellyfin.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="websites/index.html" style="--k:4">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">05</span><span class="tag">Web</span></div>
+            <h3>Websites and web apps</h3>
+            <p>Serve a static site, run a JavaScript dev server, then a full app with a database and automatic HTTPS in Docker Compose, and deploy it to a server or the cloud.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="ai-agents/index.html" style="--k:5">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">06</span><span class="tag">AI</span></div>
+            <h3>AI models and agents</h3>
+            <p>Run open models privately with Ollama and Open WebUI, use GPUs, build a small Claude agent that lives in a container, sandbox coding agents such as Claude Code, and run MCP servers.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="science-hpc/index.html" style="--k:6">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">07</span><span class="tag">Research</span></div>
+            <h3>Science, notebooks and clusters</h3>
+            <p>Jupyter in one command, reproducible research environments, and Apptainer (Singularity) for running containers on HPC clusters with Slurm, GPUs and MPI.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        <a class="chapter lesson-card reveal" href="safety-cheatsheet/index.html" style="--k:7">
+          <div class="chapter-body">
+            <div class="chapter-top"><span class="num">08</span><span class="tag">Reference</span></div>
+            <h3>Safety, troubleshooting and cheat sheet</h3>
+            <p>What containers do and don't protect, keeping secrets out of images, fixes for the errors everyone hits, and a one-page command reference.</p>
+            <span class="go">Open lesson →</span>
+          </div>
+        </a>
+        </nav>
+      </section>
+      <section class="block" aria-labelledby="paths-h">
+        <div class="block-head">
+          <p class="eyebrow">Start where you are</p>
+          <h2 id="paths-h">What do you want to run?</h2>
+        </div>
+        <div class="article">
+<div class="table-wrap reveal"><table>
+<thead><tr><th>I want to…</th><th>Read</th><th>Try first</th></tr></thead>
+<tbody>
+<tr><td>Understand what all the fuss is about</td><td><a href="what-is-a-container/index.html">01 · What a container is</a></td><td><code>docker run hello-world</code></td></tr>
+<tr><td>Use a program without installing it</td><td><a href="running-programs/index.html">04 · Running programs</a></td><td><code>docker run -it --rm python:3.13</code></td></tr>
+<tr><td>Run a database for a project</td><td><a href="running-programs/index.html#db">04 · Databases</a></td><td><code>docker run -d -e POSTGRES_PASSWORD=dev postgres:17</code></td></tr>
+<tr><td>Host a website or web app</td><td><a href="websites/index.html">05 · Websites</a></td><td><code>docker compose up -d</code></td></tr>
+<tr><td>Chat with AI models privately</td><td><a href="ai-agents/index.html#local">06 · Local models</a></td><td>Ollama + Open WebUI</td></tr>
+<tr><td>Build or sandbox an AI agent</td><td><a href="ai-agents/index.html#agent">06 · Agents</a></td><td>The file-reading agent</td></tr>
+<tr><td>Make research reproducible, or run on a cluster</td><td><a href="science-hpc/index.html">07 · Science and HPC</a></td><td><code>apptainer pull docker://…</code></td></tr>
+<tr><td>Fix an error</td><td><a href="safety-cheatsheet/index.html#trouble">08 · Troubleshooting</a></td><td></td></tr>
+</tbody></table></div>
+<div class="callout note reveal"><b>What you need</b> A computer with Docker (lesson 01 shows how to install it) and a terminal. No programming is needed for lessons 01, 02 and 04; lessons 03, 05 and 06 use small Python examples that are explained line by line.</div>
+<div class="callout src reveal"><b>About the examples</b><p>The Python examples were checked locally: the web apps with Flask's test client and the agent's tool loop against the Anthropic SDK with a mock server. YAML files were validated. The Docker commands and builds follow current documentation but were not run on this machine, so if an image tag has moved on, use the newer one. All files: <a href="code/python-app/Dockerfile" download>python-app</a>, <a href="code/fortran/Dockerfile" download>fortran</a>, <a href="code/static-site/Dockerfile" download>static-site</a>, <a href="code/web-stack/compose.yaml" download>web-stack</a>, <a href="code/ollama/compose.yaml" download>ollama</a>, <a href="code/agent/agent.py" download>agent</a>, <a href="code/devcontainer/devcontainer.json" download>devcontainer</a>, <a href="code/apptainer/science.def" download>apptainer</a>.</p></div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../forest-park-wildfires/fx.js"></script>
+  <script src="../forest-park-wildfires/i18n.js"></script>
+  <script src="ctr.js"></script>
+</body>
+</html>

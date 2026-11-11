@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Containers &amp; Docker, lesson 03: Writing Dockerfiles, how layers and the build cache work, CMD versus ENTRYPOINT, multi-stage builds, building for several CPU types, and publishing images.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Building your own images · Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Containers &amp; Docker</a><span aria-hidden="true">/</span>
+        <span aria-current="page">03 · Building your own images</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 03 of 8</p>
+        <h1>Building your own images</h1>
+        <p class="lede">Writing Dockerfiles, how layers and the build cache work, CMD versus ENTRYPOINT, multi-stage builds, building for several CPU types, and publishing images.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Building your own images">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#dockerfile">A Dockerfile</a><a href="#build">Build and run</a><a href="#layers">Layers and cache</a><a href="#cmd">CMD and ENTRYPOINT</a><a href="#multistage">Multi-stage</a><a href="#share">Sharing images</a><a href="#ex3">Exercises</a><a href="#quiz">Quiz</a></nav>
+
+<section id="dockerfile" aria-labelledby="dockerfile-h"><h2 id="dockerfile-h">A Dockerfile for a small web app</h2>
+<p>Here is a tiny Python web app that reports its own host name. Inside Docker that is the container's ID, so you can tell which container answered:</p>
+<div class="code reveal" translate="no" data-lang="python"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/python-app/app.py</span><span class="lang">Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-str">"""A tiny web app: the smallest thing worth putting in a container (lesson 03)."""</span></span><span class="ln" style="--i:1"><span class="t-kw">import</span> os</span><span class="ln" style="--i:2"><span class="t-kw">import</span> platform</span><span class="ln" style="--i:3"><span class="t-kw">import</span> socket</span><span class="ln" style="--i:4"> </span><span class="ln" style="--i:5"><span class="t-kw">from</span> flask <span class="t-kw">import</span> Flask</span><span class="ln" style="--i:6"> </span><span class="ln" style="--i:7">app = Flask(__name__)</span><span class="ln" style="--i:8"> </span><span class="ln" style="--i:9"> </span><span class="ln" style="--i:10"><span class="t-dec">@app.get</span>(<span class="t-str">"/"</span>)</span><span class="ln" style="--i:11"><span class="t-kw">def</span> <span class="t-fn">home</span>():</span><span class="ln" style="--i:12">    <span class="t-kw">return</span> {</span><span class="ln" style="--i:13">        <span class="t-str">"message"</span>: os.environ.get(<span class="t-str">"GREETING"</span>, <span class="t-str">"Hello from a container"</span>),</span><span class="ln" style="--i:14">        <span class="t-str">"hostname"</span>: socket.gethostname(),  <span class="t-com"># inside Docker this is the container ID</span></span><span class="ln" style="--i:15">        <span class="t-str">"python"</span>: platform.python_version(),</span><span class="ln" style="--i:16">    }</span><span class="ln" style="--i:17"> </span><span class="ln" style="--i:18"> </span><span class="ln" style="--i:19"><span class="t-kw">if</span> __name__ == <span class="t-str">"__main__"</span>:</span><span class="ln" style="--i:20">    app.run(host=<span class="t-str">"0.0.0.0"</span>, port=<span class="t-num">8000</span>)</span></code></pre></div><p class="dl"><a href="../code/python-app/app.py" download>Download app.py</a></p>
+<div class="code reveal" translate="no" data-lang="text"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/python-app/requirements.txt</span><span class="lang">text</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0">flask&gt;=3.1,&lt;4</span><span class="ln" style="--i:1">gunicorn&gt;=23,&lt;24</span></code></pre></div><p class="dl"><a href="../code/python-app/requirements.txt" download>Download requirements.txt</a></p>
+<p>And the Dockerfile that turns it into an image. Each line is one step:</p>
+<div class="code reveal" translate="no" data-lang="docker"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/python-app/Dockerfile</span><span class="lang">Dockerfile</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># Dockerfile for the tiny Flask app (lesson 03)</span></span><span class="ln" style="--i:1"><span class="t-ins">FROM</span> <span class="t-img">python:3.13-slim</span></span><span class="ln" style="--i:2"> </span><span class="ln" style="--i:3"><span class="t-com"># don't write .pyc files, and print logs straight away</span></span><span class="ln" style="--i:4"><span class="t-ins">ENV</span> PYTHONDONTWRITEBYTECODE=<span class="t-num">1</span> PYTHONUNBUFFERED=<span class="t-num">1</span></span><span class="ln" style="--i:5"> </span><span class="ln" style="--i:6"><span class="t-ins">WORKDIR</span> /app</span><span class="ln" style="--i:7"> </span><span class="ln" style="--i:8"><span class="t-com"># 1) dependencies first: this layer stays cached until requirements.txt changes</span></span><span class="ln" style="--i:9"><span class="t-ins">COPY</span> requirements.txt .</span><span class="ln" style="--i:10"><span class="t-ins">RUN</span> pip install <span class="t-flag">--no-cache-dir</span> <span class="t-flag">-r</span> requirements.txt</span><span class="ln" style="--i:11"> </span><span class="ln" style="--i:12"><span class="t-com"># 2) then the code, which changes often</span></span><span class="ln" style="--i:13"><span class="t-ins">COPY</span> app.py .</span><span class="ln" style="--i:14"> </span><span class="ln" style="--i:15"><span class="t-com"># run as an ordinary user, not root</span></span><span class="ln" style="--i:16"><span class="t-ins">RUN</span> useradd <span class="t-flag">--create-home</span> appuser</span><span class="ln" style="--i:17"><span class="t-ins">USER</span> appuser</span><span class="ln" style="--i:18"> </span><span class="ln" style="--i:19"><span class="t-ins">EXPOSE</span> <span class="t-num">8000</span></span><span class="ln" style="--i:20"><span class="t-ins">CMD</span> [<span class="t-str">"gunicorn"</span>, <span class="t-str">"--bind"</span>, <span class="t-str">"0.0.0.0:8000"</span>, <span class="t-str">"app:app"</span>]</span></code></pre></div><p class="dl"><a href="../code/python-app/Dockerfile" download>Download Dockerfile</a></p>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Instruction</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>FROM</code></td><td>The image to start from. Pick an official, small one (<code>-slim</code>, <code>-alpine</code>) with a version tag.</td></tr>
+<tr><td><code>WORKDIR</code></td><td>Create this folder and make it the current folder for the following steps and the final program.</td></tr>
+<tr><td><code>COPY src dest</code></td><td>Copy files from your project (the <em>build context</em>) into the image.</td></tr>
+<tr><td><code>RUN cmd</code></td><td>Run a command at build time, such as installing packages. Its result is saved in the image.</td></tr>
+<tr><td><code>ENV</code> / <code>ARG</code></td><td>Environment variables kept in the image / values used only while building.</td></tr>
+<tr><td><code>USER</code></td><td>Who the program runs as. Not root, if you can help it.</td></tr>
+<tr><td><code>EXPOSE</code></td><td>Documents which port the program listens on. It doesn't publish anything; <code>-p</code> does.</td></tr>
+<tr><td><code>CMD</code> / <code>ENTRYPOINT</code></td><td>What runs when a container starts (see below).</td></tr>
+</tbody></table></div>
+<p>A <code>.dockerignore</code> file keeps junk and secrets out of the build context, the same way <code>.gitignore</code> does for Git:</p>
+<div class="code reveal" translate="no" data-lang="text"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/python-app/.dockerignore</span><span class="lang">text</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># files that never go into the image</span></span><span class="ln" style="--i:1">.git</span><span class="ln" style="--i:2">.venv/</span><span class="ln" style="--i:3">__pycache__/</span><span class="ln" style="--i:4">*.pyc</span><span class="ln" style="--i:5">.env</span></code></pre></div><p class="dl"><a href="../code/python-app/.dockerignore" download>Download .dockerignore</a></p>
+</section>
+
+<section id="build" aria-labelledby="build-h"><h2 id="build-h">Build and run it</h2>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal (in the folder with the Dockerfile)</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">build</span> <span class="t-flag">-t</span> hello-flask:1.0 .</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-p</span> <span class="t-num">8000:8000</span> hello-flask:1.0</span><span class="ln" style="--i:2"><span class="t-com"># http://localhost:8000 shows {"hostname": "3f2a…", "message": "Hello from a container", ...}</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-p</span> <span class="t-num">8001:8000</span> <span class="t-flag">-e</span> GREETING=<span class="t-str">"Hi from a second copy"</span> hello-flask:1.0</span></code></pre></div>
+<p><code>-t name:tag</code> names the image, and the final <code>.</code> is the build context: the folder whose files <code>COPY</code> can see.
+The second <code>run</code> starts another container from the same image with a different setting; it reports a different host name.</p>
+</section>
+
+<section id="layers" aria-labelledby="layers-h"><h2 id="layers-h">Layers and the build cache</h2>
+<figure class="diagram reveal" aria-labelledby="layers-cap"><svg viewBox="0 0 760 300" role="img" aria-label="An image is a stack of read-only layers, one per Dockerfile step; a container adds a thin writable layer on top.">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--text-secondary)"/></marker></defs>
+<rect class="box dash" x="20" y="14" width="420" height="34" rx="6"/><text x="230" y="36" text-anchor="middle">Container: thin writable layer (lost on docker rm)</text>
+<rect class="box acc" x="20" y="60" width="420" height="34" rx="6"/><text x="230" y="82" text-anchor="middle">COPY app.py .</text>
+<rect class="box" x="20" y="100" width="420" height="34" rx="6"/><text x="230" y="122" text-anchor="middle">RUN pip install -r requirements.txt</text>
+<rect class="box" x="20" y="140" width="420" height="34" rx="6"/><text x="230" y="162" text-anchor="middle">COPY requirements.txt .</text>
+<rect class="box" x="20" y="180" width="420" height="34" rx="6"/><text x="230" y="202" text-anchor="middle">WORKDIR /app, ENV …</text>
+<rect class="box blue" x="20" y="220" width="420" height="54" rx="6"/><text x="230" y="243" text-anchor="middle">FROM python:3.13-slim</text><text class="muted" x="230" y="262" text-anchor="middle">Debian + Python, shared by every image built on it</text>
+<path class="arrow" d="M462 77 H500"/><text x="508" y="74">You edit app.py: only this layer</text><text x="508" y="92">is rebuilt (a second or two)</text>
+<path class="arrow" d="M462 157 H500"/><text x="508" y="146">You add a package: this layer and</text><text x="508" y="164">every one above it are rebuilt</text>
+<path class="arrow" d="M462 247 H500"/><text x="508" y="244">Downloaded once, then reused</text>
+<text class="muted" x="230" y="294" text-anchor="middle">read-only image layers, bottom to top in Dockerfile order</text>
+</svg><figcaption id="layers-cap">Each Dockerfile step makes a layer. Docker reuses a cached layer until that step or anything below it changes, which is why the dependencies are installed before the code is copied.</figcaption></figure>
+<p>Build the image again without changing anything and it finishes almost instantly: every step shows <code>CACHED</code>. Change one line of <code>app.py</code>
+and only the steps from <code>COPY app.py</code> on are redone. If the Dockerfile copied everything first and then ran <code>pip install</code>, every code change would
+reinstall every package. The rule: <strong>put what changes rarely near the top and what changes often near the bottom.</strong></p>
+<p>Two more habits keep images small: clean up in the same <code>RUN</code> that made the mess (a file deleted in a later step still takes space in the earlier layer),
+and use <code>--no-cache-dir</code> with pip, as above. <code>docker history hello-flask:1.0</code> shows each layer and its size.</p>
+<div class="widget reveal" data-widget="layercache"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="cmd" aria-labelledby="cmd-h"><h2 id="cmd-h">CMD versus ENTRYPOINT</h2>
+<p>Both say what runs when the container starts. The difference is what happens to words you type after the image name:</p>
+<ul>
+<li><code>CMD ["gunicorn", …]</code> is a <em>default</em>. <code>docker run hello-flask:1.0 python --version</code> replaces it completely. Good for servers and general images.</li>
+<li><code>ENTRYPOINT ["hello"]</code> is <em>fixed</em>, and your words become its arguments: <code>docker run hello-f Ada</code> runs <code>hello Ada</code>. Good for images that wrap one program, like a command-line tool.</li>
+</ul>
+<p>Write both in the JSON form with square brackets. The plain form (<code>CMD gunicorn app:app</code>) runs through a shell, which then doesn't pass on the stop signal, so <code>docker stop</code> waits ten seconds and kills the program.</p>
+<div class="widget reveal" data-widget="entrypoint"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="multistage" aria-labelledby="multistage-h"><h2 id="multistage-h">Multi-stage builds: compile big, ship small</h2>
+<p>Compilers are large but the programs they make are small. A multi-stage build compiles in one image and copies only the result into a second, slim one.
+Here a Fortran program is compiled with the official GCC image:</p>
+<div class="code reveal" translate="no" data-lang="fortran"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/fortran/hello.f90</span><span class="lang">Fortran</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com">! hello.f90 -- a program to compile inside a container (lesson 03)</span></span><span class="ln" style="--i:1"><span class="t-kw">program</span> hello</span><span class="ln" style="--i:2">  <span class="t-kw">implicit</span> <span class="t-kw">none</span></span><span class="ln" style="--i:3">  <span class="t-kw">character</span>(<span class="t-kw">len</span>=<span class="t-num">64</span>) :: name</span><span class="ln" style="--i:4">  <span class="t-kw">if</span> (<span class="t-bi">command_argument_count</span>() &gt; <span class="t-num">0</span>) <span class="t-kw">then</span></span><span class="ln" style="--i:5">    <span class="t-kw">call</span> <span class="t-bi">get_command_argument</span>(<span class="t-num">1</span>, name)</span><span class="ln" style="--i:6">  <span class="t-kw">else</span></span><span class="ln" style="--i:7">    name = <span class="t-str">'world'</span></span><span class="ln" style="--i:8">  <span class="t-kw">end</span> <span class="t-kw">if</span></span><span class="ln" style="--i:9">  <span class="t-kw">print</span> <span class="t-str">'(3a)'</span>, <span class="t-str">'Hello, '</span>, <span class="t-bi">trim</span>(name), <span class="t-str">', from a container!'</span></span><span class="ln" style="--i:10"><span class="t-kw">end</span> <span class="t-kw">program</span> hello</span></code></pre></div><p class="dl"><a href="../code/fortran/hello.f90" download>Download hello.f90</a></p>
+<div class="code reveal" translate="no" data-lang="docker"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/fortran/Dockerfile</span><span class="lang">Dockerfile</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># Multi-stage build (lesson 03): compile with the full toolchain, ship only the program.</span></span><span class="ln" style="--i:1"> </span><span class="ln" style="--i:2"><span class="t-com"># Stage 1: GCC with gfortran (well over a gigabyte)</span></span><span class="ln" style="--i:3"><span class="t-ins">FROM</span> <span class="t-img">gcc:14</span> <span class="t-kw">AS</span> build</span><span class="ln" style="--i:4"><span class="t-ins">WORKDIR</span> /src</span><span class="ln" style="--i:5"><span class="t-ins">COPY</span> hello.f90 .</span><span class="ln" style="--i:6"><span class="t-ins">RUN</span> gfortran <span class="t-flag">-O2</span> <span class="t-flag">-o</span> hello hello.f90</span><span class="ln" style="--i:7"> </span><span class="ln" style="--i:8"><span class="t-com"># Stage 2: a small Debian with just the Fortran runtime library</span></span><span class="ln" style="--i:9"><span class="t-ins">FROM</span> <span class="t-img">debian:bookworm-slim</span></span><span class="ln" style="--i:10"><span class="t-ins">RUN</span> apt-get update \</span><span class="ln" style="--i:11"> &amp;&amp; apt-get install <span class="t-flag">-y</span> <span class="t-flag">--no-install-recommends</span> libgfortran5 \</span><span class="ln" style="--i:12"> &amp;&amp; rm <span class="t-flag">-rf</span> /var/lib/apt/lists/*</span><span class="ln" style="--i:13"><span class="t-ins">COPY</span> <span class="t-flag">--from=build</span> /src/hello /usr/local/bin/hello</span><span class="ln" style="--i:14"><span class="t-ins">ENTRYPOINT</span> [<span class="t-str">"hello"</span>]</span></code></pre></div><p class="dl"><a href="../code/fortran/Dockerfile" download>Download Dockerfile</a></p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal (in the folder with hello.f90)</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">build</span> <span class="t-flag">-t</span> hello-f .</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> hello-f            <span class="t-com"># Hello, world, from a container!</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> hello-f Ada        <span class="t-com"># Hello, Ada, from a container!</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">images</span> hello-f              <span class="t-com"># under 100 MB; the gcc:14 build stage is well over 1 GB</span></span></code></pre></div>
+<p>The same pattern works for C, C++, Go, Rust and Java, and for websites: build the JavaScript with a Node image, then copy only the finished files into nginx.</p>
+</section>
+
+<section id="share" aria-labelledby="share-h"><h2 id="share-h">Sharing images</h2>
+<p>An image on your laptop is only useful to you. Push it to a registry and anyone (or any server) can <code>docker pull</code> it. On Docker Hub the name is <code>USERNAME/IMAGE:TAG</code>;
+on GitHub's registry it is <code>ghcr.io/USERNAME/IMAGE:TAG</code> (log in with a personal access token that has the <code>write:packages</code> scope).</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">login</span>                                     <span class="t-com"># Docker Hub; or: docker login ghcr.io</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">tag</span> hello-flask:1.0 USERNAME/hello-flask:1.0</span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">push</span> USERNAME/hello-flask:1.0</span></code></pre></div>
+<p>A Mac with Apple silicon builds <code>arm64</code> images, and most servers are <code>amd64</code>. Build for both at once with <code>buildx</code>, which pushes one tag that works on either:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">buildx</span> build <span class="t-flag">--platform</span> linux/amd64,linux/arm64 <span class="t-flag">-t</span> USERNAME/hello-flask:1.0 <span class="t-flag">--push</span> .</span></code></pre></div>
+<div class="callout warn reveal"><b>Never bake secrets into an image</b> Anything you <code>COPY</code> or set with <code>ENV</code> stays in the image's layers, even if a later step deletes it, and anyone who pulls the image can read it. Pass secrets when the container runs (<code>-e</code>, <code>--env-file</code>), or at build time with <code>RUN --mount=type=secret</code> (lesson 08).</div>
+</section>
+
+<section id="ex3" aria-labelledby="ex3-h"><h2 id="ex3-h">Exercises</h2>
+<ol class="ex">
+<li>Build <code>hello-flask</code>, change the greeting text in <code>app.py</code>, and rebuild. Which steps say <code>CACHED</code>? Now add <code>requests</code> to <code>requirements.txt</code> and rebuild: which steps run now?</li>
+<li>Swap the two <code>COPY</code> steps around so everything is copied before <code>pip install</code>. Repeat exercise 1 and compare the build times.</li>
+<li>Remove <code>USER appuser</code>, rebuild, and run <code>docker run --rm hello-flask:1.0 whoami</code>. Put it back and run it again.</li>
+<li>Change the Fortran Dockerfile so the second stage is <code>FROM gcc:14</code> too, and compare the sizes with <code>docker images</code>.</li>
+</ol>
+</section>
+<section id="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+<div class="widget reveal" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Why does the Dockerfile copy &lt;code&gt;requirements.txt&lt;/code&gt; and install packages &lt;em&gt;before&lt;/em&gt; copying the code?&quot;, &quot;o&quot;: [&quot;Docker requires that order&quot;, &quot;So that editing the code doesn&#x27;t invalidate the cached pip install layer&quot;, &quot;It makes the image smaller&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;A layer is rebuilt when its step or anything below it changes. Rarely changing steps go first.&quot;}, {&quot;q&quot;: &quot;The image has &lt;code&gt;ENTRYPOINT [\&quot;hello\&quot;]&lt;/code&gt;. What runs for &lt;code&gt;docker run img Ada&lt;/code&gt;?&quot;, &quot;o&quot;: [&quot;Ada&quot;, &quot;hello&quot;, &quot;hello Ada&quot;], &quot;a&quot;: 2, &quot;e&quot;: &quot;Words after the image name are appended to the ENTRYPOINT. With CMD they would replace it.&quot;}, {&quot;q&quot;: &quot;Where should an API key go?&quot;, &quot;o&quot;: [&quot;ENV API_KEY=… in the Dockerfile&quot;, &quot;In the image, then deleted in a later RUN step&quot;, &quot;Passed when the container runs, e.g. -e API_KEY&quot;], &quot;a&quot;: 2, &quot;e&quot;: &quot;Anything in the image&#x27;s layers can be read by whoever has the image, even if a later step deletes it.&quot;}]"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+</div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../first-containers/index.html"><small>← Previous</small><b>02 · Your first containers</b></a>
+      <a class="next" href="../running-programs/index.html"><small>Next →</small><b>04 · Running programs and tools</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+  <script src="../ctr.js"></script>
+</body>
+</html>

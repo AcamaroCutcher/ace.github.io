@@ -37,7 +37,7 @@ window.PROJECT_LIBRARY = {
     {
       id: 'containers',
       title: 'Containers & Docker',
-      summary: 'A hands-on guide to containers: what they are and how they differ from virtual machines, everyday Docker commands, writing Dockerfiles, and using containers to run programs and databases without installing them, to host websites with a database and HTTPS in Docker Compose, to run open AI models privately and keep AI agents in a sandbox, and to take reproducible research environments to HPC clusters with Apptainer and Slurm. Eight lessons with downloadable examples, exercises and a cheat sheet.',
+      summary: 'A hands-on guide to containers: what they are and how they differ from virtual machines, everyday Docker commands, writing Dockerfiles, and using containers to run programs and databases without installing them, to host websites with a database and HTTPS in Docker Compose, to run open AI models privately and keep AI agents in a sandbox, and to take reproducible research environments to HPC clusters with Apptainer and Slurm. Eight interactive lessons: a Docker playground that runs in the browser, a build-cache simulator, a request-flow diagram, an agent-loop replay, a sandbox you can attack, quizzes, downloadable examples and a cheat sheet.',
       disciplines: ['ml'],
       types: ['code', 'interactive'],
       status: 'completed',

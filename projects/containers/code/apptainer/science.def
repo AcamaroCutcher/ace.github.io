@@ -1,0 +1,12 @@
+# Apptainer definition file (lesson 07). Build: apptainer build science.sif science.def
+Bootstrap: docker
+From: python:3.13-slim
+
+%post
+    pip install --no-cache-dir numpy scipy matplotlib xarray netCDF4
+
+%runscript
+    exec python "$@"
+
+%labels
+    Description Python with the scientific stack, for cluster jobs

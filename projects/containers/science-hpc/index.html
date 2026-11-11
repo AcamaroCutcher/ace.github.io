@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Containers &amp; Docker, lesson 07: Containers for research: Jupyter, reproducible environments to publish with a paper, and Apptainer for HPC clusters, with Slurm, GPUs and MPI.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Science, notebooks and clusters · Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Containers &amp; Docker</a><span aria-hidden="true">/</span>
+        <span aria-current="page">07 · Science, notebooks and clusters</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 07 of 8</p>
+        <h1>Science, notebooks and clusters</h1>
+        <p class="lede">Containers for research: Jupyter, reproducible environments to publish with a paper, and Apptainer for HPC clusters, with Slurm, GPUs and MPI.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Science, notebooks and clusters">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#jupyter">Jupyter</a><a href="#repro">Reproducibility</a><a href="#hpc">HPC clusters</a><a href="#apptainer">Apptainer</a><a href="#slurm">Slurm jobs</a><a href="#mpi">GPUs and MPI</a><a href="#ex7">Exercises</a><a href="#quiz">Quiz</a></nav>
+
+<section id="jupyter" aria-labelledby="jupyter-h"><h2 id="jupyter-h">Jupyter in one command</h2>
+<p>The Jupyter project publishes ready-made notebook images with the scientific stack already installed:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal (in your project folder)</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:8888:8888</span> <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/home/jovyan/work quay.io/jupyter/scipy-notebook</span><span class="ln" style="--i:1"><span class="t-com"># open the http://127.0.0.1:8888/lab?token=… link it prints</span></span></code></pre></div>
+<p>Your folder appears as <code>work/</code> in JupyterLab. Other images in the family: <code>datascience-notebook</code> (Python, R and Julia), <code>pytorch-notebook</code> and <code>tensorflow-notebook</code>.
+To add packages permanently, build on top of one:</p>
+<div class="code reveal" translate="no" data-lang="docker"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Dockerfile</span><span class="lang">Dockerfile</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># for a paper, pin a dated tag listed on quay.io/repository/jupyter/scipy-notebook</span></span><span class="ln" style="--i:1"><span class="t-ins">FROM</span> <span class="t-img">quay.io/jupyter/scipy-notebook</span></span><span class="ln" style="--i:2"><span class="t-ins">RUN</span> pip install <span class="t-flag">--no-cache-dir</span> xarray netCDF4 cartopy</span></code></pre></div>
+</section>
+
+<section id="repro" aria-labelledby="repro-h"><h2 id="repro-h">Reproducible research environments</h2>
+<p>A paper's results depend on its software versions. A container records them in a form anyone can run years later. To make it truly reproducible:</p>
+<ul>
+<li><strong>Pin everything.</strong> A base image tag, exact package versions (<code>pip freeze &gt; requirements.txt</code>), and ideally the image's <em>digest</em>, a hash that never changes even if a tag is moved:</li>
+</ul>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">pull</span> python:3.13-slim</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">inspect</span> <span class="t-flag">--format</span> <span class="t-str">'{{index .RepoDigests 0}}'</span> python:3.13-slim</span><span class="ln" style="--i:2"><span class="t-com"># python@sha256:4c2f…  → use it as:  FROM python:3.13-slim@sha256:4c2f…</span></span></code></pre></div>
+<ul>
+<li><strong>Publish the image</strong> with the code: push it to a registry, and for long-term archiving save it to a file and deposit it with the data (Zenodo, OSF, a university repository):</li>
+</ul>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">save</span> my-analysis:paper-v1 | <span class="t-cmd">gzip</span> &gt; my-analysis-paper-v1.tar.gz</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">load</span> &lt; my-analysis-paper-v1.tar.gz            <span class="t-com"># years later, on any machine with Docker</span></span></code></pre></div>
+<ul>
+<li><strong>Keep the Dockerfile in the repository</strong>, so readers can see how the environment was made, and not only download it.</li>
+</ul>
+</section>
+
+<section id="hpc" aria-labelledby="hpc-h"><h2 id="hpc-h">Why clusters don't run Docker</h2>
+<p>Supercomputers and university clusters almost never allow Docker: its daemon runs as root, and any user who can start containers could become root on a shared machine.
+Clusters use <strong><a href="https://apptainer.org/">Apptainer</a></strong> instead (formerly called Singularity; many sites still have the <code>singularity</code> command). It was designed for HPC:</p>
+<ul>
+<li>it runs as <em>you</em>, with no daemon and no root;</li>
+<li>an image is a single <code>.sif</code> file you can copy, share and keep next to your data;</li>
+<li>your home directory and current folder are visible inside by default, and the cluster's file systems, GPUs and fast network work as usual;</li>
+<li>it runs Docker images directly, so the images from the earlier lessons go with you.</li>
+</ul>
+<p>Some sites also offer Podman, Charliecloud, Enroot or Sarus. Check your cluster's documentation; the ideas are the same.</p>
+</section>
+
+<section id="apptainer" aria-labelledby="apptainer-h"><h2 id="apptainer-h">Apptainer in practice</h2>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">On the cluster</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">module</span> load apptainer                                 <span class="t-com"># or: module load singularity</span></span><span class="ln" style="--i:1"><span class="t-cmd">apptainer</span> <span class="t-kw">pull</span> docker://python:3.13-slim              <span class="t-com"># makes python_3.13-slim.sif</span></span><span class="ln" style="--i:2"><span class="t-cmd">apptainer</span> <span class="t-kw">exec</span> python_3.13-slim.sif python <span class="t-flag">--version</span></span><span class="ln" style="--i:3"><span class="t-cmd">apptainer</span> <span class="t-kw">shell</span> python_3.13-slim.sif                  <span class="t-com"># an interactive shell inside</span></span><span class="ln" style="--i:4"><span class="t-cmd">apptainer</span> <span class="t-kw">run</span> docker://ghcr.io/USERNAME/my-analysis:1.0   <span class="t-com"># pull and run your own image</span></span></code></pre></div>
+<p>Apptainer can also build from its own recipe format, a <em>definition file</em>:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/apptainer/science.def</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># Apptainer definition file (lesson 07). Build: apptainer build science.sif science.def</span></span><span class="ln" style="--i:1">Bootstrap: docker</span><span class="ln" style="--i:2">From: python:3.13-slim</span><span class="ln" style="--i:3"> </span><span class="ln" style="--i:4">%post</span><span class="ln" style="--i:5">    pip install <span class="t-flag">--no-cache-dir</span> numpy scipy matplotlib xarray netCDF4</span><span class="ln" style="--i:6"> </span><span class="ln" style="--i:7">%runscript</span><span class="ln" style="--i:8">    exec python <span class="t-str">"$@"</span></span><span class="ln" style="--i:9"> </span><span class="ln" style="--i:10">%labels</span><span class="ln" style="--i:11">    Description Python with the scientific stack, for cluster jobs</span></code></pre></div><p class="dl"><a href="../code/apptainer/science.def" download>Download science.def</a></p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">apptainer</span> <span class="t-kw">build</span> science.sif science.def               <span class="t-com"># some clusters need --fakeroot, or a build node</span></span></code></pre></div>
+<p>The easiest workflow is often: build a Docker image on your laptop, push it to a registry, and <code>apptainer pull docker://…</code> it on the cluster.</p>
+<div class="callout warn reveal"><b>CPU type</b> Almost all clusters are <code>x86_64</code> (<code>amd64</code>). A Mac with Apple silicon builds <code>arm64</code> images by default, and those fail on the cluster with <code>exec format error</code>. Build with <code>docker buildx build --platform linux/amd64 …</code> (lesson 03).</div>
+<div class="widget reveal" data-widget="archcheck"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+
+<section id="slurm" aria-labelledby="slurm-h"><h2 id="slurm-h">Containers in Slurm jobs</h2>
+<p>A container is just a command in a job script, so nothing changes about how you submit:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">code/apptainer/job.slurm</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com">#!/bin/bash</span></span><span class="ln" style="--i:1"><span class="t-com"># Run a containerized analysis on a Slurm cluster (lesson 07). Submit: sbatch job.slurm</span></span><span class="ln" style="--i:2"><span class="t-com">#SBATCH --job-name=container-job</span></span><span class="ln" style="--i:3"><span class="t-com">#SBATCH --ntasks=1</span></span><span class="ln" style="--i:4"><span class="t-com">#SBATCH --cpus-per-task=4</span></span><span class="ln" style="--i:5"><span class="t-com">#SBATCH --mem=8G</span></span><span class="ln" style="--i:6"><span class="t-com">#SBATCH --time=00:30:00</span></span><span class="ln" style="--i:7"> </span><span class="ln" style="--i:8"><span class="t-cmd">module</span> load apptainer        <span class="t-com"># the module name differs between clusters (sometimes "singularity")</span></span><span class="ln" style="--i:9"> </span><span class="ln" style="--i:10"><span class="t-com"># your home directory and the current folder are visible inside the container by default;</span></span><span class="ln" style="--i:11"><span class="t-com"># --bind adds other folders, such as a scratch file system</span></span><span class="ln" style="--i:12"><span class="t-cmd">apptainer</span> <span class="t-kw">exec</span> <span class="t-flag">--bind</span> /scratch science.sif python analysis.py</span></code></pre></div><p class="dl"><a href="../code/apptainer/job.slurm" download>Download job.slurm</a></p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">sbatch</span> job.slurm</span><span class="ln" style="--i:1"><span class="t-cmd">squeue</span> <span class="t-flag">-u</span> <span class="t-str">"$USER"</span></span></code></pre></div>
+</section>
+
+<section id="mpi" aria-labelledby="mpi-h"><h2 id="mpi-h">GPUs and MPI</h2>
+<p><strong>GPUs:</strong> add <code>--nv</code> (NVIDIA) or <code>--rocm</code> (AMD), and the host's driver is made available inside:
+<code>apptainer exec --nv pytorch.sif python train.py</code>. The CUDA toolkit comes from the image, the driver from the cluster.</p>
+<p><strong>MPI:</strong> the usual approach is the <em>hybrid</em> model. The cluster's launcher starts one container per rank, and the MPI library inside the container talks to the one on the host:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">In a job script</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">srun</span> apptainer <span class="t-kw">exec</span> model.sif ./model.exe</span></code></pre></div>
+<p>For this to work, the MPI inside the image must be compatible with the cluster's (the same implementation, such as Open MPI or MPICH, and a similar version). A common trick is to build the image with the same MPI version the cluster provides, or to bind the host's MPI into the container. Big Fortran models with long dependency lists, such as WRF or FIRETEC from the <a href="../../fortran-firetec/index.html">Fortran for FIRETEC</a> course, are good candidates: build the environment once, then run it on any cluster.</p>
+</section>
+
+<section id="ex7" aria-labelledby="ex7-h"><h2 id="ex7-h">Exercises</h2>
+<ol class="ex">
+<li>Start the SciPy notebook image on a folder of data and make a plot. Stop it; the notebook is still in your folder.</li>
+<li>Find the digest of the base image you use most and pin it in a Dockerfile.</li>
+<li>If you have cluster access: pull <code>docker://python:3.13-slim</code> with Apptainer, run <code>python -c "import os; print(os.getcwd(), os.getuid())"</code> inside, and compare it with the same command outside.</li>
+</ol>
+</section>
+<section id="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+<div class="widget reveal" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Why do clusters use Apptainer instead of Docker?&quot;, &quot;o&quot;: [&quot;Apptainer is faster&quot;, &quot;Docker&#x27;s daemon runs as root, which is unsafe on a shared machine&quot;, &quot;Docker can&#x27;t run Python&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Apptainer runs as you, without a daemon, and still runs Docker images.&quot;}, {&quot;q&quot;: &quot;Your image built on an Apple-silicon Mac fails on the cluster with &lt;code&gt;exec format error&lt;/code&gt;. Fix?&quot;, &quot;o&quot;: [&quot;Use --nv&quot;, &quot;Build with --platform linux/amd64&quot;, &quot;Use a bigger node&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;The image contained arm64 programs; the cluster is x86_64 (amd64).&quot;}, {&quot;q&quot;: &quot;Which makes an environment most reproducible years later?&quot;, &quot;o&quot;: [&quot;FROM python:latest&quot;, &quot;FROM python:3.13-slim@sha256:… plus pinned package versions&quot;, &quot;Installing packages when the container starts&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;A digest never moves, and pinned packages mean the same environment every time.&quot;}]"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+</div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../ai-agents/index.html"><small>← Previous</small><b>06 · AI models and agents</b></a>
+      <a class="next" href="../safety-cheatsheet/index.html"><small>Next →</small><b>08 · Safety, troubleshooting and cheat sheet</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+  <script src="../ctr.js"></script>
+</body>
+</html>

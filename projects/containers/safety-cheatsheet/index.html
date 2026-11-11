@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Containers &amp; Docker, lesson 08: The security rules that matter, how to keep secrets safe, solutions to the most common errors, and a one-page reference of commands.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Safety, troubleshooting and cheat sheet · Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Containers &amp; Docker</a><span aria-hidden="true">/</span>
+        <span aria-current="page">08 · Safety, troubleshooting and cheat sheet</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 08 of 8</p>
+        <h1>Safety, troubleshooting and cheat sheet</h1>
+        <p class="lede">The security rules that matter, how to keep secrets safe, solutions to the most common errors, and a one-page reference of commands.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Safety, troubleshooting and cheat sheet">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#security">Security</a><a href="#secrets">Secrets</a><a href="#trouble">Troubleshooting</a><a href="#cheat">Cheat sheet</a><a href="#next">Going further</a><a href="#quiz">Quiz</a></nav>
+
+<section id="security" aria-labelledby="security-h"><h2 id="security-h">Security rules that matter</h2>
+<p>A container is a fence, not a vault. It keeps honest mistakes contained and makes attacks harder, but a determined attacker inside a misconfigured container can get out. These rules close the common holes:</p>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Rule</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Never mount <code>/var/run/docker.sock</code> into a container you don't fully trust</td><td>Whoever controls the Docker socket controls the host, as root</td></tr>
+<tr><td>Avoid <code>--privileged</code></td><td>It removes nearly all isolation</td></tr>
+<tr><td>Run as a non-root user (<code>USER</code> in the Dockerfile)</td><td>If the program is compromised, the attacker isn't root inside</td></tr>
+<tr><td>Mount only what's needed, read-only where possible (<code>:ro</code>)</td><td>The container can't damage what it can't see or write</td></tr>
+<tr><td>Bind private ports to <code>127.0.0.1</code></td><td>Otherwise databases and admin pages are open to the network, and on Linux Docker's rules skip <code>ufw</code></td></tr>
+<tr><td>Use trusted, pinned, up-to-date images</td><td>Old images carry old vulnerabilities. Rebuild and pull regularly</td></tr>
+<tr><td>Scan images: <code>docker scout cves IMAGE</code> or <a href="https://trivy.dev/">Trivy</a></td><td>Lists known vulnerabilities in the packages inside</td></tr>
+<tr><td>Limit resources (<code>--memory</code>, <code>--cpus</code>, <code>--pids-limit</code>)</td><td>One runaway container can't freeze the machine</td></tr>
+<tr><td>For hostile code, use a VM, gVisor or a micro-VM</td><td>They don't share the host kernel's attack surface</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="secrets" aria-labelledby="secrets-h"><h2 id="secrets-h">Keeping secrets out of images</h2>
+<p>Passwords, API keys and tokens must never be <code>COPY</code>-ed into an image or set with <code>ENV</code> in a Dockerfile; they would be readable by anyone with the image. Instead:</p>
+<ul>
+<li><strong>At run time:</strong> <code>-e NAME</code> (copied from your shell), <code>--env-file .env</code>, or Compose's <code>.env</code> file. Keep <code>.env</code> in <code>.gitignore</code> and <code>.dockerignore</code>.</li>
+<li><strong>At build time</strong> (for example, a token to download a private package), mount it for one step only, so it's never stored in a layer:</li>
+</ul>
+<div class="code reveal" translate="no" data-lang="docker"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Dockerfile</span><span class="lang">Dockerfile</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-com"># syntax=docker/dockerfile:1</span></span><span class="ln" style="--i:1"><span class="t-ins">FROM</span> <span class="t-img">python:3.13-slim</span></span><span class="ln" style="--i:2"><span class="t-ins">RUN</span> <span class="t-flag">--mount=type=secret,id=pip_token</span> \</span><span class="ln" style="--i:3">    PIP_INDEX_URL=<span class="t-str">"https://$(cat /run/secrets/pip_token)@pypi.example.com/simple"</span> pip install private-package</span></code></pre></div>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">build</span> <span class="t-flag">--secret</span> id=pip_token,env=PIP_TOKEN <span class="t-flag">-t</span> app .</span></code></pre></div>
+</section>
+
+<section id="trouble" aria-labelledby="trouble-h"><h2 id="trouble-h">Troubleshooting</h2>
+<div class="widget reveal" data-widget="filter"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Symptom</th><th>Cause and fix</th></tr></thead>
+<tbody>
+<tr><td><code>Cannot connect to the Docker daemon</code></td><td>Docker isn't running. Start Docker Desktop (or <code>sudo systemctl start docker</code> on Linux).</td></tr>
+<tr><td><code>permission denied … docker.sock</code> (Linux)</td><td>Your user isn't in the <code>docker</code> group: <code>sudo usermod -aG docker $USER</code>, then log out and in.</td></tr>
+<tr><td><code>port is already allocated</code></td><td>Another container or program uses that host port. <code>docker ps</code> to find it, or choose another: <code>-p 8081:80</code>.</td></tr>
+<tr><td>Browser: connection reset / empty reply</td><td>The program inside listens on <code>127.0.0.1</code>. Make it listen on <code>0.0.0.0</code> (lesson 05).</td></tr>
+<tr><td>The container exits immediately</td><td>A container lives as long as its main program. Read why with <code>docker logs NAME</code>; for a shell, use <code>-it</code>.</td></tr>
+<tr><td><code>exec format error</code></td><td>The image is for another CPU type (<code>arm64</code> vs <code>amd64</code>). Rebuild with <code>--platform</code>, or pull a multi-arch image.</td></tr>
+<tr><td>My changes disappeared</td><td>They were in the container's writable layer. Use a volume or bind mount for anything you want to keep.</td></tr>
+<tr><td><code>localhost</code> doesn't reach my computer from inside</td><td>Inside a container, <code>localhost</code> is the container. Use <code>host.docker.internal</code> (Docker Desktop; on Linux add <code>--add-host=host.docker.internal:host-gateway</code>).</td></tr>
+<tr><td>Containers can't find each other</td><td>Put them on the same network; Compose does this, then use the service name as host name.</td></tr>
+<tr><td>Files created in a bind mount belong to root (Linux)</td><td>Run with <code>--user "$(id -u):$(id -g)"</code>.</td></tr>
+<tr><td><code>no space left on device</code></td><td><code>docker system df</code>, then <code>docker system prune</code>. On a Mac, Docker Desktop's disk size is set in its settings.</td></tr>
+<tr><td>My code change doesn't show up</td><td>The image is stale: rebuild (<code>docker compose up -d --build</code>). With a bind mount, check the path.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="cheat" aria-labelledby="cheat-h"><h2 id="cheat-h">Cheat sheet</h2>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Containers</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-it</span> <span class="t-flag">--rm</span> IMAGE sh                  <span class="t-com"># throwaway interactive shell</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> N <span class="t-flag">-p</span> <span class="t-num">8080:80</span> IMAGE       <span class="t-com"># background server on localhost:8080</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/work <span class="t-flag">-w</span> /work IMAGE CMD   <span class="t-com"># a tool on the current folder</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">ps</span> <span class="t-flag">-a</span>                                  <span class="t-com"># list containers</span></span><span class="ln" style="--i:4"><span class="t-cmd">docker</span> <span class="t-kw">logs</span> <span class="t-flag">-f</span> N                              <span class="t-com"># follow output</span></span><span class="ln" style="--i:5"><span class="t-cmd">docker</span> <span class="t-kw">exec</span> <span class="t-flag">-it</span> N sh                          <span class="t-com"># shell inside a running container</span></span><span class="ln" style="--i:6"><span class="t-cmd">docker</span> <span class="t-kw">stop</span> N; <span class="t-cmd">docker</span> <span class="t-kw">start</span> N; <span class="t-cmd">docker</span> <span class="t-kw">rm</span> <span class="t-flag">-f</span> N <span class="t-com"># lifecycle</span></span><span class="ln" style="--i:7"><span class="t-cmd">docker</span> <span class="t-kw">stats</span>                                  <span class="t-com"># live CPU / memory per container</span></span><span class="ln" style="--i:8"><span class="t-cmd">docker</span> <span class="t-kw">inspect</span> N                              <span class="t-com"># every detail, as JSON</span></span><span class="ln" style="--i:9"><span class="t-cmd">docker</span> <span class="t-kw">cp</span> N:/path/file .                      <span class="t-com"># copy a file out (or in)</span></span></code></pre></div>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Images</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">pull</span> IMAGE:TAG                         <span class="t-com"># download</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">images</span>                                 <span class="t-com"># list</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">build</span> <span class="t-flag">-t</span> NAME:TAG .                    <span class="t-com"># build from ./Dockerfile</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">history</span> NAME:TAG                       <span class="t-com"># layers and sizes</span></span><span class="ln" style="--i:4"><span class="t-cmd">docker</span> <span class="t-kw">tag</span> NAME:TAG USER/NAME:TAG &amp;&amp; <span class="t-cmd">docker</span> <span class="t-kw">push</span> USER/NAME:TAG</span><span class="ln" style="--i:5"><span class="t-cmd">docker</span> <span class="t-kw">buildx</span> build <span class="t-flag">--platform</span> linux/amd64,linux/arm64 <span class="t-flag">-t</span> USER/NAME:TAG <span class="t-flag">--push</span> .</span><span class="ln" style="--i:6"><span class="t-cmd">docker</span> <span class="t-kw">save</span> NAME:TAG | <span class="t-cmd">gzip</span> &gt; NAME.tar.gz     <span class="t-com"># archive; docker load &lt; NAME.tar.gz</span></span></code></pre></div>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Data, networks, cleanup</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">volume</span> ls / create V / rm V</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">network</span> ls / create NET                <span class="t-com"># docker run --network NET ...</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">system</span> df                              <span class="t-com"># disk usage</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">system</span> prune                           <span class="t-com"># remove stopped containers, unused networks, dangling images</span></span><span class="ln" style="--i:4"><span class="t-cmd">docker</span> <span class="t-kw">image</span> prune <span class="t-flag">-a</span>                         <span class="t-com"># remove all unused images</span></span></code></pre></div>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Compose (in the folder with compose.yaml)</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">up</span> <span class="t-flag">-d</span> <span class="t-flag">--build</span>                  <span class="t-com"># start / update everything</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">ps</span>                             <span class="t-com"># status</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">logs</span> <span class="t-flag">-f</span> SERVICE                <span class="t-com"># output</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">exec</span> SERVICE sh                <span class="t-com"># shell in a service</span></span><span class="ln" style="--i:4"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">pull</span>                           <span class="t-com"># newer images</span></span><span class="ln" style="--i:5"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">down</span>                           <span class="t-com"># stop and remove (keeps volumes)</span></span><span class="ln" style="--i:6"><span class="t-cmd">docker</span> <span class="t-kw">compose</span> <span class="t-kw">down</span> <span class="t-flag">-v</span>                        <span class="t-com"># ...and delete volumes</span></span></code></pre></div>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Apptainer (HPC)</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">apptainer</span> <span class="t-kw">pull</span> docker://IMAGE:TAG             <span class="t-com"># -&gt; IMAGE_TAG.sif</span></span><span class="ln" style="--i:1"><span class="t-cmd">apptainer</span> <span class="t-kw">exec</span> [--nv] FILE.sif CMD            <span class="t-com"># run a command (--nv for NVIDIA GPUs)</span></span><span class="ln" style="--i:2"><span class="t-cmd">apptainer</span> <span class="t-kw">shell</span> FILE.sif                      <span class="t-com"># interactive shell</span></span><span class="ln" style="--i:3"><span class="t-cmd">apptainer</span> <span class="t-kw">build</span> FILE.sif FILE.def             <span class="t-com"># build from a definition file</span></span></code></pre></div>
+</section>
+
+<section id="next" aria-labelledby="next-h"><h2 id="next-h">Going further</h2>
+<ul>
+<li><a href="https://docs.docker.com/get-started/">Docker's own getting-started guide</a> and the <a href="https://docs.docker.com/reference/dockerfile/">Dockerfile reference</a>.</li>
+<li><a href="https://docs.docker.com/compose/">Docker Compose documentation</a>, including health checks, profiles and secrets.</li>
+<li><a href="https://apptainer.org/docs/user/latest/">Apptainer user guide</a>, and your cluster's own container page.</li>
+<li><a href="https://containers.dev/">containers.dev</a>, the dev container specification.</li>
+<li><a href="https://kubernetes.io/docs/tutorials/kubernetes-basics/">Kubernetes basics</a>, once you run many containers on many machines.</li>
+</ul>
+</section>
+<section id="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+<div class="widget reveal" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;Which is the most dangerous thing to mount into an untrusted container?&quot;, &quot;o&quot;: [&quot;A read-only data folder&quot;, &quot;/var/run/docker.sock&quot;, &quot;A named volume&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Control of the Docker socket is control of the host, as root.&quot;}, {&quot;q&quot;: &quot;A database runs with &lt;code&gt;-p 5432:5432&lt;/code&gt; on a Linux server with ufw. Who can reach it?&quot;, &quot;o&quot;: [&quot;Only the server&quot;, &quot;Possibly anyone on the internet: Docker&#x27;s rules bypass ufw&quot;, &quot;Nobody without SSH&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Bind private services to 127.0.0.1 (-p 127.0.0.1:5432:5432) or don&#x27;t publish them at all.&quot;}, {&quot;q&quot;: &quot;Inside a container, how do you reach a service running on your Mac itself?&quot;, &quot;o&quot;: [&quot;localhost&quot;, &quot;host.docker.internal&quot;, &quot;0.0.0.0&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;localhost is the container. Docker Desktop provides host.docker.internal for the host.&quot;}]"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+</div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../science-hpc/index.html"><small>← Previous</small><b>07 · Science, notebooks and clusters</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+  <script src="../ctr.js"></script>
+</body>
+</html>

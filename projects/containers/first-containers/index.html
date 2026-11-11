@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Containers &amp; Docker, lesson 02: The everyday commands: running containers interactively and in the background, ports, environment variables, volumes and bind mounts, and cleaning up.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Your first containers · Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Containers &amp; Docker</a><span aria-hidden="true">/</span>
+        <span aria-current="page">02 · Your first containers</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 02 of 8</p>
+        <h1>Your first containers</h1>
+        <p class="lede">The everyday commands: running containers interactively and in the background, ports, environment variables, volumes and bind mounts, and cleaning up.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="Your first containers">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#run">Run</a><a href="#background">In the background</a><a href="#ports">Ports</a><a href="#data">Keeping data</a><a href="#env">Settings</a><a href="#clean">Cleaning up</a><a href="#ex2">Exercises</a><a href="#quiz">Quiz</a></nav>
+
+<section id="run" aria-labelledby="run-h"><h2 id="run-h">Run a container and look around</h2>
+<p>Start an interactive Ubuntu shell. <code>-it</code> connects your keyboard and terminal to it, and <code>--rm</code> deletes the container when you leave:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-it</span> <span class="t-flag">--rm</span> ubuntu:24.04 bash</span></code></pre></div>
+<p>You are now <code>root</code> inside a minimal Ubuntu, even if your computer is a Mac. Try a few things:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Inside the container</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">cat</span> /etc/os-release           <span class="t-com"># Ubuntu 24.04, whatever your own system is</span></span><span class="ln" style="--i:1"><span class="t-cmd">ps</span> aux                        <span class="t-com"># only bash and ps: the container sees its own processes</span></span><span class="ln" style="--i:2"><span class="t-cmd">apt-get</span> update &amp;&amp; <span class="t-cmd">apt-get</span> install <span class="t-flag">-y</span> curl</span><span class="ln" style="--i:3"><span class="t-cmd">curl</span> <span class="t-flag">-sI</span> https://example.com  <span class="t-com"># it has network access</span></span><span class="ln" style="--i:4"><span class="t-cmd">exit</span>                          <span class="t-com"># leaving the shell ends the container</span></span></code></pre></div>
+<p>Run the same command again and <code>curl</code> is gone: every container starts fresh from the image. That is a feature. You can break anything inside, and nothing outside is touched.</p>
+</section>
+
+<section id="background" aria-labelledby="background-h"><h2 id="background-h">Long-running containers</h2>
+<p>Servers run in the background. <code>-d</code> (detached) starts the container and gives you your prompt back; <code>--name</code> gives it a name to use instead of its ID:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> web <span class="t-flag">-p</span> <span class="t-num">8080:80</span> nginx:1.27-alpine</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">ps</span>                     <span class="t-com"># running containers (add -a to include stopped ones)</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">logs</span> <span class="t-flag">-f</span> web            <span class="t-com"># follow its output; Ctrl-C stops following, not the container</span></span></code></pre></div>
+<p>Open <a href="http://localhost:8080">http://localhost:8080</a> and nginx's welcome page appears: a web server you never installed. Reload a few times and watch the log lines. Then:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">exec</span> <span class="t-flag">-it</span> web sh        <span class="t-com"># open a second shell inside the running container</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">stop</span> web               <span class="t-com"># stop it (its files are kept)</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">start</span> web              <span class="t-com"># start it again</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">rm</span> <span class="t-flag">-f</span> web              <span class="t-com"># stop and delete it</span></span></code></pre></div>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Command</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><code>docker run IMAGE [CMD]</code></td><td>Create and start a new container (downloads the image if needed)</td></tr>
+<tr><td><code>docker ps</code> / <code>ps -a</code></td><td>List running / all containers</td></tr>
+<tr><td><code>docker logs [-f] NAME</code></td><td>Show (follow) what the container printed</td></tr>
+<tr><td><code>docker exec -it NAME sh</code></td><td>Run another command, such as a shell, in a running container</td></tr>
+<tr><td><code>docker stop</code> / <code>start</code> / <code>restart NAME</code></td><td>Lifecycle of an existing container</td></tr>
+<tr><td><code>docker rm [-f] NAME</code></td><td>Delete a container (<code>-f</code> stops it first)</td></tr>
+<tr><td><code>docker pull IMAGE</code> / <code>docker images</code></td><td>Download an image / list downloaded images</td></tr>
+</tbody></table></div>
+<p>Practice them here before you touch a real terminal. The simulator follows Docker's real rules: two containers can't share a host port, a running container can't be removed without <code>-f</code>, and an image with nothing to do exits at once.</p>
+<div class="widget reveal" data-widget="playground"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="ports" aria-labelledby="ports-h"><h2 id="ports-h">Publishing ports</h2>
+<p>A container has its own network, so a server inside it is unreachable until you <em>publish</em> a port: <code>-p HOST:CONTAINER</code>.
+<code>-p 8080:80</code> means “connections to port 8080 on my computer go to port 80 in the container”. Two containers can both listen on port 80 inside;
+they just need different host ports:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> a <span class="t-flag">-p</span> <span class="t-num">8081:80</span> nginx:1.27-alpine</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> b <span class="t-flag">-p</span> <span class="t-num">8082:80</span> nginx:1.27-alpine</span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">rm</span> <span class="t-flag">-f</span> a b</span></code></pre></div>
+<div class="callout warn reveal"><b>Who can connect?</b> <code>-p 8080:80</code> listens on every network interface, so other machines on the same Wi-Fi can reach it, and on a Linux server Docker's port rules go around the <code>ufw</code> firewall. For anything private, add the address: <code>-p 127.0.0.1:8080:80</code>.</div>
+</section>
+
+<section id="data" aria-labelledby="data-h"><h2 id="data-h">Keeping data: volumes and bind mounts</h2>
+<p>Anything written inside a container disappears when the container is deleted. Two ways to keep it:</p>
+<ul>
+<li>A <strong>bind mount</strong> shows a folder of your computer inside the container: <code>-v /path/on/host:/path/in/container</code>. Best for your own files, such as code, data and documents.</li>
+<li>A <strong>named volume</strong> is storage that Docker manages: <code>-v name:/path/in/container</code>. Best for a program's own data, such as a database.</li>
+</ul>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Bind mount: serve the current folder as a website</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">mkdir</span> <span class="t-flag">-p</span> ~/site &amp;&amp; <span class="t-cmd">cd</span> ~/site</span><span class="ln" style="--i:1"><span class="t-cmd">echo</span> <span class="t-str">'&lt;h1&gt;Hello from my folder&lt;/h1&gt;'</span> &gt; index.html</span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-p</span> <span class="t-num">8080:80</span> <span class="t-flag">-v</span> <span class="t-str">"$PWD"</span>:/usr/share/nginx/html:ro nginx:1.27-alpine</span><span class="ln" style="--i:3"><span class="t-com"># edit index.html, reload the browser: the change shows at once. Ctrl-C to stop.</span></span></code></pre></div>
+<p><code>:ro</code> makes the mount read-only, so the container can read your files but can't change them. Use it whenever the container only needs to read.</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Named volume: data that outlives the container</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">volume</span> create notes</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-v</span> notes:/data alpine sh <span class="t-flag">-c</span> <span class="t-str">'date &gt;&gt; /data/log.txt; cat /data/log.txt'</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">--rm</span> <span class="t-flag">-v</span> notes:/data alpine sh <span class="t-flag">-c</span> <span class="t-str">'date &gt;&gt; /data/log.txt; cat /data/log.txt'</span>   <span class="t-com"># two lines now</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">volume</span> ls</span><span class="ln" style="--i:4"><span class="t-cmd">docker</span> <span class="t-kw">volume</span> rm notes</span></code></pre></div>
+</section>
+
+<section id="env" aria-labelledby="env-h"><h2 id="env-h">Passing settings</h2>
+<p>Containerized programs are configured with <strong>environment variables</strong>, given with <code>-e</code> or collected in a file with <code>--env-file</code>.
+Each image's page on Docker Hub lists the variables it understands. The official Postgres image, for example, refuses to start without a password:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">run</span> <span class="t-flag">-d</span> <span class="t-flag">--name</span> pg <span class="t-flag">-e</span> POSTGRES_PASSWORD=secret <span class="t-flag">-p</span> <span class="t-num">127.0.0.1:5432:5432</span> <span class="t-flag">-v</span> pgdata:/var/lib/postgresql/data postgres:17</span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">exec</span> <span class="t-flag">-it</span> pg psql <span class="t-flag">-U</span> postgres <span class="t-flag">-c</span> <span class="t-str">'select version();'</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">rm</span> <span class="t-flag">-f</span> pg               <span class="t-com"># the data stays in the pgdata volume for next time</span></span></code></pre></div>
+<p><code>-e NAME</code> without <code>=value</code> copies the variable from your own shell, which keeps secrets such as API keys out of your shell history (lesson 06 uses this).</p>
+</section>
+
+<section id="clean" aria-labelledby="clean-h"><h2 id="clean-h">Cleaning up</h2>
+<p>Images and stopped containers pile up. See how much space Docker uses and reclaim it:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-kw">system</span> df              <span class="t-com"># space used by images, containers, volumes, build cache</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">container</span> prune        <span class="t-com"># delete all stopped containers</span></span><span class="ln" style="--i:2"><span class="t-cmd">docker</span> <span class="t-kw">image</span> prune <span class="t-flag">-a</span>         <span class="t-com"># delete images no container uses</span></span><span class="ln" style="--i:3"><span class="t-cmd">docker</span> <span class="t-kw">system</span> prune           <span class="t-com"># all of the above except volumes</span></span></code></pre></div>
+<p>Volumes are never removed by these commands unless you add <code>--volumes</code>, because they hold data.</p>
+</section>
+
+<section id="ex2" aria-labelledby="ex2-h"><h2 id="ex2-h">Exercises</h2>
+<ol class="ex">
+<li>Run <code>python:3.13</code> interactively (<code>docker run -it --rm python:3.13</code>) and you get a Python prompt. Then run <code>python:3.9</code> the same way. Two Python versions, nothing installed.</li>
+<li>Start nginx in the background, then use <code>docker exec</code> to edit <code>/usr/share/nginx/html/index.html</code> inside it (<code>vi</code> is available). Reload the page. Delete and recreate the container: what happened to your edit, and why?</li>
+<li>Repeat exercise 2 with a bind mount instead, so the edit survives.</li>
+<li>Run <code>docker run --rm --memory 64m alpine sh -c 'cat /sys/fs/cgroup/memory.max'</code>. That number is the cgroup limit from lesson 01, seen from inside.</li>
+</ol>
+</section>
+<section id="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+<div class="widget reveal" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;You ran &lt;code&gt;docker run -d -p 8080:80 nginx&lt;/code&gt;. Where do you open the page?&quot;, &quot;o&quot;: [&quot;http://localhost:80&quot;, &quot;http://localhost:8080&quot;, &quot;http://nginx:8080&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;-p HOST:CONTAINER: port 8080 on your computer forwards to port 80 inside the container.&quot;}, {&quot;q&quot;: &quot;You deleted a container and the files you created inside it are gone. What should you have used?&quot;, &quot;o&quot;: [&quot;--rm&quot;, &quot;A volume or bind mount&quot;, &quot;-it&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Anything written inside a container lives in its writable layer and is deleted with it. Volumes and bind mounts live outside.&quot;}, {&quot;q&quot;: &quot;&lt;code&gt;docker run ubuntu&lt;/code&gt; exits immediately. Why?&quot;, &quot;o&quot;: [&quot;The image is broken&quot;, &quot;Ubuntu needs a password&quot;, &quot;A container lives only as long as its main program, and bash with no terminal ends at once&quot;], &quot;a&quot;: 2, &quot;e&quot;: &quot;Give it something to do (docker run ubuntu echo hi) or an interactive terminal (-it).&quot;}]"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+</div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../what-is-a-container/index.html"><small>← Previous</small><b>01 · What a container is</b></a>
+      <a class="next" href="../building-images/index.html"><small>Next →</small><b>03 · Building your own images</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+  <script src="../ctr.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Containers &amp; Docker, lesson 01: The idea behind containers, how they differ from virtual machines, the words you&#x27;ll meet (image, container, registry), and installing Docker.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>What a container is · Containers &amp; Docker - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course ctr">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../index.html">All projects</a><span aria-hidden="true">/</span>
+        <a href="../index.html">Containers &amp; Docker</a><span aria-hidden="true">/</span>
+        <span aria-current="page">01 · What a container is</span>
+      </nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+
+    <header class="banner ctr-banner">
+      <div class="banner-img ctr-art" aria-hidden="true"></div>
+      <div class="banner-inner">
+        <p class="eyebrow">Lesson 01 of 8</p>
+        <h1>What a container is</h1>
+        <p class="lede">The idea behind containers, how they differ from virtual machines, the words you'll meet (image, container, registry), and installing Docker.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="block" aria-label="What a container is">
+<div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#idea">The idea</a><a href="#vm">Containers vs VMs</a><a href="#words">Vocabulary</a><a href="#how">Under the hood</a><a href="#when">When to use one</a><a href="#install">Install Docker</a><a href="#quiz">Quiz</a></nav>
+
+<section id="idea" aria-labelledby="idea-h"><h2 id="idea-h">The problem containers solve</h2>
+<p>Every program depends on other things: a particular Python version, a C library, a database driver, a config file in a particular place.
+The classic failure is <em>“it works on my machine”</em>: the code is fine, but the machine it lands on has different versions of those things.</p>
+<p>A <strong>container</strong> packs a program together with everything it needs to run, its own files, libraries and settings, into one
+unit that runs the same way on a laptop, a lab server, a cloud machine or a supercomputer. The name comes from shipping containers: a
+standard box that every crane, ship and truck can handle without knowing what is inside.</p>
+<div class="callout tip reveal"><b>In one sentence</b> A container is a program running in a sealed-off view of the computer, with its own files, network and process list, built from a read-only template called an image.</div>
+</section>
+
+<section id="vm" aria-labelledby="vm-h"><h2 id="vm-h">Containers versus virtual machines</h2>
+<p>A virtual machine (VirtualBox, Parallels, a cloud server) emulates a whole computer and boots a full operating system inside it.
+A container doesn't: it is an ordinary process on the host, which the Linux kernel walls off so that it can only see its own files and its own
+network. That's why containers start in well under a second and weigh megabytes instead of gigabytes, and why one laptop can run dozens of them.</p>
+<figure class="diagram reveal" aria-labelledby="stack-cap"><svg viewBox="0 0 760 330" role="img" aria-label="Virtual machines each carry a full guest operating system; containers share the host's kernel and carry only their libraries and app.">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--text-secondary)"/></marker></defs>
+<text x="190" y="22" text-anchor="middle" font-weight="700">Virtual machines</text>
+<text x="570" y="22" text-anchor="middle" font-weight="700">Containers</text>
+<g>
+<rect class="box acc" x="20" y="40" width="106" height="34" rx="6"/><text x="73" y="62" text-anchor="middle">App A</text>
+<rect class="box acc" x="137" y="40" width="106" height="34" rx="6"/><text x="190" y="62" text-anchor="middle">App B</text>
+<rect class="box acc" x="254" y="40" width="106" height="34" rx="6"/><text x="307" y="62" text-anchor="middle">App C</text>
+<rect class="box" x="20" y="80" width="106" height="34" rx="6"/><text x="73" y="102" text-anchor="middle">Libraries</text>
+<rect class="box" x="137" y="80" width="106" height="34" rx="6"/><text x="190" y="102" text-anchor="middle">Libraries</text>
+<rect class="box" x="254" y="80" width="106" height="34" rx="6"/><text x="307" y="102" text-anchor="middle">Libraries</text>
+<rect class="box warm" x="20" y="120" width="106" height="44" rx="6"/><text x="73" y="140" text-anchor="middle">Guest OS</text><text class="muted" x="73" y="156" text-anchor="middle">+ kernel</text>
+<rect class="box warm" x="137" y="120" width="106" height="44" rx="6"/><text x="190" y="140" text-anchor="middle">Guest OS</text><text class="muted" x="190" y="156" text-anchor="middle">+ kernel</text>
+<rect class="box warm" x="254" y="120" width="106" height="44" rx="6"/><text x="307" y="140" text-anchor="middle">Guest OS</text><text class="muted" x="307" y="156" text-anchor="middle">+ kernel</text>
+<rect class="box" x="20" y="176" width="340" height="34" rx="6"/><text x="190" y="198" text-anchor="middle">Hypervisor</text>
+<rect class="box" x="20" y="216" width="340" height="34" rx="6"/><text x="190" y="238" text-anchor="middle">Host operating system</text>
+<rect class="box" x="20" y="256" width="340" height="34" rx="6"/><text x="190" y="278" text-anchor="middle">Hardware</text>
+<text class="muted" x="190" y="316" text-anchor="middle">Each VM boots its own OS: gigabytes, tens of seconds</text>
+</g>
+<g>
+<rect class="box acc" x="400" y="96" width="106" height="34" rx="6"/><text x="453" y="118" text-anchor="middle">App A</text>
+<rect class="box acc" x="517" y="96" width="106" height="34" rx="6"/><text x="570" y="118" text-anchor="middle">App B</text>
+<rect class="box acc" x="634" y="96" width="106" height="34" rx="6"/><text x="687" y="118" text-anchor="middle">App C</text>
+<rect class="box" x="400" y="136" width="106" height="28" rx="6"/><text x="453" y="155" text-anchor="middle">Libraries</text>
+<rect class="box" x="517" y="136" width="106" height="28" rx="6"/><text x="570" y="155" text-anchor="middle">Libraries</text>
+<rect class="box" x="634" y="136" width="106" height="28" rx="6"/><text x="687" y="155" text-anchor="middle">Libraries</text>
+<rect class="box blue" x="400" y="176" width="340" height="34" rx="6"/><text x="570" y="198" text-anchor="middle">Container engine (Docker)</text>
+<rect class="box blue" x="400" y="216" width="340" height="34" rx="6"/><text x="570" y="238" text-anchor="middle">Host OS: one shared Linux kernel</text>
+<rect class="box" x="400" y="256" width="340" height="34" rx="6"/><text x="570" y="278" text-anchor="middle">Hardware</text>
+<text class="muted" x="570" y="316" text-anchor="middle">Containers are isolated processes: megabytes, under a second</text>
+</g>
+</svg><figcaption id="stack-cap">A virtual machine imitates a whole computer, so each one runs its own operating system. A container is only a walled-off group of processes on the host's kernel, so it carries just the app and the libraries it needs.</figcaption></figure>
+<p>The trade-off is isolation. Containers share the host's kernel, so a VM is a stronger wall between programs you don't trust. Containers also
+only run programs built for the kernel they share: Docker containers are Linux programs. (On a Mac or Windows PC, Docker quietly runs one small Linux
+VM and puts all your containers in it.)</p>
+<div class="widget reveal" data-widget="vmvsctr"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+<section id="words" aria-labelledby="words-h"><h2 id="words-h">The vocabulary</h2>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Word</th><th>What it means</th><th>Analogy</th></tr></thead>
+<tbody>
+<tr><td><b>Image</b></td><td>A read-only template: a file system (an OS userland, libraries, your program) plus settings such as which command to run. Made of stacked <em>layers</em>.</td><td>A recipe, or a class in programming</td></tr>
+<tr><td><b>Container</b></td><td>A running (or stopped) instance of an image, with a thin writable layer on top. You can start many containers from one image.</td><td>A dish cooked from the recipe, or an object</td></tr>
+<tr><td><b>Dockerfile</b></td><td>A text file of steps that builds an image (lesson 03).</td><td>The written-down recipe</td></tr>
+<tr><td><b>Registry</b></td><td>A server that stores images: Docker Hub, GitHub's <code>ghcr.io</code>, <code>quay.io</code>, or a private one.</td><td>An app store for images</td></tr>
+<tr><td><b>Tag</b></td><td>A version label after the colon: <code>python:3.13-slim</code>. No tag means <code>:latest</code>, which simply means “whatever was pushed last”.</td><td>An edition number</td></tr>
+<tr><td><b>Volume</b></td><td>Storage that lives outside the container, so data survives when the container is deleted (lesson 02).</td><td>An external drive</td></tr>
+<tr><td><b>Compose</b></td><td>A YAML file that describes several containers that work together, started with one command (lesson 05).</td><td>A recipe for a whole meal</td></tr>
+</tbody></table></div>
+<p>Docker is the best-known tool, but the image format is an open standard (OCI). The same images run in Podman, in Apptainer on clusters,
+in Kubernetes, and on cloud services, so what you learn here carries over.</p>
+</section>
+
+<section id="how" aria-labelledby="how-h"><h2 id="how-h">What happens under the hood</h2>
+<p>A container is not a special kind of object in Linux. It is a normal process that the kernel has been asked to limit in three ways:</p>
+<ul>
+<li><strong>Namespaces</strong> decide what the process can <em>see</em>: its own process list (it believes it is process 1), its own network interfaces and ports, its own host name, and its own root file system.</li>
+<li><strong>Control groups (cgroups)</strong> decide how much it can <em>use</em>: memory, CPU time, number of processes.</li>
+<li>A <strong>layered file system</strong> (overlayfs) stacks the image's read-only layers and puts one writable layer on top, so a hundred containers from the same image share one copy on disk.</li>
+</ul>
+<p>Docker itself is a background service (the <em>daemon</em>) plus the <code>docker</code> command you type. The command asks the daemon to download images,
+set up those namespaces and cgroups, and start your process.</p>
+</section>
+
+<section id="when" aria-labelledby="when-h"><h2 id="when-h">When a container is the right tool</h2>
+<div class="table-wrap reveal"><table>
+<thead><tr><th>Good fit</th><th>Poor fit</th></tr></thead>
+<tbody>
+<tr><td>Trying a program or a database without installing it</td><td>Desktop programs with windows (they're possible, but awkward)</td></tr>
+<tr><td>Websites, APIs and anything that runs on a server</td><td>Mac or Windows programs: containers run Linux software</td></tr>
+<tr><td>Giving a project a reproducible environment for a paper, a class or a team</td><td>A small script that a Python virtual environment already handles</td></tr>
+<tr><td>Running AI models and agents, and keeping agents in a sandbox</td><td>A hard security boundary for hostile code (use a VM)</td></tr>
+<tr><td>Moving the same environment from a laptop to the cloud or a cluster</td><td>Squeezing out the last few percent of GPU speed on a Mac (Docker can't use the Apple GPU)</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="install" aria-labelledby="install-h"><h2 id="install-h">Installing Docker</h2>
+<h3>macOS and Windows</h3>
+<p>Install <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a>, open it once, and wait for the whale icon to say it is running.
+On Windows it uses WSL 2, which the installer sets up. Docker Desktop is free for personal use, education, open-source work and small businesses;
+large companies need a paid plan. Free alternatives on a Mac are <a href="https://orbstack.dev/">OrbStack</a> (free for personal use), <a href="https://github.com/abiosoft/colima">Colima</a> and
+<a href="https://podman.io/">Podman</a>; all of them accept the same <code>docker</code> commands used in this course.</p>
+<h3>Linux</h3>
+<p>Install Docker Engine from your distribution's instructions on <a href="https://docs.docker.com/engine/install/">docs.docker.com</a>, or with Docker's convenience script:</p>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Linux</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">curl</span> <span class="t-flag">-fsSL</span> https://get.docker.com | <span class="t-cmd">sh</span></span><span class="ln" style="--i:1"><span class="t-cmd">sudo usermod</span> <span class="t-flag">-aG</span> docker <span class="t-str">"$USER"</span>     <span class="t-com"># use docker without sudo (log out and in again)</span></span></code></pre></div>
+<div class="callout warn reveal"><b>About the docker group</b> Membership in the <code>docker</code> group is effectively root access to the machine, because Docker can mount any folder into a container. Only add trusted users. Rootless Docker and Podman avoid this.</div>
+<h3>Check that it works</h3>
+<div class="code reveal" translate="no" data-lang="sh"><div class="code-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="fname">Terminal</span><span class="lang">shell</span><button type="button" class="copy">Copy</button></div><pre><code><span class="ln" style="--i:0"><span class="t-cmd">docker</span> <span class="t-flag">--version</span></span><span class="ln" style="--i:1"><span class="t-cmd">docker</span> <span class="t-kw">run</span> hello-world</span></code></pre></div>
+<p>The second command downloads a tiny image from Docker Hub, starts a container that prints a greeting explaining what just happened, and exits. If you
+see “Hello from Docker!”, you're ready for lesson 02.</p>
+<div class="callout note reveal"><b>Apple silicon and Intel</b> Images are built for a CPU type. Most popular images include both <code>arm64</code> (Apple silicon, Raspberry Pi, many cloud servers) and <code>amd64</code> (Intel and AMD). If an image only exists for <code>amd64</code>, Docker on a Mac can still run it with <code>--platform linux/amd64</code> through emulation, only more slowly. Lesson 07 explains why this matters when you take images to a cluster.</div>
+</section>
+<section id="quiz" aria-labelledby="quiz-h"><h2 id="quiz-h">Quick check</h2>
+<div class="widget reveal" data-widget="quiz" data-quiz="[{&quot;q&quot;: &quot;What does a container share with the computer it runs on?&quot;, &quot;o&quot;: [&quot;Nothing: it is a complete virtual computer&quot;, &quot;The operating system kernel&quot;, &quot;Its files and installed programs&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Containers are isolated processes on the host&#x27;s kernel. That is why they start fast, and why Docker containers are Linux programs.&quot;}, {&quot;q&quot;: &quot;What is the relationship between an image and a container?&quot;, &quot;o&quot;: [&quot;They are two names for the same thing&quot;, &quot;A container is a template; an image is a running copy&quot;, &quot;An image is a read-only template; a container is a running (or stopped) instance of it&quot;], &quot;a&quot;: 2, &quot;e&quot;: &quot;One image can start many containers, each with its own thin writable layer.&quot;}, {&quot;q&quot;: &quot;Which job is a container &lt;em&gt;least&lt;/em&gt; suited to?&quot;, &quot;o&quot;: [&quot;Running a PostgreSQL database for development&quot;, &quot;Running a Mac-only program like Final Cut Pro&quot;, &quot;Serving a website&quot;], &quot;a&quot;: 1, &quot;e&quot;: &quot;Docker containers run Linux software; Mac and Windows programs can&#x27;t run in them.&quot;}]"><noscript>This interactive part needs JavaScript.</noscript><div class="w-loading" aria-hidden="true"></div></div>
+</section>
+
+</div>
+      </section>
+    </main>
+
+    <nav class="pager" aria-label="Previous and next lesson">
+      <a class="prev" href="../index.html"><small>← Back</small><b>All lessons</b></a>
+      <a class="next" href="../first-containers/index.html"><small>Next →</small><b>02 · Your first containers</b></a>
+    </nav>
+
+    <footer class="site-footer"><p>Containers &amp; Docker · <a href="../../index.html">All projects</a> · Every example file can be downloaded from its lesson. Written November 2026; image tags and versions change, so check them when you use this later.</p></footer>
+  </div>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+  <script src="../ctr.js"></script>
+</body>
+</html>

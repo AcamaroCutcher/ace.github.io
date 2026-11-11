@@ -1,0 +1,6 @@
+# Caddy gets and renews an HTTPS certificate for SITE_ADDRESS by itself.
+# With SITE_ADDRESS=localhost it uses its own local certificate (your browser will warn once).
+{$SITE_ADDRESS} {
+	encode gzip
+	reverse_proxy web:8000
+}

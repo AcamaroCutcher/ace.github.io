@@ -1,0 +1,32 @@
+# A private ChatGPT-style chat with open models: Ollama + Open WebUI (lesson 06)
+# Start: docker compose up -d     Then open http://localhost:3000
+services:
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama:/root/.ollama           # downloaded models are kept here
+    ports:
+      - "127.0.0.1:11434:11434"        # the API, reachable only from this computer
+    # NVIDIA GPU on a Linux machine with the NVIDIA Container Toolkit: uncomment
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "127.0.0.1:3000:8080"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      - open-webui:/app/backend/data   # accounts and chat history
+    depends_on:
+      - ollama
+
+volumes:
+  ollama:
+  open-webui:

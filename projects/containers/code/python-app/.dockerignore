@@ -1,0 +1,6 @@
+# files that never go into the image
+.git
+.venv/
+__pycache__/
+*.pyc
+.env
