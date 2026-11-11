@@ -18,6 +18,8 @@ window.PROJECT_LIBRARY = {
       blurb: 'Pure and applied mathematics: algebra, probability and modeling.' },
     { id: 'ml', name: 'Machine Learning & Computing', icon: 'fa-microchip',
       blurb: 'Neural operators, data-driven forecasting and scientific computing.' },
+    { id: 'electronics', name: 'Electronics & Lasers', icon: 'fa-bolt',
+      blurb: 'Circuits, repair and lasers, including a preserved archive of classic electronics knowledge.' },
   ],
 
   // Kinds of work, used by the "Type" filter and the badges on each card.
@@ -32,6 +34,23 @@ window.PROJECT_LIBRARY = {
   // Newest first. The first discipline listed is the section the card appears in;
   // any others make it show up when filtering by that field too.
   projects: [
+    {
+      id: 'repairfaq',
+      title: 'RepairFAQ: Sam\u2019s Repair & Laser FAQs, Preserved',
+      summary: 'An unaltered mirror of repairfaq.org, the Sci.Electronics.Repair FAQ and Sam\u2019s Laser FAQ by Samuel M. Goldwasser and Filip M. Gieszczykiewicz, kept online so this knowledge survives. It follows the authors\u2019 fair-use terms: pages are byte-for-byte copies with source links, and only fonts and colors are restyled. A separate companion adds search across 4,405 pages, a 3D helium-neon laser, and all 667 of Sam\u2019s ASCII circuit diagrams redrawn as animated schematics and orbitable 3D circuit boards.',
+      disciplines: ['electronics', 'physics'],
+      types: ['interactive'],
+      status: 'completed',
+      year: 2026,
+      featured: false,
+      thumb: 'thumbs/repairfaq.jpg',
+      tags: ['Electronics repair', 'Lasers', 'Digital preservation', 'three.js', 'SVG'],
+      links: [
+        { label: 'Open the companion', href: 'https://acamarocutcher.github.io/repairfaq/', icon: 'fa-arrow-right', primary: true },
+        { label: 'Diagram explorer', href: 'https://acamarocutcher.github.io/repairfaq/companion/diagrams.html', icon: 'fa-diagram-project' },
+        { label: 'Original site', href: 'https://www.repairfaq.org/', icon: 'fa-up-right-from-square' },
+      ],
+    },
     {
       id: 'fortran-firetec',
       title: 'Fortran for FIRETEC',
