@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 09: Strategy (interchangeable numerical methods), Template Method with a non-virtual interface, Observer, and Visitor&#x27;s double dispatch.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Design patterns with abstract classes · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="09" data-scene="dispatch">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">09 · Design patterns with abstract classes</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 09 of 12</p><h1>Design patterns with abstract classes</h1><p class="lede">Design patterns are named solutions to recurring design problems. Four of the most useful are built directly from abstract classes and virtual functions.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Design patterns with abstract classes · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#strategy">Strategy: interchangeable algorithms</a><a href="#nvi">Template Method and the non-virtual interface</a><a href="#observer">Observer: notifying whoever is interested</a><a href="#visitor">Visitor: new operations without editing the classes</a><a href="#key09">Key points</a></nav><section id="strategy" aria-labelledby="strategy-h">
+  <h2 id="strategy-h">Strategy: interchangeable algorithms</h2>
+  <p>A <b>strategy</b> is an algorithm behind an abstract interface, chosen at run time. In scientific code this separates <em>what</em> is solved from <em>how</em>: an abstract <code>ODE</code> describes <i>dy/dt = f(t, y)</i>, an abstract <code>Stepper</code> describes one time step, and <code>solve</code> works with any combination. A new method or a new equation is a new class; <code>solve</code> never changes (the <b>open/closed principle</b>: open for extension, closed for modification).</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>integrators.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gaW50ZWdyYXRvcnMuY3BwIC0tIGFic3RyYWN0IGNsYXNzZXMgaW4gbnVtZXJpY2FsIHdvcms6IG9uZSBzb2x2ZXIgbG9vcCwgaW50ZXJjaGFuZ2VhYmxlIG1ldGhvZHNcbiNpbmNsdWRlIDxjbWF0aD5cbiNpbmNsdWRlIDxjc3RkaW8-XG4jaW5jbHVkZSA8bWVtb3J5PlxuI2luY2x1ZGUgPHZlY3Rvcj5cblxuY2xhc3MgT0RFIHsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8vIGR5L2R0ID0gZih0LCB5KVxucHVibGljOlxuICAgIHZpcnR1YWwgfk9ERSgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGRvdWJsZSBmKGRvdWJsZSB0LCBkb3VibGUgeSkgY29uc3QgPSAwO1xuICAgIHZpcnR1YWwgZG91YmxlIGV4YWN0KGRvdWJsZSB0KSBjb25zdCA9IDA7ICAgICAgIC8vIGZvciBtZWFzdXJpbmcgdGhlIGVycm9yXG59O1xuXG5jbGFzcyBEZWNheSA6IHB1YmxpYyBPREUgeyAgICAgICAgICAgICAgICAgICAgICAgICAgLy8geScgPSAtayB5LCAgeSgwKSA9IDFcbnB1YmxpYzpcbiAgICBleHBsaWNpdCBEZWNheShkb3VibGUgaykgOiBrXyhrKSB7fVxuICAgIGRvdWJsZSBmKGRvdWJsZSwgZG91YmxlIHkpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIC1rXyAqIHk7IH1cbiAgICBkb3VibGUgZXhhY3QoZG91YmxlIHQpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIHN0ZDo6ZXhwKC1rXyAqIHQpOyB9XG5wcml2YXRlOlxuICAgIGRvdWJsZSBrXztcbn07XG5cbmNsYXNzIFN0ZXBwZXIgeyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBvbmUgc3RlcCBvZiBhIHRpbWUtaW50ZWdyYXRpb24gbWV0aG9kXG5wdWJsaWM6XG4gICAgdmlydHVhbCB-U3RlcHBlcigpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGRvdWJsZSBzdGVwKGNvbnN0IE9ERSYgb2RlLCBkb3VibGUgdCwgZG91YmxlIHksIGRvdWJsZSBoKSBjb25zdCA9IDA7XG4gICAgdmlydHVhbCBjb25zdCBjaGFyKiBuYW1lKCkgY29uc3QgPSAwO1xufTtcblxuY2xhc3MgRXVsZXIgOiBwdWJsaWMgU3RlcHBlciB7XG5wdWJsaWM6XG4gICAgZG91YmxlIHN0ZXAoY29uc3QgT0RFJiBvZGUsIGRvdWJsZSB0LCBkb3VibGUgeSwgZG91YmxlIGgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIHkgKyBoICogb2RlLmYodCwgeSk7IH1cbiAgICBjb25zdCBjaGFyKiBuYW1lKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gXCJFdWxlclwiOyB9XG59O1xuXG5jbGFzcyBNaWRwb2ludCA6IHB1YmxpYyBTdGVwcGVyIHtcbnB1YmxpYzpcbiAgICBkb3VibGUgc3RlcChjb25zdCBPREUmIG9kZSwgZG91YmxlIHQsIGRvdWJsZSB5LCBkb3VibGUgaCkgY29uc3Qgb3ZlcnJpZGUge1xuICAgICAgICBkb3VibGUgazEgPSBvZGUuZih0LCB5KTtcbiAgICAgICAgcmV0dXJuIHkgKyBoICogb2RlLmYodCArIGggLyAyLCB5ICsgaCAvIDIgKiBrMSk7XG4gICAgfVxuICAgIGNvbnN0IGNoYXIqIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcIk1pZHBvaW50IChSSzIpXCI7IH1cbn07XG5cbmNsYXNzIFJLNCA6IHB1YmxpYyBTdGVwcGVyIHtcbnB1YmxpYzpcbiAgICBkb3VibGUgc3RlcChjb25zdCBPREUmIG9kZSwgZG91YmxlIHQsIGRvdWJsZSB5LCBkb3VibGUgaCkgY29uc3Qgb3ZlcnJpZGUge1xuICAgICAgICBkb3VibGUgazEgPSBvZGUuZih0LCB5KTtcbiAgICAgICAgZG91YmxlIGsyID0gb2RlLmYodCArIGggLyAyLCB5ICsgaCAvIDIgKiBrMSk7XG4gICAgICAgIGRvdWJsZSBrMyA9IG9kZS5mKHQgKyBoIC8gMiwgeSArIGggLyAyICogazIpO1xuICAgICAgICBkb3VibGUgazQgPSBvZGUuZih0ICsgaCwgeSArIGggKiBrMyk7XG4gICAgICAgIHJldHVybiB5ICsgaCAvIDYgKiAoazEgKyAyICogazIgKyAyICogazMgKyBrNCk7XG4gICAgfVxuICAgIGNvbnN0IGNoYXIqIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcIlJ1bmdlLUt1dHRhIDRcIjsgfVxufTtcblxuLy8gVGhlIHNvbHZlciBrbm93cyBub3RoaW5nIGFib3V0IHdoaWNoIG1ldGhvZCBvciB3aGljaCBlcXVhdGlvbiBpdCBydW5zLlxuZG91YmxlIHNvbHZlKGNvbnN0IE9ERSYgb2RlLCBjb25zdCBTdGVwcGVyJiBtZXRob2QsIGRvdWJsZSB5MCwgZG91YmxlIFQsIGludCBuKSB7XG4gICAgZG91YmxlIGggPSBUIC8gbiwgeSA9IHkwO1xuICAgIGZvciAoaW50IGkgPSAwOyBpIDwgbjsgKytpKSB5ID0gbWV0aG9kLnN0ZXAob2RlLCBpICogaCwgeSwgaCk7XG4gICAgcmV0dXJuIHk7XG59XG5cbmludCBtYWluKCkge1xuICAgIERlY2F5IG9kZSgxLjApO1xuICAgIHN0ZDo6dmVjdG9yPHN0ZDo6dW5pcXVlX3B0cjxTdGVwcGVyPj4gbWV0aG9kcztcbiAgICBtZXRob2RzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPEV1bGVyPigpKTtcbiAgICBtZXRob2RzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPE1pZHBvaW50PigpKTtcbiAgICBtZXRob2RzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPFJLND4oKSk7XG5cbiAgICBzdGQ6OnByaW50ZihcIiUtMTZzICUxMnMgJTEycyAlOHNcXG5cIiwgXCJtZXRob2RcIiwgXCJlcnIgKG49MTApXCIsIFwiZXJyIChuPTIwKVwiLCBcInJhdGlvXCIpO1xuICAgIGZvciAoY29uc3QgYXV0byYgbSA6IG1ldGhvZHMpIHtcbiAgICAgICAgZG91YmxlIGUxMCA9IHN0ZDo6ZmFicyhzb2x2ZShvZGUsICptLCAxLjAsIDEuMCwgMTApIC0gb2RlLmV4YWN0KDEuMCkpO1xuICAgICAgICBkb3VibGUgZTIwID0gc3RkOjpmYWJzKHNvbHZlKG9kZSwgKm0sIDEuMCwgMS4wLCAyMCkgLSBvZGUuZXhhY3QoMS4wKSk7XG4gICAgICAgIHN0ZDo6cHJpbnRmKFwiJS0xNnMgJTEyLjNlICUxMi4zZSAlOC4xZlxcblwiLCBtLT5uYW1lKCksIGUxMCwgZTIwLCBlMTAgLyBlMjApO1xuICAgIH1cbn1cbiIsICJjb21waWxlcnMiOiBbXSwgImV4ZWN1dG9ycyI6IFt7ImNvbXBpbGVyIjogeyJpZCI6ICJnMTQyIiwgIm9wdGlvbnMiOiAiLXN0ZD1jKysxNyAtV2FsbCAtV2V4dHJhIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// integrators.cpp -- abstract classes in numerical work: one solver loop, interchangeable methods</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;cstdio&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">class</span> ODE {                                         <span class="c">// dy/dt = f(t, y)</span>
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~ODE() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> f(<span class="t">double</span> t, <span class="t">double</span> y) <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">double</span> exact(<span class="t">double</span> t) <span class="k">const</span> = <span class="n">0</span>;       <span class="c">// for measuring the error</span>
+};
+
+<span class="k">class</span> <span class="t">Decay</span> : <span class="k">public</span> ODE {                          <span class="c">// y&#x27; = -k y,  y(0) = 1</span>
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Decay</span>(<span class="t">double</span> k) : k_(k) {}
+    <span class="t">double</span> f(<span class="t">double</span>, <span class="t">double</span> y) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> -k_ * y; }
+    <span class="t">double</span> exact(<span class="t">double</span> t) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> std::exp(-k_ * t); }
+<span class="k">private</span>:
+    <span class="t">double</span> k_;
+};
+
+<span class="k">class</span> <span class="t">Stepper</span> {                                     <span class="c">// one step of a time-integration method</span>
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Stepper</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> step(<span class="k">const</span> ODE&amp; ode, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Euler</span> : <span class="k">public</span> <span class="t">Stepper</span> {
+<span class="k">public</span>:
+    <span class="t">double</span> step(<span class="k">const</span> ODE&amp; ode, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> y + h * ode.f(t, y); }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;Euler&quot;</span>; }
+};
+
+<span class="k">class</span> <span class="t">Midpoint</span> : <span class="k">public</span> <span class="t">Stepper</span> {
+<span class="k">public</span>:
+    <span class="t">double</span> step(<span class="k">const</span> ODE&amp; ode, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> <span class="k">override</span> {
+        <span class="t">double</span> k1 = ode.f(t, y);
+        <span class="k">return</span> y + h * ode.f(t + h / <span class="n">2</span>, y + h / <span class="n">2</span> * k1);
+    }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;Midpoint (RK2)&quot;</span>; }
+};
+
+<span class="k">class</span> RK4 : <span class="k">public</span> <span class="t">Stepper</span> {
+<span class="k">public</span>:
+    <span class="t">double</span> step(<span class="k">const</span> ODE&amp; ode, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> <span class="k">override</span> {
+        <span class="t">double</span> k1 = ode.f(t, y);
+        <span class="t">double</span> k2 = ode.f(t + h / <span class="n">2</span>, y + h / <span class="n">2</span> * k1);
+        <span class="t">double</span> k3 = ode.f(t + h / <span class="n">2</span>, y + h / <span class="n">2</span> * k2);
+        <span class="t">double</span> k4 = ode.f(t + h, y + h * k3);
+        <span class="k">return</span> y + h / <span class="n">6</span> * (k1 + <span class="n">2</span> * k2 + <span class="n">2</span> * k3 + k4);
+    }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;Runge-Kutta 4&quot;</span>; }
+};
+
+<span class="c">// The solver knows nothing about which method or which equation it runs.</span>
+<span class="t">double</span> solve(<span class="k">const</span> ODE&amp; ode, <span class="k">const</span> <span class="t">Stepper</span>&amp; method, <span class="t">double</span> y0, <span class="t">double</span> T, <span class="t">int</span> n) {
+    <span class="t">double</span> h = T / n, y = y0;
+    <span class="k">for</span> (<span class="t">int</span> i = <span class="n">0</span>; i &lt; n; ++i) y = method.step(ode, i * h, y, h);
+    <span class="k">return</span> y;
+}
+
+<span class="t">int</span> main() {
+    <span class="t">Decay</span> ode(<span class="n">1.0</span>);
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Stepper</span>&gt;&gt; methods;
+    methods.push_back(std::make_unique&lt;<span class="t">Euler</span>&gt;());
+    methods.push_back(std::make_unique&lt;<span class="t">Midpoint</span>&gt;());
+    methods.push_back(std::make_unique&lt;RK4&gt;());
+
+    std::printf(<span class="s">&quot;%-16s %12s %12s %8s\n&quot;</span>, <span class="s">&quot;method&quot;</span>, <span class="s">&quot;err (n=10)&quot;</span>, <span class="s">&quot;err (n=20)&quot;</span>, <span class="s">&quot;ratio&quot;</span>);
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; m : methods) {
+        <span class="t">double</span> e10 = std::fabs(solve(ode, *m, <span class="n">1.0</span>, <span class="n">1.0</span>, <span class="n">10</span>) - ode.exact(<span class="n">1.0</span>));
+        <span class="t">double</span> e20 = std::fabs(solve(ode, *m, <span class="n">1.0</span>, <span class="n">1.0</span>, <span class="n">20</span>) - ode.exact(<span class="n">1.0</span>));
+        std::printf(<span class="s">&quot;%-16s %12.3e %12.3e %8.1f\n&quot;</span>, m-&gt;name(), e10, e20, e10 / e20);
+    }
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>method             err (n=10)   err (n=20)    ratio
+Euler               1.920e-02    9.394e-03      2.0
+Midpoint (RK2)      6.615e-04    1.592e-04      4.2
+Runge-Kutta 4       3.332e-07    1.998e-08     16.7</pre></div><p class="dl"><a href="../code/integrators.cpp" download>Download integrators.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <h3>Play with the methods</h3>
+  <div class="widget reveal" data-widget="ode"><noscript>This interactive part needs JavaScript.</noscript></div>
+  <p>The output doubles as a check of the code: halving the step divides the error by about 2<sup>p</sup> for a method of order <i>p</i>. The ratios 2, 4 and 16 confirm that Euler, midpoint and RK4 are first, second and fourth order.</p>
+</section>
+
+<section id="nvi" aria-labelledby="nvi-h">
+  <h2 id="nvi-h">Template Method and the non-virtual interface</h2>
+  <p>The base class fixes the <em>steps</em> of an algorithm in a public, non-virtual function and lets derived classes fill in the steps through private virtual functions. The base keeps control (logging, checks, order of steps) and derived classes cannot skip it. This <b>non-virtual interface</b> (NVI) style is common in large C++ code bases.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>nvi.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gbnZpLmNwcCAtLSBUZW1wbGF0ZSBNZXRob2QgLyBOb24tVmlydHVhbCBJbnRlcmZhY2U6IHRoZSBiYXNlIGZpeGVzIHRoZSBzdGVwcywgZGVyaXZlZCBjbGFzc2VzIGZpbGwgdGhlbSBpblxuI2luY2x1ZGUgPGNtYXRoPlxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPHN0cmluZz5cblxuY2xhc3MgRXhwZXJpbWVudCB7XG5wdWJsaWM6XG4gICAgdmlydHVhbCB-RXhwZXJpbWVudCgpID0gZGVmYXVsdDtcbiAgICB2b2lkIHJ1bigpIHsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8vIHB1YmxpYyBhbmQgTk9UIHZpcnR1YWw6IHRoZSBhbGdvcml0aG0gY2Fubm90IGJlIGNoYW5nZWRcbiAgICAgICAgc3RkOjpjb3V0IDw8IFwiPT0gXCIgPDwgbmFtZSgpIDw8ICdcXG4nO1xuICAgICAgICBzZXR1cCgpO1xuICAgICAgICBkb3VibGUgcmVzdWx0ID0gbWVhc3VyZSgpOyAgICAgICAgICAgICAgICAgLy8gdGhlIHN0ZXBzIHRoYXQgdmFyeSBhcmUgcHJpdmF0ZSB2aXJ0dWFsIGZ1bmN0aW9uc1xuICAgICAgICBzdGQ6OmNvdXQgPDwgXCIgICByZXN1bHQgXCIgPDwgcmVzdWx0IDw8IChjaGVjayhyZXN1bHQpID8gXCIgIChvaylcIiA6IFwiICAob3V0IG9mIHJhbmdlISlcIikgPDwgJ1xcbic7XG4gICAgfVxucHJpdmF0ZTpcbiAgICB2aXJ0dWFsIHN0ZDo6c3RyaW5nIG5hbWUoKSBjb25zdCA9IDA7XG4gICAgdmlydHVhbCB2b2lkIHNldHVwKCkge30gICAgICAgICAgICAgICAgICAgICAgICAvLyBvcHRpb25hbCBzdGVwOiBhIGRlZmF1bHQgdGhhdCBtYXkgYmUgb3ZlcnJpZGRlblxuICAgIHZpcnR1YWwgZG91YmxlIG1lYXN1cmUoKSA9IDA7XG4gICAgdmlydHVhbCBib29sIGNoZWNrKGRvdWJsZSByKSBjb25zdCB7IHJldHVybiBzdGQ6OmlzZmluaXRlKHIpOyB9XG59O1xuXG5jbGFzcyBQZW5kdWx1bSA6IHB1YmxpYyBFeHBlcmltZW50IHtcbiAgICBkb3VibGUgbGVuZ3RoXyA9IDA7XG4gICAgc3RkOjpzdHJpbmcgbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwicGVuZHVsdW0gcGVyaW9kXCI7IH1cbiAgICB2b2lkIHNldHVwKCkgb3ZlcnJpZGUgeyBsZW5ndGhfID0gMi4wOyBzdGQ6OmNvdXQgPDwgXCIgICBsZW5ndGggc2V0IHRvIFwiIDw8IGxlbmd0aF8gPDwgXCIgbVxcblwiOyB9XG4gICAgZG91YmxlIG1lYXN1cmUoKSBvdmVycmlkZSB7IHJldHVybiAyICogMy4xNDE1OSAqIHN0ZDo6c3FydChsZW5ndGhfIC8gOS44MSk7IH1cbiAgICBib29sIGNoZWNrKGRvdWJsZSByKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiByID4gMCAmJiByIDwgMTA7IH1cbn07XG5cbmNsYXNzIEZyZWVGYWxsIDogcHVibGljIEV4cGVyaW1lbnQge1xuICAgIHN0ZDo6c3RyaW5nIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcImZyZWUgZmFsbCBmcm9tIDEgbVwiOyB9XG4gICAgZG91YmxlIG1lYXN1cmUoKSBvdmVycmlkZSB7IHJldHVybiBzdGQ6OnNxcnQoMiAqIDEuMCAvIDkuODEpOyB9XG59O1xuXG5pbnQgbWFpbigpIHtcbiAgICBQZW5kdWx1bSBwO1xuICAgIEZyZWVGYWxsIGY7XG4gICAgZm9yIChFeHBlcmltZW50KiBlIDoge3N0YXRpY19jYXN0PEV4cGVyaW1lbnQqPigmcCksIHN0YXRpY19jYXN0PEV4cGVyaW1lbnQqPigmZil9KSBlLT5ydW4oKTtcbn1cbiIsICJjb21waWxlcnMiOiBbXSwgImV4ZWN1dG9ycyI6IFt7ImNvbXBpbGVyIjogeyJpZCI6ICJnMTQyIiwgIm9wdGlvbnMiOiAiLXN0ZD1jKysxNyAtV2FsbCAtV2V4dHJhIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// nvi.cpp -- Template Method / Non-Virtual Interface: the base fixes the steps, derived classes fill them in</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+
+<span class="k">class</span> <span class="t">Experiment</span> {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Experiment</span>() = <span class="k">default</span>;
+    <span class="t">void</span> run() {                                   <span class="c">// public and NOT virtual: the algorithm cannot be changed</span>
+        std::cout &lt;&lt; <span class="s">&quot;== &quot;</span> &lt;&lt; name() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+        setup();
+        <span class="t">double</span> result = measure();                 <span class="c">// the steps that vary are private virtual functions</span>
+        std::cout &lt;&lt; <span class="s">&quot;   result &quot;</span> &lt;&lt; result &lt;&lt; (check(result) ? <span class="s">&quot;  (ok)&quot;</span> : <span class="s">&quot;  (out of range!)&quot;</span>) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+<span class="k">private</span>:
+    <span class="k">virtual</span> std::string name() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">void</span> setup() {}                        <span class="c">// optional step: a default that may be overridden</span>
+    <span class="k">virtual</span> <span class="t">double</span> measure() = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">bool</span> check(<span class="t">double</span> r) <span class="k">const</span> { <span class="k">return</span> std::isfinite(r); }
+};
+
+<span class="k">class</span> <span class="t">Pendulum</span> : <span class="k">public</span> <span class="t">Experiment</span> {
+    <span class="t">double</span> length_ = <span class="n">0</span>;
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;pendulum period&quot;</span>; }
+    <span class="t">void</span> setup() <span class="k">override</span> { length_ = <span class="n">2.0</span>; std::cout &lt;&lt; <span class="s">&quot;   length set to &quot;</span> &lt;&lt; length_ &lt;&lt; <span class="s">&quot; m\n&quot;</span>; }
+    <span class="t">double</span> measure() <span class="k">override</span> { <span class="k">return</span> <span class="n">2</span> * <span class="n">3.14159</span> * std::sqrt(length_ / <span class="n">9.81</span>); }
+    <span class="t">bool</span> check(<span class="t">double</span> r) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> r &gt; <span class="n">0</span> &amp;&amp; r &lt; <span class="n">10</span>; }
+};
+
+<span class="k">class</span> <span class="t">FreeFall</span> : <span class="k">public</span> <span class="t">Experiment</span> {
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;free fall from 1 m&quot;</span>; }
+    <span class="t">double</span> measure() <span class="k">override</span> { <span class="k">return</span> std::sqrt(<span class="n">2</span> * <span class="n">1.0</span> / <span class="n">9.81</span>); }
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Pendulum</span> p;
+    <span class="t">FreeFall</span> f;
+    <span class="k">for</span> (<span class="t">Experiment</span>* e : {<span class="k">static_cast</span>&lt;<span class="t">Experiment</span>*&gt;(&amp;p), <span class="k">static_cast</span>&lt;<span class="t">Experiment</span>*&gt;(&amp;f)}) e-&gt;run();
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>== pendulum period
+   length set to 2 m
+   result 2.837  (ok)
+== free fall from 1 m
+   result 0.451524  (ok)</pre></div><p class="dl"><a href="../code/nvi.cpp" download>Download nvi.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <p class="lead-note">A derived class can override a <em>private</em> virtual function: access control decides who may call it, not who may override it.</p>
+</section>
+
+<section id="observer" aria-labelledby="observer-h">
+  <h2 id="observer-h">Observer: notifying whoever is interested</h2>
+  <p>A subject keeps a list of observers behind an abstract interface and notifies them of events. The subject never learns their concrete types, so new kinds of observers (a logger, a plot, a network sender) can be added without touching it.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>observer.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gb2JzZXJ2ZXIuY3BwIC0tIE9ic2VydmVyOiBvYmplY3RzIHN1YnNjcmliZSB0byBldmVudHMgdGhyb3VnaCBhbiBhYnN0cmFjdCBpbnRlcmZhY2VcbiNpbmNsdWRlIDxpb3N0cmVhbT5cbiNpbmNsdWRlIDxzdHJpbmc-XG4jaW5jbHVkZSA8dmVjdG9yPlxuXG5jbGFzcyBPYnNlcnZlciB7ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBhbnl0aGluZyB0aGF0IHdhbnRzIHRvIGhlYXIgYWJvdXQgbmV3IHRlbXBlcmF0dXJlc1xucHVibGljOlxuICAgIHZpcnR1YWwgfk9ic2VydmVyKCkgPSBkZWZhdWx0O1xuICAgIHZpcnR1YWwgdm9pZCB1cGRhdGUoZG91YmxlIHRlbXBlcmF0dXJlKSA9IDA7XG59O1xuXG5jbGFzcyBTZW5zb3IgeyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyB0aGUgc3ViamVjdDoga25vd3Mgb25seSB0aGUgaW50ZXJmYWNlLCBub3QgdGhlIG9ic2VydmVycycgdHlwZXNcbnB1YmxpYzpcbiAgICB2b2lkIHN1YnNjcmliZShPYnNlcnZlciogbykgeyBvYnNlcnZlcnNfLnB1c2hfYmFjayhvKTsgfVxuICAgIHZvaWQgbWVhc3VyZShkb3VibGUgdCkge1xuICAgICAgICBzdGQ6OmNvdXQgPDwgXCJzZW5zb3IgcmVhZHMgXCIgPDwgdCA8PCAnXFxuJztcbiAgICAgICAgZm9yIChPYnNlcnZlciogbyA6IG9ic2VydmVyc18pIG8tPnVwZGF0ZSh0KTtcbiAgICB9XG5wcml2YXRlOlxuICAgIHN0ZDo6dmVjdG9yPE9ic2VydmVyKj4gb2JzZXJ2ZXJzXzsgICAgICAgICAgICAgLy8gbm9uLW93bmluZzogb2JzZXJ2ZXJzIG11c3Qgb3V0bGl2ZSB0aGUgc2Vuc29yIChvciB1bnN1YnNjcmliZSlcbn07XG5cbmNsYXNzIERpc3BsYXkgOiBwdWJsaWMgT2JzZXJ2ZXIge1xucHVibGljOlxuICAgIHZvaWQgdXBkYXRlKGRvdWJsZSB0KSBvdmVycmlkZSB7IHN0ZDo6Y291dCA8PCBcIiAgZGlzcGxheTogXCIgPDwgdCA8PCBcIiBDXFxuXCI7IH1cbn07XG5cbmNsYXNzIEFsYXJtIDogcHVibGljIE9ic2VydmVyIHtcbnB1YmxpYzpcbiAgICBleHBsaWNpdCBBbGFybShkb3VibGUgbGltaXQpIDogbGltaXRfKGxpbWl0KSB7fVxuICAgIHZvaWQgdXBkYXRlKGRvdWJsZSB0KSBvdmVycmlkZSB7IGlmICh0ID4gbGltaXRfKSBzdGQ6OmNvdXQgPDwgXCIgIEFMQVJNOiBhYm92ZSBcIiA8PCBsaW1pdF8gPDwgXCIgQ1xcblwiOyB9XG5wcml2YXRlOlxuICAgIGRvdWJsZSBsaW1pdF87XG59O1xuXG5jbGFzcyBBdmVyYWdlIDogcHVibGljIE9ic2VydmVyIHtcbnB1YmxpYzpcbiAgICB2b2lkIHVwZGF0ZShkb3VibGUgdCkgb3ZlcnJpZGUgeyBzdW1fICs9IHQ7ICsrbl87IHN0ZDo6Y291dCA8PCBcIiAgcnVubmluZyBtZWFuOiBcIiA8PCBzdW1fIC8gbl8gPDwgJ1xcbic7IH1cbnByaXZhdGU6XG4gICAgZG91YmxlIHN1bV8gPSAwO1xuICAgIGludCBuXyA9IDA7XG59O1xuXG5pbnQgbWFpbigpIHtcbiAgICBTZW5zb3IgcztcbiAgICBEaXNwbGF5IGQ7IEFsYXJtIGEoMzApOyBBdmVyYWdlIG07XG4gICAgcy5zdWJzY3JpYmUoJmQpOyBzLnN1YnNjcmliZSgmYSk7IHMuc3Vic2NyaWJlKCZtKTtcbiAgICBmb3IgKGRvdWJsZSB0IDogezIxLjUsIDI4LjAsIDMzLjV9KSBzLm1lYXN1cmUodCk7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// observer.cpp -- Observer: objects subscribe to events through an abstract interface</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">class</span> <span class="t">Observer</span> {                                   <span class="c">// anything that wants to hear about new temperatures</span>
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Observer</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">void</span> update(<span class="t">double</span> temperature) = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Sensor</span> {                                     <span class="c">// the subject: knows only the interface, not the observers&#x27; types</span>
+<span class="k">public</span>:
+    <span class="t">void</span> subscribe(<span class="t">Observer</span>* o) { observers_.push_back(o); }
+    <span class="t">void</span> measure(<span class="t">double</span> t) {
+        std::cout &lt;&lt; <span class="s">&quot;sensor reads &quot;</span> &lt;&lt; t &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+        <span class="k">for</span> (<span class="t">Observer</span>* o : observers_) o-&gt;update(t);
+    }
+<span class="k">private</span>:
+    std::vector&lt;<span class="t">Observer</span>*&gt; observers_;             <span class="c">// non-owning: observers must outlive the sensor (or unsubscribe)</span>
+};
+
+<span class="k">class</span> <span class="t">Display</span> : <span class="k">public</span> <span class="t">Observer</span> {
+<span class="k">public</span>:
+    <span class="t">void</span> update(<span class="t">double</span> t) <span class="k">override</span> { std::cout &lt;&lt; <span class="s">&quot;  display: &quot;</span> &lt;&lt; t &lt;&lt; <span class="s">&quot; C\n&quot;</span>; }
+};
+
+<span class="k">class</span> <span class="t">Alarm</span> : <span class="k">public</span> <span class="t">Observer</span> {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Alarm</span>(<span class="t">double</span> limit) : limit_(limit) {}
+    <span class="t">void</span> update(<span class="t">double</span> t) <span class="k">override</span> { <span class="k">if</span> (t &gt; limit_) std::cout &lt;&lt; <span class="s">&quot;  ALARM: above &quot;</span> &lt;&lt; limit_ &lt;&lt; <span class="s">&quot; C\n&quot;</span>; }
+<span class="k">private</span>:
+    <span class="t">double</span> limit_;
+};
+
+<span class="k">class</span> <span class="t">Average</span> : <span class="k">public</span> <span class="t">Observer</span> {
+<span class="k">public</span>:
+    <span class="t">void</span> update(<span class="t">double</span> t) <span class="k">override</span> { sum_ += t; ++n_; std::cout &lt;&lt; <span class="s">&quot;  running mean: &quot;</span> &lt;&lt; sum_ / n_ &lt;&lt; <span class="s">&#x27;\n&#x27;</span>; }
+<span class="k">private</span>:
+    <span class="t">double</span> sum_ = <span class="n">0</span>;
+    <span class="t">int</span> n_ = <span class="n">0</span>;
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Sensor</span> s;
+    <span class="t">Display</span> d; <span class="t">Alarm</span> a(<span class="n">30</span>); <span class="t">Average</span> m;
+    s.subscribe(&amp;d); s.subscribe(&amp;a); s.subscribe(&amp;m);
+    <span class="k">for</span> (<span class="t">double</span> t : {<span class="n">21.5</span>, <span class="n">28.0</span>, <span class="n">33.5</span>}) s.measure(t);
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>sensor reads 21.5
+  display: 21.5 C
+  running mean: 21.5
+sensor reads 28
+  display: 28 C
+  running mean: 24.75
+sensor reads 33.5
+  display: 33.5 C
+  ALARM: above 30 C
+  running mean: 27.6667</pre></div><p class="dl"><a href="../code/observer.cpp" download>Download observer.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <h3>Try it live</h3>
+  <div class="widget reveal" data-widget="observer"><noscript>This interactive part needs JavaScript.</noscript></div>
+  <div class="callout warn reveal"><b>Lifetime</b> The sensor stores plain pointers, so every observer must outlive it or unsubscribe first. Real code often stores <code>std::weak_ptr</code>s, or returns a subscription object whose destructor unsubscribes (RAII again).</div>
+</section>
+
+<section id="visitor" aria-labelledby="visitor-h">
+  <h2 id="visitor-h">Visitor: new operations without editing the classes</h2>
+  <p>Lesson 08 noted that with inheritance, adding an operation means editing every class. The <b>Visitor</b> pattern turns that around: each class gets one <code>accept</code> function, and every new operation becomes a new visitor class. It works by <b>double dispatch</b>: <code>s-&gt;accept(v)</code> dispatches on the shape's type, and inside it <code>v.visit(*this)</code> dispatches on the visitor's type, with overloading picking the right <code>visit</code>.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>visitor.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gdmlzaXRvci5jcHAgLS0gVmlzaXRvcjogYWRkIG5ldyBvcGVyYXRpb25zIHRvIGEgZml4ZWQgY2xhc3MgaGllcmFyY2h5IHdpdGhvdXQgZWRpdGluZyBpdCAoZG91YmxlIGRpc3BhdGNoKVxuI2luY2x1ZGUgPGNtYXRoPlxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPG1lbW9yeT5cbiNpbmNsdWRlIDx2ZWN0b3I-XG5cbmNsYXNzIENpcmNsZTsgY2xhc3MgUmVjdDtcblxuY2xhc3MgU2hhcGVWaXNpdG9yIHsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLy8gb25lIHZpc2l0KCkgcGVyIGNvbmNyZXRlIGNsYXNzXG5wdWJsaWM6XG4gICAgdmlydHVhbCB-U2hhcGVWaXNpdG9yKCkgPSBkZWZhdWx0O1xuICAgIHZpcnR1YWwgdm9pZCB2aXNpdChjb25zdCBDaXJjbGUmKSA9IDA7XG4gICAgdmlydHVhbCB2b2lkIHZpc2l0KGNvbnN0IFJlY3QmKSA9IDA7XG59O1xuXG5jbGFzcyBTaGFwZSB7XG5wdWJsaWM6XG4gICAgdmlydHVhbCB-U2hhcGUoKSA9IGRlZmF1bHQ7XG4gICAgdmlydHVhbCB2b2lkIGFjY2VwdChTaGFwZVZpc2l0b3ImIHYpIGNvbnN0ID0gMDsgICAvLyBmaXJzdCBkaXNwYXRjaDogb24gdGhlIHNoYXBlJ3MgdHlwZVxufTtcblxuY2xhc3MgQ2lyY2xlIDogcHVibGljIFNoYXBlIHtcbnB1YmxpYzpcbiAgICBleHBsaWNpdCBDaXJjbGUoZG91YmxlIHIpIDogcihyKSB7fVxuICAgIHZvaWQgYWNjZXB0KFNoYXBlVmlzaXRvciYgdikgY29uc3Qgb3ZlcnJpZGUgeyB2LnZpc2l0KCp0aGlzKTsgfSAgIC8vIHNlY29uZCBkaXNwYXRjaDogb3ZlcmxvYWQgcGlja3MgdmlzaXQoY29uc3QgQ2lyY2xlJilcbiAgICBkb3VibGUgcjtcbn07XG5cbmNsYXNzIFJlY3QgOiBwdWJsaWMgU2hhcGUge1xucHVibGljOlxuICAgIFJlY3QoZG91YmxlIHcsIGRvdWJsZSBoKSA6IHcodyksIGgoaCkge31cbiAgICB2b2lkIGFjY2VwdChTaGFwZVZpc2l0b3ImIHYpIGNvbnN0IG92ZXJyaWRlIHsgdi52aXNpdCgqdGhpcyk7IH1cbiAgICBkb3VibGUgdywgaDtcbn07XG5cbi8vIFR3byBvcGVyYXRpb25zLCB3cml0dGVuIGxhdGVyLCB3aXRob3V0IHRvdWNoaW5nIENpcmNsZSBvciBSZWN0OlxuY2xhc3MgUGVyaW1ldGVyIDogcHVibGljIFNoYXBlVmlzaXRvciB7XG5wdWJsaWM6XG4gICAgZG91YmxlIHRvdGFsID0gMDtcbiAgICB2b2lkIHZpc2l0KGNvbnN0IENpcmNsZSYgYykgb3ZlcnJpZGUgeyB0b3RhbCArPSAyICogMy4xNDE1OSAqIGMucjsgfVxuICAgIHZvaWQgdmlzaXQoY29uc3QgUmVjdCYgcikgb3ZlcnJpZGUgeyB0b3RhbCArPSAyICogKHIudyArIHIuaCk7IH1cbn07XG5cbmNsYXNzIFN2Z1dyaXRlciA6IHB1YmxpYyBTaGFwZVZpc2l0b3Ige1xucHVibGljOlxuICAgIHZvaWQgdmlzaXQoY29uc3QgQ2lyY2xlJiBjKSBvdmVycmlkZSB7IHN0ZDo6Y291dCA8PCBcIjxjaXJjbGUgcj1cXFwiXCIgPDwgYy5yIDw8IFwiXFxcIi8-XFxuXCI7IH1cbiAgICB2b2lkIHZpc2l0KGNvbnN0IFJlY3QmIHIpIG92ZXJyaWRlIHsgc3RkOjpjb3V0IDw8IFwiPHJlY3Qgd2lkdGg9XFxcIlwiIDw8IHIudyA8PCBcIlxcXCIgaGVpZ2h0PVxcXCJcIiA8PCByLmggPDwgXCJcXFwiLz5cXG5cIjsgfVxufTtcblxuaW50IG1haW4oKSB7XG4gICAgc3RkOjp2ZWN0b3I8c3RkOjp1bmlxdWVfcHRyPFNoYXBlPj4gc2hhcGVzO1xuICAgIHNoYXBlcy5wdXNoX2JhY2soc3RkOjptYWtlX3VuaXF1ZTxDaXJjbGU-KDEpKTtcbiAgICBzaGFwZXMucHVzaF9iYWNrKHN0ZDo6bWFrZV91bmlxdWU8UmVjdD4oMiwgMykpO1xuXG4gICAgUGVyaW1ldGVyIHA7XG4gICAgZm9yIChjb25zdCBhdXRvJiBzIDogc2hhcGVzKSBzLT5hY2NlcHQocCk7XG4gICAgc3RkOjpjb3V0IDw8IFwidG90YWwgcGVyaW1ldGVyIFwiIDw8IHAudG90YWwgPDwgJ1xcbic7XG5cbiAgICBTdmdXcml0ZXIgc3ZnO1xuICAgIGZvciAoY29uc3QgYXV0byYgcyA6IHNoYXBlcykgcy0-YWNjZXB0KHN2Zyk7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// visitor.cpp -- Visitor: add new operations to a fixed class hierarchy without editing it (double dispatch)</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">class</span> <span class="t">Circle</span>; <span class="k">class</span> <span class="t">Rect</span>;
+
+<span class="k">class</span> <span class="t">ShapeVisitor</span> {                               <span class="c">// one visit() per concrete class</span>
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">ShapeVisitor</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">void</span> visit(<span class="k">const</span> <span class="t">Circle</span>&amp;) = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">void</span> visit(<span class="k">const</span> <span class="t">Rect</span>&amp;) = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Shape</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">void</span> accept(<span class="t">ShapeVisitor</span>&amp; v) <span class="k">const</span> = <span class="n">0</span>;   <span class="c">// first dispatch: on the shape&#x27;s type</span>
+};
+
+<span class="k">class</span> <span class="t">Circle</span> : <span class="k">public</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Circle</span>(<span class="t">double</span> r) : r(r) {}
+    <span class="t">void</span> accept(<span class="t">ShapeVisitor</span>&amp; v) <span class="k">const</span> <span class="k">override</span> { v.visit(*<span class="k">this</span>); }   <span class="c">// second dispatch: overload picks visit(const Circle&amp;)</span>
+    <span class="t">double</span> r;
+};
+
+<span class="k">class</span> <span class="t">Rect</span> : <span class="k">public</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="t">Rect</span>(<span class="t">double</span> w, <span class="t">double</span> h) : w(w), h(h) {}
+    <span class="t">void</span> accept(<span class="t">ShapeVisitor</span>&amp; v) <span class="k">const</span> <span class="k">override</span> { v.visit(*<span class="k">this</span>); }
+    <span class="t">double</span> w, h;
+};
+
+<span class="c">// Two operations, written later, without touching Circle or Rect:</span>
+<span class="k">class</span> <span class="t">Perimeter</span> : <span class="k">public</span> <span class="t">ShapeVisitor</span> {
+<span class="k">public</span>:
+    <span class="t">double</span> total = <span class="n">0</span>;
+    <span class="t">void</span> visit(<span class="k">const</span> <span class="t">Circle</span>&amp; c) <span class="k">override</span> { total += <span class="n">2</span> * <span class="n">3.14159</span> * c.r; }
+    <span class="t">void</span> visit(<span class="k">const</span> <span class="t">Rect</span>&amp; r) <span class="k">override</span> { total += <span class="n">2</span> * (r.w + r.h); }
+};
+
+<span class="k">class</span> <span class="t">SvgWriter</span> : <span class="k">public</span> <span class="t">ShapeVisitor</span> {
+<span class="k">public</span>:
+    <span class="t">void</span> visit(<span class="k">const</span> <span class="t">Circle</span>&amp; c) <span class="k">override</span> { std::cout &lt;&lt; <span class="s">&quot;&lt;circle r=\&quot;&quot;</span> &lt;&lt; c.r &lt;&lt; <span class="s">&quot;\&quot;/&gt;\n&quot;</span>; }
+    <span class="t">void</span> visit(<span class="k">const</span> <span class="t">Rect</span>&amp; r) <span class="k">override</span> { std::cout &lt;&lt; <span class="s">&quot;&lt;rect width=\&quot;&quot;</span> &lt;&lt; r.w &lt;&lt; <span class="s">&quot;\&quot; height=\&quot;&quot;</span> &lt;&lt; r.h &lt;&lt; <span class="s">&quot;\&quot;/&gt;\n&quot;</span>; }
+};
+
+<span class="t">int</span> main() {
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Shape</span>&gt;&gt; shapes;
+    shapes.push_back(std::make_unique&lt;<span class="t">Circle</span>&gt;(<span class="n">1</span>));
+    shapes.push_back(std::make_unique&lt;<span class="t">Rect</span>&gt;(<span class="n">2</span>, <span class="n">3</span>));
+
+    <span class="t">Perimeter</span> p;
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : shapes) s-&gt;accept(p);
+    std::cout &lt;&lt; <span class="s">&quot;total perimeter &quot;</span> &lt;&lt; p.total &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+
+    <span class="t">SvgWriter</span> svg;
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : shapes) s-&gt;accept(svg);
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>total perimeter 16.2832
+&lt;circle r=&quot;1&quot;/&gt;
+&lt;rect width=&quot;2&quot; height=&quot;3&quot;/&gt;</pre></div><p class="dl"><a href="../code/visitor.cpp" download>Download visitor.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <p class="lead-note">The price is the reverse trade-off: adding a new shape now means adding a <code>visit</code> to every visitor. For a closed set of types, <code>std::variant</code> with <code>std::visit</code> does the same job with less code.</p>
+</section>
+
+<section id="key09" aria-labelledby="key09-h">
+  <h2 id="key09-h">Key points</h2>
+  <ul>
+    <li>Strategy: one interface, interchangeable algorithms, chosen at run time.</li>
+    <li>Template Method / NVI: the base owns the sequence; derived classes supply the steps.</li>
+    <li>Observer decouples senders from receivers; Visitor adds operations to a fixed hierarchy.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="prev" href="../08-static-polymorphism/index.html"><small>← Previous</small><b>08 · Beyond virtual: templates, CRTP, variant and concepts</b></a><a class="next" href="../10-pitfalls/index.html"><small>Next →</small><b>10 · Pitfalls</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

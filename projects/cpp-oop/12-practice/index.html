@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 12: Twelve predict-the-output questions checked against real runs, four exercises with compiled solutions, a cheat sheet and further reading.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Practice: quiz, exercises and cheat sheet · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="12" data-scene="template">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">12 · Practice: quiz, exercises and cheat sheet</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 12 of 12</p><h1>Practice: quiz, exercises and cheat sheet</h1><p class="lede">Test yourself, then write some code. Every quiz answer and every solution's output comes from actually compiling and running the program.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Practice: quiz, exercises and cheat sheet · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#quiz">Predict the output</a><a href="#exercises">Exercises</a><a href="#cheat">Cheat sheet</a><a href="#reading">Further reading</a></nav><section id="quiz" aria-labelledby="quiz-h">
+  <h2 id="quiz-h">Predict the output</h2>
+  <p>Each program prints one line. Choose what you think it prints; the answer is checked against the real output of the compiled program.</p>
+  <div class="widget reveal" data-widget="quiz"><noscript>This interactive part needs JavaScript.</noscript></div>
+</section>
+
+<section id="exercises" aria-labelledby="exercises-h">
+  <h2 id="exercises-h">Exercises</h2>
+  <p>Try each one before opening the solution. The solutions are complete programs; their output was produced by compiling and running them.</p>
+  <h3>1 · An ellipse</h3>
+  <p>Add an <code>Ellipse</code> to the abstract <code>Shape</code> hierarchy of lesson 06. Its perimeter has no closed form: use Ramanujan's approximation <i>π(a + b)(1 + 3h / (10 + √(4 − 3h)))</i> with <i>h = (a − b)² / (a + b)²</i>. Then make <code>Circle</code> derive from <code>Ellipse</code>. Does <code>describe()</code> need any change? Is the circle-is-an-ellipse relationship safe here, and would it be if shapes had <code>set_axes()</code>?</p>
+  <details class="solution"><summary>Show a solution</summary><div class="code reveal" translate="no"><div class="code-head"><span>ellipse.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gZWxsaXBzZS5jcHAgLS0gZXhlcmNpc2UgMTogYWRkIGFuIEVsbGlwc2UgdG8gdGhlIGFic3RyYWN0IFNoYXBlIGhpZXJhcmNoeVxuI2luY2x1ZGUgPGNtYXRoPlxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPG1lbW9yeT5cbiNpbmNsdWRlIDxzdHJpbmc-XG4jaW5jbHVkZSA8dmVjdG9yPlxuXG5jb25zdGV4cHIgZG91YmxlIHBpID0gMy4xNDE1OTI2NTM1ODk3OTM7XG5cbmNsYXNzIFNoYXBlIHtcbnB1YmxpYzpcbiAgICB2aXJ0dWFsIH5TaGFwZSgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGRvdWJsZSBhcmVhKCkgY29uc3QgPSAwO1xuICAgIHZpcnR1YWwgZG91YmxlIHBlcmltZXRlcigpIGNvbnN0ID0gMDtcbiAgICB2aXJ0dWFsIHN0ZDo6c3RyaW5nIG5hbWUoKSBjb25zdCA9IDA7XG4gICAgdm9pZCBkZXNjcmliZSgpIGNvbnN0IHsgc3RkOjpjb3V0IDw8IG5hbWUoKSA8PCBcIjogYXJlYSBcIiA8PCBhcmVhKCkgPDwgXCIsIHBlcmltZXRlciBcIiA8PCBwZXJpbWV0ZXIoKSA8PCAnXFxuJzsgfVxufTtcblxuY2xhc3MgRWxsaXBzZSA6IHB1YmxpYyBTaGFwZSB7XG5wdWJsaWM6XG4gICAgRWxsaXBzZShkb3VibGUgYSwgZG91YmxlIGIpIDogYV8oYSksIGJfKGIpIHt9XG4gICAgZG91YmxlIGFyZWEoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBwaSAqIGFfICogYl87IH1cbiAgICBkb3VibGUgcGVyaW1ldGVyKCkgY29uc3Qgb3ZlcnJpZGUgeyAgICAgICAgICAgIC8vIFJhbWFudWphbidzIHNlY29uZCBhcHByb3hpbWF0aW9uXG4gICAgICAgIGRvdWJsZSBoID0gKGFfIC0gYl8pICogKGFfIC0gYl8pIC8gKChhXyArIGJfKSAqIChhXyArIGJfKSk7XG4gICAgICAgIHJldHVybiBwaSAqIChhXyArIGJfKSAqICgxICsgMyAqIGggLyAoMTAgKyBzdGQ6OnNxcnQoNCAtIDMgKiBoKSkpO1xuICAgIH1cbiAgICBzdGQ6OnN0cmluZyBuYW1lKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gXCJlbGxpcHNlXCI7IH1cbnByb3RlY3RlZDpcbiAgICBkb3VibGUgYV8sIGJfO1xufTtcblxuY2xhc3MgQ2lyY2xlIDogcHVibGljIEVsbGlwc2UgeyAgICAgICAgICAgICAgICAgICAgLy8gc2FmZSBoZXJlOiBzaGFwZXMgY2Fubm90IGJlIGNoYW5nZWQgYWZ0ZXIgY29uc3RydWN0aW9uXG5wdWJsaWM6XG4gICAgZXhwbGljaXQgQ2lyY2xlKGRvdWJsZSByKSA6IEVsbGlwc2Uociwgcikge31cbiAgICBzdGQ6OnN0cmluZyBuYW1lKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gXCJjaXJjbGVcIjsgfVxufTtcblxuaW50IG1haW4oKSB7XG4gICAgc3RkOjp2ZWN0b3I8c3RkOjp1bmlxdWVfcHRyPFNoYXBlPj4gc2hhcGVzO1xuICAgIHNoYXBlcy5wdXNoX2JhY2soc3RkOjptYWtlX3VuaXF1ZTxFbGxpcHNlPigyLCAxKSk7XG4gICAgc2hhcGVzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPENpcmNsZT4oMSkpO1xuICAgIGZvciAoY29uc3QgYXV0byYgcyA6IHNoYXBlcykgcy0-ZGVzY3JpYmUoKTsgICAgLy8gZGVzY3JpYmUoKSBkaWQgbm90IGNoYW5nZSBhdCBhbGxcbiAgICBzdGQ6OmNvdXQgPDwgXCJjaXJjbGUgY2hlY2s6IDIqcGkgPSBcIiA8PCAyICogcGkgPDwgJ1xcbic7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// ellipse.cpp -- exercise 1: add an Ellipse to the abstract Shape hierarchy</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">constexpr</span> <span class="t">double</span> pi = <span class="n">3.141592653589793</span>;
+
+<span class="k">class</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Shape</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> area() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">double</span> perimeter() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> std::string name() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="t">void</span> describe() <span class="k">const</span> { std::cout &lt;&lt; name() &lt;&lt; <span class="s">&quot;: area &quot;</span> &lt;&lt; area() &lt;&lt; <span class="s">&quot;, perimeter &quot;</span> &lt;&lt; perimeter() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>; }
+};
+
+<span class="k">class</span> <span class="t">Ellipse</span> : <span class="k">public</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="t">Ellipse</span>(<span class="t">double</span> a, <span class="t">double</span> b) : a_(a), b_(b) {}
+    <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> pi * a_ * b_; }
+    <span class="t">double</span> perimeter() <span class="k">const</span> <span class="k">override</span> {            <span class="c">// Ramanujan&#x27;s second approximation</span>
+        <span class="t">double</span> h = (a_ - b_) * (a_ - b_) / ((a_ + b_) * (a_ + b_));
+        <span class="k">return</span> pi * (a_ + b_) * (<span class="n">1</span> + <span class="n">3</span> * h / (<span class="n">10</span> + std::sqrt(<span class="n">4</span> - <span class="n">3</span> * h)));
+    }
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;ellipse&quot;</span>; }
+<span class="k">protected</span>:
+    <span class="t">double</span> a_, b_;
+};
+
+<span class="k">class</span> <span class="t">Circle</span> : <span class="k">public</span> <span class="t">Ellipse</span> {                    <span class="c">// safe here: shapes cannot be changed after construction</span>
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Circle</span>(<span class="t">double</span> r) : <span class="t">Ellipse</span>(r, r) {}
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;circle&quot;</span>; }
+};
+
+<span class="t">int</span> main() {
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Shape</span>&gt;&gt; shapes;
+    shapes.push_back(std::make_unique&lt;<span class="t">Ellipse</span>&gt;(<span class="n">2</span>, <span class="n">1</span>));
+    shapes.push_back(std::make_unique&lt;<span class="t">Circle</span>&gt;(<span class="n">1</span>));
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : shapes) s-&gt;describe();    <span class="c">// describe() did not change at all</span>
+    std::cout &lt;&lt; <span class="s">&quot;circle check: 2*pi = &quot;</span> &lt;&lt; <span class="n">2</span> * pi &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>ellipse: area 6.28319, perimeter 9.68845
+circle: area 3.14159, perimeter 6.28319
+circle check: 2*pi = 6.28319</pre></div><p class="dl"><a href="../code/ellipse.cpp" download>Download ellipse.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p></details>
+  <h3>2 · Sensors</h3>
+  <p>Write an abstract <code>Sensor</code> with <code>name()</code>, <code>read()</code> and <code>unit()</code>, two implementations, and a function that prints a table of readings from a <code>std::vector&lt;std::unique_ptr&lt;Sensor&gt;&gt;</code>. Should <code>read()</code> be <code>const</code>?</p>
+  <details class="solution"><summary>Show a solution</summary><div class="code reveal" translate="no"><div class="code-head"><span>sensors.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gc2Vuc29ycy5jcHAgLS0gZXhlcmNpc2UgMjogYW4gYWJzdHJhY3QgU2Vuc29yIGludGVyZmFjZSBhbmQgYSB0YWJsZSBvZiByZWFkaW5nc1xuI2luY2x1ZGUgPGNzdGRpbz5cbiNpbmNsdWRlIDxtZW1vcnk-XG4jaW5jbHVkZSA8c3RyaW5nPlxuI2luY2x1ZGUgPHZlY3Rvcj5cblxuY2xhc3MgU2Vuc29yIHtcbnB1YmxpYzpcbiAgICB2aXJ0dWFsIH5TZW5zb3IoKSA9IGRlZmF1bHQ7XG4gICAgdmlydHVhbCBzdGQ6OnN0cmluZyBuYW1lKCkgY29uc3QgPSAwO1xuICAgIHZpcnR1YWwgZG91YmxlIHJlYWQoKSA9IDA7ICAgICAgICAgICAgICAgICAgICAgLy8gbm90IGNvbnN0OiByZWFkaW5nIG1heSBjaGFuZ2UgaW50ZXJuYWwgc3RhdGVcbiAgICB2aXJ0dWFsIGNvbnN0IGNoYXIqIHVuaXQoKSBjb25zdCA9IDA7XG59O1xuXG5jbGFzcyBUaGVybW9tZXRlciA6IHB1YmxpYyBTZW5zb3Ige1xucHVibGljOlxuICAgIGV4cGxpY2l0IFRoZXJtb21ldGVyKHN0ZDo6c3RyaW5nIHdoZXJlKSA6IHdoZXJlXyhzdGQ6Om1vdmUod2hlcmUpKSB7fVxuICAgIHN0ZDo6c3RyaW5nIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcInRlbXBlcmF0dXJlIChcIiArIHdoZXJlXyArIFwiKVwiOyB9XG4gICAgZG91YmxlIHJlYWQoKSBvdmVycmlkZSB7IHRfICs9IDAuNTsgcmV0dXJuIHRfOyB9ICAgLy8gYSBmYWtlLCBzbG93bHkgd2FybWluZyByb29tXG4gICAgY29uc3QgY2hhciogdW5pdCgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwiQ1wiOyB9XG5wcml2YXRlOlxuICAgIHN0ZDo6c3RyaW5nIHdoZXJlXztcbiAgICBkb3VibGUgdF8gPSAyMDtcbn07XG5cbmNsYXNzIFdpbmRWYW5lIDogcHVibGljIFNlbnNvciB7XG5wdWJsaWM6XG4gICAgc3RkOjpzdHJpbmcgbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwid2luZCBzcGVlZFwiOyB9XG4gICAgZG91YmxlIHJlYWQoKSBvdmVycmlkZSB7IHN0YXRpYyBjb25zdCBkb3VibGUgc2VxW10gPSB7My4yLCA0LjgsIDIuMX07IHJldHVybiBzZXFbaV8rKyAlIDNdOyB9XG4gICAgY29uc3QgY2hhciogdW5pdCgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwibS9zXCI7IH1cbnByaXZhdGU6XG4gICAgaW50IGlfID0gMDtcbn07XG5cbnZvaWQgdGFibGUoc3RkOjp2ZWN0b3I8c3RkOjp1bmlxdWVfcHRyPFNlbnNvcj4-JiBzZW5zb3JzLCBpbnQgcm91bmRzKSB7XG4gICAgZm9yIChpbnQgciA9IDE7IHIgPD0gcm91bmRzOyArK3IpXG4gICAgICAgIGZvciAoYXV0byYgcyA6IHNlbnNvcnMpIHN0ZDo6cHJpbnRmKFwicm91bmQgJWQgICUtMjJzICU2LjFmICVzXFxuXCIsIHIsIHMtPm5hbWUoKS5jX3N0cigpLCBzLT5yZWFkKCksIHMtPnVuaXQoKSk7XG59XG5cbmludCBtYWluKCkge1xuICAgIHN0ZDo6dmVjdG9yPHN0ZDo6dW5pcXVlX3B0cjxTZW5zb3I-PiBzZW5zb3JzO1xuICAgIHNlbnNvcnMucHVzaF9iYWNrKHN0ZDo6bWFrZV91bmlxdWU8VGhlcm1vbWV0ZXI-KFwibGFiXCIpKTtcbiAgICBzZW5zb3JzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPFdpbmRWYW5lPigpKTtcbiAgICB0YWJsZShzZW5zb3JzLCAyKTtcbn1cbiIsICJjb21waWxlcnMiOiBbXSwgImV4ZWN1dG9ycyI6IFt7ImNvbXBpbGVyIjogeyJpZCI6ICJnMTQyIiwgIm9wdGlvbnMiOiAiLXN0ZD1jKysxNyAtV2FsbCAtV2V4dHJhIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// sensors.cpp -- exercise 2: an abstract Sensor interface and a table of readings</span>
+<span class="p">#include &lt;cstdio&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">class</span> <span class="t">Sensor</span> {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Sensor</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> std::string name() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">double</span> read() = <span class="n">0</span>;                     <span class="c">// not const: reading may change internal state</span>
+    <span class="k">virtual</span> <span class="k">const</span> <span class="t">char</span>* unit() <span class="k">const</span> = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Thermometer</span> : <span class="k">public</span> <span class="t">Sensor</span> {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Thermometer</span>(std::string where) : where_(std::move(where)) {}
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;temperature (&quot;</span> + where_ + <span class="s">&quot;)&quot;</span>; }
+    <span class="t">double</span> read() <span class="k">override</span> { t_ += <span class="n">0.5</span>; <span class="k">return</span> t_; }   <span class="c">// a fake, slowly warming room</span>
+    <span class="k">const</span> <span class="t">char</span>* unit() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;C&quot;</span>; }
+<span class="k">private</span>:
+    std::string where_;
+    <span class="t">double</span> t_ = <span class="n">20</span>;
+};
+
+<span class="k">class</span> <span class="t">WindVane</span> : <span class="k">public</span> <span class="t">Sensor</span> {
+<span class="k">public</span>:
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;wind speed&quot;</span>; }
+    <span class="t">double</span> read() <span class="k">override</span> { <span class="k">static</span> <span class="k">const</span> <span class="t">double</span> seq[] = {<span class="n">3.2</span>, <span class="n">4.8</span>, <span class="n">2.1</span>}; <span class="k">return</span> seq[i_++ % <span class="n">3</span>]; }
+    <span class="k">const</span> <span class="t">char</span>* unit() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;m/s&quot;</span>; }
+<span class="k">private</span>:
+    <span class="t">int</span> i_ = <span class="n">0</span>;
+};
+
+<span class="t">void</span> table(std::vector&lt;std::unique_ptr&lt;<span class="t">Sensor</span>&gt;&gt;&amp; sensors, <span class="t">int</span> rounds) {
+    <span class="k">for</span> (<span class="t">int</span> r = <span class="n">1</span>; r &lt;= rounds; ++r)
+        <span class="k">for</span> (<span class="k">auto</span>&amp; s : sensors) std::printf(<span class="s">&quot;round %d  %-22s %6.1f %s\n&quot;</span>, r, s-&gt;name().c_str(), s-&gt;read(), s-&gt;unit());
+}
+
+<span class="t">int</span> main() {
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Sensor</span>&gt;&gt; sensors;
+    sensors.push_back(std::make_unique&lt;<span class="t">Thermometer</span>&gt;(<span class="s">&quot;lab&quot;</span>));
+    sensors.push_back(std::make_unique&lt;<span class="t">WindVane</span>&gt;());
+    table(sensors, <span class="n">2</span>);
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>round 1  temperature (lab)        20.5 C
+round 1  wind speed                3.2 m/s
+round 2  temperature (lab)        21.0 C
+round 2  wind speed                4.8 m/s</pre></div><p class="dl"><a href="../code/sensors.cpp" download>Download sensors.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p></details>
+  <h3>3 · A new method and a new equation</h3>
+  <p>Add a <code>Heun</code> stepper and a second ODE, the logistic equation <i>y' = y(1 − y)</i> with exact solution <i>1 / (1 + e<sup>−t</sup>)</i>, to the integrators of lesson 09 without changing <code>solve()</code>. Confirm the error ratios.</p>
+  <details class="solution"><summary>Show a solution</summary><div class="code reveal" translate="no"><div class="code-head"><span>heun.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gaGV1bi5jcHAgLS0gZXhlcmNpc2UgMzogYSBuZXcgU3RlcHBlciAoSGV1bikgYW5kIGEgbmV3IE9ERSAobG9naXN0aWMpLCB3aXRob3V0IGNoYW5naW5nIHNvbHZlKClcbiNpbmNsdWRlIDxjbWF0aD5cbiNpbmNsdWRlIDxjc3RkaW8-XG4jaW5jbHVkZSA8bWVtb3J5PlxuI2luY2x1ZGUgPHZlY3Rvcj5cblxuY2xhc3MgT0RFIHtcbnB1YmxpYzpcbiAgICB2aXJ0dWFsIH5PREUoKSA9IGRlZmF1bHQ7XG4gICAgdmlydHVhbCBkb3VibGUgZihkb3VibGUgdCwgZG91YmxlIHkpIGNvbnN0ID0gMDtcbiAgICB2aXJ0dWFsIGRvdWJsZSBleGFjdChkb3VibGUgdCkgY29uc3QgPSAwO1xuICAgIHZpcnR1YWwgY29uc3QgY2hhciogbmFtZSgpIGNvbnN0ID0gMDtcbn07XG5cbmNsYXNzIERlY2F5IDogcHVibGljIE9ERSB7XG5wdWJsaWM6XG4gICAgZG91YmxlIGYoZG91YmxlLCBkb3VibGUgeSkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gLXk7IH1cbiAgICBkb3VibGUgZXhhY3QoZG91YmxlIHQpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIHN0ZDo6ZXhwKC10KTsgfVxuICAgIGNvbnN0IGNoYXIqIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcInknID0gLXlcIjsgfVxufTtcblxuY2xhc3MgTG9naXN0aWMgOiBwdWJsaWMgT0RFIHsgICAgICAgICAgICAgICAgICAgICAgLy8geScgPSB5KDEgLSB5KSwgeSgwKSA9IDEvMlxucHVibGljOlxuICAgIGRvdWJsZSBmKGRvdWJsZSwgZG91YmxlIHkpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIHkgKiAoMSAtIHkpOyB9XG4gICAgZG91YmxlIGV4YWN0KGRvdWJsZSB0KSBjb25zdCBvdmVycmlkZSB7IHJldHVybiAxIC8gKDEgKyBzdGQ6OmV4cCgtdCkpOyB9XG4gICAgY29uc3QgY2hhciogbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwieScgPSB5KDEteSlcIjsgfVxufTtcblxuY2xhc3MgU3RlcHBlciB7XG5wdWJsaWM6XG4gICAgdmlydHVhbCB-U3RlcHBlcigpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGRvdWJsZSBzdGVwKGNvbnN0IE9ERSYgb2RlLCBkb3VibGUgdCwgZG91YmxlIHksIGRvdWJsZSBoKSBjb25zdCA9IDA7XG4gICAgdmlydHVhbCBjb25zdCBjaGFyKiBuYW1lKCkgY29uc3QgPSAwO1xufTtcblxuY2xhc3MgRXVsZXIgOiBwdWJsaWMgU3RlcHBlciB7XG5wdWJsaWM6XG4gICAgZG91YmxlIHN0ZXAoY29uc3QgT0RFJiBvLCBkb3VibGUgdCwgZG91YmxlIHksIGRvdWJsZSBoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiB5ICsgaCAqIG8uZih0LCB5KTsgfVxuICAgIGNvbnN0IGNoYXIqIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcIkV1bGVyXCI7IH1cbn07XG5cbmNsYXNzIEhldW4gOiBwdWJsaWMgU3RlcHBlciB7ICAgICAgICAgICAgICAgICAgICAgIC8vIHByZWRpY3Rvci1jb3JyZWN0b3IsIHNlY29uZCBvcmRlclxucHVibGljOlxuICAgIGRvdWJsZSBzdGVwKGNvbnN0IE9ERSYgbywgZG91YmxlIHQsIGRvdWJsZSB5LCBkb3VibGUgaCkgY29uc3Qgb3ZlcnJpZGUge1xuICAgICAgICBkb3VibGUgazEgPSBvLmYodCwgeSk7XG4gICAgICAgIGRvdWJsZSBrMiA9IG8uZih0ICsgaCwgeSArIGggKiBrMSk7XG4gICAgICAgIHJldHVybiB5ICsgaCAvIDIgKiAoazEgKyBrMik7XG4gICAgfVxuICAgIGNvbnN0IGNoYXIqIG5hbWUoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiBcIkhldW5cIjsgfVxufTtcblxuZG91YmxlIHNvbHZlKGNvbnN0IE9ERSYgb2RlLCBjb25zdCBTdGVwcGVyJiBtLCBkb3VibGUgeTAsIGRvdWJsZSBULCBpbnQgbikge1xuICAgIGRvdWJsZSBoID0gVCAvIG4sIHkgPSB5MDtcbiAgICBmb3IgKGludCBpID0gMDsgaSA8IG47ICsraSkgeSA9IG0uc3RlcChvZGUsIGkgKiBoLCB5LCBoKTtcbiAgICByZXR1cm4geTtcbn1cblxuaW50IG1haW4oKSB7XG4gICAgRGVjYXkgZDsgTG9naXN0aWMgbDtcbiAgICBFdWxlciBlOyBIZXVuIGhlO1xuICAgIGNvbnN0IE9ERSogb2Rlc1tdID0geyZkLCAmbH07XG4gICAgY29uc3QgU3RlcHBlciogbWV0aG9kc1tdID0geyZlLCAmaGV9O1xuICAgIHN0ZDo6cHJpbnRmKFwiJS0xMnMgJS02cyAlMTFzICUxMXMgJTZzXFxuXCIsIFwiZXF1YXRpb25cIiwgXCJtZXRob2RcIiwgXCJlcnIgbj0xMFwiLCBcImVyciBuPTIwXCIsIFwicmF0aW9cIik7XG4gICAgZm9yIChjb25zdCBPREUqIG8gOiBvZGVzKSB7XG4gICAgICAgIGRvdWJsZSB5MCA9IG8tPmV4YWN0KDApO1xuICAgICAgICBmb3IgKGNvbnN0IFN0ZXBwZXIqIG0gOiBtZXRob2RzKSB7XG4gICAgICAgICAgICBkb3VibGUgZTEwID0gc3RkOjpmYWJzKHNvbHZlKCpvLCAqbSwgeTAsIDEsIDEwKSAtIG8tPmV4YWN0KDEpKTtcbiAgICAgICAgICAgIGRvdWJsZSBlMjAgPSBzdGQ6OmZhYnMoc29sdmUoKm8sICptLCB5MCwgMSwgMjApIC0gby0-ZXhhY3QoMSkpO1xuICAgICAgICAgICAgc3RkOjpwcmludGYoXCIlLTEycyAlLTZzICUxMS4zZSAlMTEuM2UgJTYuMWZcXG5cIiwgby0-bmFtZSgpLCBtLT5uYW1lKCksIGUxMCwgZTIwLCBlMTAgLyBlMjApO1xuICAgICAgICB9XG4gICAgfVxufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItc3RkPWMrKzE3IC1XYWxsIC1XZXh0cmEiLCAibGlicyI6IFtdfSwgImFyZ3VtZW50cyI6ICIiLCAic3RkaW4iOiAiIn1dfV19" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// heun.cpp -- exercise 3: a new Stepper (Heun) and a new ODE (logistic), without changing solve()</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;cstdio&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">class</span> ODE {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~ODE() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> f(<span class="t">double</span> t, <span class="t">double</span> y) <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">double</span> exact(<span class="t">double</span> t) <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Decay</span> : <span class="k">public</span> ODE {
+<span class="k">public</span>:
+    <span class="t">double</span> f(<span class="t">double</span>, <span class="t">double</span> y) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> -y; }
+    <span class="t">double</span> exact(<span class="t">double</span> t) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> std::exp(-t); }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;y&#x27; = -y&quot;</span>; }
+};
+
+<span class="k">class</span> <span class="t">Logistic</span> : <span class="k">public</span> ODE {                      <span class="c">// y&#x27; = y(1 - y), y(0) = 1/2</span>
+<span class="k">public</span>:
+    <span class="t">double</span> f(<span class="t">double</span>, <span class="t">double</span> y) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> y * (<span class="n">1</span> - y); }
+    <span class="t">double</span> exact(<span class="t">double</span> t) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="n">1</span> / (<span class="n">1</span> + std::exp(-t)); }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;y&#x27; = y(1-y)&quot;</span>; }
+};
+
+<span class="k">class</span> <span class="t">Stepper</span> {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Stepper</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> step(<span class="k">const</span> ODE&amp; ode, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Euler</span> : <span class="k">public</span> <span class="t">Stepper</span> {
+<span class="k">public</span>:
+    <span class="t">double</span> step(<span class="k">const</span> ODE&amp; o, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> y + h * o.f(t, y); }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;Euler&quot;</span>; }
+};
+
+<span class="k">class</span> <span class="t">Heun</span> : <span class="k">public</span> <span class="t">Stepper</span> {                      <span class="c">// predictor-corrector, second order</span>
+<span class="k">public</span>:
+    <span class="t">double</span> step(<span class="k">const</span> ODE&amp; o, <span class="t">double</span> t, <span class="t">double</span> y, <span class="t">double</span> h) <span class="k">const</span> <span class="k">override</span> {
+        <span class="t">double</span> k1 = o.f(t, y);
+        <span class="t">double</span> k2 = o.f(t + h, y + h * k1);
+        <span class="k">return</span> y + h / <span class="n">2</span> * (k1 + k2);
+    }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;Heun&quot;</span>; }
+};
+
+<span class="t">double</span> solve(<span class="k">const</span> ODE&amp; ode, <span class="k">const</span> <span class="t">Stepper</span>&amp; m, <span class="t">double</span> y0, <span class="t">double</span> T, <span class="t">int</span> n) {
+    <span class="t">double</span> h = T / n, y = y0;
+    <span class="k">for</span> (<span class="t">int</span> i = <span class="n">0</span>; i &lt; n; ++i) y = m.step(ode, i * h, y, h);
+    <span class="k">return</span> y;
+}
+
+<span class="t">int</span> main() {
+    <span class="t">Decay</span> d; <span class="t">Logistic</span> l;
+    <span class="t">Euler</span> e; <span class="t">Heun</span> he;
+    <span class="k">const</span> ODE* odes[] = {&amp;d, &amp;l};
+    <span class="k">const</span> <span class="t">Stepper</span>* methods[] = {&amp;e, &amp;he};
+    std::printf(<span class="s">&quot;%-12s %-6s %11s %11s %6s\n&quot;</span>, <span class="s">&quot;equation&quot;</span>, <span class="s">&quot;method&quot;</span>, <span class="s">&quot;err n=10&quot;</span>, <span class="s">&quot;err n=20&quot;</span>, <span class="s">&quot;ratio&quot;</span>);
+    <span class="k">for</span> (<span class="k">const</span> ODE* o : odes) {
+        <span class="t">double</span> y0 = o-&gt;exact(<span class="n">0</span>);
+        <span class="k">for</span> (<span class="k">const</span> <span class="t">Stepper</span>* m : methods) {
+            <span class="t">double</span> e10 = std::fabs(solve(*o, *m, y0, <span class="n">1</span>, <span class="n">10</span>) - o-&gt;exact(<span class="n">1</span>));
+            <span class="t">double</span> e20 = std::fabs(solve(*o, *m, y0, <span class="n">1</span>, <span class="n">20</span>) - o-&gt;exact(<span class="n">1</span>));
+            std::printf(<span class="s">&quot;%-12s %-6s %11.3e %11.3e %6.1f\n&quot;</span>, o-&gt;name(), m-&gt;name(), e10, e20, e10 / e20);
+        }
+    }
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>equation     method    err n=10    err n=20  ratio
+y&#x27; = -y      Euler    1.920e-02   9.394e-03    2.0
+y&#x27; = -y      Heun     6.615e-04   1.592e-04    4.2
+y&#x27; = y(1-y)  Euler    2.344e-03   1.177e-03    2.0
+y&#x27; = y(1-y)  Heun     1.038e-04   2.554e-05    4.1</pre></div><p class="dl"><a href="../code/heun.cpp" download>Download heun.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p></details>
+  <h3>4 · The rule of five</h3>
+  <p>Write a class <code>Grid</code> that owns an <i>n × n</i> array through a raw <code>double*</code>, with a destructor, a deep copy constructor, a <code>noexcept</code> move constructor, and assignment. Hint: the copy-and-swap idiom gives both assignments in one function.</p>
+  <details class="solution"><summary>Show a solution</summary><div class="code reveal" translate="no"><div class="code-head"><span>rule_of_five.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gcnVsZV9vZl9maXZlLmNwcCAtLSBleGVyY2lzZSA0OiBhIGNsYXNzIHRoYXQgb3ducyBhIHJhdyBhcnJheSwgd2l0aCBhbGwgZml2ZSBzcGVjaWFsIG1lbWJlcnNcbiNpbmNsdWRlIDxhbGdvcml0aG0-XG4jaW5jbHVkZSA8Y3N0ZGRlZj5cbiNpbmNsdWRlIDxpb3N0cmVhbT5cbiNpbmNsdWRlIDx1dGlsaXR5PlxuXG5jbGFzcyBHcmlkIHsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBuIHggbiBkb3VibGVzIG9uIHRoZSBoZWFwXG5wdWJsaWM6XG4gICAgZXhwbGljaXQgR3JpZChzdGQ6OnNpemVfdCBuKSA6IG5fKG4pLCBhXyhuZXcgZG91YmxlW24gKiBuXSgpKSB7fVxuICAgIH5HcmlkKCkgeyBkZWxldGVbXSBhXzsgfVxuICAgIEdyaWQoY29uc3QgR3JpZCYgbykgOiBuXyhvLm5fKSwgYV8obmV3IGRvdWJsZVtvLm5fICogby5uX10pIHsgICAgICAgICAgIC8vIGRlZXAgY29weVxuICAgICAgICBzdGQ6OmNvcHkoby5hXywgby5hXyArIG5fICogbl8sIGFfKTtcbiAgICB9XG4gICAgR3JpZChHcmlkJiYgbykgbm9leGNlcHQgOiBuXyhzdGQ6OmV4Y2hhbmdlKG8ubl8sIDApKSwgYV8oc3RkOjpleGNoYW5nZShvLmFfLCBudWxscHRyKSkge30gICAvLyBzdGVhbFxuICAgIEdyaWQmIG9wZXJhdG9yPShHcmlkIG8pIG5vZXhjZXB0IHsgICAgICAgICAgICAgLy8gY29weS1hbmQtc3dhcDogb25lIGFzc2lnbm1lbnQgY292ZXJzIGNvcHkgYW5kIG1vdmVcbiAgICAgICAgc3dhcChvKTtcbiAgICAgICAgcmV0dXJuICp0aGlzO1xuICAgIH1cbiAgICB2b2lkIHN3YXAoR3JpZCYgbykgbm9leGNlcHQgeyBzdGQ6OnN3YXAobl8sIG8ubl8pOyBzdGQ6OnN3YXAoYV8sIG8uYV8pOyB9XG4gICAgZG91YmxlJiBvcGVyYXRvcigpKHN0ZDo6c2l6ZV90IGksIHN0ZDo6c2l6ZV90IGopIHsgcmV0dXJuIGFfW2kgKiBuXyArIGpdOyB9XG4gICAgZG91YmxlIG9wZXJhdG9yKCkoc3RkOjpzaXplX3QgaSwgc3RkOjpzaXplX3QgaikgY29uc3QgeyByZXR1cm4gYV9baSAqIG5fICsgal07IH1cbiAgICBzdGQ6OnNpemVfdCBzaXplKCkgY29uc3QgeyByZXR1cm4gbl87IH1cbnByaXZhdGU6XG4gICAgc3RkOjpzaXplX3Qgbl87XG4gICAgZG91YmxlKiBhXztcbn07XG5cbmludCBtYWluKCkge1xuICAgIEdyaWQgZygzKTtcbiAgICBnKDEsIDEpID0gNTtcbiAgICBHcmlkIGNvcHkgPSBnOyAgICAgICAgICAgICAgICAvLyBkZWVwIGNvcHlcbiAgICBjb3B5KDEsIDEpID0gNztcbiAgICBHcmlkIG1vdmVkID0gc3RkOjptb3ZlKGcpOyAgICAvLyBnIGlzIG5vdyBlbXB0eVxuICAgIEdyaWQgYXNzaWduZWQoMSk7XG4gICAgYXNzaWduZWQgPSBjb3B5OyAgICAgICAgICAgICAgLy8gY29weS1hc3NpZ24gdGhyb3VnaCBjb3B5LWFuZC1zd2FwXG4gICAgc3RkOjpjb3V0IDw8IFwibW92ZWQoMSwxKSA9IFwiIDw8IG1vdmVkKDEsIDEpIDw8IFwiLCBjb3B5KDEsMSkgPSBcIiA8PCBjb3B5KDEsIDEpXG4gICAgICAgICAgICAgIDw8IFwiLCBhc3NpZ25lZCgxLDEpID0gXCIgPDwgYXNzaWduZWQoMSwgMSkgPDwgXCIsIGcuc2l6ZSgpID0gXCIgPDwgZy5zaXplKCkgPDwgJ1xcbic7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// rule_of_five.cpp -- exercise 4: a class that owns a raw array, with all five special members</span>
+<span class="p">#include &lt;algorithm&gt;</span>
+<span class="p">#include &lt;cstddef&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;utility&gt;</span>
+
+<span class="k">class</span> <span class="t">Grid</span> {                                       <span class="c">// n x n doubles on the heap</span>
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Grid</span>(std::<span class="t">size_t</span> n) : n_(n), a_(<span class="k">new</span> <span class="t">double</span>[n * n]()) {}
+    ~<span class="t">Grid</span>() { <span class="k">delete</span>[] a_; }
+    <span class="t">Grid</span>(<span class="k">const</span> <span class="t">Grid</span>&amp; o) : n_(o.n_), a_(<span class="k">new</span> <span class="t">double</span>[o.n_ * o.n_]) {           <span class="c">// deep copy</span>
+        std::copy(o.a_, o.a_ + n_ * n_, a_);
+    }
+    <span class="t">Grid</span>(<span class="t">Grid</span>&amp;&amp; o) <span class="k">noexcept</span> : n_(std::exchange(o.n_, <span class="n">0</span>)), a_(std::exchange(o.a_, <span class="k">nullptr</span>)) {}   <span class="c">// steal</span>
+    <span class="t">Grid</span>&amp; <span class="k">operator</span>=(<span class="t">Grid</span> o) <span class="k">noexcept</span> {             <span class="c">// copy-and-swap: one assignment covers copy and move</span>
+        swap(o);
+        <span class="k">return</span> *<span class="k">this</span>;
+    }
+    <span class="t">void</span> swap(<span class="t">Grid</span>&amp; o) <span class="k">noexcept</span> { std::swap(n_, o.n_); std::swap(a_, o.a_); }
+    <span class="t">double</span>&amp; <span class="k">operator</span>()(std::<span class="t">size_t</span> i, std::<span class="t">size_t</span> j) { <span class="k">return</span> a_[i * n_ + j]; }
+    <span class="t">double</span> <span class="k">operator</span>()(std::<span class="t">size_t</span> i, std::<span class="t">size_t</span> j) <span class="k">const</span> { <span class="k">return</span> a_[i * n_ + j]; }
+    std::<span class="t">size_t</span> size() <span class="k">const</span> { <span class="k">return</span> n_; }
+<span class="k">private</span>:
+    std::<span class="t">size_t</span> n_;
+    <span class="t">double</span>* a_;
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Grid</span> g(<span class="n">3</span>);
+    g(<span class="n">1</span>, <span class="n">1</span>) = <span class="n">5</span>;
+    <span class="t">Grid</span> copy = g;                <span class="c">// deep copy</span>
+    copy(<span class="n">1</span>, <span class="n">1</span>) = <span class="n">7</span>;
+    <span class="t">Grid</span> moved = std::move(g);    <span class="c">// g is now empty</span>
+    <span class="t">Grid</span> assigned(<span class="n">1</span>);
+    assigned = copy;              <span class="c">// copy-assign through copy-and-swap</span>
+    std::cout &lt;&lt; <span class="s">&quot;moved(1,1) = &quot;</span> &lt;&lt; moved(<span class="n">1</span>, <span class="n">1</span>) &lt;&lt; <span class="s">&quot;, copy(1,1) = &quot;</span> &lt;&lt; copy(<span class="n">1</span>, <span class="n">1</span>)
+              &lt;&lt; <span class="s">&quot;, assigned(1,1) = &quot;</span> &lt;&lt; assigned(<span class="n">1</span>, <span class="n">1</span>) &lt;&lt; <span class="s">&quot;, g.size() = &quot;</span> &lt;&lt; g.size() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>moved(1,1) = 5, copy(1,1) = 7, assigned(1,1) = 7, g.size() = 0</pre></div><p class="dl"><a href="../code/rule_of_five.cpp" download>Download rule_of_five.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p></details>
+  <h3>5 · In the debugger</h3>
+  <p>In the GDB playground (lesson 11), use <code>start</code> and <code>step</code> to walk into <code>Circle</code>'s constructor. In what order do <code>Shape::Shape</code> and <code>Circle::Circle</code> appear in <code>bt</code>? With <code>set print object on</code>, what does <code>p *this</code> say the object is just after <code>Shape::Shape</code> returns, and how does that explain pitfall 1 of lesson 10?</p>
+</section>
+
+<section id="cheat" aria-labelledby="cheat-h">
+  <h2 id="cheat-h">Cheat sheet</h2>
+  <div class="table-wrap reveal"><table class="cheat">
+    <thead><tr><th>Write</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>class D : public B</code></td><td>D is-a B; B's public members stay public</td></tr>
+      <tr><td><code>D(int x) : B(x), m_(x) {}</code></td><td>build the base, then members, then run the body</td></tr>
+      <tr><td><code>using B::B;</code></td><td>inherit B's constructors</td></tr>
+      <tr><td><code>virtual void f();</code></td><td>call resolved at run time from the object's type</td></tr>
+      <tr><td><code>void f() override;</code></td><td>must override a base virtual function, or compile error</td></tr>
+      <tr><td><code>virtual void f() = 0;</code></td><td>pure virtual: the class is abstract</td></tr>
+      <tr><td><code>virtual ~B() = default;</code></td><td>safe <code>delete</code> through a <code>B*</code></td></tr>
+      <tr><td><code>class D final</code> · <code>void f() final;</code></td><td>no further derivation / overriding</td></tr>
+      <tr><td><code>using B::f;</code></td><td>un-hide the base's overloads of <code>f</code></td></tr>
+      <tr><td><code>T(T&amp;&amp; o) noexcept</code></td><td>move constructor; <code>noexcept</code> lets containers use it</td></tr>
+      <tr><td><code>X(const X&amp;) = delete;</code></td><td>forbid copying</td></tr>
+      <tr><td><code>std::unique_ptr&lt;B&gt;</code></td><td>owns a polymorphic object; deletes it automatically</td></tr>
+      <tr><td><code>std::shared_ptr</code> · <code>std::weak_ptr</code></td><td>shared ownership · non-owning observer</td></tr>
+      <tr><td><code>dynamic_cast&lt;D*&gt;(p)</code></td><td>D* if <code>*p</code> really is a D, else <code>nullptr</code></td></tr>
+      <tr><td><code>std::variant&lt;A, B&gt;</code> + <code>std::visit</code></td><td>a closed set of types, by value</td></tr>
+      <tr><td><code>template &lt;HasArea T&gt;</code></td><td>a template constrained by a C++20 concept</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="reading" aria-labelledby="reading-h">
+  <h2 id="reading-h">Further reading</h2>
+  <ul>
+    <li><a href="https://en.cppreference.com/w/cpp/language/classes">cppreference: classes</a>, <a href="https://en.cppreference.com/w/cpp/language/virtual">virtual functions</a>, <a href="https://en.cppreference.com/w/cpp/language/abstract_class">abstract classes</a>: the precise rules.</li>
+    <li><a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines">C++ Core Guidelines</a>, sections C (classes) and C.hier (class hierarchies): concrete advice, with reasons.</li>
+    <li>Bjarne Stroustrup, <i>A Tour of C++</i> (3rd ed., 2022): the whole language in about 300 pages.</li>
+    <li>Scott Meyers, <i>Effective Modern C++</i> (2014): moves, smart pointers and more, item by item.</li>
+    <li>Gamma, Helm, Johnson and Vlissides, <i>Design Patterns</i> (1994): the original catalogue, written for C++ and Smalltalk.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="prev" href="../11-debugging/index.html"><small>← Previous</small><b>11 · Debugging with GDB and sanitizers</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  <script>window.CPP = {"quiz":[{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A { <span class=\"t\">void<\/span> hi() <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;A&quot;<\/span>; } };\n<span class=\"k\">struct<\/span> B : A { <span class=\"t\">void<\/span> hi() <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;B&quot;<\/span>; } };\n<span class=\"t\">int<\/span> main() {\n    B b;\n    <span class=\"k\">const<\/span> A&amp; a = b;\n    a.hi(); b.hi();\n    std::cout &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["AB","BB","AA","BA"],"answer":"AB","why":"<code>hi()<\/code> is not virtual, so the call through <code>const A&amp;<\/code> is decided by the static type: <code>A::hi<\/code>. Calling on <code>b<\/code> directly uses <code>B::hi<\/code>.","ref":"Lesson 05"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A { <span class=\"k\">virtual<\/span> ~A() = <span class=\"k\">default<\/span>; <span class=\"k\">virtual<\/span> <span class=\"t\">void<\/span> hi() <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;A&quot;<\/span>; } };\n<span class=\"k\">struct<\/span> B : A { <span class=\"t\">void<\/span> hi() <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;B&quot;<\/span>; } };\n<span class=\"t\">int<\/span> main() {\n    B b;\n    A copy = b;\n    A* p = &amp;b;\n    copy.hi(); p-&gt;hi();\n    std::cout &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["BB","AB","AA","BA"],"answer":"AB","why":"<code>A copy = b<\/code> copies only the <code>A<\/code> part (slicing): <code>copy<\/code> really is an <code>A<\/code>. The pointer still points at the <code>B<\/code>, so the virtual call reaches <code>B::hi<\/code>.","ref":"Lesson 05"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A { A() { std::cout &lt;&lt; <span class=\"s\">&quot;A&quot;<\/span>; } ~A() { std::cout &lt;&lt; <span class=\"s\">&quot;a&quot;<\/span>; } };\n<span class=\"k\">struct<\/span> M { M() { std::cout &lt;&lt; <span class=\"s\">&quot;M&quot;<\/span>; } ~M() { std::cout &lt;&lt; <span class=\"s\">&quot;m&quot;<\/span>; } };\n<span class=\"k\">struct<\/span> B : A { M m; B() { std::cout &lt;&lt; <span class=\"s\">&quot;B&quot;<\/span>; } ~B() { std::cout &lt;&lt; <span class=\"s\">&quot;b&quot;<\/span>; } };\n<span class=\"t\">int<\/span> main() {\n    { B b; }\n    std::cout &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["AMBbma","ABMmba","AMBabm","MABbam"],"answer":"AMBbma","why":"Construction goes base, then members, then the constructor body: A, M, B. Destruction is the exact reverse: b, m, a.","ref":"Lesson 02"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A {\n    A() { who(); }\n    <span class=\"k\">virtual<\/span> ~A() = <span class=\"k\">default<\/span>;\n    <span class=\"k\">virtual<\/span> <span class=\"t\">void<\/span> who() <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;A&quot;<\/span>; }\n};\n<span class=\"k\">struct<\/span> B : A { <span class=\"t\">void<\/span> who() <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;B&quot;<\/span>; } };\n<span class=\"t\">int<\/span> main() {\n    B b;\n    b.who();\n    std::cout &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["BB","AB","AA","BA"],"answer":"AB","why":"While <code>A<\/code>'s constructor runs, the <code>B<\/code> part does not exist yet and the object is an <code>A<\/code>, so the virtual call goes to <code>A::who<\/code>. Afterwards it is a <code>B<\/code>.","ref":"Lesson 10"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> <span class=\"t\">Shape<\/span> { <span class=\"k\">virtual<\/span> ~<span class=\"t\">Shape<\/span>() = <span class=\"k\">default<\/span>; <span class=\"k\">virtual<\/span> <span class=\"t\">int<\/span> sides() <span class=\"k\">const<\/span> = <span class=\"n\">0<\/span>; };\n<span class=\"k\">struct<\/span> <span class=\"t\">Tri<\/span> : <span class=\"t\">Shape<\/span> { <span class=\"t\">int<\/span> sides() <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { <span class=\"k\">return<\/span> <span class=\"n\">3<\/span>; } };\n<span class=\"k\">struct<\/span> <span class=\"t\">Quad<\/span> : <span class=\"t\">Shape<\/span> { <span class=\"t\">int<\/span> sides() <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { <span class=\"k\">return<\/span> <span class=\"n\">4<\/span>; } };\n<span class=\"k\">struct<\/span> <span class=\"t\">Sq<\/span> : <span class=\"t\">Quad<\/span> {};\n<span class=\"t\">int<\/span> main() {\n    <span class=\"t\">Sq<\/span> s; <span class=\"t\">Tri<\/span> t;\n    <span class=\"k\">const<\/span> <span class=\"t\">Shape<\/span>* list[] = {&amp;t, &amp;s, &amp;t};\n    <span class=\"t\">int<\/span> total = <span class=\"n\">0<\/span>;\n    <span class=\"k\">for<\/span> (<span class=\"k\">const<\/span> <span class=\"t\">Shape<\/span>* p : list) total += p-&gt;sides();\n    std::cout &lt;&lt; total &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["10","9","11","It does not compile: Shape is abstract"],"answer":"10","why":"<code>Sq<\/code> inherits <code>sides()<\/code> from <code>Quad<\/code>, so it is concrete. Pointers to the abstract <code>Shape<\/code> are fine. 3 + 4 + 3 = 10.","ref":"Lesson 06"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A {\n    <span class=\"k\">virtual<\/span> ~A() = <span class=\"k\">default<\/span>;\n    <span class=\"k\">virtual<\/span> <span class=\"t\">void<\/span> f(<span class=\"t\">int<\/span> n = <span class=\"n\">1<\/span>) <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;A&quot;<\/span> &lt;&lt; n; }\n};\n<span class=\"k\">struct<\/span> B : A { <span class=\"t\">void<\/span> f(<span class=\"t\">int<\/span> n = <span class=\"n\">2<\/span>) <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;B&quot;<\/span> &lt;&lt; n; } };\n<span class=\"t\">int<\/span> main() {\n    B b;\n    <span class=\"k\">const<\/span> A&amp; a = b;\n    a.f(); b.f();\n    std::cout &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["B2B2","B1B2","A1B2","B1B1"],"answer":"B1B2","why":"The function body is chosen at run time (B), but default arguments are filled in at compile time from the static type: through <code>A&amp;<\/code> the default is 1.","ref":"Lesson 10"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> T {\n    T() { std::cout &lt;&lt; <span class=\"s\">&quot;c&quot;<\/span>; }\n    T(<span class=\"k\">const<\/span> T&amp;) { std::cout &lt;&lt; <span class=\"s\">&quot;C&quot;<\/span>; }\n    T(T&amp;&amp;) { std::cout &lt;&lt; <span class=\"s\">&quot;M&quot;<\/span>; }\n    ~T() { std::cout &lt;&lt; <span class=\"s\">&quot;d&quot;<\/span>; }\n};\nT make() { <span class=\"k\">return<\/span> T(); }\n<span class=\"t\">int<\/span> main() {\n    T t = make();\n    std::cout &lt;&lt; <span class=\"s\">&quot;|&quot;<\/span>;\n}","opts":["c|d","cMd|d","cMMdd|d","cCd|d"],"answer":"c|d","why":"Since C++17, returning a prvalue (<code>return T();<\/code>) initializes the caller's variable directly: guaranteed copy elision. No copy or move constructor runs at all.","ref":"Lesson 03"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"p\">#include &lt;vector&gt;<\/span>\n<span class=\"k\">struct<\/span> T {\n    T() { std::cout &lt;&lt; <span class=\"s\">&quot;c&quot;<\/span>; }\n    T(<span class=\"k\">const<\/span> T&amp;) { std::cout &lt;&lt; <span class=\"s\">&quot;C&quot;<\/span>; }\n    T(T&amp;&amp;) <span class=\"k\">noexcept<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;M&quot;<\/span>; }\n    ~T() { std::cout &lt;&lt; <span class=\"s\">&quot;d&quot;<\/span>; }\n};\n<span class=\"t\">int<\/span> main() {\n    std::vector&lt;T&gt; v;\n    v.push_back(T());\n    std::cout &lt;&lt; <span class=\"s\">&quot;|&quot;<\/span>;\n}","opts":["cMd|d","cCd|d","c|d","cMdd|"],"answer":"cMd|d","why":"<code>T()<\/code> is a temporary, so <code>push_back<\/code> moves it into the vector (M) and the temporary is destroyed (d). The element is destroyed when the vector is, after the <code>|<\/code>.","ref":"Lesson 03"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A { <span class=\"k\">virtual<\/span> ~A() = <span class=\"k\">default<\/span>; };\n<span class=\"k\">struct<\/span> B : A {};\n<span class=\"k\">struct<\/span> C : A {};\n<span class=\"t\">int<\/span> main() {\n    B b;\n    A* p = &amp;b;\n    std::cout &lt;&lt; (<span class=\"k\">dynamic_cast<\/span>&lt;B*&gt;(p) != <span class=\"k\">nullptr<\/span>)\n              &lt;&lt; (<span class=\"k\">dynamic_cast<\/span>&lt;C*&gt;(p) != <span class=\"k\">nullptr<\/span>) &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["10","11","01","00"],"answer":"10","why":"<code>p<\/code> points at a <code>B<\/code>: the cast to <code>B*<\/code> succeeds (1) and the cast to <code>C*<\/code> returns <code>nullptr<\/code> (0).","ref":"Lesson 07"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">struct<\/span> A { <span class=\"t\">int<\/span> x = <span class=\"n\">1<\/span>; };\n<span class=\"k\">struct<\/span> B : A {};\n<span class=\"k\">struct<\/span> C : A {};\n<span class=\"k\">struct<\/span> D : B, C {};\n<span class=\"t\">int<\/span> main() {\n    D d;\n    d.B::x = <span class=\"n\">5<\/span>;\n    std::cout &lt;&lt; d.B::x &lt;&lt; d.C::x &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["51","55","11","It does not compile: x is ambiguous"],"answer":"51","why":"Without virtual inheritance, <code>D<\/code> contains two separate <code>A<\/code> subobjects, one through <code>B<\/code> and one through <code>C<\/code>. Naming the path makes it compile; only the B copy changed.","ref":"Lesson 06"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"k\">template<\/span> &lt;<span class=\"k\">class<\/span> D&gt; <span class=\"k\">struct<\/span> <span class=\"t\">Base<\/span> {\n    <span class=\"t\">void<\/span> hi() <span class=\"k\">const<\/span> { <span class=\"k\">static_cast<\/span>&lt;<span class=\"k\">const<\/span> D*&gt;(<span class=\"k\">this<\/span>)-&gt;name(); }\n};\n<span class=\"k\">struct<\/span> X : <span class=\"t\">Base<\/span>&lt;X&gt; { <span class=\"t\">void<\/span> name() <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;X&quot;<\/span>; } };\n<span class=\"k\">struct<\/span> Y : <span class=\"t\">Base<\/span>&lt;Y&gt; { <span class=\"t\">void<\/span> name() <span class=\"k\">const<\/span> { std::cout &lt;&lt; <span class=\"s\">&quot;Y&quot;<\/span>; } };\n<span class=\"t\">int<\/span> main() {\n    X x; Y y;\n    x.hi(); y.hi();\n    std::cout &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["XY","XX","YY","It does not compile"],"answer":"XY","why":"CRTP: <code>Base&lt;X&gt;::hi<\/code> casts <code>this<\/code> to <code>X<\/code> at compile time, so each class's own <code>name()<\/code> runs, with no virtual functions involved.","ref":"Lesson 08"},{"html":"<span class=\"p\">#include &lt;iostream&gt;<\/span>\n<span class=\"p\">#include &lt;memory&gt;<\/span>\n<span class=\"t\">int<\/span> main() {\n    <span class=\"k\">auto<\/span> a = std::make_shared&lt;<span class=\"t\">int<\/span>&gt;(<span class=\"n\">1<\/span>);\n    <span class=\"k\">auto<\/span> b = a;\n    {\n        <span class=\"k\">auto<\/span> c = a;\n        std::cout &lt;&lt; a.use_count();\n    }\n    std::cout &lt;&lt; a.use_count() &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;\n}","opts":["32","22","33","21"],"answer":"32","why":"Inside the block there are three owners (<code>a<\/code>, <code>b<\/code>, <code>c<\/code>). When <code>c<\/code> goes out of scope the count drops to 2.","ref":"Lesson 07"}]};</script>
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

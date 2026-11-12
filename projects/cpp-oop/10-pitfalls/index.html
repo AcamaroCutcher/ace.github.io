@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 10: Nine traps of C++ OOP, each demonstrated: virtual calls during construction, name hiding, static default arguments, missing override, slicing in catch, shadowed members, shallow copies and the pure virtual call crash.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Pitfalls · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="10" data-scene="memory">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">10 · Pitfalls</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 10 of 12</p><h1>Pitfalls</h1><p class="lede">Each of these compiles, and most run without complaint, yet the program does something other than what it seems to say. Every one is demonstrated with real output.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Pitfalls · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#four">Four surprises in overriding</a><a href="#three">Three more</a><a href="#crash">When it crashes: calling a pure virtual function</a><a href="#spot">Spot the bug</a><a href="#key10">Key points</a></nav><section id="four" aria-labelledby="four-h">
+  <h2 id="four-h">Four surprises in overriding</h2>
+  <div class="code reveal" translate="no"><div class="code-head"><span>pitfalls.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gcGl0ZmFsbHMuY3BwIC0tIGZvdXIgc3VycHJpc2VzIGluIEMrKyBpbmhlcml0YW5jZSwgZWFjaCBvbmUgZGVtb25zdHJhdGVkXG4jaW5jbHVkZSA8aW9zdHJlYW0-XG5cbi8vIDEuIEEgdmlydHVhbCBjYWxsIGluc2lkZSBhIGNvbnN0cnVjdG9yIGRvZXMgbm90IHJlYWNoIHRoZSBkZXJpdmVkIGNsYXNzLlxuc3RydWN0IFdpZGdldCB7XG4gICAgV2lkZ2V0KCkgeyBzdGQ6OmNvdXQgPDwgXCIxLiBjb25zdHJ1Y3Rpbmc6IFwiIDw8IGtpbmQoKSA8PCAnXFxuJzsgfVxuICAgIHZpcnR1YWwgfldpZGdldCgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGNvbnN0IGNoYXIqIGtpbmQoKSBjb25zdCB7IHJldHVybiBcIldpZGdldFwiOyB9XG4gICAgdm9pZCBzaG93KCkgY29uc3QgeyBzdGQ6OmNvdXQgPDwgXCIxLiBhZnRlcndhcmRzOiAgXCIgPDwga2luZCgpIDw8ICdcXG4nOyB9XG59O1xuc3RydWN0IEJ1dHRvbiA6IFdpZGdldCB7XG4gICAgY29uc3QgY2hhcioga2luZCgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwiQnV0dG9uXCI7IH1cbn07XG5cbi8vIDIuIERlY2xhcmluZyBmKGludCkgaW4gdGhlIGRlcml2ZWQgY2xhc3MgaGlkZXMgZXZlcnkgQmFzZTo6ZiwgdW5sZXNzIHlvdSB3cml0ZSBcInVzaW5nXCIuXG5zdHJ1Y3QgQmFzZSB7XG4gICAgdmlydHVhbCB-QmFzZSgpID0gZGVmYXVsdDtcbiAgICB2b2lkIGYoaW50KSBjb25zdCB7IHN0ZDo6Y291dCA8PCBcIkJhc2U6OmYoaW50KVxcblwiOyB9XG4gICAgdm9pZCBmKGRvdWJsZSkgY29uc3QgeyBzdGQ6OmNvdXQgPDwgXCJCYXNlOjpmKGRvdWJsZSlcXG5cIjsgfVxufTtcbnN0cnVjdCBIaWRlcyA6IEJhc2Uge1xuICAgIHZvaWQgZihpbnQpIGNvbnN0IHsgc3RkOjpjb3V0IDw8IFwiSGlkZXM6OmYoaW50KVxcblwiOyB9XG59O1xuc3RydWN0IFVuaGlkZXMgOiBCYXNlIHtcbiAgICB1c2luZyBCYXNlOjpmOyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBicmluZyBCYXNlJ3Mgb3ZlcmxvYWRzIGJhY2tcbiAgICB2b2lkIGYoaW50KSBjb25zdCB7IHN0ZDo6Y291dCA8PCBcIlVuaGlkZXM6OmYoaW50KVxcblwiOyB9XG59O1xuXG4vLyAzLiBEZWZhdWx0IGFyZ3VtZW50cyBjb21lIGZyb20gdGhlIHN0YXRpYyB0eXBlLCBldmVuIHRob3VnaCB0aGUgZnVuY3Rpb24gaXMgdmlydHVhbC5cbnN0cnVjdCBQcmludGVyIHtcbiAgICB2aXJ0dWFsIH5QcmludGVyKCkgPSBkZWZhdWx0O1xuICAgIHZpcnR1YWwgdm9pZCBwcmludChpbnQgbiA9IDEpIGNvbnN0IHsgc3RkOjpjb3V0IDw8IFwiUHJpbnRlciBcIiA8PCBuIDw8ICdcXG4nOyB9XG59O1xuc3RydWN0IEZhbmN5IDogUHJpbnRlciB7XG4gICAgdm9pZCBwcmludChpbnQgbiA9IDIpIGNvbnN0IG92ZXJyaWRlIHsgc3RkOjpjb3V0IDw8IFwiRmFuY3kgXCIgPDwgbiA8PCAnXFxuJzsgfVxufTtcblxuLy8gNC4gQSBtaXNzcGVsbGVkIG92ZXJyaWRlIHNpbGVudGx5IG1ha2VzIGEgbmV3IGZ1bmN0aW9uLCB1bmxlc3MgeW91IHdyaXRlIFwib3ZlcnJpZGVcIi5cbnN0cnVjdCBBbmltYWwge1xuICAgIHZpcnR1YWwgfkFuaW1hbCgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGNvbnN0IGNoYXIqIHNvdW5kKCkgY29uc3QgeyByZXR1cm4gXCIuLi5cIjsgfVxufTtcbnN0cnVjdCBDYXQgOiBBbmltYWwge1xuICAgIGNvbnN0IGNoYXIqIFNvdW5kKCkgY29uc3QgeyByZXR1cm4gXCJtZW93XCI7IH0gICAgIC8vIGNhcGl0YWwgUzogTk9UIGFuIG92ZXJyaWRlXG4gICAgLy8gY29uc3QgY2hhciogU291bmQoKSBjb25zdCBvdmVycmlkZSB7IC4uLiB9ICAgIC8vIHdpdGggb3ZlcnJpZGUgdGhpcyB3b3VsZCBub3QgY29tcGlsZVxufTtcblxuaW50IG1haW4oKSB7XG4gICAgQnV0dG9uIGI7XG4gICAgYi5zaG93KCk7XG5cbiAgICBzdGQ6OmNvdXQgPDwgXCIyLiBcIjsgSGlkZXN7fS5mKDIuNSk7ICAgICAgICAgICAgICAvLyAyLjUgY29udmVydHMgdG8gaW50OiBCYXNlOjpmKGRvdWJsZSkgaXMgaGlkZGVuXG4gICAgc3RkOjpjb3V0IDw8IFwiMi4gXCI7IFVuaGlkZXN7fS5mKDIuNSk7XG5cbiAgICBGYW5jeSBmYW5jeTtcbiAgICBjb25zdCBQcmludGVyJiBwID0gZmFuY3k7XG4gICAgc3RkOjpjb3V0IDw8IFwiMy4gXCI7IHAucHJpbnQoKTsgICAgICAgICAgICAgICAgICAgLy8gRmFuY3kncyBib2R5IHdpdGggUHJpbnRlcidzIGRlZmF1bHQgYXJndW1lbnRcbiAgICBzdGQ6OmNvdXQgPDwgXCIzLiBcIjsgZmFuY3kucHJpbnQoKTtcblxuICAgIENhdCBjYXQ7XG4gICAgY29uc3QgQW5pbWFsJiBhID0gY2F0O1xuICAgIHN0ZDo6Y291dCA8PCBcIjQuIHRoZSBjYXQgc2F5cyBcIiA8PCBhLnNvdW5kKCkgPDwgJ1xcbic7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// pitfalls.cpp -- four surprises in C++ inheritance, each one demonstrated</span>
+<span class="p">#include &lt;iostream&gt;</span>
+
+<span class="c">// 1. A virtual call inside a constructor does not reach the derived class.</span>
+<span class="k">struct</span> <span class="t">Widget</span> {
+    <span class="t">Widget</span>() { std::cout &lt;&lt; <span class="s">&quot;1. constructing: &quot;</span> &lt;&lt; kind() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>; }
+    <span class="k">virtual</span> ~<span class="t">Widget</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="k">const</span> <span class="t">char</span>* kind() <span class="k">const</span> { <span class="k">return</span> <span class="s">&quot;Widget&quot;</span>; }
+    <span class="t">void</span> show() <span class="k">const</span> { std::cout &lt;&lt; <span class="s">&quot;1. afterwards:  &quot;</span> &lt;&lt; kind() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>; }
+};
+<span class="k">struct</span> <span class="t">Button</span> : <span class="t">Widget</span> {
+    <span class="k">const</span> <span class="t">char</span>* kind() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;Button&quot;</span>; }
+};
+
+<span class="c">// 2. Declaring f(int) in the derived class hides every Base::f, unless you write &quot;using&quot;.</span>
+<span class="k">struct</span> <span class="t">Base</span> {
+    <span class="k">virtual</span> ~<span class="t">Base</span>() = <span class="k">default</span>;
+    <span class="t">void</span> f(<span class="t">int</span>) <span class="k">const</span> { std::cout &lt;&lt; <span class="s">&quot;Base::f(int)\n&quot;</span>; }
+    <span class="t">void</span> f(<span class="t">double</span>) <span class="k">const</span> { std::cout &lt;&lt; <span class="s">&quot;Base::f(double)\n&quot;</span>; }
+};
+<span class="k">struct</span> <span class="t">Hides</span> : <span class="t">Base</span> {
+    <span class="t">void</span> f(<span class="t">int</span>) <span class="k">const</span> { std::cout &lt;&lt; <span class="s">&quot;Hides::f(int)\n&quot;</span>; }
+};
+<span class="k">struct</span> <span class="t">Unhides</span> : <span class="t">Base</span> {
+    <span class="k">using</span> <span class="t">Base</span>::f;                               <span class="c">// bring Base&#x27;s overloads back</span>
+    <span class="t">void</span> f(<span class="t">int</span>) <span class="k">const</span> { std::cout &lt;&lt; <span class="s">&quot;Unhides::f(int)\n&quot;</span>; }
+};
+
+<span class="c">// 3. Default arguments come from the static type, even though the function is virtual.</span>
+<span class="k">struct</span> <span class="t">Printer</span> {
+    <span class="k">virtual</span> ~<span class="t">Printer</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">void</span> print(<span class="t">int</span> n = <span class="n">1</span>) <span class="k">const</span> { std::cout &lt;&lt; <span class="s">&quot;Printer &quot;</span> &lt;&lt; n &lt;&lt; <span class="s">&#x27;\n&#x27;</span>; }
+};
+<span class="k">struct</span> <span class="t">Fancy</span> : <span class="t">Printer</span> {
+    <span class="t">void</span> print(<span class="t">int</span> n = <span class="n">2</span>) <span class="k">const</span> <span class="k">override</span> { std::cout &lt;&lt; <span class="s">&quot;Fancy &quot;</span> &lt;&lt; n &lt;&lt; <span class="s">&#x27;\n&#x27;</span>; }
+};
+
+<span class="c">// 4. A misspelled override silently makes a new function, unless you write &quot;override&quot;.</span>
+<span class="k">struct</span> <span class="t">Animal</span> {
+    <span class="k">virtual</span> ~<span class="t">Animal</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="k">const</span> <span class="t">char</span>* sound() <span class="k">const</span> { <span class="k">return</span> <span class="s">&quot;...&quot;</span>; }
+};
+<span class="k">struct</span> <span class="t">Cat</span> : <span class="t">Animal</span> {
+    <span class="k">const</span> <span class="t">char</span>* <span class="t">Sound</span>() <span class="k">const</span> { <span class="k">return</span> <span class="s">&quot;meow&quot;</span>; }     <span class="c">// capital S: NOT an override</span>
+    <span class="c">// const char* Sound() const override { ... }    // with override this would not compile</span>
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Button</span> b;
+    b.show();
+
+    std::cout &lt;&lt; <span class="s">&quot;2. &quot;</span>; <span class="t">Hides</span>{}.f(<span class="n">2.5</span>);              <span class="c">// 2.5 converts to int: Base::f(double) is hidden</span>
+    std::cout &lt;&lt; <span class="s">&quot;2. &quot;</span>; <span class="t">Unhides</span>{}.f(<span class="n">2.5</span>);
+
+    <span class="t">Fancy</span> fancy;
+    <span class="k">const</span> <span class="t">Printer</span>&amp; p = fancy;
+    std::cout &lt;&lt; <span class="s">&quot;3. &quot;</span>; p.print();                   <span class="c">// Fancy&#x27;s body with Printer&#x27;s default argument</span>
+    std::cout &lt;&lt; <span class="s">&quot;3. &quot;</span>; fancy.print();
+
+    <span class="t">Cat</span> cat;
+    <span class="k">const</span> <span class="t">Animal</span>&amp; a = cat;
+    std::cout &lt;&lt; <span class="s">&quot;4. the cat says &quot;</span> &lt;&lt; a.sound() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out warn" translate="no"><div class="out-head">Compiler warning</div><pre>pitfalls.cpp:52:35: warning: implicit conversion from &#x27;double&#x27; to &#x27;int&#x27; changes value from 2.5 to 2 [-Wliteral-conversion]</pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>1. constructing: Widget
+1. afterwards:  Button
+2. Hides::f(int)
+2. Base::f(double)
+3. Fancy 1
+3. Fancy 2
+4. the cat says ...</pre></div><p class="dl"><a href="../code/pitfalls.cpp" download>Download pitfalls.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <ol>
+    <li><b>Virtual calls in constructors and destructors</b> do not reach the derived class: while <code>Widget()</code> runs, the <code>Button</code> part does not exist yet, so the object is still a <code>Widget</code>.</li>
+    <li><b>Name hiding</b>: declaring <code>f(int)</code> in <code>Hides</code> hides <em>all</em> of <code>Base</code>'s <code>f</code> overloads, so <code>f(2.5)</code> silently converts 2.5 to 2. The compiler warning above is the only hint. <code>using Base::f;</code> brings the overloads back.</li>
+    <li><b>Default arguments are static</b>: the body comes from the dynamic type (<code>Fancy</code>), the default argument from the static type (<code>Printer</code>). Do not give overrides different defaults.</li>
+    <li><b>A typo creates a new function</b>: <code>Sound</code> is not <code>sound</code>, so the cat says "...". Writing <code>override</code> turns this into a compile error.</li>
+  </ol>
+</section>
+
+<section id="three" aria-labelledby="three-h">
+  <h2 id="three-h">Three more</h2>
+  <div class="code reveal" translate="no"><div class="code-head"><span>more_pitfalls.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gbW9yZV9waXRmYWxscy5jcHAgLS0gdGhyZWUgbW9yZSBzdXJwcmlzZXMsIGRlbW9uc3RyYXRlZFxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPG1lbW9yeT5cbiNpbmNsdWRlIDxzdGRleGNlcHQ-XG4jaW5jbHVkZSA8c3RyaW5nPlxuXG4vLyA1LiBDYXRjaGluZyBhbiBleGNlcHRpb24gYnkgdmFsdWUgc2xpY2VzIGl0OiB0aGUgZGVyaXZlZCBwYXJ0IGlzIGxvc3QuXG5zdHJ1Y3QgQXBwRXJyb3IgOiBzdGQ6OnJ1bnRpbWVfZXJyb3Ige1xuICAgIGludCBjb2RlO1xuICAgIEFwcEVycm9yKGNvbnN0IHN0ZDo6c3RyaW5nJiBtLCBpbnQgYykgOiBzdGQ6OnJ1bnRpbWVfZXJyb3IobSksIGNvZGUoYykge31cbn07XG5cbi8vIDYuIEEgZGVyaXZlZCBtZW1iZXIgd2l0aCB0aGUgc2FtZSBuYW1lIGhpZGVzIHRoZSBiYXNlIG1lbWJlcjsgdGhlcmUgYXJlIG5vdyB0d28uXG5zdHJ1Y3QgQmFzZSB7IGludCB2YWx1ZSA9IDE7IHZpcnR1YWwgfkJhc2UoKSA9IGRlZmF1bHQ7IH07XG5zdHJ1Y3QgRGVyaXZlZCA6IEJhc2UgeyBpbnQgdmFsdWUgPSAyOyB9O1xuXG4vLyA3LiBDb3B5aW5nIGEgY2xhc3MgdGhhdCBob2xkcyBhIHJhdyBvd25pbmcgcG9pbnRlciBjb3BpZXMgdGhlIHBvaW50ZXIsIG5vdCB0aGUgb2JqZWN0Llxuc3RydWN0IEhvbGRlciB7XG4gICAgaW50KiBwO1xuICAgIGV4cGxpY2l0IEhvbGRlcihpbnQgdikgOiBwKG5ldyBpbnQodikpIHt9XG4gICAgfkhvbGRlcigpIHsgZGVsZXRlIHA7IH1cbiAgICAvLyBIb2xkZXIoY29uc3QgSG9sZGVyJikgYW5kIG9wZXJhdG9yPSBhcmUgZ2VuZXJhdGVkOiB0aGV5IGNvcHkgcCBpdHNlbGYgLT4gdHdvIG93bmVycywgZG91YmxlIGRlbGV0ZVxufTtcbnN0cnVjdCBTYWZlSG9sZGVyIHtcbiAgICBzdGQ6OnVuaXF1ZV9wdHI8aW50PiBwOyAgICAgICAgICAgICAgICAgICAgIC8vIHRoZSBmaXg6IGxldCBhIHNtYXJ0IHBvaW50ZXIgb3duIGl0XG4gICAgZXhwbGljaXQgU2FmZUhvbGRlcihpbnQgdikgOiBwKHN0ZDo6bWFrZV91bmlxdWU8aW50Pih2KSkge31cbiAgICBTYWZlSG9sZGVyKGNvbnN0IFNhZmVIb2xkZXImIG8pIDogcChzdGQ6Om1ha2VfdW5pcXVlPGludD4oKm8ucCkpIHt9ICAgLy8gZGVlcCBjb3B5LCBpZiBjb3B5aW5nIG1ha2VzIHNlbnNlXG59O1xuXG5pbnQgbWFpbigpIHtcbiAgICB0cnkgeyB0aHJvdyBBcHBFcnJvcihcImRpc2sgZnVsbFwiLCAyOCk7IH1cbiAgICBjYXRjaCAoc3RkOjpydW50aW1lX2Vycm9yIGUpIHsgICAgICAgICAgICAgLy8gYnkgdmFsdWU6IGUgaXMgYSBwbGFpbiBydW50aW1lX2Vycm9yIGNvcHlcbiAgICAgICAgc3RkOjpjb3V0IDw8IFwiNS4gY2F1Z2h0IGJ5IHZhbHVlOiBcIiA8PCBlLndoYXQoKSA8PCBcIiwgaXMgaXQgYW4gQXBwRXJyb3I_IFwiXG4gICAgICAgICAgICAgICAgICA8PCAoZHluYW1pY19jYXN0PEFwcEVycm9yKj4oJmUpID8gXCJ5ZXNcIiA6IFwibm9cIikgPDwgJ1xcbic7XG4gICAgfVxuICAgIHRyeSB7IHRocm93IEFwcEVycm9yKFwiZGlzayBmdWxsXCIsIDI4KTsgfVxuICAgIGNhdGNoIChjb25zdCBzdGQ6OnJ1bnRpbWVfZXJyb3ImIGUpIHsgICAgICAvLyBieSByZWZlcmVuY2U6IHRoZSByZWFsIG9iamVjdFxuICAgICAgICBhdXRvKiBhcHAgPSBkeW5hbWljX2Nhc3Q8Y29uc3QgQXBwRXJyb3IqPigmZSk7XG4gICAgICAgIHN0ZDo6Y291dCA8PCBcIjUuIGNhdWdodCBieSByZWZlcmVuY2U6IGlzIGl0IGFuIEFwcEVycm9yPyBcIiA8PCAoYXBwID8gXCJ5ZXMsIGNvZGUgXCIgKyBzdGQ6OnRvX3N0cmluZyhhcHAtPmNvZGUpIDogXCJub1wiKSA8PCAnXFxuJztcbiAgICB9XG5cbiAgICBEZXJpdmVkIGQ7XG4gICAgQmFzZSYgYiA9IGQ7XG4gICAgc3RkOjpjb3V0IDw8IFwiNi4gZC52YWx1ZSA9IFwiIDw8IGQudmFsdWUgPDwgXCIsIGIudmFsdWUgPSBcIiA8PCBiLnZhbHVlIDw8IFwiLCBkLkJhc2U6OnZhbHVlID0gXCIgPDwgZC5CYXNlOjp2YWx1ZSA8PCAnXFxuJztcblxuICAgIFNhZmVIb2xkZXIgczEoNyk7XG4gICAgU2FmZUhvbGRlciBzMiA9IHMxO1xuICAgICpzMi5wID0gODtcbiAgICBzdGQ6OmNvdXQgPDwgXCI3LiBkZWVwIGNvcHk6IHMxID0gXCIgPDwgKnMxLnAgPDwgXCIsIHMyID0gXCIgPDwgKnMyLnAgPDwgJ1xcbic7XG4gICAgLy8gSG9sZGVyIGgxKDcpOyBIb2xkZXIgaDIgPSBoMTsgICAgICAgICAgIC8vIGNvbXBpbGVzLCB0aGVuIGNyYXNoZXMgd2l0aCBhIGRvdWJsZSBkZWxldGUgYXQgdGhlIGVuZCBvZiBtYWluXG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// more_pitfalls.cpp -- three more surprises, demonstrated</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;stdexcept&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+
+<span class="c">// 5. Catching an exception by value slices it: the derived part is lost.</span>
+<span class="k">struct</span> <span class="t">AppError</span> : std::runtime_error {
+    <span class="t">int</span> code;
+    <span class="t">AppError</span>(<span class="k">const</span> std::string&amp; m, <span class="t">int</span> c) : std::runtime_error(m), code(c) {}
+};
+
+<span class="c">// 6. A derived member with the same name hides the base member; there are now two.</span>
+<span class="k">struct</span> <span class="t">Base</span> { <span class="t">int</span> value = <span class="n">1</span>; <span class="k">virtual</span> ~<span class="t">Base</span>() = <span class="k">default</span>; };
+<span class="k">struct</span> <span class="t">Derived</span> : <span class="t">Base</span> { <span class="t">int</span> value = <span class="n">2</span>; };
+
+<span class="c">// 7. Copying a class that holds a raw owning pointer copies the pointer, not the object.</span>
+<span class="k">struct</span> <span class="t">Holder</span> {
+    <span class="t">int</span>* p;
+    <span class="k">explicit</span> <span class="t">Holder</span>(<span class="t">int</span> v) : p(<span class="k">new</span> <span class="t">int</span>(v)) {}
+    ~<span class="t">Holder</span>() { <span class="k">delete</span> p; }
+    <span class="c">// Holder(const Holder&amp;) and operator= are generated: they copy p itself -&gt; two owners, double delete</span>
+};
+<span class="k">struct</span> <span class="t">SafeHolder</span> {
+    std::unique_ptr&lt;<span class="t">int</span>&gt; p;                     <span class="c">// the fix: let a smart pointer own it</span>
+    <span class="k">explicit</span> <span class="t">SafeHolder</span>(<span class="t">int</span> v) : p(std::make_unique&lt;<span class="t">int</span>&gt;(v)) {}
+    <span class="t">SafeHolder</span>(<span class="k">const</span> <span class="t">SafeHolder</span>&amp; o) : p(std::make_unique&lt;<span class="t">int</span>&gt;(*o.p)) {}   <span class="c">// deep copy, if copying makes sense</span>
+};
+
+<span class="t">int</span> main() {
+    <span class="k">try</span> { <span class="k">throw</span> <span class="t">AppError</span>(<span class="s">&quot;disk full&quot;</span>, <span class="n">28</span>); }
+    <span class="k">catch</span> (std::runtime_error e) {             <span class="c">// by value: e is a plain runtime_error copy</span>
+        std::cout &lt;&lt; <span class="s">&quot;5. caught by value: &quot;</span> &lt;&lt; e.what() &lt;&lt; <span class="s">&quot;, is it an AppError? &quot;</span>
+                  &lt;&lt; (<span class="k">dynamic_cast</span>&lt;<span class="t">AppError</span>*&gt;(&amp;e) ? <span class="s">&quot;yes&quot;</span> : <span class="s">&quot;no&quot;</span>) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+    <span class="k">try</span> { <span class="k">throw</span> <span class="t">AppError</span>(<span class="s">&quot;disk full&quot;</span>, <span class="n">28</span>); }
+    <span class="k">catch</span> (<span class="k">const</span> std::runtime_error&amp; e) {      <span class="c">// by reference: the real object</span>
+        <span class="k">auto</span>* app = <span class="k">dynamic_cast</span>&lt;<span class="k">const</span> <span class="t">AppError</span>*&gt;(&amp;e);
+        std::cout &lt;&lt; <span class="s">&quot;5. caught by reference: is it an AppError? &quot;</span> &lt;&lt; (app ? <span class="s">&quot;yes, code &quot;</span> + std::to_string(app-&gt;code) : <span class="s">&quot;no&quot;</span>) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+
+    <span class="t">Derived</span> d;
+    <span class="t">Base</span>&amp; b = d;
+    std::cout &lt;&lt; <span class="s">&quot;6. d.value = &quot;</span> &lt;&lt; d.value &lt;&lt; <span class="s">&quot;, b.value = &quot;</span> &lt;&lt; b.value &lt;&lt; <span class="s">&quot;, d.Base::value = &quot;</span> &lt;&lt; d.<span class="t">Base</span>::value &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+
+    <span class="t">SafeHolder</span> s1(<span class="n">7</span>);
+    <span class="t">SafeHolder</span> s2 = s1;
+    *s2.p = <span class="n">8</span>;
+    std::cout &lt;&lt; <span class="s">&quot;7. deep copy: s1 = &quot;</span> &lt;&lt; *s1.p &lt;&lt; <span class="s">&quot;, s2 = &quot;</span> &lt;&lt; *s2.p &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    <span class="c">// Holder h1(7); Holder h2 = h1;           // compiles, then crashes with a double delete at the end of main</span>
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>5. caught by value: disk full, is it an AppError? no
+5. caught by reference: is it an AppError? yes, code 28
+6. d.value = 2, b.value = 1, d.Base::value = 1
+7. deep copy: s1 = 7, s2 = 8</pre></div><p class="dl"><a href="../code/more_pitfalls.cpp" download>Download more_pitfalls.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <ol start="5">
+    <li><b>Catch exceptions by <code>const&amp;</code></b>, never by value: a by-value catch copies (slices) the exception into the base type, and the derived information is lost.</li>
+    <li><b>A data member with the same name</b> as a base member does not replace it: the object now has both, and which one you see depends on the static type. Give members distinct names.</li>
+    <li><b>Owning raw pointers and the generated copy</b>: copying <code>Holder</code> copies the pointer, so two objects delete the same memory. Own through <code>std::unique_ptr</code> and write a deep copy if copying makes sense (lesson 03).</li>
+  </ol>
+</section>
+
+<section id="crash" aria-labelledby="crash-h">
+  <h2 id="crash-h">When it crashes: calling a pure virtual function</h2>
+  <p>Pitfall 1 has a nastier form. If a base constructor <em>indirectly</em> calls a <em>pure</em> virtual function, there is no function to run at all: the C++ runtime aborts the program. The compiler does not warn, because the call goes through an ordinary member function.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>pure_virtual_call.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gcHVyZV92aXJ0dWFsX2NhbGwuY3BwIC0tIGNhbGxpbmcgYSBwdXJlIHZpcnR1YWwgZnVuY3Rpb24gZHVyaW5nIGNvbnN0cnVjdGlvblxuLy8gZXhwZWN0OiBjcmFzaFxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuXG5jbGFzcyBEZXZpY2Uge1xucHVibGljOlxuICAgIERldmljZSgpIHsgc3RkOjpjb3V0IDw8IFwiRGV2aWNlKCk6IGluaXRpYWxpemluZ1xcblwiOyBpbml0KCk7IH0gICAvLyBjYWxscyBhIHZpcnR1YWwgZnVuY3Rpb24sIGluZGlyZWN0bHlcbiAgICB2aXJ0dWFsIH5EZXZpY2UoKSA9IGRlZmF1bHQ7XG4gICAgdm9pZCBpbml0KCkgeyBjb25maWd1cmUoKTsgfSAgICAgICAgICAgICAgIC8vIGxvb2tzIGhhcm1sZXNzLi4uXG4gICAgdmlydHVhbCB2b2lkIGNvbmZpZ3VyZSgpID0gMDsgICAgICAgICAgICAgIC8vIC4uLmJ1dCB3aGlsZSBEZXZpY2UoKSBydW5zLCB0aGUgb2JqZWN0IGlzIG9ubHkgYSBEZXZpY2Vcbn07XG5cbmNsYXNzIENhbWVyYSA6IHB1YmxpYyBEZXZpY2Uge1xucHVibGljOlxuICAgIHZvaWQgY29uZmlndXJlKCkgb3ZlcnJpZGUgeyBzdGQ6OmNvdXQgPDwgXCJDYW1lcmE6OmNvbmZpZ3VyZVxcblwiOyB9XG59O1xuXG5pbnQgbWFpbigpIHtcbiAgICBDYW1lcmEgYzsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8vIGFib3J0czogdGhlcmUgaXMgbm8gRGV2aWNlOjpjb25maWd1cmUgdG8gY2FsbFxuICAgIHN0ZDo6Y291dCA8PCBcIm5ldmVyIHByaW50ZWRcXG5cIjtcbn1cbiIsICJjb21waWxlcnMiOiBbXSwgImV4ZWN1dG9ycyI6IFt7ImNvbXBpbGVyIjogeyJpZCI6ICJnMTQyIiwgIm9wdGlvbnMiOiAiLXN0ZD1jKysxNyAtV2FsbCAtV2V4dHJhIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// pure_virtual_call.cpp -- calling a pure virtual function during construction</span>
+<span class="c">// expect: crash</span>
+<span class="p">#include &lt;iostream&gt;</span>
+
+<span class="k">class</span> <span class="t">Device</span> {
+<span class="k">public</span>:
+    <span class="t">Device</span>() { std::cout &lt;&lt; <span class="s">&quot;Device(): initializing\n&quot;</span>; init(); }   <span class="c">// calls a virtual function, indirectly</span>
+    <span class="k">virtual</span> ~<span class="t">Device</span>() = <span class="k">default</span>;
+    <span class="t">void</span> init() { configure(); }               <span class="c">// looks harmless...</span>
+    <span class="k">virtual</span> <span class="t">void</span> configure() = <span class="n">0</span>;              <span class="c">// ...but while Device() runs, the object is only a Device</span>
+};
+
+<span class="k">class</span> <span class="t">Camera</span> : <span class="k">public</span> <span class="t">Device</span> {
+<span class="k">public</span>:
+    <span class="t">void</span> configure() <span class="k">override</span> { std::cout &lt;&lt; <span class="s">&quot;Camera::configure\n&quot;</span>; }
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Camera</span> c;                                   <span class="c">// aborts: there is no Device::configure to call</span>
+    std::cout &lt;&lt; <span class="s">&quot;never printed\n&quot;</span>;
+}</code></pre></div><div class="out err" translate="no"><div class="out-head">Output: the program crashes</div><pre>Device(): initializing
+libc++abi: Pure virtual function called!
+[the program stopped: Abort trap: 6 (SIGABRT)]</pre></div><p class="dl"><a href="../code/pure_virtual_call.cpp" download>Download pure_virtual_call.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <p>The fix is the same as for pitfall 1: do not call virtual functions during construction or destruction. Use a separate <code>init()</code> called after construction, or a factory function that constructs and then initializes.</p>
+</section>
+
+<section id="spot" aria-labelledby="spot-h">
+  <h2 id="spot-h">Spot the bug</h2>
+  <p>Six short programs, each with one of the bugs from this course. Find the line; then see what the program really printed, and whether the compiler warned.</p>
+  <div class="widget reveal" data-widget="spot"><noscript>This interactive part needs JavaScript.</noscript></div>
+</section>
+
+<section id="key10" aria-labelledby="key10-h">
+  <h2 id="key10-h">Key points</h2>
+  <ul>
+    <li>Compile with <code>-Wall -Wextra</code> and read the warnings: several of these traps are flagged.</li>
+    <li>Write <code>override</code>; catch by <code>const&amp;</code>; avoid virtual calls in constructors and destructors.</li>
+    <li>Do not reuse names across a hierarchy unless you mean to override a virtual function.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="prev" href="../09-patterns/index.html"><small>← Previous</small><b>09 · Design patterns with abstract classes</b></a><a class="next" href="../11-debugging/index.html"><small>Next →</small><b>11 · Debugging with GDB and sanitizers</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  <script>window.CPP = {"spot":[{"file":"s1_dtor.cpp","lines":["<span class=\"p\">#include &lt;iostream&gt;<\/span>","<span class=\"p\">#include &lt;memory&gt;<\/span>","<span class=\"p\">#include &lt;vector&gt;<\/span>","","<span class=\"k\">struct<\/span> <span class=\"t\">Buffer<\/span> {","    std::vector&lt;<span class=\"t\">double<\/span>&gt; data = std::vector&lt;<span class=\"t\">double<\/span>&gt;(<span class=\"n\">1000000<\/span>);","    ~<span class=\"t\">Buffer<\/span>() { std::cout &lt;&lt; <span class=\"s\">&quot;Buffer freed\\n&quot;<\/span>; }","};","","<span class=\"k\">struct<\/span> <span class=\"t\">Base<\/span> {","    ~<span class=\"t\">Base<\/span>() { std::cout &lt;&lt; <span class=\"s\">&quot;~Base\\n&quot;<\/span>; }","};","","<span class=\"k\">struct<\/span> <span class=\"t\">Cache<\/span> : <span class=\"t\">Base<\/span> {","    <span class=\"t\">Buffer<\/span> buf;","    ~<span class=\"t\">Cache<\/span>() { std::cout &lt;&lt; <span class=\"s\">&quot;~Cache\\n&quot;<\/span>; }","};","","<span class=\"t\">int<\/span> main() {","    std::unique_ptr&lt;<span class=\"t\">Base<\/span>&gt; p(<span class=\"k\">new<\/span> <span class=\"t\">Cache<\/span>);","    p.reset();","    std::cout &lt;&lt; <span class=\"s\">&quot;done\\n&quot;<\/span>;","}"],"bug":11,"why":"The destructor of <code>Base<\/code> is not virtual, so <code>p.reset()<\/code> runs only <code>~Base<\/code>: <code>~Cache<\/code> and the buffer's destructor are skipped, and a million doubles leak. No compiler warning here, because <code>Base<\/code> has no virtual functions at all.","fix":"virtual ~Base()","out":"~Base\ndone\n","warn":""},{"file":"s2_slicing.cpp","lines":["<span class=\"p\">#include &lt;iostream&gt;<\/span>","<span class=\"p\">#include &lt;string&gt;<\/span>","","<span class=\"k\">struct<\/span> <span class=\"t\">Animal<\/span> {","    <span class=\"k\">virtual<\/span> ~<span class=\"t\">Animal<\/span>() = <span class=\"k\">default<\/span>;","    <span class=\"k\">virtual<\/span> std::string sound() <span class=\"k\">const<\/span> { <span class=\"k\">return<\/span> <span class=\"s\">&quot;...&quot;<\/span>; }","};","<span class=\"k\">struct<\/span> <span class=\"t\">Dog<\/span> : <span class=\"t\">Animal<\/span> {","    std::string sound() <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { <span class=\"k\">return<\/span> <span class=\"s\">&quot;woof&quot;<\/span>; }","};","","<span class=\"t\">void<\/span> speak(<span class=\"t\">Animal<\/span> a) {","    std::cout &lt;&lt; <span class=\"s\">&quot;It says &quot;<\/span> &lt;&lt; a.sound() &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;","}","","<span class=\"t\">int<\/span> main() {","    <span class=\"t\">Dog<\/span> d;","    speak(d);","}"],"bug":12,"why":"<code>speak<\/code> takes an <code>Animal<\/code> by value, so the <code>Dog<\/code> is sliced into a plain <code>Animal<\/code> on the way in. Take <code>const Animal&amp;<\/code>.","fix":"void speak(const Animal& a)","out":"It says ...\n","warn":""},{"file":"s3_const.cpp","lines":["<span class=\"p\">#include &lt;iostream&gt;<\/span>","<span class=\"p\">#include &lt;vector&gt;<\/span>","","<span class=\"k\">struct<\/span> <span class=\"t\">Account<\/span> {","    <span class=\"k\">virtual<\/span> ~<span class=\"t\">Account<\/span>() = <span class=\"k\">default<\/span>;","    <span class=\"k\">virtual<\/span> <span class=\"t\">double<\/span> fee() <span class=\"k\">const<\/span> { <span class=\"k\">return<\/span> <span class=\"n\">1.0<\/span>; }","};","<span class=\"k\">struct<\/span> <span class=\"t\">Student<\/span> : <span class=\"t\">Account<\/span> {","    <span class=\"t\">double<\/span> fee() { <span class=\"k\">return<\/span> <span class=\"n\">0.0<\/span>; }","};","","<span class=\"t\">int<\/span> main() {","    std::vector&lt;<span class=\"t\">Account<\/span>*&gt; accounts;","    <span class=\"t\">Student<\/span> s;","    accounts.push_back(&amp;s);","    <span class=\"k\">for<\/span> (<span class=\"k\">const<\/span> <span class=\"t\">Account<\/span>* a : accounts) std::cout &lt;&lt; <span class=\"s\">&quot;fee: &quot;<\/span> &lt;&lt; a-&gt;fee() &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;","}"],"bug":9,"why":"<code>Student::fee()<\/code> is missing <code>const<\/code>, so it does not override <code>Account::fee() const<\/code>: the call through <code>const Account*<\/code> runs the base version. Writing <code>override<\/code> would have made this an error.","fix":"double fee() const override","out":"fee: 1\n","warn":"s3_const.cpp:9:12: warning: 'Student::fee' hides overloaded virtual function [-Woverloaded-virtual]\ns3_const.cpp:6:20: note: hidden overloaded virtual function 'Account::fee' declared here: different qualifiers ('const' vs unqualified)"},{"file":"s4_catch.cpp","lines":["<span class=\"p\">#include &lt;iostream&gt;<\/span>","<span class=\"p\">#include &lt;stdexcept&gt;<\/span>","","<span class=\"k\">struct<\/span> <span class=\"t\">FileError<\/span> : std::runtime_error {","    std::string path;","    <span class=\"t\">FileError<\/span>(<span class=\"k\">const<\/span> std::string&amp; p) : std::runtime_error(<span class=\"s\">&quot;cannot open &quot;<\/span> + p), path(p) {}","};","","<span class=\"t\">void<\/span> load() { <span class=\"k\">throw<\/span> <span class=\"t\">FileError<\/span>(<span class=\"s\">&quot;data.csv&quot;<\/span>); }","","<span class=\"t\">int<\/span> main() {","    <span class=\"k\">try<\/span> {","        load();","    } <span class=\"k\">catch<\/span> (std::exception e) {","        std::cout &lt;&lt; <span class=\"s\">&quot;error: &quot;<\/span> &lt;&lt; e.what() &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;","    }","}"],"bug":14,"why":"Catching <code>std::exception<\/code> by value slices the <code>FileError<\/code> down to a plain <code>std::exception<\/code>, whose <code>what()<\/code> no longer has the message. Catch by <code>const&amp;<\/code>.","fix":"catch (const std::exception& e)","out":"error: std::exception\n","warn":""},{"file":"s5_cycle.cpp","lines":["<span class=\"p\">#include &lt;iostream&gt;<\/span>","<span class=\"p\">#include &lt;memory&gt;<\/span>","<span class=\"p\">#include &lt;string&gt;<\/span>","","<span class=\"k\">struct<\/span> <span class=\"t\">Person<\/span> {","    std::string name;","    std::shared_ptr&lt;<span class=\"t\">Person<\/span>&gt; partner;","    <span class=\"k\">explicit<\/span> <span class=\"t\">Person<\/span>(std::string n) : name(std::move(n)) {}","    ~<span class=\"t\">Person<\/span>() { std::cout &lt;&lt; <span class=\"s\">&quot;goodbye &quot;<\/span> &lt;&lt; name &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>; }","};","","<span class=\"t\">int<\/span> main() {","    <span class=\"k\">auto<\/span> a = std::make_shared&lt;<span class=\"t\">Person<\/span>&gt;(<span class=\"s\">&quot;Ada&quot;<\/span>);","    <span class=\"k\">auto<\/span> b = std::make_shared&lt;<span class=\"t\">Person<\/span>&gt;(<span class=\"s\">&quot;Bob&quot;<\/span>);","    a-&gt;partner = b;","    b-&gt;partner = a;","    std::cout &lt;&lt; <span class=\"s\">&quot;end of main\\n&quot;<\/span>;","}"],"bug":7,"why":"Each person owns the other through a <code>shared_ptr<\/code>, so the counts never reach zero: neither destructor runs (no \"goodbye\"), and both leak. Make <code>partner<\/code> a <code>std::weak_ptr<\/code>.","fix":"std::weak_ptr<Person> partner;","out":"end of main\n","warn":""},{"file":"s6_dangling.cpp","lines":["<span class=\"c\">// build: -fsanitize=address -g<\/span>","<span class=\"p\">#include &lt;iostream&gt;<\/span>","<span class=\"p\">#include &lt;vector&gt;<\/span>","","<span class=\"k\">struct<\/span> <span class=\"t\">Shape<\/span> {","    <span class=\"k\">virtual<\/span> ~<span class=\"t\">Shape<\/span>() = <span class=\"k\">default<\/span>;","    <span class=\"k\">virtual<\/span> <span class=\"t\">double<\/span> area() <span class=\"k\">const<\/span> = <span class=\"n\">0<\/span>;","};","<span class=\"k\">struct<\/span> <span class=\"t\">Square<\/span> : <span class=\"t\">Shape<\/span> {","    <span class=\"t\">double<\/span> s;","    <span class=\"k\">explicit<\/span> <span class=\"t\">Square<\/span>(<span class=\"t\">double<\/span> s) : s(s) {}","    <span class=\"t\">double<\/span> area() <span class=\"k\">const<\/span> <span class=\"k\">override<\/span> { <span class=\"k\">return<\/span> s * s; }","};","","<span class=\"t\">int<\/span> main() {","    std::vector&lt;<span class=\"t\">Shape<\/span>*&gt; shapes;","    <span class=\"k\">for<\/span> (<span class=\"t\">int<\/span> i = <span class=\"n\">1<\/span>; i &lt;= <span class=\"n\">3<\/span>; ++i) {","        <span class=\"t\">Square<\/span> sq(i);","        shapes.push_back(&amp;sq);","    }","    <span class=\"t\">double<\/span> total = <span class=\"n\">0<\/span>;","    <span class=\"k\">for<\/span> (<span class=\"k\">const<\/span> <span class=\"t\">Shape<\/span>* s : shapes) total += s-&gt;area();","    std::cout &lt;&lt; <span class=\"s\">&quot;total &quot;<\/span> &lt;&lt; total &lt;&lt; <span class=\"s\">&#x27;\\n&#x27;<\/span>;","}"],"bug":19,"why":"<code>sq<\/code> lives only inside the loop body, so the vector stores addresses of objects that no longer exist. AddressSanitizer catches the first use. Own the objects: <code>std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt;<\/code> with <code>make_unique<\/code>.","fix":"shapes.push_back(std::make_unique<Square>(i));","out":"=================================================================\n==PID==ERROR: AddressSanitizer: stack-use-after-scope on address 0x00016dccac40 at pc 0x000102134cb8 bp 0x00016dccabd0 sp 0x00016dccabc8\nREAD of size 8 at 0x00016dccac40 thread T0\n    #0 0x000102134cb4 in main s6_dangling.cpp:22\n    ... (1 frame in the C++ runtime and standard library)\n\nAddress 0x00016dccac40 is located in stack of thread T0 at offset 96 in frame\n    #0 0x000102134914 in main s6_dangling.cpp:15\n\n  This frame has 5 object(s):\n    [32, 56) 'shapes' (line 16)\n    [96, 112) 'sq' (line 18) <== Memory access at offset 96 is inside this variable\n    [128, 136) 'ref.tmp' (line 19)\n    [160, 168) '__begin1' (line 22)\n    [192, 200) '__end1' (line 22)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-use-after-scope s6_dangling.cpp:22 in main\n[the program stopped: Abort trap: 6 (SIGABRT)]","warn":""}]};</script>
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

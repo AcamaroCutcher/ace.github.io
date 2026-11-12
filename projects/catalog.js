@@ -35,6 +35,24 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'cpp-oop',
+      title: 'C++ Object-Oriented Programming',
+      summary: 'An AI-written interactive course in twelve lessons: classes and invariants, object lifetime and RAII, copying and moving, inheritance and memory layout, virtual functions and vtables, abstract classes and interfaces, ownership with smart pointers, templates, CRTP, std::variant and concepts (with a measured cost comparison), design patterns, pitfalls, and debugging with sanitizers and a GDB playground that replays two recorded bug hunts. Every program was compiled and run to produce the outputs shown, and each one opens in Compiler Explorer.',
+      disciplines: ['ml'],
+      types: ['interactive', 'code'],
+      status: 'completed',
+      year: 2026,
+      featured: false,
+      tags: ['C++', 'OOP', 'Inheritance', 'Abstract classes', 'Virtual functions', 'Templates', 'Design patterns', 'GDB', 'Debugging'],
+      links: [
+        { label: 'Start the course', href: 'cpp-oop/index.html', icon: 'fa-arrow-right', primary: true },
+        { label: 'Abstract classes', href: 'cpp-oop/06-abstract/index.html', icon: 'fa-shapes' },
+        { label: 'GDB playground', href: 'cpp-oop/11-debugging/index.html', icon: 'fa-bug' },
+        { label: 'Quiz & exercises', href: 'cpp-oop/12-practice/index.html', icon: 'fa-list-check' },
+        { label: 'All code (.zip)', href: 'cpp-oop/code/cpp-oop-code.zip', icon: 'fa-file-zipper' },
+      ],
+    },
+    {
       id: 'agents',
       title: 'Agents: from AIMA to Claude to Robots',
       summary: 'An AI-written interactive companion to Russell & Norvig\u2019s Artificial Intelligence: A Modern Approach (3rd and 4th editions), from rational agents to building your own. Eleven lessons (starting with a background toolkit of history, Python, math and computing) plus an Agent Lab where you write agents in Python and pass seven graded levels, from a vacuum robot to tools that real Claude calls. 45+ widgets and an agent terminal: a vacuum world and five agent architectures racing in one apartment, A* on the book\u2019s Romania map, a wumpus-world agent that proves where it is safe, value iteration and Q-learning on the 4\u00d73 world, how LLMs like Claude work (BPE, sampling, attention, live training, a 150-line GPT), a line-by-line replay of a Claude Code-style agent loop, MCP written from scratch for a simulated microscope, and an LLM-driven robot with Arduino firmware. Every Python example can be edited and run right in the browser, and a live mode lets you watch real Claude drive the coding agent and the robot with your own API key.',

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 01: Bundling data with the functions that keep it valid: invariants, public and private, constructors, const member functions, static members, and operator overloading.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Classes and encapsulation · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="01" data-scene="memory">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">01 · Classes and encapsulation</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 01 of 12</p><h1>Classes and encapsulation</h1><p class="lede">A class bundles data with the operations allowed on it. The point is not tidiness: it is that the class can guarantee its data always makes sense.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Classes and encapsulation · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#invariants">Invariants: what a class guarantees</a><a href="#operators">Operator overloading: value classes that read like math</a><a href="#key01">Key points</a></nav><section id="invariants" aria-labelledby="invariants-h">
+  <h2 id="invariants-h">Invariants: what a class guarantees</h2>
+  <p>A <code>class</code> groups data members with member functions. The key idea is the <b>invariant</b>: a fact that is true for every object of the class at all times. For a rectangle, "both sides are positive". The constructor establishes the invariant, every public member function preserves it, and making the data <code>private</code> means no other code can break it.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>classes.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gY2xhc3Nlcy5jcHAgLS0gYSBjbGFzcyBidW5kbGVzIGRhdGEgd2l0aCB0aGUgZnVuY3Rpb25zIHRoYXQga2VlcCBpdCB2YWxpZFxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPHN0ZGV4Y2VwdD5cblxuY2xhc3MgUmVjdGFuZ2xlIHtcbnB1YmxpYzogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8vIHRoZSBpbnRlcmZhY2U6IHdoYXQgdXNlcnMgb2YgdGhlIGNsYXNzIG1heSBjYWxsXG4gICAgUmVjdGFuZ2xlKGRvdWJsZSB3LCBkb3VibGUgaCkgOiB3aWR0aF8odyksIGhlaWdodF8oaCkgeyAgIC8vIGNvbnN0cnVjdG9yIHdpdGggYSBtZW1iZXIgaW5pdGlhbGl6ZXIgbGlzdFxuICAgICAgICBpZiAodyA8PSAwIHx8IGggPD0gMCkgdGhyb3cgc3RkOjppbnZhbGlkX2FyZ3VtZW50KFwic2lkZXMgbXVzdCBiZSBwb3NpdGl2ZVwiKTtcbiAgICAgICAgKytjb3VudF87XG4gICAgfVxuICAgIGRvdWJsZSBhcmVhKCkgY29uc3QgeyByZXR1cm4gd2lkdGhfICogaGVpZ2h0XzsgfSAgICAgICAgICAvLyBjb25zdDogcHJvbWlzZXMgbm90IHRvIGNoYW5nZSB0aGUgb2JqZWN0XG4gICAgZG91YmxlIHBlcmltZXRlcigpIGNvbnN0IHsgcmV0dXJuIDIgKiAod2lkdGhfICsgaGVpZ2h0Xyk7IH1cbiAgICB2b2lkIHNjYWxlKGRvdWJsZSBmKSB7XG4gICAgICAgIGlmIChmIDw9IDApIHRocm93IHN0ZDo6aW52YWxpZF9hcmd1bWVudChcInNjYWxlIGZhY3RvciBtdXN0IGJlIHBvc2l0aXZlXCIpO1xuICAgICAgICB3aWR0aF8gKj0gZjtcbiAgICAgICAgaGVpZ2h0XyAqPSBmO1xuICAgIH1cbiAgICBkb3VibGUgd2lkdGgoKSBjb25zdCB7IHJldHVybiB3aWR0aF87IH0gICAgICAgICAgICAgICAgICAgLy8gcmVhZCBhY2Nlc3Mgd2l0aG91dCB3cml0ZSBhY2Nlc3NcbiAgICBzdGF0aWMgaW50IGNvdW50KCkgeyByZXR1cm4gY291bnRfOyB9ICAgICAgICAgICAgICAgICAgICAgLy8gc3RhdGljOiBiZWxvbmdzIHRvIHRoZSBjbGFzcywgbm90IGFuIG9iamVjdFxuXG5wcml2YXRlOiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyB0aGUgaW1wbGVtZW50YXRpb246IG9ubHkgbWVtYmVyIGZ1bmN0aW9ucyBjYW4gdG91Y2ggaXRcbiAgICBkb3VibGUgd2lkdGhfLCBoZWlnaHRfO1xuICAgIHN0YXRpYyBpbmxpbmUgaW50IGNvdW50XyA9IDA7ICAgICAgICAgLy8gQysrMTcgaW5saW5lIHN0YXRpYyBtZW1iZXJcbn07XG5cbmludCBtYWluKCkge1xuICAgIFJlY3RhbmdsZSByKDMsIDQpO1xuICAgIHN0ZDo6Y291dCA8PCBcImFyZWEgXCIgPDwgci5hcmVhKCkgPDwgXCIsIHBlcmltZXRlciBcIiA8PCByLnBlcmltZXRlcigpIDw8ICdcXG4nO1xuICAgIHIuc2NhbGUoMik7XG4gICAgc3RkOjpjb3V0IDw8IFwiYWZ0ZXIgc2NhbGUoMik6IHdpZHRoIFwiIDw8IHIud2lkdGgoKSA8PCBcIiwgYXJlYSBcIiA8PCByLmFyZWEoKSA8PCAnXFxuJztcbiAgICAvLyByLndpZHRoXyA9IC0xOyAgICAgICAgICAvLyBlcnJvcjogJ3dpZHRoXycgaXMgYSBwcml2YXRlIG1lbWJlciBvZiAnUmVjdGFuZ2xlJ1xuXG4gICAgdHJ5IHtcbiAgICAgICAgUmVjdGFuZ2xlIGJhZCgtMSwgMik7ICAvLyB0aGUgY29uc3RydWN0b3IgcmVmdXNlcyB0byBidWlsZCBhbiBpbnZhbGlkIG9iamVjdFxuICAgIH0gY2F0Y2ggKGNvbnN0IHN0ZDo6aW52YWxpZF9hcmd1bWVudCYgZSkge1xuICAgICAgICBzdGQ6OmNvdXQgPDwgXCJyZWplY3RlZDogXCIgPDwgZS53aGF0KCkgPDwgJ1xcbic7XG4gICAgfVxuXG4gICAgY29uc3QgUmVjdGFuZ2xlIHNxKDUsIDUpO1xuICAgIHN0ZDo6Y291dCA8PCBcInNxdWFyZSBhcmVhIFwiIDw8IHNxLmFyZWEoKSA8PCAnXFxuJzsgICAvLyBmaW5lOiBhcmVhKCkgaXMgY29uc3RcbiAgICAvLyBzcS5zY2FsZSgyKTsgICAgICAgICAgICAvLyBlcnJvcjogc2NhbGUoKSBpcyBub3QgY29uc3QsIHNxIGlzXG4gICAgc3RkOjpjb3V0IDw8IFwicmVjdGFuZ2xlcyBidWlsdDogXCIgPDwgUmVjdGFuZ2xlOjpjb3VudCgpIDw8ICdcXG4nO1xufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItc3RkPWMrKzE3IC1XYWxsIC1XZXh0cmEiLCAibGlicyI6IFtdfSwgImFyZ3VtZW50cyI6ICIiLCAic3RkaW4iOiAiIn1dfV19" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// classes.cpp -- a class bundles data with the functions that keep it valid</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;stdexcept&gt;</span>
+
+<span class="k">class</span> <span class="t">Rectangle</span> {
+<span class="k">public</span>:                                   <span class="c">// the interface: what users of the class may call</span>
+    <span class="t">Rectangle</span>(<span class="t">double</span> w, <span class="t">double</span> h) : width_(w), height_(h) {   <span class="c">// constructor with a member initializer list</span>
+        <span class="k">if</span> (w &lt;= <span class="n">0</span> || h &lt;= <span class="n">0</span>) <span class="k">throw</span> std::invalid_argument(<span class="s">&quot;sides must be positive&quot;</span>);
+        ++count_;
+    }
+    <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> width_ * height_; }          <span class="c">// const: promises not to change the object</span>
+    <span class="t">double</span> perimeter() <span class="k">const</span> { <span class="k">return</span> <span class="n">2</span> * (width_ + height_); }
+    <span class="t">void</span> scale(<span class="t">double</span> f) {
+        <span class="k">if</span> (f &lt;= <span class="n">0</span>) <span class="k">throw</span> std::invalid_argument(<span class="s">&quot;scale factor must be positive&quot;</span>);
+        width_ *= f;
+        height_ *= f;
+    }
+    <span class="t">double</span> width() <span class="k">const</span> { <span class="k">return</span> width_; }                   <span class="c">// read access without write access</span>
+    <span class="k">static</span> <span class="t">int</span> count() { <span class="k">return</span> count_; }                     <span class="c">// static: belongs to the class, not an object</span>
+
+<span class="k">private</span>:                                  <span class="c">// the implementation: only member functions can touch it</span>
+    <span class="t">double</span> width_, height_;
+    <span class="k">static</span> <span class="k">inline</span> <span class="t">int</span> count_ = <span class="n">0</span>;         <span class="c">// C++17 inline static member</span>
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Rectangle</span> r(<span class="n">3</span>, <span class="n">4</span>);
+    std::cout &lt;&lt; <span class="s">&quot;area &quot;</span> &lt;&lt; r.area() &lt;&lt; <span class="s">&quot;, perimeter &quot;</span> &lt;&lt; r.perimeter() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    r.scale(<span class="n">2</span>);
+    std::cout &lt;&lt; <span class="s">&quot;after scale(2): width &quot;</span> &lt;&lt; r.width() &lt;&lt; <span class="s">&quot;, area &quot;</span> &lt;&lt; r.area() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    <span class="c">// r.width_ = -1;          // error: &#x27;width_&#x27; is a private member of &#x27;Rectangle&#x27;</span>
+
+    <span class="k">try</span> {
+        <span class="t">Rectangle</span> bad(-<span class="n">1</span>, <span class="n">2</span>);  <span class="c">// the constructor refuses to build an invalid object</span>
+    } <span class="k">catch</span> (<span class="k">const</span> std::invalid_argument&amp; e) {
+        std::cout &lt;&lt; <span class="s">&quot;rejected: &quot;</span> &lt;&lt; e.what() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+
+    <span class="k">const</span> <span class="t">Rectangle</span> sq(<span class="n">5</span>, <span class="n">5</span>);
+    std::cout &lt;&lt; <span class="s">&quot;square area &quot;</span> &lt;&lt; sq.area() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;   <span class="c">// fine: area() is const</span>
+    <span class="c">// sq.scale(2);            // error: scale() is not const, sq is</span>
+    std::cout &lt;&lt; <span class="s">&quot;rectangles built: &quot;</span> &lt;&lt; <span class="t">Rectangle</span>::count() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>area 12, perimeter 14
+after scale(2): width 6, area 48
+rejected: sides must be positive
+square area 25
+rectangles built: 2</pre></div><p class="dl"><a href="../code/classes.cpp" download>Download classes.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <ul>
+    <li><b><code>public</code> / <code>private</code></b>: anyone can call the public part; only the class's own member functions can touch the private part. A <code>struct</code> is the same as a <code>class</code> except that its members are public by default; by convention, <code>struct</code> is used for plain data with no invariant.</li>
+    <li><b>Member initializer list</b>, <code>: width_(w), height_(h)</code>, initializes members before the constructor body runs. Members are always initialized in the order they are <em>declared</em>, whatever order the list uses.</li>
+    <li><b><code>const</code> member functions</b> promise not to modify the object, so they can be called on <code>const</code> objects and through <code>const&amp;</code>. Mark every member function that does not change the object <code>const</code>; forgetting it is one of the most common reasons code "will not compile" later.</li>
+    <li><b><code>static</code> members</b> belong to the class as a whole: there is one <code>count_</code>, not one per object.</li>
+    <li>A constructor that cannot establish the invariant should <b>throw</b>: then no invalid object ever exists.</li>
+  </ul>
+  <p>Uncomment <code>r.width_ = -1;</code> and the compiler refuses:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>private_access.cpp</span><span class="code-btns"><button type="button" class="copy">Copy</button></span></div><pre><code><span class="k">class</span> <span class="t">Rectangle</span> {
+<span class="k">public</span>:
+    <span class="t">Rectangle</span>(<span class="t">double</span> w, <span class="t">double</span> h) : width_(w), height_(h) {}
+<span class="k">private</span>:
+    <span class="t">double</span> width_, height_;
+};
+<span class="t">int</span> main() { <span class="t">Rectangle</span> r(<span class="n">3</span>, <span class="n">4</span>); r.width_ = -<span class="n">1</span>; }</code></pre></div><div class="out err" translate="no"><div class="out-head">Compiler says</div><pre>private_access.cpp:7:35: error: &#x27;width_&#x27; is a private member of &#x27;Rectangle&#x27;
+private_access.cpp:5:12: note: declared private here</pre></div>
+  <h3>What if I write…?</h3>
+  <p>Try each line in <code>main</code>. Some compile, some do not, and one compiles and then stops the program.</p>
+  <div class="widget reveal" data-widget="try" data-lab="const_private"><noscript>This interactive part needs JavaScript.</noscript></div>
+</section>
+
+<section id="operators" aria-labelledby="operators-h">
+  <h2 id="operators-h">Operator overloading: value classes that read like math</h2>
+  <p>For small mathematical types, overloaded operators let code look like the formula it implements. The usual recipe: compound operators (<code>+=</code>, <code>*=</code>) are members that modify <code>*this</code>; binary operators (<code>+</code>, <code>*</code>) are non-members written in terms of them, so both operands are treated alike and <code>2.0 * v</code> works as well as <code>v * 2.0</code>; <code>operator&lt;&lt;</code> for printing must be a non-member because its left operand is the stream.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>operators.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gb3BlcmF0b3JzLmNwcCAtLSBvcGVyYXRvciBvdmVybG9hZGluZyBtYWtlcyBhIHNtYWxsIHZhbHVlIGNsYXNzIHJlYWQgbGlrZSBtYXRoXG4jaW5jbHVkZSA8Y21hdGg-XG4jaW5jbHVkZSA8aW9zdHJlYW0-XG5cbmNsYXNzIFZlYzIge1xucHVibGljOlxuICAgIGNvbnN0ZXhwciBWZWMyKGRvdWJsZSB4ID0gMCwgZG91YmxlIHkgPSAwKSA6IHhfKHgpLCB5Xyh5KSB7fVxuICAgIGRvdWJsZSB4KCkgY29uc3QgeyByZXR1cm4geF87IH1cbiAgICBkb3VibGUgeSgpIGNvbnN0IHsgcmV0dXJuIHlfOyB9XG4gICAgZG91YmxlIG5vcm0oKSBjb25zdCB7IHJldHVybiBzdGQ6Omh5cG90KHhfLCB5Xyk7IH1cblxuICAgIFZlYzImIG9wZXJhdG9yKz0oY29uc3QgVmVjMiYgbykgeyB4XyArPSBvLnhfOyB5XyArPSBvLnlfOyByZXR1cm4gKnRoaXM7IH0gICAvLyBjb21wb3VuZDogYSBtZW1iZXIsIHJldHVybnMgKnRoaXNcbiAgICBWZWMyJiBvcGVyYXRvcio9KGRvdWJsZSBrKSB7IHhfICo9IGs7IHlfICo9IGs7IHJldHVybiAqdGhpczsgfVxuICAgIFZlYzIgb3BlcmF0b3ItKCkgY29uc3QgeyByZXR1cm4gey14XywgLXlffTsgfSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLy8gdW5hcnkgbWludXNcblxuICAgIGZyaWVuZCBib29sIG9wZXJhdG9yPT0oY29uc3QgVmVjMiYgYSwgY29uc3QgVmVjMiYgYikgeyByZXR1cm4gYS54XyA9PSBiLnhfICYmIGEueV8gPT0gYi55XzsgfVxuICAgIGZyaWVuZCBzdGQ6Om9zdHJlYW0mIG9wZXJhdG9yPDwoc3RkOjpvc3RyZWFtJiBvdXQsIGNvbnN0IFZlYzImIHYpIHsgICAgICAgIC8vIHByaW50aW5nOiBtdXN0IGJlIGEgbm9uLW1lbWJlclxuICAgICAgICByZXR1cm4gb3V0IDw8ICcoJyA8PCB2LnhfIDw8IFwiLCBcIiA8PCB2LnlfIDw8ICcpJztcbiAgICB9XG5wcml2YXRlOlxuICAgIGRvdWJsZSB4XywgeV87XG59O1xuXG4vLyBiaW5hcnkgb3BlcmF0b3JzIGFzIG5vbi1tZW1iZXJzLCB3cml0dGVuIHdpdGggdGhlIGNvbXBvdW5kIG9uZXM6IGJvdGggb3BlcmFuZHMgYXJlIHRyZWF0ZWQgYWxpa2VcbmlubGluZSBWZWMyIG9wZXJhdG9yKyhWZWMyIGEsIGNvbnN0IFZlYzImIGIpIHsgcmV0dXJuIGEgKz0gYjsgfVxuaW5saW5lIFZlYzIgb3BlcmF0b3ItKFZlYzIgYSwgY29uc3QgVmVjMiYgYikgeyByZXR1cm4gYSArPSAtYjsgfVxuaW5saW5lIFZlYzIgb3BlcmF0b3IqKFZlYzIgdiwgZG91YmxlIGspIHsgcmV0dXJuIHYgKj0gazsgfVxuaW5saW5lIFZlYzIgb3BlcmF0b3IqKGRvdWJsZSBrLCBWZWMyIHYpIHsgcmV0dXJuIHYgKj0gazsgfSAgICAvLyBzbyB0aGF0IDIuMCAqIHYgd29ya3MgdG9vXG5pbmxpbmUgZG91YmxlIGRvdChjb25zdCBWZWMyJiBhLCBjb25zdCBWZWMyJiBiKSB7IHJldHVybiBhLngoKSAqIGIueCgpICsgYS55KCkgKiBiLnkoKTsgfVxuXG5pbnQgbWFpbigpIHtcbiAgICBWZWMyIHAoMSwgMiksIHYoMC41LCAtMSk7XG4gICAgZG91YmxlIGR0ID0gMC4xO1xuICAgIGZvciAoaW50IHN0ZXAgPSAwOyBzdGVwIDwgMzsgKytzdGVwKSB7XG4gICAgICAgIHAgKz0gdiAqIGR0OyAgICAgICAgICAgICAgICAgICAgICAgLy8gcmVhZHMgbGlrZSB0aGUgcGh5c2ljczogcCA8LSBwICsgdiBkdFxuICAgICAgICBzdGQ6OmNvdXQgPDwgXCJzdGVwIFwiIDw8IHN0ZXAgKyAxIDw8IFwiOiBwID0gXCIgPDwgcCA8PCAnXFxuJztcbiAgICB9XG4gICAgVmVjMiBhKDMsIDQpO1xuICAgIHN0ZDo6Y291dCA8PCBcInxhfCA9IFwiIDw8IGEubm9ybSgpIDw8IFwiLCAyKmEgPSBcIiA8PCAyLjAgKiBhIDw8IFwiLCAtYSA9IFwiIDw8IC1hIDw8ICdcXG4nO1xuICAgIHN0ZDo6Y291dCA8PCBcImEuYiA9IFwiIDw8IGRvdChhLCBWZWMyKDEsIDEpKSA8PCBcIiwgYSA9PSAoMyw0KT8gXCIgPDwgc3RkOjpib29sYWxwaGEgPDwgKGEgPT0gVmVjMigzLCA0KSkgPDwgJ1xcbic7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// operators.cpp -- operator overloading makes a small value class read like math</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+
+<span class="k">class</span> <span class="t">Vec2</span> {
+<span class="k">public</span>:
+    <span class="k">constexpr</span> <span class="t">Vec2</span>(<span class="t">double</span> x = <span class="n">0</span>, <span class="t">double</span> y = <span class="n">0</span>) : x_(x), y_(y) {}
+    <span class="t">double</span> x() <span class="k">const</span> { <span class="k">return</span> x_; }
+    <span class="t">double</span> y() <span class="k">const</span> { <span class="k">return</span> y_; }
+    <span class="t">double</span> norm() <span class="k">const</span> { <span class="k">return</span> std::hypot(x_, y_); }
+
+    <span class="t">Vec2</span>&amp; <span class="k">operator</span>+=(<span class="k">const</span> <span class="t">Vec2</span>&amp; o) { x_ += o.x_; y_ += o.y_; <span class="k">return</span> *<span class="k">this</span>; }   <span class="c">// compound: a member, returns *this</span>
+    <span class="t">Vec2</span>&amp; <span class="k">operator</span>*=(<span class="t">double</span> k) { x_ *= k; y_ *= k; <span class="k">return</span> *<span class="k">this</span>; }
+    <span class="t">Vec2</span> <span class="k">operator</span>-() <span class="k">const</span> { <span class="k">return</span> {-x_, -y_}; }                             <span class="c">// unary minus</span>
+
+    <span class="k">friend</span> <span class="t">bool</span> <span class="k">operator</span>==(<span class="k">const</span> <span class="t">Vec2</span>&amp; a, <span class="k">const</span> <span class="t">Vec2</span>&amp; b) { <span class="k">return</span> a.x_ == b.x_ &amp;&amp; a.y_ == b.y_; }
+    <span class="k">friend</span> std::ostream&amp; <span class="k">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="k">const</span> <span class="t">Vec2</span>&amp; v) {        <span class="c">// printing: must be a non-member</span>
+        <span class="k">return</span> out &lt;&lt; <span class="s">&#x27;(&#x27;</span> &lt;&lt; v.x_ &lt;&lt; <span class="s">&quot;, &quot;</span> &lt;&lt; v.y_ &lt;&lt; <span class="s">&#x27;)&#x27;</span>;
+    }
+<span class="k">private</span>:
+    <span class="t">double</span> x_, y_;
+};
+
+<span class="c">// binary operators as non-members, written with the compound ones: both operands are treated alike</span>
+<span class="k">inline</span> <span class="t">Vec2</span> <span class="k">operator</span>+(<span class="t">Vec2</span> a, <span class="k">const</span> <span class="t">Vec2</span>&amp; b) { <span class="k">return</span> a += b; }
+<span class="k">inline</span> <span class="t">Vec2</span> <span class="k">operator</span>-(<span class="t">Vec2</span> a, <span class="k">const</span> <span class="t">Vec2</span>&amp; b) { <span class="k">return</span> a += -b; }
+<span class="k">inline</span> <span class="t">Vec2</span> <span class="k">operator</span>*(<span class="t">Vec2</span> v, <span class="t">double</span> k) { <span class="k">return</span> v *= k; }
+<span class="k">inline</span> <span class="t">Vec2</span> <span class="k">operator</span>*(<span class="t">double</span> k, <span class="t">Vec2</span> v) { <span class="k">return</span> v *= k; }    <span class="c">// so that 2.0 * v works too</span>
+<span class="k">inline</span> <span class="t">double</span> dot(<span class="k">const</span> <span class="t">Vec2</span>&amp; a, <span class="k">const</span> <span class="t">Vec2</span>&amp; b) { <span class="k">return</span> a.x() * b.x() + a.y() * b.y(); }
+
+<span class="t">int</span> main() {
+    <span class="t">Vec2</span> p(<span class="n">1</span>, <span class="n">2</span>), v(<span class="n">0.5</span>, -<span class="n">1</span>);
+    <span class="t">double</span> dt = <span class="n">0.1</span>;
+    <span class="k">for</span> (<span class="t">int</span> step = <span class="n">0</span>; step &lt; <span class="n">3</span>; ++step) {
+        p += v * dt;                       <span class="c">// reads like the physics: p &lt;- p + v dt</span>
+        std::cout &lt;&lt; <span class="s">&quot;step &quot;</span> &lt;&lt; step + <span class="n">1</span> &lt;&lt; <span class="s">&quot;: p = &quot;</span> &lt;&lt; p &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+    <span class="t">Vec2</span> a(<span class="n">3</span>, <span class="n">4</span>);
+    std::cout &lt;&lt; <span class="s">&quot;|a| = &quot;</span> &lt;&lt; a.norm() &lt;&lt; <span class="s">&quot;, 2*a = &quot;</span> &lt;&lt; <span class="n">2.0</span> * a &lt;&lt; <span class="s">&quot;, -a = &quot;</span> &lt;&lt; -a &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;a.b = &quot;</span> &lt;&lt; dot(a, <span class="t">Vec2</span>(<span class="n">1</span>, <span class="n">1</span>)) &lt;&lt; <span class="s">&quot;, a == (3,4)? &quot;</span> &lt;&lt; std::boolalpha &lt;&lt; (a == <span class="t">Vec2</span>(<span class="n">3</span>, <span class="n">4</span>)) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>step 1: p = (1.05, 1.9)
+step 2: p = (1.1, 1.8)
+step 3: p = (1.15, 1.7)
+|a| = 5, 2*a = (6, 8), -a = (-3, -4)
+a.b = 7, a == (3,4)? true</pre></div><p class="dl"><a href="../code/operators.cpp" download>Download operators.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <div class="callout tip reveal"><b>When to overload</b> Overload an operator only when its meaning is obvious to every reader: arithmetic for vectors and matrices, <code>==</code> for values, <code>&lt;&lt;</code> for printing, <code>()</code> for indexing a grid. Do not overload <code>&amp;&amp;</code>, <code>||</code> or the comma operator, and do not give <code>+</code> side effects. In C++20, <code>operator&lt;=&gt;</code> ("spaceship") can generate all six comparisons at once.</div>
+</section>
+
+<section id="key01" aria-labelledby="key01-h">
+  <h2 id="key01-h">Key points</h2>
+  <ul>
+    <li>Design a class around its invariant; keep the data private and the interface small.</li>
+    <li>Use the initializer list; mark non-modifying member functions <code>const</code>.</li>
+    <li>Value types (vectors, complex numbers, intervals) benefit from operators; most other classes do not need any.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="next" href="../02-lifetime/index.html"><small>Next →</small><b>02 · Constructors, destructors and RAII</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  <script>window.CPP = {"try":{"const_private":{"file":"const_private.cpp","src":"#include <iostream>\n#include <stdexcept>\n\nclass Rectangle {\npublic:\n    Rectangle(double w, double h) : width_(w), height_(h) {\n        if (w <= 0 || h <= 0) throw std::invalid_argument(\"sides must be positive\");\n    }\n    double area() const { return width_ * height_; }\n    void scale(double f) { width_ *= f; height_ *= f; }\n    double width() const { return width_; }\nprivate:\n    double width_, height_;\n};\n\nint main() {\n    Rectangle r(3, 4);\n    const Rectangle sq(5, 5);\n    /*TRY*/\n}\n","lines":[{"code":"std::cout << r.area() << '\\n';","why":"Calling a public <code>const<\/code> function on a normal object: fine.","out":"12\n","exit":0},{"code":"r.scale(2); std::cout << r.width() << '\\n';","why":"<code>scale<\/code> changes <code>r<\/code>; <code>width()<\/code> reads it through the public interface.","out":"6\n","exit":0},{"code":"r.width_ = -1;","why":"The data is private: only member functions may touch it, so nothing outside can break the invariant.","error":"const_private.cpp:19:7: error: 'width_' is a private member of 'Rectangle'\nconst_private.cpp:13:12: note: declared private here"},{"code":"std::cout << sq.area() << '\\n';","why":"<code>area()<\/code> is <code>const<\/code>, so it may be called on the <code>const<\/code> object <code>sq<\/code>.","out":"25\n","exit":0},{"code":"sq.scale(2);","why":"<code>scale<\/code> is not <code>const<\/code> (it modifies the object), so a <code>const<\/code> object refuses it.","error":"const_private.cpp:19:5: error: 'this' argument to member function 'scale' has type 'const Rectangle', but function is not marked const\nconst_private.cpp:10:10: note: 'scale' declared here"},{"code":"Rectangle bad(-1, 2);","why":"It compiles, but the constructor throws, and nothing catches the exception: the program is terminated. No invalid rectangle ever exists.","out":"libc++abi: terminating due to uncaught exception of type std::invalid_argument: sides must be positive\n","exit":-6,"status":"Abort trap: 6 (SIGABRT)"},{"code":"Rectangle empty;","why":"There is no default constructor: once you declare any constructor, the compiler stops generating one. A rectangle needs its sides.","error":"const_private.cpp:19:15: error: no matching constructor for initialization of 'Rectangle'\nconst_private.cpp:4:7: note: candidate constructor (the implicit copy constructor) not viable: requires 1 argument, but 0 were provided\nconst_private.cpp:4:7: note: candidate constructor (the implicit move constructor) not viable: requires 1 argument, but 0 were provided\nconst_private.cpp:6:5: note: candidate constructor not viable: requires 2 arguments, but 0 were provided"},{"code":"Rectangle copy = sq; copy.scale(2); std::cout << copy.area() << \" vs \" << sq.area() << '\\n';","why":"Copying a <code>const<\/code> object gives a new, non-const object that can be changed independently.","out":"100 vs 25\n","exit":0}]}}};</script>
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

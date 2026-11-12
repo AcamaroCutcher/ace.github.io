@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 08: Compile-time polymorphism with templates and CRTP, closed sets of types with std::variant, C++20 concepts, and a measured comparison of what each costs.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Beyond virtual: templates, CRTP, variant and concepts · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="08" data-scene="template">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">08 · Beyond virtual: templates, CRTP, variant and concepts</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 08 of 12</p><h1>Beyond virtual: templates, CRTP, variant and concepts</h1><p class="lede">Virtual functions are one way to make one piece of code work with many types. C++ has others that decide at compile time, and choosing well depends on whether the set of types is open or closed.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Beyond virtual: templates, CRTP, variant and concepts · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#templates">Templates: polymorphism at compile time</a><a href="#crtp">CRTP: shared code in a base, without virtual</a><a href="#variant">std::variant: a closed set of types</a><a href="#concepts">C++20 concepts: naming the requirements</a><a href="#cost">What does each cost? Measured</a><a href="#key08">Key points</a></nav><section id="templates" aria-labelledby="templates-h">
+  <h2 id="templates-h">Templates: polymorphism at compile time</h2>
+  <p>A function template works with any type that has the operations it uses. The compiler writes a separate version for each type, so calls are direct and usually inlined, and the types need no common base class. The price: the type must be known at compile time, so a single container cannot hold a mix.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>templates.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gdGVtcGxhdGVzLmNwcCAtLSBzdGF0aWMgcG9seW1vcnBoaXNtOiB0aGUgdHlwZSBpcyBmaXhlZCBhdCBjb21waWxlIHRpbWUsIG5vIHZ0YWJsZSBuZWVkZWRcbiNpbmNsdWRlIDxpb3N0cmVhbT5cbiNpbmNsdWRlIDx2ZWN0b3I-XG5cbnN0cnVjdCBDaXJjbGUgeyBkb3VibGUgcjsgZG91YmxlIGFyZWEoKSBjb25zdCB7IHJldHVybiAzLjE0MTU5ICogciAqIHI7IH0gfTsgICAvLyBubyBjb21tb24gYmFzZSBjbGFzc1xuc3RydWN0IFJlY3QgICB7IGRvdWJsZSB3LCBoOyBkb3VibGUgYXJlYSgpIGNvbnN0IHsgcmV0dXJuIHcgKiBoOyB9IH07XG5cbnRlbXBsYXRlIDx0eXBlbmFtZSBUPiAgICAgICAgICAgICAgICAgICAgICAgLy8gd29ya3MgZm9yIGFueSBUIHdpdGggYW4gYXJlYSgpIG1lbWJlclxuZG91YmxlIHRvdGFsX2FyZWEoY29uc3Qgc3RkOjp2ZWN0b3I8VD4mIHNoYXBlcykge1xuICAgIGRvdWJsZSB0ID0gMDtcbiAgICBmb3IgKGNvbnN0IFQmIHMgOiBzaGFwZXMpIHQgKz0gcy5hcmVhKCk7ICAgIC8vIHJlc29sdmVkIGF0IGNvbXBpbGUgdGltZSBhbmQgdXN1YWxseSBpbmxpbmVkXG4gICAgcmV0dXJuIHQ7XG59XG5cbnRlbXBsYXRlIDx0eXBlbmFtZS4uLiBUcz4gICAgICAgICAgICAgICAgICAgLy8gYSB2YXJpYWRpYyB0ZW1wbGF0ZTogYW55IG51bWJlciBvZiBhcmd1bWVudHMgb2YgYW55IHR5cGVzXG5kb3VibGUgc3VtX2FyZWFzKGNvbnN0IFRzJi4uLiBzaGFwZXMpIHsgcmV0dXJuIChzaGFwZXMuYXJlYSgpICsgLi4uICsgMC4wKTsgfSAgIC8vIEMrKzE3IGZvbGQgZXhwcmVzc2lvblxuXG5pbnQgbWFpbigpIHtcbiAgICBzdGQ6OnZlY3RvcjxDaXJjbGU-IGNpcmNsZXMgPSB7ezF9LCB7Mn19O1xuICAgIHN0ZDo6dmVjdG9yPFJlY3Q-IHJlY3RzID0ge3syLCAzfSwgezEsIDF9fTtcbiAgICBzdGQ6OmNvdXQgPDwgXCJjaXJjbGVzIFwiIDw8IHRvdGFsX2FyZWEoY2lyY2xlcykgPDwgXCIsIHJlY3RzIFwiIDw8IHRvdGFsX2FyZWEocmVjdHMpIDw8ICdcXG4nO1xuICAgIHN0ZDo6Y291dCA8PCBcIm1peGVkLCBmaXhlZCBhdCBjb21waWxlIHRpbWU6IFwiIDw8IHN1bV9hcmVhcyhDaXJjbGV7MX0sIFJlY3R7MiwgM30sIFJlY3R7MSwgMX0pIDw8ICdcXG4nO1xuICAgIC8vIHRvdGFsX2FyZWEoc3RkOjp2ZWN0b3I8aW50PnsxLCAyfSk7ICAgLy8gZXJyb3I6ICdpbnQnIGhhcyBubyBtZW1iZXIgJ2FyZWEnIC0tIGZvdW5kIGF0IGNvbXBpbGUgdGltZVxufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItc3RkPWMrKzE3IC1XYWxsIC1XZXh0cmEiLCAibGlicyI6IFtdfSwgImFyZ3VtZW50cyI6ICIiLCAic3RkaW4iOiAiIn1dfV19" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// templates.cpp -- static polymorphism: the type is fixed at compile time, no vtable needed</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">struct</span> <span class="t">Circle</span> { <span class="t">double</span> r; <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> <span class="n">3.14159</span> * r * r; } };   <span class="c">// no common base class</span>
+<span class="k">struct</span> <span class="t">Rect</span>   { <span class="t">double</span> w, h; <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> w * h; } };
+
+<span class="k">template</span> &lt;<span class="k">typename</span> T&gt;                       <span class="c">// works for any T with an area() member</span>
+<span class="t">double</span> total_area(<span class="k">const</span> std::vector&lt;T&gt;&amp; shapes) {
+    <span class="t">double</span> t = <span class="n">0</span>;
+    <span class="k">for</span> (<span class="k">const</span> T&amp; s : shapes) t += s.area();    <span class="c">// resolved at compile time and usually inlined</span>
+    <span class="k">return</span> t;
+}
+
+<span class="k">template</span> &lt;<span class="k">typename</span>... <span class="t">Ts</span>&gt;                   <span class="c">// a variadic template: any number of arguments of any types</span>
+<span class="t">double</span> sum_areas(<span class="k">const</span> <span class="t">Ts</span>&amp;... shapes) { <span class="k">return</span> (shapes.area() + ... + <span class="n">0.0</span>); }   <span class="c">// C++17 fold expression</span>
+
+<span class="t">int</span> main() {
+    std::vector&lt;<span class="t">Circle</span>&gt; circles = {{<span class="n">1</span>}, {<span class="n">2</span>}};
+    std::vector&lt;<span class="t">Rect</span>&gt; rects = {{<span class="n">2</span>, <span class="n">3</span>}, {<span class="n">1</span>, <span class="n">1</span>}};
+    std::cout &lt;&lt; <span class="s">&quot;circles &quot;</span> &lt;&lt; total_area(circles) &lt;&lt; <span class="s">&quot;, rects &quot;</span> &lt;&lt; total_area(rects) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;mixed, fixed at compile time: &quot;</span> &lt;&lt; sum_areas(<span class="t">Circle</span>{<span class="n">1</span>}, <span class="t">Rect</span>{<span class="n">2</span>, <span class="n">3</span>}, <span class="t">Rect</span>{<span class="n">1</span>, <span class="n">1</span>}) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    <span class="c">// total_area(std::vector&lt;int&gt;{1, 2});   // error: &#x27;int&#x27; has no member &#x27;area&#x27; -- found at compile time</span>
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>circles 15.708, rects 7
+mixed, fixed at compile time: 10.1416</pre></div><p class="dl"><a href="../code/templates.cpp" download>Download templates.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+</section>
+
+<section id="crtp" aria-labelledby="crtp-h">
+  <h2 id="crtp-h">CRTP: shared code in a base, without virtual</h2>
+  <p>In the <b>Curiously Recurring Template Pattern</b>, a class derives from a base template instantiated with itself. The base can then call the derived class's functions through a <code>static_cast</code>, resolved at compile time. It gives code reuse like a base class, with no vptr and no run-time dispatch.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>crtp.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gY3J0cC5jcHAgLS0gdGhlIEN1cmlvdXNseSBSZWN1cnJpbmcgVGVtcGxhdGUgUGF0dGVybjogc2hhcmVkIGNvZGUgaW4gYSBiYXNlLCBubyB2aXJ0dWFsIGNhbGxzXG4jaW5jbHVkZSA8aW9zdHJlYW0-XG5cbnRlbXBsYXRlIDx0eXBlbmFtZSBEZXJpdmVkPlxuY2xhc3MgU2hhcGUgeyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLy8gdGhlIGJhc2Uga25vd3MgaXRzIGRlcml2ZWQgdHlwZSBhcyBhIHRlbXBsYXRlIHBhcmFtZXRlclxucHVibGljOlxuICAgIHZvaWQgZGVzY3JpYmUoKSBjb25zdCB7XG4gICAgICAgIGNvbnN0IGF1dG8mIHNlbGYgPSBzdGF0aWNfY2FzdDxjb25zdCBEZXJpdmVkJj4oKnRoaXMpOyAgIC8vIHNhZmU6IERlcml2ZWQgcmVhbGx5IGRlcml2ZXMgZnJvbSBTaGFwZTxEZXJpdmVkPlxuICAgICAgICBzdGQ6OmNvdXQgPDwgc2VsZi5uYW1lKCkgPDwgXCI6IGFyZWEgXCIgPDwgc2VsZi5hcmVhKCkgPDwgXCIsIHR3aWNlIFwiIDw8IDIgKiBzZWxmLmFyZWEoKSA8PCAnXFxuJztcbiAgICB9XG59O1xuXG5jbGFzcyBDaXJjbGUgOiBwdWJsaWMgU2hhcGU8Q2lyY2xlPiB7XG5wdWJsaWM6XG4gICAgZXhwbGljaXQgQ2lyY2xlKGRvdWJsZSByKSA6IHJfKHIpIHt9XG4gICAgZG91YmxlIGFyZWEoKSBjb25zdCB7IHJldHVybiAzLjE0MTU5ICogcl8gKiByXzsgfVxuICAgIGNvbnN0IGNoYXIqIG5hbWUoKSBjb25zdCB7IHJldHVybiBcImNpcmNsZVwiOyB9XG5wcml2YXRlOlxuICAgIGRvdWJsZSByXztcbn07XG5cbmNsYXNzIFNxdWFyZSA6IHB1YmxpYyBTaGFwZTxTcXVhcmU-IHtcbnB1YmxpYzpcbiAgICBleHBsaWNpdCBTcXVhcmUoZG91YmxlIHMpIDogc18ocykge31cbiAgICBkb3VibGUgYXJlYSgpIGNvbnN0IHsgcmV0dXJuIHNfICogc187IH1cbiAgICBjb25zdCBjaGFyKiBuYW1lKCkgY29uc3QgeyByZXR1cm4gXCJzcXVhcmVcIjsgfVxucHJpdmF0ZTpcbiAgICBkb3VibGUgc187XG59O1xuXG50ZW1wbGF0ZSA8dHlwZW5hbWUgRD5cbnZvaWQgc2hvdyhjb25zdCBTaGFwZTxEPiYgcykgeyBzLmRlc2NyaWJlKCk7IH0gIC8vIGdlbmVyaWMsIGJ1dCBldmVyeSBjYWxsIGlzIHJlc29sdmVkIGF0IGNvbXBpbGUgdGltZVxuXG5pbnQgbWFpbigpIHtcbiAgICBzaG93KENpcmNsZSgxKSk7XG4gICAgc2hvdyhTcXVhcmUoMykpO1xuICAgIC8vIENpcmNsZSBhbmQgU3F1YXJlIHNoYXJlIG5vIGNvbW1vbiB0eXBlOiB5b3UgY2Fubm90IHB1dCBib3RoIGluIG9uZSBzdGQ6OnZlY3RvcjxTaGFwZTw_Pj4uXG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// crtp.cpp -- the Curiously Recurring Template Pattern: shared code in a base, no virtual calls</span>
+<span class="p">#include &lt;iostream&gt;</span>
+
+<span class="k">template</span> &lt;<span class="k">typename</span> <span class="t">Derived</span>&gt;
+<span class="k">class</span> <span class="t">Shape</span> {                                   <span class="c">// the base knows its derived type as a template parameter</span>
+<span class="k">public</span>:
+    <span class="t">void</span> describe() <span class="k">const</span> {
+        <span class="k">const</span> <span class="k">auto</span>&amp; self = <span class="k">static_cast</span>&lt;<span class="k">const</span> <span class="t">Derived</span>&amp;&gt;(*<span class="k">this</span>);   <span class="c">// safe: Derived really derives from Shape&lt;Derived&gt;</span>
+        std::cout &lt;&lt; self.name() &lt;&lt; <span class="s">&quot;: area &quot;</span> &lt;&lt; self.area() &lt;&lt; <span class="s">&quot;, twice &quot;</span> &lt;&lt; <span class="n">2</span> * self.area() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+};
+
+<span class="k">class</span> <span class="t">Circle</span> : <span class="k">public</span> <span class="t">Shape</span>&lt;<span class="t">Circle</span>&gt; {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Circle</span>(<span class="t">double</span> r) : r_(r) {}
+    <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> <span class="n">3.14159</span> * r_ * r_; }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> { <span class="k">return</span> <span class="s">&quot;circle&quot;</span>; }
+<span class="k">private</span>:
+    <span class="t">double</span> r_;
+};
+
+<span class="k">class</span> <span class="t">Square</span> : <span class="k">public</span> <span class="t">Shape</span>&lt;<span class="t">Square</span>&gt; {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Square</span>(<span class="t">double</span> s) : s_(s) {}
+    <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> s_ * s_; }
+    <span class="k">const</span> <span class="t">char</span>* name() <span class="k">const</span> { <span class="k">return</span> <span class="s">&quot;square&quot;</span>; }
+<span class="k">private</span>:
+    <span class="t">double</span> s_;
+};
+
+<span class="k">template</span> &lt;<span class="k">typename</span> D&gt;
+<span class="t">void</span> show(<span class="k">const</span> <span class="t">Shape</span>&lt;D&gt;&amp; s) { s.describe(); }  <span class="c">// generic, but every call is resolved at compile time</span>
+
+<span class="t">int</span> main() {
+    show(<span class="t">Circle</span>(<span class="n">1</span>));
+    show(<span class="t">Square</span>(<span class="n">3</span>));
+    <span class="c">// Circle and Square share no common type: you cannot put both in one std::vector&lt;Shape&lt;?&gt;&gt;.</span>
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>circle: area 3.14159, twice 6.28318
+square: area 9, twice 18</pre></div><p class="dl"><a href="../code/crtp.cpp" download>Download crtp.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+</section>
+
+<section id="variant" aria-labelledby="variant-h">
+  <h2 id="variant-h">std::variant: a closed set of types</h2>
+  <p>When the set of types is fixed and known (circle, rectangle, triangle and nothing else), <code>std::variant</code> holds exactly one of them <em>by value</em>, with no heap allocation and no inheritance. <code>std::visit</code> runs the right lambda, and the compiler checks that every alternative is handled:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>variant.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gdmFyaWFudC5jcHAgLS0gYSBjbG9zZWQgc2V0IG9mIHR5cGVzIHdpdGhvdXQgaW5oZXJpdGFuY2U6IHN0ZDo6dmFyaWFudCBhbmQgc3RkOjp2aXNpdFxuI2luY2x1ZGUgPGNtYXRoPlxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPHN0cmluZz5cbiNpbmNsdWRlIDx2YXJpYW50PlxuI2luY2x1ZGUgPHZlY3Rvcj5cblxuc3RydWN0IENpcmNsZSB7IGRvdWJsZSByOyB9O1xuc3RydWN0IFJlY3QgeyBkb3VibGUgdywgaDsgfTtcbnN0cnVjdCBUcmlhbmdsZSB7IGRvdWJsZSBhLCBiLCBjOyB9O1xudXNpbmcgU2hhcGUgPSBzdGQ6OnZhcmlhbnQ8Q2lyY2xlLCBSZWN0LCBUcmlhbmdsZT47ICAgICAvLyBhIFNoYXBlIGlzIGV4YWN0bHkgb25lIG9mIHRoZXNlXG5cbnRlbXBsYXRlIDxjbGFzcy4uLiBGcz4gc3RydWN0IG92ZXJsb2FkZWQgOiBGcy4uLiB7IHVzaW5nIEZzOjpvcGVyYXRvcigpLi4uOyB9OyAgIC8vIG9uZSBsYW1iZGEgcGVyIHR5cGVcbnRlbXBsYXRlIDxjbGFzcy4uLiBGcz4gb3ZlcmxvYWRlZChGcy4uLikgLT4gb3ZlcmxvYWRlZDxGcy4uLj47XG5cbmRvdWJsZSBhcmVhKGNvbnN0IFNoYXBlJiBzKSB7XG4gICAgcmV0dXJuIHN0ZDo6dmlzaXQob3ZlcmxvYWRlZHtcbiAgICAgICAgW10oY29uc3QgQ2lyY2xlJiBjKSB7IHJldHVybiAzLjE0MTU5ICogYy5yICogYy5yOyB9LFxuICAgICAgICBbXShjb25zdCBSZWN0JiByKSB7IHJldHVybiByLncgKiByLmg7IH0sXG4gICAgICAgIFtdKGNvbnN0IFRyaWFuZ2xlJiB0KSB7IGRvdWJsZSBwID0gKHQuYSArIHQuYiArIHQuYykgLyAyOyByZXR1cm4gc3RkOjpzcXJ0KHAgKiAocCAtIHQuYSkgKiAocCAtIHQuYikgKiAocCAtIHQuYykpOyB9LFxuICAgIH0sIHMpOyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBmb3JnZXQgYSB0eXBlIGFuZCB0aGlzIGRvZXMgbm90IGNvbXBpbGVcbn1cblxuc3RkOjpzdHJpbmcgbmFtZShjb25zdCBTaGFwZSYgcykge1xuICAgIHJldHVybiBzdGQ6OnZpc2l0KG92ZXJsb2FkZWR7XG4gICAgICAgIFtdKGNvbnN0IENpcmNsZSYpIHsgcmV0dXJuIHN0ZDo6c3RyaW5nKFwiY2lyY2xlXCIpOyB9LFxuICAgICAgICBbXShjb25zdCBSZWN0JikgeyByZXR1cm4gc3RkOjpzdHJpbmcoXCJyZWN0XCIpOyB9LFxuICAgICAgICBbXShjb25zdCBUcmlhbmdsZSYpIHsgcmV0dXJuIHN0ZDo6c3RyaW5nKFwidHJpYW5nbGVcIik7IH0sXG4gICAgfSwgcyk7XG59XG5cbmludCBtYWluKCkge1xuICAgIHN0ZDo6dmVjdG9yPFNoYXBlPiBzaGFwZXMgPSB7Q2lyY2xlezF9LCBSZWN0ezIsIDN9LCBUcmlhbmdsZXszLCA0LCA1fX07ICAgLy8gdmFsdWVzLCBub3QgcG9pbnRlcnNcbiAgICBmb3IgKGNvbnN0IGF1dG8mIHMgOiBzaGFwZXMpIHN0ZDo6Y291dCA8PCBuYW1lKHMpIDw8IFwiOiBcIiA8PCBhcmVhKHMpIDw8ICdcXG4nO1xuICAgIHN0ZDo6Y291dCA8PCBcInNpemVvZihTaGFwZSkgPSBcIiA8PCBzaXplb2YoU2hhcGUpIDw8IFwiIGJ5dGVzICh0aGUgbGFyZ2VzdCBhbHRlcm5hdGl2ZSArIGEgdGFnKVxcblwiO1xufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItc3RkPWMrKzE3IC1XYWxsIC1XZXh0cmEiLCAibGlicyI6IFtdfSwgImFyZ3VtZW50cyI6ICIiLCAic3RkaW4iOiAiIn1dfV19" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// variant.cpp -- a closed set of types without inheritance: std::variant and std::visit</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+<span class="p">#include &lt;variant&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">struct</span> <span class="t">Circle</span> { <span class="t">double</span> r; };
+<span class="k">struct</span> <span class="t">Rect</span> { <span class="t">double</span> w, h; };
+<span class="k">struct</span> <span class="t">Triangle</span> { <span class="t">double</span> a, b, c; };
+<span class="k">using</span> <span class="t">Shape</span> = std::variant&lt;<span class="t">Circle</span>, <span class="t">Rect</span>, <span class="t">Triangle</span>&gt;;     <span class="c">// a Shape is exactly one of these</span>
+
+<span class="k">template</span> &lt;<span class="k">class</span>... <span class="t">Fs</span>&gt; <span class="k">struct</span> overloaded : <span class="t">Fs</span>... { <span class="k">using</span> <span class="t">Fs</span>::<span class="k">operator</span>()...; };   <span class="c">// one lambda per type</span>
+<span class="k">template</span> &lt;<span class="k">class</span>... <span class="t">Fs</span>&gt; overloaded(<span class="t">Fs</span>...) -&gt; overloaded&lt;<span class="t">Fs</span>...&gt;;
+
+<span class="t">double</span> area(<span class="k">const</span> <span class="t">Shape</span>&amp; s) {
+    <span class="k">return</span> std::visit(overloaded{
+        [](<span class="k">const</span> <span class="t">Circle</span>&amp; c) { <span class="k">return</span> <span class="n">3.14159</span> * c.r * c.r; },
+        [](<span class="k">const</span> <span class="t">Rect</span>&amp; r) { <span class="k">return</span> r.w * r.h; },
+        [](<span class="k">const</span> <span class="t">Triangle</span>&amp; t) { <span class="t">double</span> p = (t.a + t.b + t.c) / <span class="n">2</span>; <span class="k">return</span> std::sqrt(p * (p - t.a) * (p - t.b) * (p - t.c)); },
+    }, s);                                              <span class="c">// forget a type and this does not compile</span>
+}
+
+std::string name(<span class="k">const</span> <span class="t">Shape</span>&amp; s) {
+    <span class="k">return</span> std::visit(overloaded{
+        [](<span class="k">const</span> <span class="t">Circle</span>&amp;) { <span class="k">return</span> std::string(<span class="s">&quot;circle&quot;</span>); },
+        [](<span class="k">const</span> <span class="t">Rect</span>&amp;) { <span class="k">return</span> std::string(<span class="s">&quot;rect&quot;</span>); },
+        [](<span class="k">const</span> <span class="t">Triangle</span>&amp;) { <span class="k">return</span> std::string(<span class="s">&quot;triangle&quot;</span>); },
+    }, s);
+}
+
+<span class="t">int</span> main() {
+    std::vector&lt;<span class="t">Shape</span>&gt; shapes = {<span class="t">Circle</span>{<span class="n">1</span>}, <span class="t">Rect</span>{<span class="n">2</span>, <span class="n">3</span>}, <span class="t">Triangle</span>{<span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span>}};   <span class="c">// values, not pointers</span>
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : shapes) std::cout &lt;&lt; name(s) &lt;&lt; <span class="s">&quot;: &quot;</span> &lt;&lt; area(s) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Shape) = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Shape</span>) &lt;&lt; <span class="s">&quot; bytes (the largest alternative + a tag)\n&quot;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>circle: 3.14159
+rect: 6
+triangle: 6
+sizeof(Shape) = 32 bytes (the largest alternative + a tag)</pre></div><p class="dl"><a href="../code/variant.cpp" download>Download variant.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>variant_missing.cpp</span><span class="code-btns"><button type="button" class="copy">Copy</button></span></div><pre><code><span class="p">#include &lt;variant&gt;</span>
+<span class="k">struct</span> <span class="t">Circle</span> { <span class="t">double</span> r; };
+<span class="k">struct</span> <span class="t">Rect</span> { <span class="t">double</span> w, h; };
+<span class="k">template</span> &lt;<span class="k">class</span>... <span class="t">Fs</span>&gt; <span class="k">struct</span> overloaded : <span class="t">Fs</span>... { <span class="k">using</span> <span class="t">Fs</span>::<span class="k">operator</span>()...; };
+<span class="k">template</span> &lt;<span class="k">class</span>... <span class="t">Fs</span>&gt; overloaded(<span class="t">Fs</span>...) -&gt; overloaded&lt;<span class="t">Fs</span>...&gt;;
+<span class="t">double</span> area(<span class="k">const</span> std::variant&lt;<span class="t">Circle</span>, <span class="t">Rect</span>&gt;&amp; s) {
+    <span class="k">return</span> std::visit(overloaded{
+        [](<span class="k">const</span> <span class="t">Circle</span>&amp; c) { <span class="k">return</span> <span class="n">3.14159</span> * c.r * c.r; },
+        <span class="c">// forgot Rect</span>
+    }, s);
+}
+<span class="t">int</span> main() { area(<span class="t">Circle</span>{<span class="n">1</span>}); }</code></pre></div><div class="out err" translate="no"><div class="out-head">Compiler says</div><pre>variant:612:19: error: static assertion failed due to requirement &#x27;is_invocable_v&lt;overloaded&lt;(lambda at /Users/acamaro/Documents/University/AI-slop/cpp_course/errors/variant_missing.cpp:8:9)&gt;, const Rect &amp;&gt;&#x27;: `std::visit` requires the vi …
+variant:619:7: note: in instantiation of function template specialization &#x27;std::__variant_detail::__visitation::__variant::__std_visit_exhaustive_visitor_check&lt;overloaded&lt;(lambda at /Users/acamaro/Documents/University/AI-slop/cpp_course/ …
+invoke.h:77:47: note: in instantiation of function template specialization &#x27;std::__variant_detail::__visitation::__variant::__value_visitor&lt;overloaded&lt;(lambda at /Users/acamaro/Documents/University/AI-slop/cpp_course/errors/variant_missi …
+invoke.h:85:1: note: during template argument deduction for class template partial specialization &#x27;__invoke_result_impl&lt;__void_t&lt;decltype(__builtin_invoke(std::declval&lt;_Args&gt;()...))&gt;, _Args...&gt;&#x27; [with _Args = &lt;std::__variant_detail::__vi …
+invoke.h:85:1: note: in instantiation of template class &#x27;std::__invoke_result_impl&lt;void, std::__variant_detail::__visitation::__variant::__value_visitor&lt;overloaded&lt;(lambda at /Users/acamaro/Documents/University/AI-slop/cpp_course/errors/ …</pre></div>
+  <p>Inheritance and variants are mirror images. With virtual functions it is easy to add a <em>type</em> (one new class) and hard to add an <em>operation</em> (edit every class). With a variant it is easy to add an operation (one new <code>visit</code>) and hard to add a type (edit every visitor). Lesson 09's Visitor pattern brings the variant's trade-off to class hierarchies.</p>
+</section>
+
+<section id="concepts" aria-labelledby="concepts-h">
+  <h2 id="concepts-h">C++20 concepts: naming the requirements</h2>
+  <p>A template's requirements on its type used to be implicit, and violating them produced long errors from deep inside the template. A <b>concept</b> states them up front, like an interface checked at compile time:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>concepts.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gY29uY2VwdHMuY3BwIC0tIEMrKzIwIGNvbmNlcHRzOiBuYW1lIHRoZSByZXF1aXJlbWVudHMgYSB0ZW1wbGF0ZSBwbGFjZXMgb24gaXRzIHR5cGVcbi8vIGJ1aWxkOiAtc3RkPWMrKzIwXG4jaW5jbHVkZSA8Y29uY2VwdHM-XG4jaW5jbHVkZSA8aW9zdHJlYW0-XG4jaW5jbHVkZSA8dmVjdG9yPlxuXG50ZW1wbGF0ZSA8dHlwZW5hbWUgVD5cbmNvbmNlcHQgSGFzQXJlYSA9IHJlcXVpcmVzKGNvbnN0IFQmIHMpIHtcbiAgICB7IHMuYXJlYSgpIH0gLT4gc3RkOjpjb252ZXJ0aWJsZV90bzxkb3VibGU-OyAgICAvLyBUIG11c3QgaGF2ZSBhcmVhKCkgcmV0dXJuaW5nIHNvbWV0aGluZyBsaWtlIGEgZG91YmxlXG59O1xuXG5zdHJ1Y3QgQ2lyY2xlIHsgZG91YmxlIHI7IGRvdWJsZSBhcmVhKCkgY29uc3QgeyByZXR1cm4gMy4xNDE1OSAqIHIgKiByOyB9IH07XG5zdHJ1Y3QgUmVjdCB7IGRvdWJsZSB3LCBoOyBkb3VibGUgYXJlYSgpIGNvbnN0IHsgcmV0dXJuIHcgKiBoOyB9IH07XG5zdHJ1Y3QgTGFiZWwgeyBjb25zdCBjaGFyKiB0ZXh0OyB9OyAgICAgICAgICAgICAgICAgLy8gbm8gYXJlYSgpXG5cbnRlbXBsYXRlIDxIYXNBcmVhIFQ-XG5kb3VibGUgdG90YWxfYXJlYShjb25zdCBzdGQ6OnZlY3RvcjxUPiYgdikge1xuICAgIGRvdWJsZSB0ID0gMDtcbiAgICBmb3IgKGNvbnN0IGF1dG8mIHMgOiB2KSB0ICs9IHMuYXJlYSgpO1xuICAgIHJldHVybiB0O1xufVxuXG5pbnQgbWFpbigpIHtcbiAgICBzdGQ6OmNvdXQgPDwgdG90YWxfYXJlYShzdGQ6OnZlY3RvcjxDaXJjbGU-e3sxfSwgezF9fSkgPDwgJ1xcbic7XG4gICAgc3RkOjpjb3V0IDw8IHRvdGFsX2FyZWEoc3RkOjp2ZWN0b3I8UmVjdD57ezIsIDN9fSkgPDwgJ1xcbic7XG4gICAgc3RkOjpjb3V0IDw8IHN0ZDo6Ym9vbGFscGhhIDw8IFwiTGFiZWwgaGFzIGFuIGFyZWE_IFwiIDw8IEhhc0FyZWE8TGFiZWw-IDw8ICdcXG4nO1xuICAgIC8vIHRvdGFsX2FyZWEoc3RkOjp2ZWN0b3I8TGFiZWw-e3tcInhcIn19KTsgICAvLyBlcnJvcjogY29uc3RyYWludHMgbm90IHNhdGlzZmllZDogJ0hhc0FyZWE8TGFiZWw-J1xufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItV2FsbCAtV2V4dHJhIC1zdGQ9YysrMjAiLCAibGlicyI6IFtdfSwgImFyZ3VtZW50cyI6ICIiLCAic3RkaW4iOiAiIn1dfV19" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// concepts.cpp -- C++20 concepts: name the requirements a template places on its type</span>
+<span class="c">// build: -std=c++20</span>
+<span class="p">#include &lt;concepts&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">template</span> &lt;<span class="k">typename</span> T&gt;
+<span class="k">concept</span> <span class="t">HasArea</span> = <span class="k">requires</span>(<span class="k">const</span> T&amp; s) {
+    { s.area() } -&gt; std::convertible_to&lt;<span class="t">double</span>&gt;;    <span class="c">// T must have area() returning something like a double</span>
+};
+
+<span class="k">struct</span> <span class="t">Circle</span> { <span class="t">double</span> r; <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> <span class="n">3.14159</span> * r * r; } };
+<span class="k">struct</span> <span class="t">Rect</span> { <span class="t">double</span> w, h; <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> w * h; } };
+<span class="k">struct</span> <span class="t">Label</span> { <span class="k">const</span> <span class="t">char</span>* text; };                 <span class="c">// no area()</span>
+
+<span class="k">template</span> &lt;<span class="t">HasArea</span> T&gt;
+<span class="t">double</span> total_area(<span class="k">const</span> std::vector&lt;T&gt;&amp; v) {
+    <span class="t">double</span> t = <span class="n">0</span>;
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : v) t += s.area();
+    <span class="k">return</span> t;
+}
+
+<span class="t">int</span> main() {
+    std::cout &lt;&lt; total_area(std::vector&lt;<span class="t">Circle</span>&gt;{{<span class="n">1</span>}, {<span class="n">1</span>}}) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    std::cout &lt;&lt; total_area(std::vector&lt;<span class="t">Rect</span>&gt;{{<span class="n">2</span>, <span class="n">3</span>}}) &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    std::cout &lt;&lt; std::boolalpha &lt;&lt; <span class="s">&quot;Label has an area? &quot;</span> &lt;&lt; <span class="t">HasArea</span>&lt;<span class="t">Label</span>&gt; &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    <span class="c">// total_area(std::vector&lt;Label&gt;{{&quot;x&quot;}});   // error: constraints not satisfied: &#x27;HasArea&lt;Label&gt;&#x27;</span>
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>6.28318
+6
+Label has an area? false</pre></div><p class="dl"><a href="../code/concepts.cpp" download>Download concepts.cpp</a> <span class="flags">compiled with <code>-Wall -Wextra -std=c++20</code></span></p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>concept_fail.cpp</span><span class="code-btns"><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// build: -std=c++20</span>
+<span class="p">#include &lt;concepts&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+<span class="k">template</span> &lt;<span class="k">typename</span> T&gt;
+<span class="k">concept</span> <span class="t">HasArea</span> = <span class="k">requires</span>(<span class="k">const</span> T&amp; s) { { s.area() } -&gt; std::convertible_to&lt;<span class="t">double</span>&gt;; };
+<span class="k">template</span> &lt;<span class="t">HasArea</span> T&gt; <span class="t">double</span> total_area(<span class="k">const</span> std::vector&lt;T&gt;&amp; v) { <span class="t">double</span> t = <span class="n">0</span>; <span class="k">for</span> (<span class="k">auto</span>&amp; s : v) t += s.area(); <span class="k">return</span> t; }
+<span class="k">struct</span> <span class="t">Label</span> { <span class="k">const</span> <span class="t">char</span>* text; };
+<span class="t">int</span> main() { total_area(std::vector&lt;<span class="t">Label</span>&gt;{{<span class="s">&quot;x&quot;</span>}}); }</code></pre></div><div class="out err" translate="no"><div class="out-head">Compiler says</div><pre>concept_fail.cpp:8:14: error: no matching function for call to &#x27;total_area&#x27;
+concept_fail.cpp:6:29: note: candidate template ignored: constraints not satisfied [with T = Label]
+concept_fail.cpp:6:11: note: because &#x27;Label&#x27; does not satisfy &#x27;HasArea&#x27;
+concept_fail.cpp:5:46: note: because &#x27;s.area()&#x27; would be invalid: no member named &#x27;area&#x27; in &#x27;Label&#x27;</pre></div>
+</section>
+
+<section id="cost" aria-labelledby="cost-h">
+  <h2 id="cost-h">What does each cost? Measured</h2>
+  <p>A million shapes, half circles and half rectangles in random order, summing their areas. Each loop is timed 15 times and the best time kept:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>bench.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gYmVuY2guY3BwIC0tIHRoZSBjb3N0IG9mIGVhY2gga2luZCBvZiBwb2x5bW9ycGhpc20sIG1lYXN1cmVkXG4vLyBidWlsZDogLU8yXG4jaW5jbHVkZSA8YWxnb3JpdGhtPlxuI2luY2x1ZGUgPGNocm9ubz5cbiNpbmNsdWRlIDxjc3RkaW8-XG4jaW5jbHVkZSA8bWVtb3J5PlxuI2luY2x1ZGUgPHJhbmRvbT5cbiNpbmNsdWRlIDx0eXBlX3RyYWl0cz5cbiNpbmNsdWRlIDx2YXJpYW50PlxuI2luY2x1ZGUgPHZlY3Rvcj5cblxuc3RydWN0IFNoYXBlIHsgdmlydHVhbCB-U2hhcGUoKSA9IGRlZmF1bHQ7IHZpcnR1YWwgZG91YmxlIGFyZWEoKSBjb25zdCA9IDA7IH07XG5zdHJ1Y3QgQ2lyY2xlIDogU2hhcGUgeyBkb3VibGUgcjsgZXhwbGljaXQgQ2lyY2xlKGRvdWJsZSByKSA6IHIocikge30gZG91YmxlIGFyZWEoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiAzLjE0MTU5ICogciAqIHI7IH0gfTtcbnN0cnVjdCBSZWN0IDogU2hhcGUgeyBkb3VibGUgdywgaDsgUmVjdChkb3VibGUgdywgZG91YmxlIGgpIDogdyh3KSwgaChoKSB7fSBkb3VibGUgYXJlYSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIHcgKiBoOyB9IH07XG5cbnN0cnVjdCBWQyB7IGRvdWJsZSByOyB9O1xuc3RydWN0IFZSIHsgZG91YmxlIHcsIGg7IH07XG51c2luZyBWU2hhcGUgPSBzdGQ6OnZhcmlhbnQ8VkMsIFZSPjtcblxudGVtcGxhdGUgPGNsYXNzIEY-IGRvdWJsZSBiZXN0X25zKEYgZiwgaW50IG4pIHsgICAgLy8gYmVzdCBvZiAxNSBydW5zLCBpbiBuYW5vc2Vjb25kcyBwZXIgc2hhcGVcbiAgICBkb3VibGUgYmVzdCA9IDFlMzA7XG4gICAgZm9yIChpbnQgcmVwID0gMDsgcmVwIDwgMTU7ICsrcmVwKSB7XG4gICAgICAgIGF1dG8gdDAgPSBzdGQ6OmNocm9ubzo6c3RlYWR5X2Nsb2NrOjpub3coKTtcbiAgICAgICAgdm9sYXRpbGUgZG91YmxlIHNpbmsgPSBmKCk7XG4gICAgICAgICh2b2lkKXNpbms7XG4gICAgICAgIGF1dG8gdDEgPSBzdGQ6OmNocm9ubzo6c3RlYWR5X2Nsb2NrOjpub3coKTtcbiAgICAgICAgYmVzdCA9IHN0ZDo6bWluKGJlc3QsIHN0ZDo6Y2hyb25vOjpkdXJhdGlvbjxkb3VibGUsIHN0ZDo6bmFubz4odDEgLSB0MCkuY291bnQoKSAvIG4pO1xuICAgIH1cbiAgICByZXR1cm4gYmVzdDtcbn1cblxuaW50IG1haW4oKSB7XG4gICAgY29uc3QgaW50IG4gPSAxMDAwMDAwO1xuICAgIHN0ZDo6bXQxOTkzNyBybmcoNDIpO1xuICAgIHN0ZDo6dW5pZm9ybV9yZWFsX2Rpc3RyaWJ1dGlvbjxkb3VibGU-IHUoMC41LCAyLjApO1xuICAgIHN0ZDo6dmVjdG9yPHN0ZDo6dW5pcXVlX3B0cjxTaGFwZT4-IHZpcnQ7XG4gICAgc3RkOjp2ZWN0b3I8VlNoYXBlPiB2YXI7XG4gICAgc3RkOjp2ZWN0b3I8VkM-IGNpcmNsZXM7IHN0ZDo6dmVjdG9yPFZSPiByZWN0cztcbiAgICBmb3IgKGludCBpID0gMDsgaSA8IG47ICsraSkge1xuICAgICAgICBkb3VibGUgYSA9IHUocm5nKSwgYiA9IHUocm5nKTtcbiAgICAgICAgaWYgKHJuZygpICUgMikgeyB2aXJ0LnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPENpcmNsZT4oYSkpOyB2YXIucHVzaF9iYWNrKFZDe2F9KTsgY2lyY2xlcy5wdXNoX2JhY2soVkN7YX0pOyB9XG4gICAgICAgIGVsc2UgeyB2aXJ0LnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPFJlY3Q-KGEsIGIpKTsgdmFyLnB1c2hfYmFjayhWUnthLCBifSk7IHJlY3RzLnB1c2hfYmFjayhWUnthLCBifSk7IH1cbiAgICB9XG4gICAgZG91YmxlIHRfdmlydCA9IGJlc3RfbnMoWyZdIHsgZG91YmxlIHQgPSAwOyBmb3IgKGF1dG8mIHMgOiB2aXJ0KSB0ICs9IHMtPmFyZWEoKTsgcmV0dXJuIHQ7IH0sIG4pO1xuICAgIGRvdWJsZSB0X3ZhciA9IGJlc3RfbnMoWyZdIHtcbiAgICAgICAgZG91YmxlIHQgPSAwO1xuICAgICAgICBmb3IgKGF1dG8mIHMgOiB2YXIpXG4gICAgICAgICAgICB0ICs9IHN0ZDo6dmlzaXQoW10oY29uc3QgYXV0byYgeCkge1xuICAgICAgICAgICAgICAgIGlmIGNvbnN0ZXhwciAoc3RkOjppc19zYW1lX3Y8c3RkOjpkZWNheV90PGRlY2x0eXBlKHgpPiwgVkM-KSByZXR1cm4gMy4xNDE1OSAqIHguciAqIHgucjtcbiAgICAgICAgICAgICAgICBlbHNlIHJldHVybiB4LncgKiB4Lmg7XG4gICAgICAgICAgICB9LCBzKTtcbiAgICAgICAgcmV0dXJuIHQ7XG4gICAgfSwgbik7XG4gICAgZG91YmxlIHRfc3BsaXQgPSBiZXN0X25zKFsmXSB7XG4gICAgICAgIGRvdWJsZSB0ID0gMDtcbiAgICAgICAgZm9yIChhdXRvJiBjIDogY2lyY2xlcykgdCArPSAzLjE0MTU5ICogYy5yICogYy5yO1xuICAgICAgICBmb3IgKGF1dG8mIHIgOiByZWN0cykgdCArPSByLncgKiByLmg7XG4gICAgICAgIHJldHVybiB0O1xuICAgIH0sIG4pO1xuICAgIHN0ZDo6cHJpbnRmKFwiJS00NHMgJTYuMmYgbnMgcGVyIHNoYXBlXFxuXCIsIFwidmlydHVhbCBjYWxscywgdmVjdG9yPHVuaXF1ZV9wdHI8U2hhcGU-PlwiLCB0X3ZpcnQpO1xuICAgIHN0ZDo6cHJpbnRmKFwiJS00NHMgJTYuMmYgbnMgcGVyIHNoYXBlXFxuXCIsIFwic3RkOjp2aXNpdCwgdmVjdG9yPHZhcmlhbnQ8Li4uPj5cIiwgdF92YXIpO1xuICAgIHN0ZDo6cHJpbnRmKFwiJS00NHMgJTYuMmYgbnMgcGVyIHNoYXBlXFxuXCIsIFwib25lIHZlY3RvciBwZXIgdHlwZSwgbm8gZGlzcGF0Y2ggYXQgYWxsXCIsIHRfc3BsaXQpO1xufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItc3RkPWMrKzE3IC1XYWxsIC1XZXh0cmEgLU8yIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// bench.cpp -- the cost of each kind of polymorphism, measured</span>
+<span class="c">// build: -O2</span>
+<span class="p">#include &lt;algorithm&gt;</span>
+<span class="p">#include &lt;chrono&gt;</span>
+<span class="p">#include &lt;cstdio&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;random&gt;</span>
+<span class="p">#include &lt;type_traits&gt;</span>
+<span class="p">#include &lt;variant&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">struct</span> <span class="t">Shape</span> { <span class="k">virtual</span> ~<span class="t">Shape</span>() = <span class="k">default</span>; <span class="k">virtual</span> <span class="t">double</span> area() <span class="k">const</span> = <span class="n">0</span>; };
+<span class="k">struct</span> <span class="t">Circle</span> : <span class="t">Shape</span> { <span class="t">double</span> r; <span class="k">explicit</span> <span class="t">Circle</span>(<span class="t">double</span> r) : r(r) {} <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="n">3.14159</span> * r * r; } };
+<span class="k">struct</span> <span class="t">Rect</span> : <span class="t">Shape</span> { <span class="t">double</span> w, h; <span class="t">Rect</span>(<span class="t">double</span> w, <span class="t">double</span> h) : w(w), h(h) {} <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> w * h; } };
+
+<span class="k">struct</span> VC { <span class="t">double</span> r; };
+<span class="k">struct</span> VR { <span class="t">double</span> w, h; };
+<span class="k">using</span> <span class="t">VShape</span> = std::variant&lt;VC, VR&gt;;
+
+<span class="k">template</span> &lt;<span class="k">class</span> F&gt; <span class="t">double</span> best_ns(F f, <span class="t">int</span> n) {    <span class="c">// best of 15 runs, in nanoseconds per shape</span>
+    <span class="t">double</span> best = <span class="n">1e30</span>;
+    <span class="k">for</span> (<span class="t">int</span> rep = <span class="n">0</span>; rep &lt; <span class="n">15</span>; ++rep) {
+        <span class="k">auto</span> t0 = std::chrono::steady_clock::now();
+        <span class="k">volatile</span> <span class="t">double</span> sink = f();
+        (<span class="t">void</span>)sink;
+        <span class="k">auto</span> t1 = std::chrono::steady_clock::now();
+        best = std::min(best, std::chrono::duration&lt;<span class="t">double</span>, std::nano&gt;(t1 - t0).count() / n);
+    }
+    <span class="k">return</span> best;
+}
+
+<span class="t">int</span> main() {
+    <span class="k">const</span> <span class="t">int</span> n = <span class="n">1000000</span>;
+    std::mt19937 rng(<span class="n">42</span>);
+    std::uniform_real_distribution&lt;<span class="t">double</span>&gt; u(<span class="n">0.5</span>, <span class="n">2.0</span>);
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Shape</span>&gt;&gt; virt;
+    std::vector&lt;<span class="t">VShape</span>&gt; var;
+    std::vector&lt;VC&gt; circles; std::vector&lt;VR&gt; rects;
+    <span class="k">for</span> (<span class="t">int</span> i = <span class="n">0</span>; i &lt; n; ++i) {
+        <span class="t">double</span> a = u(rng), b = u(rng);
+        <span class="k">if</span> (rng() % <span class="n">2</span>) { virt.push_back(std::make_unique&lt;<span class="t">Circle</span>&gt;(a)); var.push_back(VC{a}); circles.push_back(VC{a}); }
+        <span class="k">else</span> { virt.push_back(std::make_unique&lt;<span class="t">Rect</span>&gt;(a, b)); var.push_back(VR{a, b}); rects.push_back(VR{a, b}); }
+    }
+    <span class="t">double</span> t_virt = best_ns([&amp;] { <span class="t">double</span> t = <span class="n">0</span>; <span class="k">for</span> (<span class="k">auto</span>&amp; s : virt) t += s-&gt;area(); <span class="k">return</span> t; }, n);
+    <span class="t">double</span> t_var = best_ns([&amp;] {
+        <span class="t">double</span> t = <span class="n">0</span>;
+        <span class="k">for</span> (<span class="k">auto</span>&amp; s : var)
+            t += std::visit([](<span class="k">const</span> <span class="k">auto</span>&amp; x) {
+                <span class="k">if</span> <span class="k">constexpr</span> (std::is_same_v&lt;std::decay_t&lt;<span class="k">decltype</span>(x)&gt;, VC&gt;) <span class="k">return</span> <span class="n">3.14159</span> * x.r * x.r;
+                <span class="k">else</span> <span class="k">return</span> x.w * x.h;
+            }, s);
+        <span class="k">return</span> t;
+    }, n);
+    <span class="t">double</span> t_split = best_ns([&amp;] {
+        <span class="t">double</span> t = <span class="n">0</span>;
+        <span class="k">for</span> (<span class="k">auto</span>&amp; c : circles) t += <span class="n">3.14159</span> * c.r * c.r;
+        <span class="k">for</span> (<span class="k">auto</span>&amp; r : rects) t += r.w * r.h;
+        <span class="k">return</span> t;
+    }, n);
+    std::printf(<span class="s">&quot;%-44s %6.2f ns per shape\n&quot;</span>, <span class="s">&quot;virtual calls, vector&lt;unique_ptr&lt;Shape&gt;&gt;&quot;</span>, t_virt);
+    std::printf(<span class="s">&quot;%-44s %6.2f ns per shape\n&quot;</span>, <span class="s">&quot;std::visit, vector&lt;variant&lt;...&gt;&gt;&quot;</span>, t_var);
+    std::printf(<span class="s">&quot;%-44s %6.2f ns per shape\n&quot;</span>, <span class="s">&quot;one vector per type, no dispatch at all&quot;</span>, t_split);
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>virtual calls, vector&lt;unique_ptr&lt;Shape&gt;&gt;       3.49 ns per shape
+std::visit, vector&lt;variant&lt;...&gt;&gt;               3.64 ns per shape
+one vector per type, no dispatch at all        0.64 ns per shape</pre></div><p class="dl"><a href="../code/bench.cpp" download>Download bench.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra -O2</code></span></p>
+  <p>On this machine a virtual call and a <code>std::visit</code> cost about the same, a few nanoseconds per shape, while sorting shapes by type into separate arrays and skipping dispatch altogether is several times faster: each loop then does one simple thing, which the compiler can optimize aggressively. Your numbers will differ with the processor and compiler, but the lesson holds: dispatch per element costs little for most code and matters only in the innermost loops of numerical work. Measure before optimizing.</p>
+  <div class="table-wrap reveal"><table>
+    <thead><tr><th></th><th>virtual functions</th><th>templates / CRTP</th><th>std::variant</th></tr></thead>
+    <tbody>
+      <tr><td>set of types</td><td>open: add classes anytime</td><td>any type with the operations</td><td>closed: fixed list</td></tr>
+      <tr><td>decided</td><td>at run time</td><td>at compile time</td><td>at run time</td></tr>
+      <tr><td>mixed container</td><td>yes, through pointers</td><td>no</td><td>yes, by value</td></tr>
+      <tr><td>adding an operation</td><td>edit every class</td><td>write a function</td><td>write a visitor</td></tr>
+      <tr><td>typical use</td><td>plug-ins, solvers, GUI widgets</td><td>containers, algorithms, inner loops</td><td>messages, AST nodes, small state machines</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Which would you choose?</h3>
+  <div class="widget reveal" data-widget="chooser"><noscript>This interactive part needs JavaScript.</noscript></div>
+</section>
+
+<section id="key08" aria-labelledby="key08-h">
+  <h2 id="key08-h">Key points</h2>
+  <ul>
+    <li>Open set of types decided at run time: virtual functions. Closed set: <code>std::variant</code>. Known at compile time: templates.</li>
+    <li>Constrain templates with concepts for clear errors.</li>
+    <li>The cost of dispatch is small; data layout usually matters more.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="prev" href="../07-ownership/index.html"><small>← Previous</small><b>07 · Ownership, cloning, factories and RTTI</b></a><a class="next" href="../09-patterns/index.html"><small>Next →</small><b>09 · Design patterns with abstract classes</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

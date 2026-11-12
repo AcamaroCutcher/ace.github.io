@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive course on object-oriented programming in C++: classes, lifetime, copy and move, inheritance, virtual functions, abstract classes, ownership, templates and variants, design patterns, pitfalls, and debugging with a GDB playground.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>C++ Object-Oriented Programming - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="course.css">
+  <script src="../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="" data-scene="dispatch">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../index.html">All projects</a><span aria-hidden="true">/</span><span aria-current="page">C++ Object-Oriented Programming</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Computing · interactive course · 12 lessons</p><h1>C++ Object-Oriented Programming</h1><p class="lede">Classes, inheritance, virtual functions and abstract classes, and everything around them that real C++ needs: object lifetime, copying and moving, ownership, templates and variants, design patterns and debugging. Every program is compiled and run, and widgets and a GDB playground show what the compiler and the running program do.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="C++ Object-Oriented Programming">
+        <div class="article"><section id="lessons" aria-labelledby="lessons-h">
+  <h2 id="lessons-h">Lessons</h2>
+  <p>Twelve lessons, from your first class to design patterns and debugging. Each has complete programs to download or run online, and most have something to click. Lessons you have opened are ticked.</p>
+  <nav class="chapters" aria-label="Lessons"><a class="chapter lesson-card reveal" href="01-classes/index.html" data-n="01"><div class="chapter-body"><div class="chapter-top"><span class="num">01</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Classes and encapsulation</h3><p>Bundling data with the functions that keep it valid: invariants, public and private, constructors, const member functions, static members, and operator overloading.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="02-lifetime/index.html" data-n="02"><div class="chapter-body"><div class="chapter-top"><span class="num">02</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Constructors, destructors and RAII</h3><p>When objects are born and die, the exact order of construction and destruction in a class hierarchy, and RAII: letting destructors release every resource.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="03-copy-move/index.html" data-n="03"><div class="chapter-body"><div class="chapter-top"><span class="num">03</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Copying and moving</h3><p>The five special member functions, copy elision, std::move, why noexcept changes what std::vector does, and the rules of zero, three and five.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="04-inheritance/index.html" data-n="04"><div class="chapter-body"><div class="chapter-top"><span class="num">04</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Inheritance</h3><p>Deriving one class from another: is-a relationships, building the base part, protected members, access rules, inheriting constructors, and what an object looks like in memory.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="05-virtual/index.html" data-n="05"><div class="chapter-body"><div class="chapter-top"><span class="num">05</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Virtual functions and dynamic dispatch</h3><p>virtual and override, polymorphism through pointers and references, how vtables make it work, slicing, virtual destructors and final.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="06-abstract/index.html" data-n="06"><div class="chapter-body"><div class="chapter-top"><span class="num">06</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Abstract classes and interfaces</h3><p>Pure virtual functions, abstract base classes as contracts, which classes become concrete, the Liskov substitution principle, interfaces, multiple inheritance and the diamond.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="07-ownership/index.html" data-n="07"><div class="chapter-body"><div class="chapter-top"><span class="num">07</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Ownership, cloning, factories and RTTI</h3><p>Who owns a polymorphic object: unique_ptr, shared_ptr and weak_ptr; copying through a base pointer with a virtual clone; building objects from text with a factory; dynamic_cast and typeid.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="08-static-polymorphism/index.html" data-n="08"><div class="chapter-body"><div class="chapter-top"><span class="num">08</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Beyond virtual: templates, CRTP, variant and concepts</h3><p>Compile-time polymorphism with templates and CRTP, closed sets of types with std::variant, C++20 concepts, and a measured comparison of what each costs.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="09-patterns/index.html" data-n="09"><div class="chapter-body"><div class="chapter-top"><span class="num">09</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Design patterns with abstract classes</h3><p>Strategy (interchangeable numerical methods), Template Method with a non-virtual interface, Observer, and Visitor's double dispatch.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="10-pitfalls/index.html" data-n="10"><div class="chapter-body"><div class="chapter-top"><span class="num">10</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Pitfalls</h3><p>Nine traps of C++ OOP, each demonstrated: virtual calls during construction, name hiding, static default arguments, missing override, slicing in catch, shadowed members, shallow copies and the pure virtual call crash.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="11-debugging/index.html" data-n="11"><div class="chapter-body"><div class="chapter-top"><span class="num">11</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Debugging with GDB and sanitizers</h3><p>A GDB playground with two bug-hunting missions recorded from a real debugger, a GDB/LLDB command guide, AddressSanitizer catching a dangling pointer, and the compiler warnings worth turning on.</p><span class="go">Open lesson →</span></div></a><a class="chapter lesson-card reveal" href="12-practice/index.html" data-n="12"><div class="chapter-body"><div class="chapter-top"><span class="num">12</span><span class="seen" aria-hidden="true"></span></div>
+<h3>Practice: quiz, exercises and cheat sheet</h3><p>Twelve predict-the-output questions checked against real runs, four exercises with compiled solutions, a cheat sheet and further reading.</p><span class="go">Open lesson →</span></div></a></nav>
+</section>
+
+<section id="start" aria-labelledby="start-h">
+  <h2 id="start-h">Before you start</h2>
+  <p>Object-oriented programming organizes a program around <em>objects</em>: bundles of data together with the operations allowed on that data. C++ supports it with four tools, and the lessons take them in order:</p>
+  <ul>
+    <li><b>Encapsulation</b> (lessons 01–03): a class hides its data behind functions that keep it valid, and controls how it is created, copied and destroyed.</li>
+    <li><b>Inheritance</b> (04): a new class is built from an existing one and is usable wherever the old one is expected.</li>
+    <li><b>Polymorphism</b> (05, 07, 08): one call, <code>shape.area()</code>, runs different code depending on the actual object.</li>
+    <li><b>Abstraction</b> (06, 09): an abstract class states <em>what</em> every derived class must do, without saying <em>how</em>.</li>
+  </ul>
+  <p>You need a C++17 compiler (one example uses C++20). Save any program and compile it with warnings on, or press <b>Run online</b> on a program to edit and run it in your browser with GCC on <a href="https://godbolt.org">Compiler Explorer</a>:</p>
+  <div class="code" translate="no"><div class="code-head"><span>terminal</span><span class="code-btns"><button type="button" class="copy">Copy</button></span></div><pre><code>g++ -std=c++17 -Wall -Wextra -g classes.cpp -o classes     <span class="c"># or clang++ instead of g++</span>
+./classes</code></pre></div>
+  <p class="lead-note">All programs and exercise solutions in one download: <a href="code/cpp-oop-code.zip" download>cpp-oop-code.zip</a>.</p>
+  <div class="callout note reveal"><b>About the code</b> No output on these pages was typed by hand. Every program was compiled with warnings on and run with Apple clang version 21.0.0 (clang-2100.3.34.2) when the pages were built; compiler errors and warnings are quoted as the compiler printed them, quiz answers are checked against real runs, and the debugger playground replays a recorded debugging session. Timings and addresses are from that machine and will differ on yours.</div>
+  <div class="callout note reveal"><b>AI-generated</b> This course was written with AI assistance (Claude) as a study companion. Read it critically and check anything important against a reference such as <a href="https://en.cppreference.com/w/cpp/language/classes">cppreference</a> or Stroustrup's <i>A Tour of C++</i>.</div>
+</section>
+</div>
+      </section>
+    </main>
+    
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="index.html">All lessons</a> · <a href="../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  
+  <script src="cpp.js"></script>
+  <script src="../forest-park-wildfires/fx.js"></script>
+  <script src="../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

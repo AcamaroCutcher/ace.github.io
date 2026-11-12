@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 04: Deriving one class from another: is-a relationships, building the base part, protected members, access rules, inheriting constructors, and what an object looks like in memory.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Inheritance · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="04" data-scene="dispatch">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">04 · Inheritance</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 04 of 12</p><h1>Inheritance</h1><p class="lede">A derived class contains a complete base-class object and adds to it. That makes it usable wherever the base is expected, with one trap that the next lesson removes.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Inheritance · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#basics">Deriving a class</a><a href="#reuse">Reusing constructors and base functions</a><a href="#layout">What an object looks like in memory</a><a href="#key04">Key points</a></nav><section id="basics" aria-labelledby="basics-h">
+  <h2 id="basics-h">Deriving a class</h2>
+  <p><code>class Circle : public Shape</code> makes <code>Circle</code> a <b>derived class</b> of the <b>base class</b> <code>Shape</code>. A <code>Circle</code> object contains a complete <code>Shape</code> inside it, inherits its member functions, and adds its own. Public inheritance means "is-a": a circle <em>is a</em> shape, so a <code>Circle</code> can be passed anywhere a <code>Shape&amp;</code> or <code>Shape*</code> is expected.</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>inheritance.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gaW5oZXJpdGFuY2UuY3BwIC0tIGEgZGVyaXZlZCBjbGFzcyByZXVzZXMgYW5kIGV4dGVuZHMgYSBiYXNlIGNsYXNzIChhbmQgYSB0cmFwKVxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPHN0cmluZz5cblxuY2xhc3MgU2hhcGUge1xucHVibGljOlxuICAgIGV4cGxpY2l0IFNoYXBlKHN0ZDo6c3RyaW5nIG5hbWUpIDogbmFtZV8oc3RkOjptb3ZlKG5hbWUpKSB7fVxuICAgIHN0ZDo6c3RyaW5nIG5hbWUoKSBjb25zdCB7IHJldHVybiBuYW1lXzsgfVxuICAgIGRvdWJsZSBhcmVhKCkgY29uc3QgeyByZXR1cm4gMC4wOyB9ICAgICAgICAvLyBhIGdlbmVyaWMgc2hhcGUgaGFzIG5vIGZvcm11bGEuLi4gc28gaXQgcmV0dXJucyAwP1xucHJvdGVjdGVkOlxuICAgIHN0ZDo6c3RyaW5nIG5hbWVfOyAgICAgICAgICAgICAgICAgICAgICAgICAvLyBkZXJpdmVkIGNsYXNzZXMgbWF5IHVzZSBpdDsgb3V0c2lkZSBjb2RlIG1heSBub3Rcbn07XG5cbmNsYXNzIENpcmNsZSA6IHB1YmxpYyBTaGFwZSB7ICAgICAgICAgICAgICAgICAgLy8gcHVibGljIGluaGVyaXRhbmNlOiBhIENpcmNsZSBJUy1BIFNoYXBlXG5wdWJsaWM6XG4gICAgZXhwbGljaXQgQ2lyY2xlKGRvdWJsZSByKSA6IFNoYXBlKFwiY2lyY2xlXCIpLCByXyhyKSB7fSAgICAgLy8gYnVpbGQgdGhlIFNoYXBlIHBhcnQgZmlyc3RcbiAgICBkb3VibGUgYXJlYSgpIGNvbnN0IHsgcmV0dXJuIDMuMTQxNTkyNjUzNTg5NzkzICogcl8gKiByXzsgfSAgIC8vIGhpZGVzIFNoYXBlOjphcmVhIChub3QgdmlydHVhbCEpXG4gICAgZG91YmxlIHJhZGl1cygpIGNvbnN0IHsgcmV0dXJuIHJfOyB9XG4gICAgdm9pZCByZW5hbWUoY29uc3Qgc3RkOjpzdHJpbmcmIG4pIHsgbmFtZV8gPSBuOyB9ICAgICAgICAgIC8vIHByb3RlY3RlZCBtZW1iZXI6IGFsbG93ZWQgaGVyZVxucHJpdmF0ZTpcbiAgICBkb3VibGUgcl87XG59O1xuXG52b2lkIHJlcG9ydChjb25zdCBTaGFwZSYgcykgeyAgICAgICAgICAgICAgICAgIC8vIGFjY2VwdHMgYW55IFNoYXBlLCBpbmNsdWRpbmcgYSBDaXJjbGVcbiAgICBzdGQ6OmNvdXQgPDwgXCJyZXBvcnQ6IFwiIDw8IHMubmFtZSgpIDw8IFwiIGhhcyBhcmVhIFwiIDw8IHMuYXJlYSgpIDw8ICdcXG4nO1xufVxuXG5pbnQgbWFpbigpIHtcbiAgICBDaXJjbGUgYygyKTtcbiAgICBzdGQ6OmNvdXQgPDwgYy5uYW1lKCkgPDwgXCIgb2YgcmFkaXVzIFwiIDw8IGMucmFkaXVzKCkgPDwgXCIgaGFzIGFyZWEgXCIgPDwgYy5hcmVhKCkgPDwgJ1xcbic7XG4gICAgYy5yZW5hbWUoXCJiaWcgY2lyY2xlXCIpO1xuICAgIHJlcG9ydChjKTsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBjb21waWxlcywgYnV0IHByaW50cyBhcmVhIDA6IFNoYXBlOjphcmVhIHdhcyBjYWxsZWRcbiAgICBzdGQ6OmNvdXQgPDwgXCJjLlNoYXBlOjphcmVhKCkgPSBcIiA8PCBjLlNoYXBlOjphcmVhKCkgPDwgXCIsIGMuYXJlYSgpID0gXCIgPDwgYy5hcmVhKCkgPDwgJ1xcbic7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// inheritance.cpp -- a derived class reuses and extends a base class (and a trap)</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+
+<span class="k">class</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Shape</span>(std::string name) : name_(std::move(name)) {}
+    std::string name() <span class="k">const</span> { <span class="k">return</span> name_; }
+    <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> <span class="n">0.0</span>; }        <span class="c">// a generic shape has no formula... so it returns 0?</span>
+<span class="k">protected</span>:
+    std::string name_;                         <span class="c">// derived classes may use it; outside code may not</span>
+};
+
+<span class="k">class</span> <span class="t">Circle</span> : <span class="k">public</span> <span class="t">Shape</span> {                  <span class="c">// public inheritance: a Circle IS-A Shape</span>
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Circle</span>(<span class="t">double</span> r) : <span class="t">Shape</span>(<span class="s">&quot;circle&quot;</span>), r_(r) {}     <span class="c">// build the Shape part first</span>
+    <span class="t">double</span> area() <span class="k">const</span> { <span class="k">return</span> <span class="n">3.141592653589793</span> * r_ * r_; }   <span class="c">// hides Shape::area (not virtual!)</span>
+    <span class="t">double</span> radius() <span class="k">const</span> { <span class="k">return</span> r_; }
+    <span class="t">void</span> rename(<span class="k">const</span> std::string&amp; n) { name_ = n; }          <span class="c">// protected member: allowed here</span>
+<span class="k">private</span>:
+    <span class="t">double</span> r_;
+};
+
+<span class="t">void</span> report(<span class="k">const</span> <span class="t">Shape</span>&amp; s) {                  <span class="c">// accepts any Shape, including a Circle</span>
+    std::cout &lt;&lt; <span class="s">&quot;report: &quot;</span> &lt;&lt; s.name() &lt;&lt; <span class="s">&quot; has area &quot;</span> &lt;&lt; s.area() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}
+
+<span class="t">int</span> main() {
+    <span class="t">Circle</span> c(<span class="n">2</span>);
+    std::cout &lt;&lt; c.name() &lt;&lt; <span class="s">&quot; of radius &quot;</span> &lt;&lt; c.radius() &lt;&lt; <span class="s">&quot; has area &quot;</span> &lt;&lt; c.area() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    c.rename(<span class="s">&quot;big circle&quot;</span>);
+    report(c);                                 <span class="c">// compiles, but prints area 0: Shape::area was called</span>
+    std::cout &lt;&lt; <span class="s">&quot;c.Shape::area() = &quot;</span> &lt;&lt; c.<span class="t">Shape</span>::area() &lt;&lt; <span class="s">&quot;, c.area() = &quot;</span> &lt;&lt; c.area() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>circle of radius 2 has area 12.5664
+report: big circle has area 0
+c.Shape::area() = 0, c.area() = 12.5664</pre></div><p class="dl"><a href="../code/inheritance.cpp" download>Download inheritance.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <ul>
+    <li>The derived constructor builds the base part first, by naming the base in its initializer list: <code>: Shape("circle")</code>.</li>
+    <li><code>protected</code> members are visible to derived classes but not to outside code, so <code>rename</code> can change <code>name_</code>. Use it sparingly: every protected member is an interface you promise to derived classes.</li>
+    <li><b>The trap:</b> <code>report(c)</code> printed area <b>0</b>. Inside <code>report</code> the compiler only knows it has "some <code>Shape</code>", and because <code>area()</code> is an ordinary function it calls <code>Shape::area</code>. <code>Circle::area</code> did not <em>override</em> it, it only <em>hid</em> it. Lesson 05 fixes this with <code>virtual</code>.</li>
+  </ul>
+  <div class="table-wrap reveal"><table>
+    <thead><tr><th>Member in base is…</th><th>public inheritance</th><th>protected inheritance</th><th>private inheritance</th></tr></thead>
+    <tbody>
+      <tr><td><code>public</code></td><td>public in derived</td><td>protected</td><td>private</td></tr>
+      <tr><td><code>protected</code></td><td>protected</td><td>protected</td><td>private</td></tr>
+      <tr><td><code>private</code></td><td colspan="3">never accessible in the derived class (but still part of the object)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="lead-note">Almost all inheritance you write will be <code>public</code>. Private inheritance means "is implemented in terms of"; usually a member variable says that more clearly ("prefer composition to inheritance").</p>
+</section>
+
+<section id="reuse" aria-labelledby="reuse-h">
+  <h2 id="reuse-h">Reusing constructors and base functions</h2>
+  <p><code>using Base::Base;</code> inherits the base's constructors instead of rewriting each one, a <b>delegating constructor</b> lets one constructor call another of the same class, and <code>Base::f()</code> calls the base version of a function from inside an override, so the derived version can extend rather than replace it:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>inherit_ctors.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gaW5oZXJpdF9jdG9ycy5jcHAgLS0gcmV1c2luZyBiYXNlIGNvbnN0cnVjdG9ycywgYW5kIGNhbGxpbmcgdGhlIGJhc2UgdmVyc2lvbiBvZiBhIGZ1bmN0aW9uXG4jaW5jbHVkZSA8aW9zdHJlYW0-XG4jaW5jbHVkZSA8c3RyaW5nPlxuXG5jbGFzcyBBY2NvdW50IHtcbnB1YmxpYzpcbiAgICBBY2NvdW50KHN0ZDo6c3RyaW5nIG93bmVyLCBkb3VibGUgYmFsYW5jZSkgOiBvd25lcl8oc3RkOjptb3ZlKG93bmVyKSksIGJhbGFuY2VfKGJhbGFuY2UpIHt9XG4gICAgZXhwbGljaXQgQWNjb3VudChzdGQ6OnN0cmluZyBvd25lcikgOiBBY2NvdW50KHN0ZDo6bW92ZShvd25lciksIDAuMCkge30gICAvLyBkZWxlZ2F0aW5nIGNvbnN0cnVjdG9yXG4gICAgdmlydHVhbCB-QWNjb3VudCgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIHZvaWQgcHJpbnQoKSBjb25zdCB7IHN0ZDo6Y291dCA8PCBvd25lcl8gPDwgXCI6IFwiIDw8IGJhbGFuY2VfOyB9XG4gICAgdm9pZCBkZXBvc2l0KGRvdWJsZSB4KSB7IGJhbGFuY2VfICs9IHg7IH1cbnByb3RlY3RlZDpcbiAgICBkb3VibGUgYmFsYW5jZSgpIGNvbnN0IHsgcmV0dXJuIGJhbGFuY2VfOyB9XG5wcml2YXRlOlxuICAgIHN0ZDo6c3RyaW5nIG93bmVyXztcbiAgICBkb3VibGUgYmFsYW5jZV87XG59O1xuXG5jbGFzcyBTYXZpbmdzIDogcHVibGljIEFjY291bnQge1xucHVibGljOlxuICAgIHVzaW5nIEFjY291bnQ6OkFjY291bnQ7ICAgICAgICAgICAgICAgICAgICAgIC8vIGluaGVyaXQgYm90aCBjb25zdHJ1Y3RvcnMgaW5zdGVhZCBvZiByZXdyaXRpbmcgdGhlbVxuICAgIHZvaWQgcHJpbnQoKSBjb25zdCBvdmVycmlkZSB7XG4gICAgICAgIEFjY291bnQ6OnByaW50KCk7ICAgICAgICAgICAgICAgICAgICAgICAgLy8gcmV1c2UgdGhlIGJhc2UgdmVyc2lvbiwgdGhlbiBhZGQgdG8gaXRcbiAgICAgICAgc3RkOjpjb3V0IDw8IFwiIChzYXZpbmdzLCBpbnRlcmVzdCBhdCAzJTogXCIgPDwgYmFsYW5jZSgpICogMC4wMyA8PCBcIilcIjtcbiAgICB9XG59O1xuXG5pbnQgbWFpbigpIHtcbiAgICBTYXZpbmdzIHMoXCJBZGFcIiwgMTAwMCk7XG4gICAgcy5kZXBvc2l0KDIwMCk7XG4gICAgcy5wcmludCgpOyBzdGQ6OmNvdXQgPDwgJ1xcbic7XG4gICAgU2F2aW5ncyBlbXB0eShcIkdyYWNlXCIpO1xuICAgIGNvbnN0IEFjY291bnQmIGEgPSBlbXB0eTtcbiAgICBhLnByaW50KCk7IHN0ZDo6Y291dCA8PCAnXFxuJztcbn1cbiIsICJjb21waWxlcnMiOiBbXSwgImV4ZWN1dG9ycyI6IFt7ImNvbXBpbGVyIjogeyJpZCI6ICJnMTQyIiwgIm9wdGlvbnMiOiAiLXN0ZD1jKysxNyAtV2FsbCAtV2V4dHJhIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// inherit_ctors.cpp -- reusing base constructors, and calling the base version of a function</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+
+<span class="k">class</span> <span class="t">Account</span> {
+<span class="k">public</span>:
+    <span class="t">Account</span>(std::string owner, <span class="t">double</span> balance) : owner_(std::move(owner)), balance_(balance) {}
+    <span class="k">explicit</span> <span class="t">Account</span>(std::string owner) : <span class="t">Account</span>(std::move(owner), <span class="n">0.0</span>) {}   <span class="c">// delegating constructor</span>
+    <span class="k">virtual</span> ~<span class="t">Account</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">void</span> print() <span class="k">const</span> { std::cout &lt;&lt; owner_ &lt;&lt; <span class="s">&quot;: &quot;</span> &lt;&lt; balance_; }
+    <span class="t">void</span> deposit(<span class="t">double</span> x) { balance_ += x; }
+<span class="k">protected</span>:
+    <span class="t">double</span> balance() <span class="k">const</span> { <span class="k">return</span> balance_; }
+<span class="k">private</span>:
+    std::string owner_;
+    <span class="t">double</span> balance_;
+};
+
+<span class="k">class</span> <span class="t">Savings</span> : <span class="k">public</span> <span class="t">Account</span> {
+<span class="k">public</span>:
+    <span class="k">using</span> <span class="t">Account</span>::<span class="t">Account</span>;                      <span class="c">// inherit both constructors instead of rewriting them</span>
+    <span class="t">void</span> print() <span class="k">const</span> <span class="k">override</span> {
+        <span class="t">Account</span>::print();                        <span class="c">// reuse the base version, then add to it</span>
+        std::cout &lt;&lt; <span class="s">&quot; (savings, interest at 3%: &quot;</span> &lt;&lt; balance() * <span class="n">0.03</span> &lt;&lt; <span class="s">&quot;)&quot;</span>;
+    }
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Savings</span> s(<span class="s">&quot;Ada&quot;</span>, <span class="n">1000</span>);
+    s.deposit(<span class="n">200</span>);
+    s.print(); std::cout &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    <span class="t">Savings</span> empty(<span class="s">&quot;Grace&quot;</span>);
+    <span class="k">const</span> <span class="t">Account</span>&amp; a = empty;
+    a.print(); std::cout &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>Ada: 1200 (savings, interest at 3%: 36)
+Grace: 0 (savings, interest at 3%: 0)</pre></div><p class="dl"><a href="../code/inherit_ctors.cpp" download>Download inherit_ctors.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+</section>
+
+<section id="layout" aria-labelledby="layout-h">
+  <h2 id="layout-h">What an object looks like in memory</h2>
+  <p>Inheritance is not magic: a derived object is laid out as its base part followed by its own members. A class with virtual functions (lesson 05) also carries a hidden pointer, the <b>vptr</b>, usually at the very start. These numbers are measured, not assumed:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>layout.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gbGF5b3V0LmNwcCAtLSB3aGF0IGFuIG9iamVjdCBsb29rcyBsaWtlIGluIG1lbW9yeVxuI2luY2x1ZGUgPGNzdGRkZWY-XG4jaW5jbHVkZSA8aW9zdHJlYW0-XG5cbnN0cnVjdCBQb2ludCB7IGRvdWJsZSB4LCB5OyB9OyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLy8gcGxhaW4gZGF0YToganVzdCB0d28gZG91Ymxlc1xuc3RydWN0IFNoYXBlIHsgdmlydHVhbCB-U2hhcGUoKSA9IGRlZmF1bHQ7IHZpcnR1YWwgZG91YmxlIGFyZWEoKSBjb25zdCA9IDA7IH07XG5zdHJ1Y3QgQ2lyY2xlIDogU2hhcGUgeyBkb3VibGUgciA9IDE7IGRvdWJsZSBhcmVhKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gMy4xNDE1OSAqIHIgKiByOyB9IH07XG5zdHJ1Y3QgUmVjdCA6IFNoYXBlIHsgZG91YmxlIHcgPSAxLCBoID0gMjsgZG91YmxlIGFyZWEoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiB3ICogaDsgfSB9O1xuXG5zdHJ1Y3QgRHJhd2FibGUgeyB2aXJ0dWFsIH5EcmF3YWJsZSgpID0gZGVmYXVsdDsgdmlydHVhbCB2b2lkIGRyYXcoKSBjb25zdCB7fSB9O1xuc3RydWN0IFNlcmlhbGl6YWJsZSB7IHZpcnR1YWwgflNlcmlhbGl6YWJsZSgpID0gZGVmYXVsdDsgdmlydHVhbCB2b2lkIHNhdmUoKSBjb25zdCB7fSB9O1xuc3RydWN0IFNwcml0ZSA6IERyYXdhYmxlLCBTZXJpYWxpemFibGUgeyBkb3VibGUgeCA9IDA7IH07ICAgICAgLy8gdHdvIGJhc2VzLCB0d28gdnB0cnNcblxuaW50IG1haW4oKSB7XG4gICAgc3RkOjpjb3V0IDw8IFwic2l6ZW9mKFBvaW50KSAgPSBcIiA8PCBzaXplb2YoUG9pbnQpIDw8IFwiICAgKDIgZG91YmxlcylcXG5cIjtcbiAgICBzdGQ6OmNvdXQgPDwgXCJzaXplb2YoU2hhcGUpICA9IFwiIDw8IHNpemVvZihTaGFwZSkgPDwgXCIgICAgKGp1c3QgdGhlIHZwdHIpXFxuXCI7XG4gICAgc3RkOjpjb3V0IDw8IFwic2l6ZW9mKENpcmNsZSkgPSBcIiA8PCBzaXplb2YoQ2lyY2xlKSA8PCBcIiAgICh2cHRyICsgcilcXG5cIjtcbiAgICBzdGQ6OmNvdXQgPDwgXCJzaXplb2YoUmVjdCkgICA9IFwiIDw8IHNpemVvZihSZWN0KSA8PCBcIiAgICh2cHRyICsgdyArIGgpXFxuXCI7XG4gICAgc3RkOjpjb3V0IDw8IFwic2l6ZW9mKFNwcml0ZSkgPSBcIiA8PCBzaXplb2YoU3ByaXRlKSA8PCBcIiAgICgyIHZwdHJzICsgeClcXG5cIjtcblxuICAgIENpcmNsZSBjO1xuICAgIGNvbnN0IGNoYXIqIGJhc2UgPSByZWludGVycHJldF9jYXN0PGNvbnN0IGNoYXIqPigmYyk7XG4gICAgc3RkOjpjb3V0IDw8IFwib2Zmc2V0IG9mIHIgaW4gQ2lyY2xlOiBcIiA8PCByZWludGVycHJldF9jYXN0PGNvbnN0IGNoYXIqPigmYy5yKSAtIGJhc2UgPDwgXCIgYnl0ZXNcXG5cIjtcbiAgICBzdGQ6OmNvdXQgPDwgXCJTaGFwZSBwYXJ0IG9mIGMgc3RhcnRzIGF0IG9mZnNldCBcIiA8PCByZWludGVycHJldF9jYXN0PGNvbnN0IGNoYXIqPihzdGF0aWNfY2FzdDxTaGFwZSo-KCZjKSkgLSBiYXNlIDw8ICdcXG4nO1xuXG4gICAgU3ByaXRlIHM7XG4gICAgY29uc3QgY2hhciogc2IgPSByZWludGVycHJldF9jYXN0PGNvbnN0IGNoYXIqPigmcyk7XG4gICAgc3RkOjpjb3V0IDw8IFwiRHJhd2FibGUgcGFydCBvZiBhIFNwcml0ZSBhdCBvZmZzZXQgXCIgPDwgcmVpbnRlcnByZXRfY2FzdDxjb25zdCBjaGFyKj4oc3RhdGljX2Nhc3Q8RHJhd2FibGUqPigmcykpIC0gc2IgPDwgJ1xcbic7XG4gICAgc3RkOjpjb3V0IDw8IFwiU2VyaWFsaXphYmxlIHBhcnQgb2YgYSBTcHJpdGUgYXQgb2Zmc2V0IFwiIDw8IHJlaW50ZXJwcmV0X2Nhc3Q8Y29uc3QgY2hhcio-KHN0YXRpY19jYXN0PFNlcmlhbGl6YWJsZSo-KCZzKSkgLSBzYlxuICAgICAgICAgICAgICA8PCBcIiAgKGNvbnZlcnRpbmcgdGhlIHBvaW50ZXIgYWRqdXN0cyBpdHMgdmFsdWUpXFxuXCI7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// layout.cpp -- what an object looks like in memory</span>
+<span class="p">#include &lt;cstddef&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+
+<span class="k">struct</span> <span class="t">Point</span> { <span class="t">double</span> x, y; };                                   <span class="c">// plain data: just two doubles</span>
+<span class="k">struct</span> <span class="t">Shape</span> { <span class="k">virtual</span> ~<span class="t">Shape</span>() = <span class="k">default</span>; <span class="k">virtual</span> <span class="t">double</span> area() <span class="k">const</span> = <span class="n">0</span>; };
+<span class="k">struct</span> <span class="t">Circle</span> : <span class="t">Shape</span> { <span class="t">double</span> r = <span class="n">1</span>; <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="n">3.14159</span> * r * r; } };
+<span class="k">struct</span> <span class="t">Rect</span> : <span class="t">Shape</span> { <span class="t">double</span> w = <span class="n">1</span>, h = <span class="n">2</span>; <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> w * h; } };
+
+<span class="k">struct</span> <span class="t">Drawable</span> { <span class="k">virtual</span> ~<span class="t">Drawable</span>() = <span class="k">default</span>; <span class="k">virtual</span> <span class="t">void</span> draw() <span class="k">const</span> {} };
+<span class="k">struct</span> <span class="t">Serializable</span> { <span class="k">virtual</span> ~<span class="t">Serializable</span>() = <span class="k">default</span>; <span class="k">virtual</span> <span class="t">void</span> save() <span class="k">const</span> {} };
+<span class="k">struct</span> <span class="t">Sprite</span> : <span class="t">Drawable</span>, <span class="t">Serializable</span> { <span class="t">double</span> x = <span class="n">0</span>; };      <span class="c">// two bases, two vptrs</span>
+
+<span class="t">int</span> main() {
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Point)  = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Point</span>) &lt;&lt; <span class="s">&quot;   (2 doubles)\n&quot;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Shape)  = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Shape</span>) &lt;&lt; <span class="s">&quot;    (just the vptr)\n&quot;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Circle) = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Circle</span>) &lt;&lt; <span class="s">&quot;   (vptr + r)\n&quot;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Rect)   = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Rect</span>) &lt;&lt; <span class="s">&quot;   (vptr + w + h)\n&quot;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Sprite) = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Sprite</span>) &lt;&lt; <span class="s">&quot;   (2 vptrs + x)\n&quot;</span>;
+
+    <span class="t">Circle</span> c;
+    <span class="k">const</span> <span class="t">char</span>* base = <span class="k">reinterpret_cast</span>&lt;<span class="k">const</span> <span class="t">char</span>*&gt;(&amp;c);
+    std::cout &lt;&lt; <span class="s">&quot;offset of r in Circle: &quot;</span> &lt;&lt; <span class="k">reinterpret_cast</span>&lt;<span class="k">const</span> <span class="t">char</span>*&gt;(&amp;c.r) - base &lt;&lt; <span class="s">&quot; bytes\n&quot;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;Shape part of c starts at offset &quot;</span> &lt;&lt; <span class="k">reinterpret_cast</span>&lt;<span class="k">const</span> <span class="t">char</span>*&gt;(<span class="k">static_cast</span>&lt;<span class="t">Shape</span>*&gt;(&amp;c)) - base &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+
+    <span class="t">Sprite</span> s;
+    <span class="k">const</span> <span class="t">char</span>* sb = <span class="k">reinterpret_cast</span>&lt;<span class="k">const</span> <span class="t">char</span>*&gt;(&amp;s);
+    std::cout &lt;&lt; <span class="s">&quot;Drawable part of a Sprite at offset &quot;</span> &lt;&lt; <span class="k">reinterpret_cast</span>&lt;<span class="k">const</span> <span class="t">char</span>*&gt;(<span class="k">static_cast</span>&lt;<span class="t">Drawable</span>*&gt;(&amp;s)) - sb &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    std::cout &lt;&lt; <span class="s">&quot;Serializable part of a Sprite at offset &quot;</span> &lt;&lt; <span class="k">reinterpret_cast</span>&lt;<span class="k">const</span> <span class="t">char</span>*&gt;(<span class="k">static_cast</span>&lt;<span class="t">Serializable</span>*&gt;(&amp;s)) - sb
+              &lt;&lt; <span class="s">&quot;  (converting the pointer adjusts its value)\n&quot;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>sizeof(Point)  = 16   (2 doubles)
+sizeof(Shape)  = 8    (just the vptr)
+sizeof(Circle) = 16   (vptr + r)
+sizeof(Rect)   = 24   (vptr + w + h)
+sizeof(Sprite) = 24   (2 vptrs + x)
+offset of r in Circle: 8 bytes
+Shape part of c starts at offset 0
+Drawable part of a Sprite at offset 0
+Serializable part of a Sprite at offset 8  (converting the pointer adjusts its value)</pre></div><p class="dl"><a href="../code/layout.cpp" download>Download layout.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <div class="mem reveal" aria-label="Memory layout of a Circle and a Sprite">
+    <div class="mem-obj"><div class="mem-title">Circle (16 bytes)</div><div class="mem-row"><span class="mem-off">0</span><span class="mem-cell base">vptr <small>(Shape part)</small></span></div><div class="mem-row"><span class="mem-off">8</span><span class="mem-cell own">double r</span></div></div>
+    <div class="mem-obj"><div class="mem-title">Sprite (24 bytes)</div><div class="mem-row"><span class="mem-off">0</span><span class="mem-cell base">vptr <small>(Drawable part)</small></span></div><div class="mem-row"><span class="mem-off">8</span><span class="mem-cell base2">vptr <small>(Serializable part)</small></span></div><div class="mem-row"><span class="mem-off">16</span><span class="mem-cell own">double x</span></div></div>
+  </div>
+  <h3>Build a layout</h3>
+  <p>Change the classes and see where every byte goes. Each of the 24 combinations was compiled and measured; nothing here is computed by the page.</p>
+  <div class="widget reveal" data-widget="layout"><noscript>This interactive part needs JavaScript.</noscript></div>
+  <p>With one base, a <code>Circle*</code> and the <code>Shape*</code> to the same object hold the same address. With two bases, converting a <code>Sprite*</code> to <code>Serializable*</code> <em>changes the pointer's value</em> by 8 bytes so that it points at the <code>Serializable</code> part. The compiler does this for you; it is why you should never convert between class pointers with <code>reinterpret_cast</code> or C-style casts through <code>void*</code>.</p>
+</section>
+
+<section id="key04" aria-labelledby="key04-h">
+  <h2 id="key04-h">Key points</h2>
+  <ul>
+    <li>Public inheritance models is-a; prefer a member (composition) for has-a.</li>
+    <li>The base part is built first, by the base constructor named in the initializer list.</li>
+    <li>A non-virtual function with the same name in the derived class hides, it does not override.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="prev" href="../03-copy-move/index.html"><small>← Previous</small><b>03 · Copying and moving</b></a><a class="next" href="../05-virtual/index.html"><small>Next →</small><b>05 · Virtual functions and dynamic dispatch</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  <script>window.CPP = {"layout":{"0000":{"size":8,"align":8,"cells":[["double r",0,8,"Derived"]]},"0001":{"size":16,"align":8,"cells":[["char flag",0,1,"Derived"],["double r",8,8,"Derived"]]},"0002":{"size":16,"align":8,"cells":[["char flag",8,1,"Derived"],["double r",0,8,"Derived"]]},"0010":{"size":24,"align":8,"cells":[["vptr",0,8,"Other"],["int o",8,4,"Other"],["double r",16,8,"Derived"]]},"0011":{"size":24,"align":8,"cells":[["vptr",0,8,"Other"],["int o",8,4,"Other"],["char flag",12,1,"Derived"],["double r",16,8,"Derived"]]},"0012":{"size":32,"align":8,"cells":[["vptr",0,8,"Other"],["int o",8,4,"Other"],["char flag",24,1,"Derived"],["double r",16,8,"Derived"]]},"0100":{"size":16,"align":8,"cells":[["double a",0,8,"Base"],["double r",8,8,"Derived"]]},"0101":{"size":24,"align":8,"cells":[["double a",0,8,"Base"],["char flag",8,1,"Derived"],["double r",16,8,"Derived"]]},"0102":{"size":24,"align":8,"cells":[["double a",0,8,"Base"],["char flag",16,1,"Derived"],["double r",8,8,"Derived"]]},"0110":{"size":32,"align":8,"cells":[["double a",16,8,"Base"],["vptr",0,8,"Other"],["int o",8,4,"Other"],["double r",24,8,"Derived"]]},"0111":{"size":40,"align":8,"cells":[["double a",16,8,"Base"],["vptr",0,8,"Other"],["int o",8,4,"Other"],["char flag",24,1,"Derived"],["double r",32,8,"Derived"]]},"0112":{"size":40,"align":8,"cells":[["double a",16,8,"Base"],["vptr",0,8,"Other"],["int o",8,4,"Other"],["char flag",32,1,"Derived"],["double r",24,8,"Derived"]]},"1000":{"size":16,"align":8,"cells":[["vptr",0,8,"Base"],["double r",8,8,"Derived"]]},"1001":{"size":24,"align":8,"cells":[["vptr",0,8,"Base"],["char flag",8,1,"Derived"],["double r",16,8,"Derived"]]},"1002":{"size":24,"align":8,"cells":[["vptr",0,8,"Base"],["char flag",16,1,"Derived"],["double r",8,8,"Derived"]]},"1010":{"size":32,"align":8,"cells":[["vptr",0,8,"Base"],["vptr",8,8,"Other"],["int o",16,4,"Other"],["double r",24,8,"Derived"]]},"1011":{"size":32,"align":8,"cells":[["vptr",0,8,"Base"],["vptr",8,8,"Other"],["int o",16,4,"Other"],["char flag",20,1,"Derived"],["double r",24,8,"Derived"]]},"1012":{"size":40,"align":8,"cells":[["vptr",0,8,"Base"],["vptr",8,8,"Other"],["int o",16,4,"Other"],["char flag",32,1,"Derived"],["double r",24,8,"Derived"]]},"1100":{"size":24,"align":8,"cells":[["vptr",0,8,"Base"],["double a",8,8,"Base"],["double r",16,8,"Derived"]]},"1101":{"size":32,"align":8,"cells":[["vptr",0,8,"Base"],["double a",8,8,"Base"],["char flag",16,1,"Derived"],["double r",24,8,"Derived"]]},"1102":{"size":32,"align":8,"cells":[["vptr",0,8,"Base"],["double a",8,8,"Base"],["char flag",24,1,"Derived"],["double r",16,8,"Derived"]]},"1110":{"size":40,"align":8,"cells":[["vptr",0,8,"Base"],["double a",8,8,"Base"],["vptr",16,8,"Other"],["int o",24,4,"Other"],["double r",32,8,"Derived"]]},"1111":{"size":40,"align":8,"cells":[["vptr",0,8,"Base"],["double a",8,8,"Base"],["vptr",16,8,"Other"],["int o",24,4,"Other"],["char flag",28,1,"Derived"],["double r",32,8,"Derived"]]},"1112":{"size":48,"align":8,"cells":[["vptr",0,8,"Base"],["double a",8,8,"Base"],["vptr",16,8,"Other"],["int o",24,4,"Other"],["char flag",40,1,"Derived"],["double r",32,8,"Derived"]]}}};</script>
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>

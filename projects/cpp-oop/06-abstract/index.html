@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="C++ OOP lesson 06: Pure virtual functions, abstract base classes as contracts, which classes become concrete, the Liskov substitution principle, interfaces, multiple inheritance and the diamond.">
+  <meta name="author" content="Acamaro Cutcher">
+  <link rel="icon" href="data:,">
+  <title>Abstract classes and interfaces · C++ OOP - Acamaro Cutcher</title>
+  <link rel="stylesheet" href="../../forest-park-wildfires/style.css">
+  <link rel="stylesheet" href="../course.css">
+  <script src="../../forest-park-wildfires/theme.js"></script>
+</head>
+<body class="sub course cpp" data-lesson="06" data-scene="dispatch">
+  <div class="page">
+    <div class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../../index.html">All projects</a><span aria-hidden="true">/</span><a href="../index.html">C++ OOP</a><span aria-hidden="true">/</span><span aria-current="page">06 · Abstract classes and interfaces</span></nav>
+      <div class="top-actions"><div class="lang" data-lang-switch></div><button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button></div>
+    </div>
+    <header class="banner cpp-banner">
+      <div class="banner-img cpp-art" aria-hidden="true"></div>
+      <div class="banner-inner"><p class="eyebrow">Lesson 06 of 12</p><h1>Abstract classes and interfaces</h1><p class="lede">An abstract class states what every derived class must do without saying how. It cannot be instantiated; it exists to be a contract that code can rely on.</p></div>
+    </header>
+    <main>
+      <section class="block" aria-label="Abstract classes and interfaces · C++ OOP">
+        <div class="article"><nav class="toc-inline" aria-label="On this page"><a href="#pure">Pure virtual functions</a><a href="#checker">Which classes are abstract? Try it</a><a href="#interfaces">Interfaces</a><a href="#diamond">Multiple inheritance and the diamond</a><a href="#key06">Key points</a></nav><section id="pure" aria-labelledby="pure-h">
+  <h2 id="pure-h">Pure virtual functions</h2>
+  <p>Returning 0 from <code>Shape::area()</code> was a lie: there is no sensible area for "a shape in general". A <b>pure virtual function</b>, written <code>= 0</code>, has no implementation in the base class, and a class with at least one pure virtual function is an <b>abstract class</b>:</p>
+  <ul>
+    <li>you <b>cannot create objects</b> of an abstract class;</li>
+    <li>you <b>can</b> have pointers and references to it, and that is how it is used;</li>
+    <li>a derived class becomes <b>concrete</b> once every pure virtual function has been overridden, by itself or by a class between it and the base.</li>
+  </ul>
+  <div class="code reveal" translate="no"><div class="code-head"><span>abstract.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gYWJzdHJhY3QuY3BwIC0tIGFuIGFic3RyYWN0IGJhc2UgY2xhc3Mgc3RhdGVzIHdoYXQgZXZlcnkgc2hhcGUgbXVzdCBwcm92aWRlXG4jaW5jbHVkZSA8YWxnb3JpdGhtPlxuI2luY2x1ZGUgPGNtYXRoPlxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPG1lbW9yeT5cbiNpbmNsdWRlIDxzdHJpbmc-XG4jaW5jbHVkZSA8dmVjdG9yPlxuXG5jb25zdGV4cHIgZG91YmxlIHBpID0gMy4xNDE1OTI2NTM1ODk3OTM7XG5cbmNsYXNzIFNoYXBlIHsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBhYnN0cmFjdDogaXQgaGFzIHB1cmUgdmlydHVhbCBmdW5jdGlvbnNcbnB1YmxpYzpcbiAgICB2aXJ0dWFsIH5TaGFwZSgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIGRvdWJsZSBhcmVhKCkgY29uc3QgPSAwOyAgICAgICAgICAgICAgICAvLyBcIj0gMFwiOiBubyBpbXBsZW1lbnRhdGlvbiBoZXJlOyBkZXJpdmVkIGNsYXNzZXMgbXVzdCBwcm92aWRlIG9uZVxuICAgIHZpcnR1YWwgZG91YmxlIHBlcmltZXRlcigpIGNvbnN0ID0gMDtcbiAgICB2aXJ0dWFsIHN0ZDo6c3RyaW5nIG5hbWUoKSBjb25zdCA9IDA7XG5cbiAgICB2b2lkIGRlc2NyaWJlKCkgY29uc3QgeyAgICAgICAgICAgICAgICAgICAgICAgICAvLyBvcmRpbmFyeSBmdW5jdGlvbiBidWlsdCBvbiB0aGUgcHVyZSB2aXJ0dWFsIG9uZXNcbiAgICAgICAgc3RkOjpjb3V0IDw8IG5hbWUoKSA8PCBcIjogYXJlYSBcIiA8PCBhcmVhKCkgPDwgXCIsIHBlcmltZXRlciBcIiA8PCBwZXJpbWV0ZXIoKSA8PCAnXFxuJztcbiAgICB9XG59O1xuXG5jbGFzcyBDaXJjbGUgOiBwdWJsaWMgU2hhcGUge1xucHVibGljOlxuICAgIGV4cGxpY2l0IENpcmNsZShkb3VibGUgcikgOiByXyhyKSB7fVxuICAgIGRvdWJsZSBhcmVhKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gcGkgKiByXyAqIHJfOyB9XG4gICAgZG91YmxlIHBlcmltZXRlcigpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIDIgKiBwaSAqIHJfOyB9XG4gICAgc3RkOjpzdHJpbmcgbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwiY2lyY2xlXCI7IH1cbnByaXZhdGU6XG4gICAgZG91YmxlIHJfO1xufTtcblxuY2xhc3MgUmVjdGFuZ2xlIDogcHVibGljIFNoYXBlIHtcbnB1YmxpYzpcbiAgICBSZWN0YW5nbGUoZG91YmxlIHcsIGRvdWJsZSBoKSA6IHdfKHcpLCBoXyhoKSB7fVxuICAgIGRvdWJsZSBhcmVhKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gd18gKiBoXzsgfVxuICAgIGRvdWJsZSBwZXJpbWV0ZXIoKSBjb25zdCBvdmVycmlkZSB7IHJldHVybiAyICogKHdfICsgaF8pOyB9XG4gICAgc3RkOjpzdHJpbmcgbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwicmVjdGFuZ2xlXCI7IH1cbnByb3RlY3RlZDpcbiAgICBkb3VibGUgd18sIGhfO1xufTtcblxuY2xhc3MgU3F1YXJlIGZpbmFsIDogcHVibGljIFJlY3RhbmdsZSB7ICAgICAgICAgICAgIC8vIGZpbmFsOiBub3RoaW5nIG1heSBkZXJpdmUgZnJvbSBTcXVhcmVcbnB1YmxpYzpcbiAgICBleHBsaWNpdCBTcXVhcmUoZG91YmxlIHMpIDogUmVjdGFuZ2xlKHMsIHMpIHt9XG4gICAgc3RkOjpzdHJpbmcgbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwic3F1YXJlXCI7IH0gICAvLyByZXVzZXMgUmVjdGFuZ2xlJ3MgYXJlYSBhbmQgcGVyaW1ldGVyXG59O1xuXG5jbGFzcyBUcmlhbmdsZSA6IHB1YmxpYyBTaGFwZSB7XG5wdWJsaWM6XG4gICAgVHJpYW5nbGUoZG91YmxlIGEsIGRvdWJsZSBiLCBkb3VibGUgYykgOiBhXyhhKSwgYl8oYiksIGNfKGMpIHt9XG4gICAgZG91YmxlIGFyZWEoKSBjb25zdCBvdmVycmlkZSB7ICAgICAgICAgICAgICAgICAgLy8gSGVyb24ncyBmb3JtdWxhXG4gICAgICAgIGRvdWJsZSBzID0gcGVyaW1ldGVyKCkgLyAyO1xuICAgICAgICByZXR1cm4gc3RkOjpzcXJ0KHMgKiAocyAtIGFfKSAqIChzIC0gYl8pICogKHMgLSBjXykpO1xuICAgIH1cbiAgICBkb3VibGUgcGVyaW1ldGVyKCkgY29uc3Qgb3ZlcnJpZGUgeyByZXR1cm4gYV8gKyBiXyArIGNfOyB9XG4gICAgc3RkOjpzdHJpbmcgbmFtZSgpIGNvbnN0IG92ZXJyaWRlIHsgcmV0dXJuIFwidHJpYW5nbGVcIjsgfVxucHJpdmF0ZTpcbiAgICBkb3VibGUgYV8sIGJfLCBjXztcbn07XG5cbmludCBtYWluKCkge1xuICAgIC8vIFNoYXBlIHM7ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8vIGVycm9yOiB2YXJpYWJsZSB0eXBlICdTaGFwZScgaXMgYW4gYWJzdHJhY3QgY2xhc3NcbiAgICBzdGQ6OnZlY3RvcjxzdGQ6OnVuaXF1ZV9wdHI8U2hhcGU-PiBzaGFwZXM7XG4gICAgc2hhcGVzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPENpcmNsZT4oMSkpO1xuICAgIHNoYXBlcy5wdXNoX2JhY2soc3RkOjptYWtlX3VuaXF1ZTxSZWN0YW5nbGU-KDIsIDMpKTtcbiAgICBzaGFwZXMucHVzaF9iYWNrKHN0ZDo6bWFrZV91bmlxdWU8U3F1YXJlPigyKSk7XG4gICAgc2hhcGVzLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPFRyaWFuZ2xlPigzLCA0LCA1KSk7XG5cbiAgICBmb3IgKGNvbnN0IGF1dG8mIHMgOiBzaGFwZXMpIHMtPmRlc2NyaWJlKCk7XG5cbiAgICBzdGQ6OnNvcnQoc2hhcGVzLmJlZ2luKCksIHNoYXBlcy5lbmQoKSxcbiAgICAgICAgICAgICAgW10oY29uc3QgYXV0byYgYSwgY29uc3QgYXV0byYgYikgeyByZXR1cm4gYS0-YXJlYSgpIDwgYi0-YXJlYSgpOyB9KTtcbiAgICBzdGQ6OmNvdXQgPDwgXCJzbWFsbGVzdCB0byBsYXJnZXN0OlwiO1xuICAgIGZvciAoY29uc3QgYXV0byYgcyA6IHNoYXBlcykgc3RkOjpjb3V0IDw8ICcgJyA8PCBzLT5uYW1lKCk7XG4gICAgc3RkOjpjb3V0IDw8ICdcXG4nO1xuXG4gICAgY29uc3QgU2hhcGUmIHJlZiA9ICpzaGFwZXMuYmFjaygpOyAgICAgICAgICAgICAgLy8gcmVmZXJlbmNlcyB0byBhbiBhYnN0cmFjdCBjbGFzcyBhcmUgZmluZVxuICAgIHN0ZDo6Y291dCA8PCBcImxhcmdlc3QgaXMgYSBcIiA8PCByZWYubmFtZSgpIDw8ICdcXG4nO1xufVxuIiwgImNvbXBpbGVycyI6IFtdLCAiZXhlY3V0b3JzIjogW3siY29tcGlsZXIiOiB7ImlkIjogImcxNDIiLCAib3B0aW9ucyI6ICItc3RkPWMrKzE3IC1XYWxsIC1XZXh0cmEiLCAibGlicyI6IFtdfSwgImFyZ3VtZW50cyI6ICIiLCAic3RkaW4iOiAiIn1dfV19" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// abstract.cpp -- an abstract base class states what every shape must provide</span>
+<span class="p">#include &lt;algorithm&gt;</span>
+<span class="p">#include &lt;cmath&gt;</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">constexpr</span> <span class="t">double</span> pi = <span class="n">3.141592653589793</span>;
+
+<span class="k">class</span> <span class="t">Shape</span> {                                       <span class="c">// abstract: it has pure virtual functions</span>
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Shape</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> area() <span class="k">const</span> = <span class="n">0</span>;                <span class="c">// &quot;= 0&quot;: no implementation here; derived classes must provide one</span>
+    <span class="k">virtual</span> <span class="t">double</span> perimeter() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> std::string name() <span class="k">const</span> = <span class="n">0</span>;
+
+    <span class="t">void</span> describe() <span class="k">const</span> {                         <span class="c">// ordinary function built on the pure virtual ones</span>
+        std::cout &lt;&lt; name() &lt;&lt; <span class="s">&quot;: area &quot;</span> &lt;&lt; area() &lt;&lt; <span class="s">&quot;, perimeter &quot;</span> &lt;&lt; perimeter() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+};
+
+<span class="k">class</span> <span class="t">Circle</span> : <span class="k">public</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Circle</span>(<span class="t">double</span> r) : r_(r) {}
+    <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> pi * r_ * r_; }
+    <span class="t">double</span> perimeter() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="n">2</span> * pi * r_; }
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;circle&quot;</span>; }
+<span class="k">private</span>:
+    <span class="t">double</span> r_;
+};
+
+<span class="k">class</span> <span class="t">Rectangle</span> : <span class="k">public</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="t">Rectangle</span>(<span class="t">double</span> w, <span class="t">double</span> h) : w_(w), h_(h) {}
+    <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> w_ * h_; }
+    <span class="t">double</span> perimeter() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="n">2</span> * (w_ + h_); }
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;rectangle&quot;</span>; }
+<span class="k">protected</span>:
+    <span class="t">double</span> w_, h_;
+};
+
+<span class="k">class</span> <span class="t">Square</span> <span class="k">final</span> : <span class="k">public</span> <span class="t">Rectangle</span> {             <span class="c">// final: nothing may derive from Square</span>
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Square</span>(<span class="t">double</span> s) : <span class="t">Rectangle</span>(s, s) {}
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;square&quot;</span>; }   <span class="c">// reuses Rectangle&#x27;s area and perimeter</span>
+};
+
+<span class="k">class</span> <span class="t">Triangle</span> : <span class="k">public</span> <span class="t">Shape</span> {
+<span class="k">public</span>:
+    <span class="t">Triangle</span>(<span class="t">double</span> a, <span class="t">double</span> b, <span class="t">double</span> c) : a_(a), b_(b), c_(c) {}
+    <span class="t">double</span> area() <span class="k">const</span> <span class="k">override</span> {                  <span class="c">// Heron&#x27;s formula</span>
+        <span class="t">double</span> s = perimeter() / <span class="n">2</span>;
+        <span class="k">return</span> std::sqrt(s * (s - a_) * (s - b_) * (s - c_));
+    }
+    <span class="t">double</span> perimeter() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> a_ + b_ + c_; }
+    std::string name() <span class="k">const</span> <span class="k">override</span> { <span class="k">return</span> <span class="s">&quot;triangle&quot;</span>; }
+<span class="k">private</span>:
+    <span class="t">double</span> a_, b_, c_;
+};
+
+<span class="t">int</span> main() {
+    <span class="c">// Shape s;                                     // error: variable type &#x27;Shape&#x27; is an abstract class</span>
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Shape</span>&gt;&gt; shapes;
+    shapes.push_back(std::make_unique&lt;<span class="t">Circle</span>&gt;(<span class="n">1</span>));
+    shapes.push_back(std::make_unique&lt;<span class="t">Rectangle</span>&gt;(<span class="n">2</span>, <span class="n">3</span>));
+    shapes.push_back(std::make_unique&lt;<span class="t">Square</span>&gt;(<span class="n">2</span>));
+    shapes.push_back(std::make_unique&lt;<span class="t">Triangle</span>&gt;(<span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span>));
+
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : shapes) s-&gt;describe();
+
+    std::sort(shapes.begin(), shapes.end(),
+              [](<span class="k">const</span> <span class="k">auto</span>&amp; a, <span class="k">const</span> <span class="k">auto</span>&amp; b) { <span class="k">return</span> a-&gt;area() &lt; b-&gt;area(); });
+    std::cout &lt;&lt; <span class="s">&quot;smallest to largest:&quot;</span>;
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; s : shapes) std::cout &lt;&lt; <span class="s">&#x27; &#x27;</span> &lt;&lt; s-&gt;name();
+    std::cout &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+
+    <span class="k">const</span> <span class="t">Shape</span>&amp; ref = *shapes.back();              <span class="c">// references to an abstract class are fine</span>
+    std::cout &lt;&lt; <span class="s">&quot;largest is a &quot;</span> &lt;&lt; ref.name() &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>circle: area 3.14159, perimeter 6.28319
+rectangle: area 6, perimeter 10
+square: area 4, perimeter 8
+triangle: area 6, perimeter 12
+smallest to largest: circle square rectangle triangle
+largest is a triangle</pre></div><p class="dl"><a href="../code/abstract.cpp" download>Download abstract.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <p>The base class is now a <b>contract</b>: every shape has an <code>area</code>, a <code>perimeter</code> and a <code>name</code>. <code>describe()</code> is written once, in terms of those three, and works for shapes that did not exist when it was written. <code>Square</code> gets <code>area</code> and <code>perimeter</code> from <code>Rectangle</code> and only replaces <code>name</code>. Try to create a <code>Shape</code>:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>abstract_instance.cpp</span><span class="code-btns"><button type="button" class="copy">Copy</button></span></div><pre><code><span class="k">struct</span> <span class="t">Shape</span> {
+    <span class="k">virtual</span> ~<span class="t">Shape</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">double</span> area() <span class="k">const</span> = <span class="n">0</span>;
+    <span class="k">virtual</span> <span class="t">double</span> perimeter() <span class="k">const</span> = <span class="n">0</span>;
+};
+<span class="t">int</span> main() { <span class="t">Shape</span> s; }</code></pre></div><div class="out err" translate="no"><div class="out-head">Compiler says</div><pre>abstract_instance.cpp:6:20: error: variable type &#x27;Shape&#x27; is an abstract class
+abstract_instance.cpp:3:20: note: unimplemented pure virtual method &#x27;area&#x27; in &#x27;Shape&#x27;
+abstract_instance.cpp:4:20: note: unimplemented pure virtual method &#x27;perimeter&#x27; in &#x27;Shape&#x27;</pre></div>
+</section>
+
+<section id="checker" aria-labelledby="checker-h">
+  <h2 id="checker-h">Which classes are abstract? Try it</h2>
+  <p>Untick overrides to see which classes stay abstract. The messages follow the exact wording of the compiler above.</p>
+  <div class="widget reveal" data-widget="abstract"><noscript>This interactive part needs JavaScript.</noscript></div>
+  <h3>What can you do with an abstract class?</h3>
+  <div class="widget reveal" data-widget="try" data-lab="abstract"><noscript>This interactive part needs JavaScript.</noscript></div>
+  <div class="code reveal" translate="no"><div class="code-head"><span>final_class.cpp</span><span class="code-btns"><button type="button" class="copy">Copy</button></span></div><pre><code><span class="k">struct</span> <span class="t">Rectangle</span> { <span class="k">virtual</span> ~<span class="t">Rectangle</span>() = <span class="k">default</span>; };
+<span class="k">struct</span> <span class="t">Square</span> <span class="k">final</span> : <span class="t">Rectangle</span> {};
+<span class="k">struct</span> <span class="t">Cube</span> : <span class="t">Square</span> {};
+<span class="t">int</span> main() {}</code></pre></div><div class="out err" translate="no"><div class="out-head">Compiler says</div><pre>final_class.cpp:3:15: error: base &#x27;Square&#x27; is marked &#x27;final&#x27;
+final_class.cpp:2:8: note: &#x27;Square&#x27; declared here</pre></div>
+  <div class="callout tip reveal"><b>Is a square a rectangle?</b> Here <code>Square</code> derives from <code>Rectangle</code> safely because shapes cannot change after construction. If <code>Rectangle</code> had <code>set_width()</code>, a <code>Square</code> could not honor it without breaking its own invariant, and code written for rectangles would misbehave when handed a square. That is the <b>Liskov substitution principle</b>: a derived class must be usable everywhere its base is, keeping every promise the base makes.</div>
+</section>
+
+<section id="interfaces" aria-labelledby="interfaces-h">
+  <h2 id="interfaces-h">Interfaces</h2>
+  <p>An abstract class with only pure virtual functions (plus a virtual destructor) is what other languages call an <b>interface</b>. A class may implement several. Code that needs only one capability depends only on that interface, and <code>dynamic_cast</code> asks at run time whether an object supports another one:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>interfaces.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gaW50ZXJmYWNlcy5jcHAgLS0gcHVyZSBhYnN0cmFjdCBcImludGVyZmFjZVwiIGNsYXNzZXMsIGFuZCBhIGNsYXNzIHRoYXQgaW1wbGVtZW50cyB0d28gb2YgdGhlbVxuI2luY2x1ZGUgPGlvc3RyZWFtPlxuI2luY2x1ZGUgPG1lbW9yeT5cbiNpbmNsdWRlIDxzc3RyZWFtPlxuI2luY2x1ZGUgPHN0cmluZz5cbiNpbmNsdWRlIDx2ZWN0b3I-XG5cbmNsYXNzIERyYXdhYmxlIHsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBhbiBpbnRlcmZhY2U6IG9ubHkgcHVyZSB2aXJ0dWFsIGZ1bmN0aW9uc1xucHVibGljOlxuICAgIHZpcnR1YWwgfkRyYXdhYmxlKCkgPSBkZWZhdWx0O1xuICAgIHZpcnR1YWwgdm9pZCBkcmF3KHN0ZDo6b3N0cmVhbSYgb3V0KSBjb25zdCA9IDA7XG59O1xuXG5jbGFzcyBTZXJpYWxpemFibGUge1xucHVibGljOlxuICAgIHZpcnR1YWwgflNlcmlhbGl6YWJsZSgpID0gZGVmYXVsdDtcbiAgICB2aXJ0dWFsIHN0ZDo6c3RyaW5nIHRvX2pzb24oKSBjb25zdCA9IDA7XG59O1xuXG5jbGFzcyBQb2ludCA6IHB1YmxpYyBEcmF3YWJsZSwgcHVibGljIFNlcmlhbGl6YWJsZSB7ICAgLy8gaW1wbGVtZW50cyBib3RoIGludGVyZmFjZXNcbnB1YmxpYzpcbiAgICBQb2ludChkb3VibGUgeCwgZG91YmxlIHkpIDogeF8oeCksIHlfKHkpIHt9XG4gICAgdm9pZCBkcmF3KHN0ZDo6b3N0cmVhbSYgb3V0KSBjb25zdCBvdmVycmlkZSB7IG91dCA8PCBcIiogYXQgKFwiIDw8IHhfIDw8IFwiLCBcIiA8PCB5XyA8PCBcIilcIjsgfVxuICAgIHN0ZDo6c3RyaW5nIHRvX2pzb24oKSBjb25zdCBvdmVycmlkZSB7XG4gICAgICAgIHN0ZDo6b3N0cmluZ3N0cmVhbSBzO1xuICAgICAgICBzIDw8IFwie1xcXCJ4XFxcIjogXCIgPDwgeF8gPDwgXCIsIFxcXCJ5XFxcIjogXCIgPDwgeV8gPDwgXCJ9XCI7XG4gICAgICAgIHJldHVybiBzLnN0cigpO1xuICAgIH1cbnByaXZhdGU6XG4gICAgZG91YmxlIHhfLCB5Xztcbn07XG5cbmNsYXNzIExhYmVsIDogcHVibGljIERyYXdhYmxlIHsgICAgICAgICAgICAgICAgICAgICAvLyBkcmF3YWJsZSwgYnV0IG5vdCBzZXJpYWxpemFibGVcbnB1YmxpYzpcbiAgICBleHBsaWNpdCBMYWJlbChzdGQ6OnN0cmluZyB0KSA6IHRleHRfKHN0ZDo6bW92ZSh0KSkge31cbiAgICB2b2lkIGRyYXcoc3RkOjpvc3RyZWFtJiBvdXQpIGNvbnN0IG92ZXJyaWRlIHsgb3V0IDw8IFwiXFxcIlwiIDw8IHRleHRfIDw8IFwiXFxcIlwiOyB9XG5wcml2YXRlOlxuICAgIHN0ZDo6c3RyaW5nIHRleHRfO1xufTtcblxudm9pZCByZW5kZXIoY29uc3Qgc3RkOjp2ZWN0b3I8c3RkOjp1bmlxdWVfcHRyPERyYXdhYmxlPj4mIHNjZW5lKSB7ICAgLy8gZGVwZW5kcyBvbmx5IG9uIHRoZSBpbnRlcmZhY2VcbiAgICBmb3IgKGNvbnN0IGF1dG8mIGQgOiBzY2VuZSkge1xuICAgICAgICBzdGQ6OmNvdXQgPDwgXCJkcmF3OiBcIjtcbiAgICAgICAgZC0-ZHJhdyhzdGQ6OmNvdXQpO1xuICAgICAgICAvLyBhc2sgYXQgcnVuIHRpbWUgd2hldGhlciB0aGlzIG9iamVjdCBhbHNvIHN1cHBvcnRzIGFub3RoZXIgaW50ZXJmYWNlXG4gICAgICAgIGlmIChhdXRvIHMgPSBkeW5hbWljX2Nhc3Q8Y29uc3QgU2VyaWFsaXphYmxlKj4oZC5nZXQoKSkpXG4gICAgICAgICAgICBzdGQ6OmNvdXQgPDwgXCIgICBqc29uOiBcIiA8PCBzLT50b19qc29uKCk7XG4gICAgICAgIHN0ZDo6Y291dCA8PCAnXFxuJztcbiAgICB9XG59XG5cbmludCBtYWluKCkge1xuICAgIHN0ZDo6dmVjdG9yPHN0ZDo6dW5pcXVlX3B0cjxEcmF3YWJsZT4-IHNjZW5lO1xuICAgIHNjZW5lLnB1c2hfYmFjayhzdGQ6Om1ha2VfdW5pcXVlPFBvaW50PigxLCAyKSk7XG4gICAgc2NlbmUucHVzaF9iYWNrKHN0ZDo6bWFrZV91bmlxdWU8TGFiZWw-KFwib3JpZ2luXCIpKTtcbiAgICBzY2VuZS5wdXNoX2JhY2soc3RkOjptYWtlX3VuaXF1ZTxQb2ludD4oLTMsIDAuNSkpO1xuICAgIHJlbmRlcihzY2VuZSk7XG59XG4iLCAiY29tcGlsZXJzIjogW10sICJleGVjdXRvcnMiOiBbeyJjb21waWxlciI6IHsiaWQiOiAiZzE0MiIsICJvcHRpb25zIjogIi1zdGQ9YysrMTcgLVdhbGwgLVdleHRyYSIsICJsaWJzIjogW119LCAiYXJndW1lbnRzIjogIiIsICJzdGRpbiI6ICIifV19XX0=" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// interfaces.cpp -- pure abstract &quot;interface&quot; classes, and a class that implements two of them</span>
+<span class="p">#include &lt;iostream&gt;</span>
+<span class="p">#include &lt;memory&gt;</span>
+<span class="p">#include &lt;sstream&gt;</span>
+<span class="p">#include &lt;string&gt;</span>
+<span class="p">#include &lt;vector&gt;</span>
+
+<span class="k">class</span> <span class="t">Drawable</span> {                                    <span class="c">// an interface: only pure virtual functions</span>
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Drawable</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> <span class="t">void</span> draw(std::ostream&amp; out) <span class="k">const</span> = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Serializable</span> {
+<span class="k">public</span>:
+    <span class="k">virtual</span> ~<span class="t">Serializable</span>() = <span class="k">default</span>;
+    <span class="k">virtual</span> std::string to_json() <span class="k">const</span> = <span class="n">0</span>;
+};
+
+<span class="k">class</span> <span class="t">Point</span> : <span class="k">public</span> <span class="t">Drawable</span>, <span class="k">public</span> <span class="t">Serializable</span> {   <span class="c">// implements both interfaces</span>
+<span class="k">public</span>:
+    <span class="t">Point</span>(<span class="t">double</span> x, <span class="t">double</span> y) : x_(x), y_(y) {}
+    <span class="t">void</span> draw(std::ostream&amp; out) <span class="k">const</span> <span class="k">override</span> { out &lt;&lt; <span class="s">&quot;* at (&quot;</span> &lt;&lt; x_ &lt;&lt; <span class="s">&quot;, &quot;</span> &lt;&lt; y_ &lt;&lt; <span class="s">&quot;)&quot;</span>; }
+    std::string to_json() <span class="k">const</span> <span class="k">override</span> {
+        std::ostringstream s;
+        s &lt;&lt; <span class="s">&quot;{\&quot;x\&quot;: &quot;</span> &lt;&lt; x_ &lt;&lt; <span class="s">&quot;, \&quot;y\&quot;: &quot;</span> &lt;&lt; y_ &lt;&lt; <span class="s">&quot;}&quot;</span>;
+        <span class="k">return</span> s.str();
+    }
+<span class="k">private</span>:
+    <span class="t">double</span> x_, y_;
+};
+
+<span class="k">class</span> <span class="t">Label</span> : <span class="k">public</span> <span class="t">Drawable</span> {                     <span class="c">// drawable, but not serializable</span>
+<span class="k">public</span>:
+    <span class="k">explicit</span> <span class="t">Label</span>(std::string t) : text_(std::move(t)) {}
+    <span class="t">void</span> draw(std::ostream&amp; out) <span class="k">const</span> <span class="k">override</span> { out &lt;&lt; <span class="s">&quot;\&quot;&quot;</span> &lt;&lt; text_ &lt;&lt; <span class="s">&quot;\&quot;&quot;</span>; }
+<span class="k">private</span>:
+    std::string text_;
+};
+
+<span class="t">void</span> render(<span class="k">const</span> std::vector&lt;std::unique_ptr&lt;<span class="t">Drawable</span>&gt;&gt;&amp; scene) {   <span class="c">// depends only on the interface</span>
+    <span class="k">for</span> (<span class="k">const</span> <span class="k">auto</span>&amp; d : scene) {
+        std::cout &lt;&lt; <span class="s">&quot;draw: &quot;</span>;
+        d-&gt;draw(std::cout);
+        <span class="c">// ask at run time whether this object also supports another interface</span>
+        <span class="k">if</span> (<span class="k">auto</span> s = <span class="k">dynamic_cast</span>&lt;<span class="k">const</span> <span class="t">Serializable</span>*&gt;(d.get()))
+            std::cout &lt;&lt; <span class="s">&quot;   json: &quot;</span> &lt;&lt; s-&gt;to_json();
+        std::cout &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;
+    }
+}
+
+<span class="t">int</span> main() {
+    std::vector&lt;std::unique_ptr&lt;<span class="t">Drawable</span>&gt;&gt; scene;
+    scene.push_back(std::make_unique&lt;<span class="t">Point</span>&gt;(<span class="n">1</span>, <span class="n">2</span>));
+    scene.push_back(std::make_unique&lt;<span class="t">Label</span>&gt;(<span class="s">&quot;origin&quot;</span>));
+    scene.push_back(std::make_unique&lt;<span class="t">Point</span>&gt;(-<span class="n">3</span>, <span class="n">0.5</span>));
+    render(scene);
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>draw: * at (1, 2)   json: {&quot;x&quot;: 1, &quot;y&quot;: 2}
+draw: &quot;origin&quot;
+draw: * at (-3, 0.5)   json: {&quot;x&quot;: -3, &quot;y&quot;: 0.5}</pre></div><p class="dl"><a href="../code/interfaces.cpp" download>Download interfaces.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+</section>
+
+<section id="diamond" aria-labelledby="diamond-h">
+  <h2 id="diamond-h">Multiple inheritance and the diamond</h2>
+  <p>Inheriting <em>implementation</em> from two classes that share a base creates the <b>diamond problem</b>: without care, the object contains two copies of the shared base (quiz question 10 shows this). <code>virtual</code> inheritance makes the shared base appear once, and the most-derived class constructs it:</p>
+  <div class="code reveal" translate="no"><div class="code-head"><span>diamond.cpp</span><span class="code-btns"><a class="ce" href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6IFt7ImlkIjogMSwgImxhbmd1YWdlIjogImMrKyIsICJzb3VyY2UiOiAiLy8gZGlhbW9uZC5jcHAgLS0gbXVsdGlwbGUgaW5oZXJpdGFuY2UgYW5kIHRoZSBkaWFtb25kIHByb2JsZW0sIHNvbHZlZCB3aXRoIHZpcnR1YWwgaW5oZXJpdGFuY2VcbiNpbmNsdWRlIDxpb3N0cmVhbT5cblxuc3RydWN0IERldmljZSB7XG4gICAgZXhwbGljaXQgRGV2aWNlKGludCBpZCkgOiBpZChpZCkgeyBzdGQ6OmNvdXQgPDwgXCJEZXZpY2UoXCIgPDwgaWQgPDwgXCIpXFxuXCI7IH1cbiAgICBpbnQgaWQ7XG59O1xuc3RydWN0IFNlbnNvciA6IHZpcnR1YWwgRGV2aWNlIHsgICAgICAgICAgICAgICAgIC8vIHZpcnR1YWwgYmFzZTogc2hhcmVkLCBub3QgZHVwbGljYXRlZFxuICAgIFNlbnNvcigpIDogRGV2aWNlKC0xKSB7IHN0ZDo6Y291dCA8PCBcIlNlbnNvcigpXFxuXCI7IH1cbn07XG5zdHJ1Y3QgQWN0dWF0b3IgOiB2aXJ0dWFsIERldmljZSB7XG4gICAgQWN0dWF0b3IoKSA6IERldmljZSgtMikgeyBzdGQ6OmNvdXQgPDwgXCJBY3R1YXRvcigpXFxuXCI7IH1cbn07XG5zdHJ1Y3QgVGhlcm1vc3RhdCA6IFNlbnNvciwgQWN0dWF0b3Ige1xuICAgIFRoZXJtb3N0YXQoKSA6IERldmljZSg3KSB7IHN0ZDo6Y291dCA8PCBcIlRoZXJtb3N0YXQoKVxcblwiOyB9ICAgLy8gdGhlIG1vc3QgZGVyaXZlZCBjbGFzcyBidWlsZHMgdGhlIHZpcnR1YWwgYmFzZVxufTtcblxuaW50IG1haW4oKSB7XG4gICAgVGhlcm1vc3RhdCB0O1xuICAgIHN0ZDo6Y291dCA8PCBcIm9uZSBEZXZpY2UsIGlkIFwiIDw8IHQuaWQgPDwgJ1xcbic7ICAvLyB3aXRob3V0IFwidmlydHVhbFwiLCB0LmlkIHdvdWxkIGJlIGFtYmlndW91c1xuICAgIHN0ZDo6Y291dCA8PCBcInNpemVvZihUaGVybW9zdGF0KSA9IFwiIDw8IHNpemVvZihUaGVybW9zdGF0KSA8PCBcIiBieXRlcyBvbiB0aGlzIG1hY2hpbmVcXG5cIjtcbn1cbiIsICJjb21waWxlcnMiOiBbXSwgImV4ZWN1dG9ycyI6IFt7ImNvbXBpbGVyIjogeyJpZCI6ICJnMTQyIiwgIm9wdGlvbnMiOiAiLXN0ZD1jKysxNyAtV2FsbCAtV2V4dHJhIiwgImxpYnMiOiBbXX0sICJhcmd1bWVudHMiOiAiIiwgInN0ZGluIjogIiJ9XX1dfQ==" target="_blank" rel="noopener" title="Edit and run with GCC in Compiler Explorer (opens godbolt.org)">Run online ↗</a><button type="button" class="copy">Copy</button></span></div><pre><code><span class="c">// diamond.cpp -- multiple inheritance and the diamond problem, solved with virtual inheritance</span>
+<span class="p">#include &lt;iostream&gt;</span>
+
+<span class="k">struct</span> <span class="t">Device</span> {
+    <span class="k">explicit</span> <span class="t">Device</span>(<span class="t">int</span> id) : id(id) { std::cout &lt;&lt; <span class="s">&quot;Device(&quot;</span> &lt;&lt; id &lt;&lt; <span class="s">&quot;)\n&quot;</span>; }
+    <span class="t">int</span> id;
+};
+<span class="k">struct</span> <span class="t">Sensor</span> : <span class="k">virtual</span> <span class="t">Device</span> {                 <span class="c">// virtual base: shared, not duplicated</span>
+    <span class="t">Sensor</span>() : <span class="t">Device</span>(-<span class="n">1</span>) { std::cout &lt;&lt; <span class="s">&quot;Sensor()\n&quot;</span>; }
+};
+<span class="k">struct</span> <span class="t">Actuator</span> : <span class="k">virtual</span> <span class="t">Device</span> {
+    <span class="t">Actuator</span>() : <span class="t">Device</span>(-<span class="n">2</span>) { std::cout &lt;&lt; <span class="s">&quot;Actuator()\n&quot;</span>; }
+};
+<span class="k">struct</span> <span class="t">Thermostat</span> : <span class="t">Sensor</span>, <span class="t">Actuator</span> {
+    <span class="t">Thermostat</span>() : <span class="t">Device</span>(<span class="n">7</span>) { std::cout &lt;&lt; <span class="s">&quot;Thermostat()\n&quot;</span>; }   <span class="c">// the most derived class builds the virtual base</span>
+};
+
+<span class="t">int</span> main() {
+    <span class="t">Thermostat</span> t;
+    std::cout &lt;&lt; <span class="s">&quot;one Device, id &quot;</span> &lt;&lt; t.id &lt;&lt; <span class="s">&#x27;\n&#x27;</span>;  <span class="c">// without &quot;virtual&quot;, t.id would be ambiguous</span>
+    std::cout &lt;&lt; <span class="s">&quot;sizeof(Thermostat) = &quot;</span> &lt;&lt; <span class="k">sizeof</span>(<span class="t">Thermostat</span>) &lt;&lt; <span class="s">&quot; bytes on this machine\n&quot;</span>;
+}</code></pre></div><div class="out " translate="no"><div class="out-head">Output</div><pre>Device(7)
+Sensor()
+Actuator()
+Thermostat()
+one Device, id 7
+sizeof(Thermostat) = 24 bytes on this machine</pre></div><p class="dl"><a href="../code/diamond.cpp" download>Download diamond.cpp</a> <span class="flags">compiled with <code>-std=c++17 -Wall -Wextra</code></span></p>
+  <p class="lead-note"><code>Device(-1)</code> and <code>Device(-2)</code> never ran: with a virtual base, only the most-derived class's choice counts. Multiple inheritance of interfaces is common and safe; diamonds of implementation are best avoided.</p>
+</section>
+
+<section id="key06" aria-labelledby="key06-h">
+  <h2 id="key06-h">Key points</h2>
+  <ul>
+    <li><code>= 0</code> makes a function pure virtual and its class abstract; derived classes must implement it to be concrete.</li>
+    <li>Abstract base classes are contracts: write code against them, not against concrete classes.</li>
+    <li>Inherit interfaces freely; inherit implementation from one base where possible.</li>
+  </ul>
+</section>
+</div>
+      </section>
+    </main>
+    <nav class="pager" aria-label="Previous and next lesson"><a class="prev" href="../05-virtual/index.html"><small>← Previous</small><b>05 · Virtual functions and dynamic dispatch</b></a><a class="next" href="../07-ownership/index.html"><small>Next →</small><b>07 · Ownership, cloning, factories and RTTI</b></a></nav>
+    <footer class="site-footer"><p>C++ Object-Oriented Programming · <a href="../index.html">All lessons</a> · <a href="../../index.html">All projects</a> · Written with AI assistance as a study companion; every program was compiled and run when the page was built (Apple clang version 21.0.0 (clang-2100.3.34.2)).</p></footer>
+  </div>
+  <script>window.CPP = {"try":{"abstract":{"file":"abstract_try.cpp","src":"#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Shape {\n    virtual ~Shape() = default;\n    virtual double area() const = 0;\n};\nstruct Circle : Shape {\n    double r;\n    explicit Circle(double r) : r(r) {}\n    double area() const override { return 3.14159 * r * r; }\n};\n\nint main() {\n    Circle c(1);\n    /*TRY*/\n}\n","lines":[{"code":"Shape s;","why":"An abstract class cannot be instantiated.","error":"abstract_try.cpp:17:11: error: variable type 'Shape' is an abstract class\nabstract_try.cpp:7:20: note: unimplemented pure virtual method 'area' in 'Shape'"},{"code":"Shape* p = &c; std::cout << p->area() << '\\n';","why":"A pointer to an abstract class is fine, and the call is dispatched to <code>Circle::area<\/code>.","out":"3.14159\n","exit":0},{"code":"const Shape& ref = c; std::cout << ref.area() << '\\n';","why":"So is a reference.","out":"3.14159\n","exit":0},{"code":"auto p = std::make_unique<Shape>();","why":"<code>make_unique&lt;Shape&gt;<\/code> would have to create a <code>Shape<\/code>: refused, from inside the library.","error":"unique_ptr.h:761:30: error: allocating an object of abstract class type 'Shape'\nabstract_try.cpp:17:19: note: in instantiation of function template specialization 'std::make_unique<Shape, 0>' requested here\nabstract_try.cpp:7:20: note: unimplemented pure virtual method 'area' in 'Shape'"},{"code":"std::unique_ptr<Shape> p = std::make_unique<Circle>(2); std::cout << p->area() << '\\n';","why":"The usual way: create a concrete class, own it through a pointer to the abstract base.","out":"12.5664\n","exit":0},{"code":"Shape copy = c;","why":"Copying into a <code>Shape<\/code> variable would slice; for an abstract class it is not even allowed.","error":"abstract_try.cpp:17:11: error: variable type 'Shape' is an abstract class\nabstract_try.cpp:7:20: note: unimplemented pure virtual method 'area' in 'Shape'"},{"code":"std::vector<Shape> v;","why":"Surprise: declaring an empty vector of an abstract type compiles, because nothing is created yet...","out":"","exit":0},{"code":"std::vector<Shape> v; v.push_back(c);","why":"...but the first element would have to be a <code>Shape<\/code> object. Store <code>unique_ptr&lt;Shape&gt;<\/code> instead.","error":"allocator.h:141:24: error: allocating an object of abstract class type 'Shape'\nallocator_traits.h:296:9: note: in instantiation of function template specialization 'std::allocator<Shape>::construct<Shape, const Shape &>' requested here\nvector.h:483:21: note: in instantiation of function template specialization 'std::allocator_traits<std::allocator<Shape>>::construct<Shape, const Shape &, 0>' requested here\nvector.h:1146:9: note: in instantiation of function template specialization 'std::vector<Shape>::__emplace_back_assume_capacity<const Shape &>' requested here"},{"code":"std::vector<std::unique_ptr<Shape>> v; v.push_back(std::make_unique<Circle>(1)); std::cout << v.size() << '\\n';","why":"The idiomatic container of polymorphic objects.","out":"1\n","exit":0}]}}};</script>
+  <script src="../cpp.js"></script>
+  <script src="../../forest-park-wildfires/fx.js"></script>
+  <script src="../../forest-park-wildfires/i18n.js"></script>
+</body>
+</html>
