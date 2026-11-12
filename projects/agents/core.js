@@ -218,21 +218,40 @@
   var V = '164,139,255', CY = '56,214,226', MG = '236,92,180', AM = '255,170,90', GR = '90,220,160';
   function rgba(c, a) { return 'rgba(' + c + ',' + a + ')'; }
   var SCENES = {};
-  SCENES.net = function () {   // a neural network: percepts in, pulses through layers, an action out
-    var layers = [4, 7, 7, 5, 2], pulses = [], nodes = [], glow = {};
-    return { init: function (R) { nodes = layers.map(function (n, li) { var out = []; for (var k = 0; k < n; k++) out.push({ x: R.x + R.w * (0.08 + 0.84 * li / (layers.length - 1)), y: R.y + R.h * ((k + 1) / (n + 1)) }); return out; }); },
+  SCENES.net = function () {   // a neural network: percepts in, a forward pass through every layer, an action out
+    var layers = [4, 7, 7, 5, 2], pulses = [], nodes = [], glow = {}, W = [], wave = 0, acts = ['move', 'grab'];
+    function nextNode(li, a) {   // follow the edge weights: strong connections carry most of the signal
+      var w = W[li][a], tot = 0, r, j; for (j = 0; j < w.length; j++) tot += w[j];
+      r = Math.random() * tot; for (j = 0; j < w.length; j++) { r -= w[j]; if (r <= 0) return j; } return w.length - 1;
+    }
+    function fire(li, a) { pulses.push({ l: li, a: a, b: nextNode(li, a), t: 0 }); }
+    return { init: function (R) {
+        nodes = layers.map(function (n, li) { var out = []; for (var k = 0; k < n; k++) out.push({ x: R.x + R.w * (0.08 + 0.84 * li / (layers.length - 1)), y: R.y + R.h * ((k + 1) / (n + 1)) }); return out; });
+        if (!W.length) W = layers.slice(0, -1).map(function (n, li) { var m = []; for (var a = 0; a < n; a++) { var row = []; for (var b = 0; b < layers[li + 1]; b++) row.push(Math.pow(Math.random(), 2.2)); m.push(row); } return m; });
+      },
       step: function (ctx, R, dt) {
-        if (Math.random() < dt * 9) { var k = Math.floor(Math.random() * layers[0]); pulses.push({ l: 0, a: k, b: Math.floor(Math.random() * layers[1]), t: 0 }); }
-        nodes.forEach(function (L, li) { if (li === nodes.length - 1) return; L.forEach(function (n) { nodes[li + 1].forEach(function (m) { ctx.strokeStyle = rgba(V, .08); ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(m.x, m.y); ctx.stroke(); }); }); });
+        // percepts arrive as a trickle, plus a full forward pass (every input fires) every few seconds
+        if (Math.random() < dt * 4) fire(0, Math.floor(Math.random() * layers[0]));
+        wave -= dt; if (wave <= 0) { wave = 2.6; for (var k = 0; k < layers[0]; k++) { glow['0:' + k] = 1; fire(0, k); } }
+        nodes.forEach(function (L, li) { if (li === nodes.length - 1) return; L.forEach(function (n, a) { nodes[li + 1].forEach(function (m, b) { var w = W[li][a][b]; ctx.strokeStyle = rgba(V, .04 + .16 * w); ctx.lineWidth = .6 + 1.2 * w; ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(m.x, m.y); ctx.stroke(); }); }); });
+        ctx.lineWidth = 1;
+        var born = [];   // spawned pulses are collected here: pushing into the array being filtered would drop them
         pulses = pulses.filter(function (p) {
-          p.t += dt * 1.6; var A = nodes[p.l][p.a], B = nodes[p.l + 1][p.b], x = A.x + (B.x - A.x) * Math.min(1, p.t), y = A.y + (B.y - A.y) * Math.min(1, p.t);
-          ctx.strokeStyle = rgba(CY, .35); ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(x, y); ctx.stroke();
-          ctx.fillStyle = rgba(CY, .95); ctx.beginPath(); ctx.arc(x, y, 2.6, 0, 7); ctx.fill();
-          if (p.t >= 1) { glow[(p.l + 1) + ':' + p.b] = 1; if (p.l + 2 < nodes.length) { pulses.push({ l: p.l + 1, a: p.b, b: Math.floor(Math.random() * layers[p.l + 2]), t: 0 }); if (Math.random() < .35) pulses.push({ l: p.l + 1, a: p.b, b: Math.floor(Math.random() * layers[p.l + 2]), t: 0 }); } return false; }
+          p.t += dt * 1.6; var A = nodes[p.l][p.a], B = nodes[p.l + 1][p.b], u = Math.min(1, p.t), x = A.x + (B.x - A.x) * u, y = A.y + (B.y - A.y) * u;
+          var col = p.l + 2 === nodes.length ? AM : CY, x0 = A.x + (B.x - A.x) * Math.max(0, u - .35), y0 = A.y + (B.y - A.y) * Math.max(0, u - .35);
+          ctx.strokeStyle = rgba(col, .45); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x, y); ctx.stroke(); ctx.lineWidth = 1;
+          ctx.fillStyle = rgba(col, .95); ctx.beginPath(); ctx.arc(x, y, 2.6, 0, 7); ctx.fill();
+          if (p.t >= 1) {
+            glow[(p.l + 1) + ':' + p.b] = 1;
+            if (p.l + 2 < nodes.length) { born.push({ l: p.l + 1, a: p.b, b: nextNode(p.l + 1, p.b), t: 0 }); if (Math.random() < .3) born.push({ l: p.l + 1, a: p.b, b: nextNode(p.l + 1, p.b), t: 0 }); }
+            return false;
+          }
           return true;
         });
-        if (pulses.length > 90) pulses.splice(0, pulses.length - 90);
-        nodes.forEach(function (L, li) { L.forEach(function (n, k) { var g = glow[li + ':' + k] || 0; glow[li + ':' + k] = Math.max(0, g - dt * 1.5); ctx.fillStyle = rgba(li === nodes.length - 1 ? AM : V, .35 + .65 * g); ctx.beginPath(); ctx.arc(n.x, n.y, 5 + 4 * g, 0, 7); ctx.fill(); if (g > .3) { ctx.strokeStyle = rgba(li === nodes.length - 1 ? AM : CY, g * .5); ctx.beginPath(); ctx.arc(n.x, n.y, 9 + 8 * (1 - g), 0, 7); ctx.stroke(); } }); });
+        pulses = pulses.concat(born);
+        if (pulses.length > 120) pulses.splice(0, pulses.length - 120);
+        nodes.forEach(function (L, li) { var out = li === nodes.length - 1; L.forEach(function (n, k) { var g = glow[li + ':' + k] || 0; glow[li + ':' + k] = Math.max(0, g - dt * 1.5); ctx.fillStyle = rgba(out ? AM : V, .35 + .65 * g); ctx.beginPath(); ctx.arc(n.x, n.y, 5 + 4 * g, 0, 7); ctx.fill(); if (g > .3) { ctx.strokeStyle = rgba(out ? AM : CY, g * .5); ctx.beginPath(); ctx.arc(n.x, n.y, 9 + 8 * (1 - g), 0, 7); ctx.stroke(); }
+          if (out) { ctx.fillStyle = rgba(out && g > .2 ? AM : '210,205,255', .4 + .6 * g); ctx.font = '600 10px ui-monospace, Menlo, monospace'; ctx.fillText(acts[k] || '', n.x + 12, n.y + 3.5); } }); });
         ctx.fillStyle = rgba('210,205,255', .55); ctx.font = '600 11px ui-monospace, Menlo, monospace';
         ctx.fillText('percepts', nodes[0][0].x - 22, R.y + 14); ctx.fillText('action', nodes[nodes.length - 1][0].x - 18, R.y + 14);
       } };
