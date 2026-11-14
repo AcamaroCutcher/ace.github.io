@@ -35,6 +35,20 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'survival-radio',
+      title: 'Survival Radio: Disaster Communications Hub',
+      summary: 'An AI-assisted design concept, with an interactive 3-D model, for a rugged device that still reaches the outside world after a Cascadia earthquake knocks out nearby cell towers. It layers an Iridium satellite modem for SOS and GPS location, a LoRa/Meshtastic mesh radio paired to a phone, amateur radio (APRS, Winlink) and an SDR receiver, powered by Li-ion, solar, USB-C and a hand crank in an IP67 case. Includes a byte-by-byte SOS packet walkthrough, a power-budget calculator, and drop and submerge tests.',
+      disciplines: ['electronics', 'earth'],
+      types: ['interactive'],
+      status: 'current',
+      year: 2026,
+      featured: false,
+      tags: ['RF', 'SDR', 'LoRa', 'Iridium', 'Emergency comms', 'Three.js', 'Cascadia'],
+      links: [
+        { label: 'Explore the 3-D model', href: 'survival-radio/index.html', icon: 'fa-arrow-right', primary: true },
+      ],
+    },
+    {
       id: 'cpp-oop',
       title: 'C++ Object-Oriented Programming',
       summary: 'An AI-written interactive course in twelve lessons: classes and invariants, object lifetime and RAII, copying and moving, inheritance and memory layout, virtual functions and vtables, abstract classes and interfaces, ownership with smart pointers, templates, CRTP, std::variant and concepts (with a measured cost comparison), design patterns, pitfalls, and debugging with sanitizers and a GDB playground that replays two recorded bug hunts. Every program was compiled and run to produce the outputs shown, and each one opens in Compiler Explorer.',
