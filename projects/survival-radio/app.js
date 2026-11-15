@@ -400,7 +400,7 @@ function buildExternals() {
   sdr.add(lead);
   sdr.add(cyl(0.07, 0.09, 0.05, std(0x18181b), 0.85, 0.025, 0.2));
   for (const sgn of [-1, 1]) { const el = cyl(0.008, 0.012, 0.75, std(0xd4d4d8, { m: 0.9, r: 0.25 }), 0.85 + sgn * 0.25, 0.36, 0.2); el.rotation.z = -sgn * 0.75; sdr.add(el); }
-  addExternal('sdr', sdr, [2.3, 0, -3.0], -0.35);
+  addExternal('sdr', sdr, [-1.2, 0, 2.75], 0.4);
   // Folding solar panel shown at 20 W size (4 x 190 x 290 mm cells)
   const sol = new THREE.Group();
   const solTex = canvasTex(256, 384);
