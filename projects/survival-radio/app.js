@@ -17,10 +17,10 @@ const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 /* ============================== Scene ============================== */
 const viewport = $('viewport');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b1120);
-scene.fog = new THREE.Fog(0x0b1120, 40, 90);
+scene.background = new THREE.Color(0x17180f);
+scene.fog = new THREE.Fog(0x17180f, 30, 85);
 const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 400);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -34,29 +34,58 @@ const labelRenderer = new CSS2DRenderer({ element: $('labels') });
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.rotateSpeed = 0.8;
+controls.zoomSpeed = 0.9;
+controls.autoRotateSpeed = 0.9;
+controls.screenSpacePanning = true;
 controls.minDistance = 1.2;
 controls.maxDistance = 60;
 controls.maxPolarAngle = Math.PI * 0.495;
 
-scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x1e293b, 0.55));
-const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+const hemi = new THREE.HemisphereLight(0xefe6cf, 0x23251e, 0.6); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0d8, 1.7);
 sun.position.set(6, 12, 8);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 11, bottom: -9, near: 1, far: 50 });
 sun.shadow.bias = -0.0004;
 scene.add(sun);
-const rim = new THREE.DirectionalLight(0x7dd3fc, 0.45);
+const rim = new THREE.DirectionalLight(0xffb070, 0.5);
 rim.position.set(-9, 5, -7);
 scene.add(rim);
 
-const ground = new THREE.Mesh(new THREE.CircleGeometry(70, 72), new THREE.MeshStandardMaterial({ color: 0x141c2c, roughness: 1 }));
+// ground: a dark field-map with contour lines, fading out at the edge
+function topoTexture(light = false) {
+  const S = 1024, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+  g.fillStyle = light ? '#d6cdb1' : '#1d1e17'; g.fillRect(0, 0, S, S);
+  const hills = [[0.32, 0.38, 1], [0.7, 0.62, 0.8], [0.62, 0.22, 0.6], [0.2, 0.78, 0.7]];
+  for (const [hx, hy, a] of hills) for (let k = 1; k < 16; k++) {
+    g.beginPath();
+    for (let i = 0; i <= 160; i++) {
+      const th = i / 160 * Math.PI * 2, r = (k * 26 * a) * (1 + 0.16 * Math.sin(th * 3 + k * 0.7 + hx * 9) + 0.09 * Math.sin(th * 5 - k * 0.4 + hy * 7));
+      const x = hx * S + Math.cos(th) * r, y = hy * S + Math.sin(th) * r; i ? g.lineTo(x, y) : g.moveTo(x, y);
+    }
+    g.strokeStyle = light ? (k % 5 === 0 ? 'rgba(110,90,40,.32)' : 'rgba(110,90,40,.14)') : (k % 5 === 0 ? 'rgba(206,190,140,.22)' : 'rgba(190,176,130,.09)'); g.lineWidth = k % 5 === 0 ? 2.2 : 1.4; g.stroke();
+  }
+  g.strokeStyle = light ? 'rgba(110,90,40,.08)' : 'rgba(190,176,130,.06)'; g.lineWidth = 1;
+  for (let i = 0; i <= S; i += 64) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, S); g.moveTo(0, i); g.lineTo(S, i); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); t.anisotropy = 8;
+  return t;
+}
+const topoTex = { dark: topoTexture(false), light: topoTexture(true) };
+const ground = new THREE.Mesh(new THREE.CircleGeometry(70, 72), new THREE.MeshStandardMaterial({ color: 0xffffff, map: topoTex.dark, roughness: 1 }));
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
-const grid = new THREE.GridHelper(60, 60, 0x223049, 0x182237);
-grid.position.y = 0.003;
-scene.add(grid);
+// bench mat under the hub
+let benchMat, stars;
+{
+  const mat = new THREE.Mesh(new THREE.CircleGeometry(6.5, 64), new THREE.MeshStandardMaterial({ color: 0x24261d, roughness: 0.95, transparent: true, opacity: 0.85 })); benchMat = mat;
+  mat.rotation.x = -Math.PI / 2; mat.position.y = 0.002; mat.receiveShadow = true; scene.add(mat);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(6.45, 6.55, 96), new THREE.MeshBasicMaterial({ color: 0xff6b1a, transparent: true, opacity: 0.35 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.004; scene.add(ring);
+}
 {
   const g = new THREE.BufferGeometry(), pts = [];
   for (let i = 0; i < 1100; i++) {
@@ -64,8 +93,32 @@ scene.add(grid);
     pts.push(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph) + 6, r * Math.sin(ph) * Math.sin(th));
   }
   g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0x94a3b8, size: 0.45, fog: false })));
+  stars = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xcfc6a8, size: 0.4, fog: false, transparent: true, opacity: 0.6 })); scene.add(stars);
 }
+
+const dust = (() => {
+  const n = 260, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { p[i * 3] = (Math.random() - 0.5) * 16; p[i * 3 + 1] = Math.random() * 7; p[i * 3 + 2] = (Math.random() - 0.5) * 16; }
+  g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const m = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffd9a8, size: 0.035, transparent: true, opacity: 0.45, depthWrite: false }));
+  scene.add(m); return m;
+})();
+
+// light / dark scene palette, following the page theme (html.dark-mode)
+function applySceneTheme() {
+  const dark = document.documentElement.classList.contains('dark-mode');
+  const bg = dark ? 0x17180f : 0xd9d1b9;
+  scene.background.setHex(bg); scene.fog.color.setHex(bg);
+  ground.material.map = dark ? topoTex.dark : topoTex.light; ground.material.needsUpdate = true;
+  benchMat.material.color.setHex(dark ? 0x24261d : 0xc9bf9f);
+  hemi.color.setHex(dark ? 0xefe6cf : 0xfff8e6); hemi.groundColor.setHex(dark ? 0x23251e : 0x8f876b); hemi.intensity = dark ? 0.6 : 0.85;
+  sun.intensity = dark ? 1.7 : 2.0;
+  renderer.toneMappingExposure = dark ? 1.05 : 0.95;
+  stars.visible = dark;
+  dust.material.color.setHex(dark ? 0xffd9a8 : 0x6b5a33); dust.material.opacity = dark ? 0.45 : 0.3;
+}
+applySceneTheme();
+new MutationObserver(applySceneTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
 /* ============================== Helpers ============================== */
 const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.r ?? 0.6, metalness: o.m ?? 0.05, ...(o.x || {}) });
@@ -155,7 +208,7 @@ const packGroup = new THREE.Group(); rig.add(packGroup);
 let cadRoot = null; const CASE_Q = new THREE.Quaternion();
 let MODE = 'case';
 let explodeT = 0, explodeTarget = 0;
-let labelsOn = !NARROW, xray = true, wiresOn = true;
+let labelsOn = !NARROW, xray = true, wiresOn = true, explodeRate = 6, hovered = null;
 let selected = null;
 const tierState = { 0: true, 1: true, 2: true, 3: true };
 const anchors = {};        // 'comp.port' -> Object3D
@@ -272,9 +325,10 @@ gltfLoader.load('models/survival-radio-hub.glb', async gltf => {
   applyVisibility();
   loadEl.classList.add('done');
   renderIntro();
+  startIntro();
   window.dispatchEvent(new Event('sr-ready'));
 }, ev => {
-  if (ev.total) loadEl.querySelector('span').textContent = `Loading CAD model… ${Math.round(ev.loaded / ev.total * 100)} %`;
+  if (ev.total) { const pc = Math.round(ev.loaded / ev.total * 100); loadEl.querySelector('span').textContent = `Loading CAD model… ${pc} %`; $('loadBar').style.width = pc + '%'; }
 }, err => { loadEl.querySelector('span').textContent = 'Could not load the 3D model. The guide below still works.'; console.error(err); });
 
 function placeCadLabels() {
@@ -533,7 +587,7 @@ function buildPackCables() {
 function setMode(m) {
   if (!cadRoot) return;
   MODE = m; const pack = m === 'pack';
-  explodeTarget = explodeT = 0; $('explode').value = 0;
+  explodeTarget = explodeT = 0; syncExplode();
   if (pack) {
     cadRoot.quaternion.identity();
     hubRoot.position.set(0, 1.45, -1.05);
@@ -595,7 +649,7 @@ $('labelsBtn').classList.toggle('on', labelsOn);
 $('labelsBtn').onclick = e => { labelsOn = !labelsOn; e.currentTarget.classList.toggle('on', labelsOn); applyVisibility(); };
 $('wiresBtn').onclick = e => { wiresOn = !wiresOn; e.currentTarget.classList.toggle('on', wiresOn); applyWireStyle(); };
 $('packBtn').onclick = () => setMode(MODE === 'pack' ? 'case' : 'pack');
-$('explode').oninput = e => { explodeTarget = +e.target.value; };
+$('explode').oninput = e => { explodeRate = 8; explodeTarget = +e.target.value; $('explodeOut').textContent = Math.round(explodeTarget * 100) + '%'; $('assembleBtn').textContent = explodeTarget > 0.5 ? '▶ Assemble' : '▶ Take apart'; };
 
 /* ============================== Selection & info panel ============================== */
 const infoEl = $('info');
@@ -607,6 +661,22 @@ function setHighlight(id, on) {
     else { m.emissive.copy(o.userData.baseEmissive || new THREE.Color(0)); m.emissiveIntensity = o.userData.baseEI ?? 1; }
   }
   if (r.div) r.div.classList.toggle('sel', on);
+}
+function setHover(id) {
+  if (id === hovered) return;
+  const paint = (hid, on) => {
+    const r = comps[hid]; if (!r || hid === selected) return;
+    for (const o of r.meshes) {
+      const m = o.material; if (!m.emissive || m.map || o.userData.tag === 'led') continue;
+      if (on) { m.emissive.setHex(0x7a3410); m.emissiveIntensity = 0.35; }
+      else { m.emissive.copy(o.userData.baseEmissive || new THREE.Color(0)); m.emissiveIntensity = o.userData.baseEI ?? 1; }
+    }
+    if (r.div) r.div.classList.toggle('sel', on);
+    if (r.lab && on && !r.lab.visible) { r.lab.visible = true; r.hoverShown = true; }
+    if (r.lab && !on && r.hoverShown) { r.hoverShown = false; applyVisibility(); }
+  };
+  if (hovered) paint(hovered, false);
+  hovered = id; if (id) paint(id, true);
 }
 function buyLinks(info) {
   if (!info.buy || !info.buy.length) return '';
@@ -629,7 +699,7 @@ function infoHTML(id) {
   ${i.specs && i.specs.length ? `<table class="spec">${i.specs.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>` : ''}
   <div class="row-btns"><button class="btn" id="clearSel">← Overview</button>${guideHref(id) ? `<a class="btn" href="${guideHref(id)}">Read more in the guide ↓</a>` : ''}</div>`;
 }
-const focus = { target: V(), cam: null, active: false };
+const focus = { target: V(), cam: null, active: false, tw: null, dur: 1.1 };
 function select(id, fly = false) {
   id = ALIAS[id] || id;
   const r = comps[id]; if (!r) return;
@@ -646,13 +716,13 @@ function select(id, fly = false) {
     b.getCenter(focus.target);
     const dir = camera.position.clone().sub(controls.target).normalize();
     if (r.cad && INTERNAL.has(id) && MODE === 'case') dir.set(dir.x * 0.55, 1, dir.z * 0.55).normalize();   // look down through the lid
-    const d = THREE.MathUtils.clamp(size * 2.6, 3.4, 14);
+    const d = THREE.MathUtils.clamp(size * 2.8, 4.6, 14);
     focus.cam = focus.target.clone().addScaledVector(dir, d);
     if (focus.cam.y < 0.6) focus.cam.y = 0.6;
     focus.active = true;
   }
 }
-function clearSelection() { if (selected) setHighlight(selected, false); selected = null; renderIntro(); markList(); applyVisibility(); applyXray(); }
+function clearSelection() { if (selected) setHighlight(selected, false); selected = null; $('viewport').focus({ preventScroll: true }); renderIntro(); markList(); applyVisibility(); applyXray(); }
 function renderIntro() {
   infoEl.innerHTML = `<h2>A layered survival comms hub</h2>
   <p class="sub">Interactive CAD model at real size. Tap any part, or pick one from the list.</p>
@@ -699,7 +769,9 @@ function pick(ev) {
   }
   return fallback;
 }
-renderer.domElement.addEventListener('pointerdown', e => { downXY = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerdown', e => { downXY = [e.clientX, e.clientY]; viewport.focus({ preventScroll: true }); });
+renderer.domElement.addEventListener('pointerleave', () => setHover(null));
+renderer.domElement.addEventListener('dblclick', e => { const id = pick(e); if (id) select(id, true); });
 renderer.domElement.addEventListener('pointerup', e => {
   if (!downXY) return; const d = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]); downXY = null;
   if (d > 6) return; const id = pick(e); if (id) select(id);
@@ -707,18 +779,114 @@ renderer.domElement.addEventListener('pointerup', e => {
 let hoverBusy = false;
 renderer.domElement.addEventListener('pointermove', e => {
   if (hoverBusy || e.pointerType !== 'mouse') return; hoverBusy = true;
-  requestAnimationFrame(() => { renderer.domElement.style.cursor = pick(e) ? 'pointer' : 'grab'; hoverBusy = false; });
+  requestAnimationFrame(() => { const id = pick(e); setHover(id ? (ALIAS[id] || id) : null); renderer.domElement.style.cursor = id ? 'pointer' : 'grab'; hoverBusy = false; });
 });
-controls.addEventListener('start', () => { focus.active = false; });
+controls.addEventListener('start', () => { focus.active = false; focus.tw = null; });
 
 /* ============================== Camera ============================== */
 const HOME = {
   case: NARROW ? [V(6.8, 6.2, 9.4), V(0, 0.7, 0.2)] : [V(5.6, 4.4, 7.0), V(0, 0.7, 0.3)],
   pack: NARROW ? [V(8.5, 7.5, -9.5), V(0, 3.1, -0.6)] : [V(7.6, 6.0, -7.8), V(0, 3.1, -0.6)],
 };
-function resetView() { const [p, t] = HOME[MODE]; camera.position.copy(p); focus.target.copy(t); focus.cam = null; focus.active = true; }
-resetView(); controls.target.copy(HOME.case[1]);
-$('resetBtn').onclick = () => { explodeTarget = 0; $('explode').value = 0; resetView(); };
+function flyTo(p, t, dur = 1.1) { focus.target.copy(t); focus.cam = p ? p.clone() : null; focus.dur = dur; focus.tw = null; focus.active = true; }
+function resetView() { const [p, t] = HOME[MODE]; flyTo(p, t); }
+camera.position.copy(HOME.case[0]).multiplyScalar(2.6).add(V(0, 6, 0)); controls.target.copy(HOME.case[1]);
+function viewPreset(v) {
+  const t = HOME[MODE][1].clone(), d = MODE === 'pack' ? 13 : 9.5;
+  const dirs = { iso: V(0.62, 0.5, 0.6), front: V(0.02, 0.22, 1), side: V(1, 0.22, 0.02), top: V(0.001, 1, 0.02), inside: V(0.25, 1, 0.35) };
+  if (v === 'inside') {
+    if (MODE !== 'case') setMode('case');
+    if (!xray) { xray = true; $('xray').classList.add('on'); applyXray(); }
+    explodeRate = 3; explodeTarget = 0.35; syncExplode();
+    flyTo(V(0, 0.9, 0.2).addScaledVector(dirs.inside.normalize(), 5.2), V(0, 0.9, 0.2));
+  } else flyTo(t.clone().addScaledVector(dirs[v].normalize(), d), t);
+  for (const b of document.querySelectorAll('#views [data-view]')) b.classList.toggle('on', b.dataset.view === v);
+}
+// introduction: the case assembles itself while the camera swoops in
+function startIntro() {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { resetView(); return; }
+  explodeT = 1; explodeTarget = 1; syncExplode(); explodeRate = 1.6;
+  for (const r of Object.values(comps)) if (r.cad && r.obj.parent === cadRoot) r.obj.position.copy(r.base).addScaledVector(r.dir, 1);
+  flyTo(HOME.case[0], HOME.case[1], 2.6);
+  setTimeout(() => { explodeTarget = 0; syncExplode(); }, 900);
+}
+$('resetBtn').onclick = () => { explodeTarget = 0; syncExplode(); resetView(); };
+function syncExplode() {
+  $('explode').value = explodeTarget; $('explodeOut').textContent = Math.round(explodeTarget * 100) + '%';
+  $('assembleBtn').textContent = explodeTarget > 0.5 ? '▶ Assemble' : '▶ Take apart';
+}
+syncExplode();
+$('assembleBtn').onclick = () => { explodeRate = 1.8; explodeTarget = explodeTarget > 0.5 ? 0 : 1; syncExplode(); };
+for (const b of document.querySelectorAll('#views [data-view]')) b.onclick = () => viewPreset(b.dataset.view);
+
+/* orbit / zoom helpers shared by the pad and the keyboard */
+const sph = new THREE.Spherical();
+function orbit(dAz, dEl) {
+  focus.active = false; focus.tw = null;
+  const off = camera.position.clone().sub(controls.target); sph.setFromVector3(off);
+  sph.theta += dAz; sph.phi = THREE.MathUtils.clamp(sph.phi - dEl, 0.05, controls.maxPolarAngle);
+  camera.position.copy(controls.target).add(off.setFromSpherical(sph));
+}
+function zoom(f) {
+  focus.active = false; focus.tw = null;
+  const off = camera.position.clone().sub(controls.target);
+  const L = THREE.MathUtils.clamp(off.length() * f, controls.minDistance, controls.maxDistance);
+  camera.position.copy(controls.target).add(off.setLength(L));
+}
+const PAD = { left: () => orbit(-0.08, 0), right: () => orbit(0.08, 0), up: () => orbit(0, 0.06), down: () => orbit(0, -0.06), in: () => zoom(0.92), out: () => zoom(1.09) };
+for (const b of document.querySelectorAll('[data-pad]')) {
+  let iv = null; const fn = PAD[b.dataset.pad];
+  const stop = () => { clearInterval(iv); iv = null; };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); fn(); stop(); iv = setInterval(fn, 45); });
+  b.addEventListener('pointerup', stop); b.addEventListener('pointerleave', stop); b.addEventListener('pointercancel', stop);
+  b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+}
+
+/* spin, full screen, snapshot, help */
+$('spinBtn').onclick = () => { controls.autoRotate = !controls.autoRotate; $('spinBtn').classList.toggle('on', controls.autoRotate); };
+const modelEl = $('model');
+$('fsBtn').onclick = () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (modelEl.requestFullscreen) modelEl.requestFullscreen().catch(() => modelEl.classList.toggle('fs'));
+  else modelEl.classList.toggle('fs');
+};
+document.addEventListener('fullscreenchange', () => { const on = document.fullscreenElement === modelEl; modelEl.classList.toggle('fs', on); $('fsBtn').textContent = on ? 'Exit full screen' : 'Full screen'; });
+$('shotBtn').onclick = () => {
+  renderer.render(scene, camera);
+  const a = document.createElement('a'); a.href = renderer.domElement.toDataURL('image/png'); a.download = 'survival-radio-' + (selected || MODE) + '.png';
+  document.body.appendChild(a); a.click(); a.remove(); toast('Saved a PNG of the current view.', 2500);
+};
+const helpEl = $('help');
+$('helpBtn').onclick = () => helpEl.classList.toggle('open');
+$('helpClose').onclick = () => helpEl.classList.remove('open');
+helpEl.addEventListener('click', e => { if (e.target === helpEl) helpEl.classList.remove('open'); });
+
+/* keyboard: active while the workbench is on screen; arrow keys only when the viewport has focus */
+let pointerInViewport = false;
+viewport.addEventListener('pointerenter', () => { pointerInViewport = true; });
+viewport.addEventListener('pointerleave', () => { pointerInViewport = false; });
+document.addEventListener('keydown', e => {
+  if (!visibleOnScreen || e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (['input', 'select', 'textarea'].includes(tag) || e.target.isContentEditable) return;
+  if (e.target.id === 'knob') return;
+  const vpFocus = viewport.contains(document.activeElement) || pointerInViewport;
+  const k = e.key;
+  const act = {
+    e: () => { explodeRate = 3; explodeTarget = explodeTarget > 0.5 ? 0 : 1; syncExplode(); },
+    a: () => $('assembleBtn').click(),
+    x: () => $('xray').click(), w: () => $('wiresBtn').click(), l: () => $('labelsBtn').click(),
+    b: () => $('packBtn').click(), t: () => $('spinBtn').click(), f: () => $('fsBtn').click(), p: () => $('shotBtn').click(),
+    r: () => { explodeTarget = 0; syncExplode(); resetView(); },
+    '?': () => helpEl.classList.toggle('open'),
+    Escape: () => { helpEl.classList.remove('open'); clearSelection(); },
+    1: () => switchTab('explore'), 2: () => switchTab('connect'), 3: () => switchTab('sos'), 4: () => switchTab('sensors'), 5: () => switchTab('power'),
+  }[k.length === 1 ? k.toLowerCase() : k];
+  const arrows = { ArrowLeft: PAD.left, ArrowRight: PAD.right, ArrowUp: PAD.up, ArrowDown: PAD.down, '+': PAD.in, '=': PAD.in, '-': PAD.out, '_': PAD.out }[k];
+  if (arrows && vpFocus) { e.preventDefault(); arrows(); return; }
+  if (act) { if (k === ' ' ) e.preventDefault(); act(); }
+});
 
 /* ============================== Tabs ============================== */
 function switchTab(name) {
@@ -823,13 +991,17 @@ let anim = null;
 const water = new THREE.Mesh(new THREE.BoxGeometry(7, 1, 6), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.33, depthWrite: false, roughness: 0.1 }));
 water.visible = false; scene.add(water); const bubbles = [];
 $('dropBtn').onclick = () => {
-  if (anim) return; explodeTarget = explodeT = 0; $('explode').value = 0;
+  if (anim) return; explodeTarget = explodeT = 0; syncExplode();
   anim = { type: 'drop', t: 0, y: 4.8, v: 0, bounces: 0 };
   toast('<b>Drop test.</b> Based on MIL-STD-810H Method 516 (transit drop): 26 drops from about 1.2 m (48 in) onto plywood over concrete. Boards sit on standoffs on a plate cushioned by silicone pads; the battery sits in a cradle; connectors latch.', 7000);
 };
 $('dunkBtn').onclick = () => {
-  if (anim) return; explodeTarget = explodeT = 0; $('explode').value = 0; anim = { type: 'dunk', t: 0 };
+  if (anim) return; explodeTarget = explodeT = 0; syncExplode(); anim = { type: 'dunk', t: 0 };
   toast('<b>Submerge test (IP67).</b> Dust-tight and survives 1 m of water for 30 minutes. After drilling every hole, close the case and dunk it with a paper towel inside, then check the towel is dry. The case\'s purge valve equalizes pressure without letting water in.', 7000);
+};
+$('quakeBtn').onclick = () => {
+  if (anim) return; switchTab('sensors'); setScen('quake');
+  toast('<b>Aftershock.</b> The LIS3DH accelerometer logs the peak shaking (see the Sensors tab). Boards on standoffs and a cushioned plate ride it out; if you then stop moving for a set time, the firmware can start an SOS countdown.', 6500);
 };
 function spawnShock() { const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, side: THREE.DoubleSide, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(0, 0.02, 0); scene.add(m); fx.push({ type: 'ring', m, t: 0, life: 0.6, maxR: 3.5 }); }
 function updateAnim(dt) {
@@ -840,8 +1012,11 @@ function updateAnim(dt) {
     rig.position.y = anim.y; rig.rotation.z = anim.y > 0 ? Math.sin(anim.t * 6) * 0.04 * Math.min(1, anim.y) : rig.rotation.z * 0.8;
     if (anim.t > 3.2) { rig.position.y = 0; rig.rotation.z = 0; anim = null; }
   } else if (anim.type === 'shake') {
-    rig.position.x = Math.sin(anim.t * 45) * 0.05 * Math.max(0, 1 - anim.t / 1.8); rig.rotation.z = Math.sin(anim.t * 31) * 0.012 * Math.max(0, 1 - anim.t / 1.8);
-    if (anim.t > 1.8) { rig.position.x = 0; rig.rotation.z = 0; anim = null; }
+    const k = Math.max(0, 1 - anim.t / 2.6), env = Math.min(1, anim.t * 4) * k;
+    rig.position.x = Math.sin(anim.t * 45) * 0.07 * env; rig.position.z = Math.sin(anim.t * 37 + 1) * 0.04 * env; rig.rotation.z = Math.sin(anim.t * 31) * 0.016 * env;
+    camera.position.y += Math.sin(anim.t * 53) * 0.012 * env;
+    if (anim.t > 1.2 && anim.t - dt <= 1.2) spawnShock();
+    if (anim.t > 2.6) { rig.position.x = 0; rig.position.z = 0; rig.rotation.z = 0; anim = null; }
   } else if (anim.type === 'dunk') {
     const T = anim.t, H = MODE === 'pack' ? 6.2 : 2.4; water.visible = true;
     water.position.z = MODE === 'pack' ? -0.3 : 0;
@@ -987,12 +1162,12 @@ const SENS = [
 ];
 const BASE = { o2: 20.9, co: 1, ch4: 0, co2: 450, pm: 6, t: 12, rh: 72, p: 1013, g: 0 };
 const SCEN = {
-  normal: { label: '🌤 Normal air', v: {}, note: 'Background readings on a cool, damp Portland day.' },
-  gas: { label: '🔥 Gas leak', v: { ch4: 26 }, note: 'A broken gas line nearby. Above 20 % of the lower explosive limit: no flames or sparks, move away, and shut off the gas only if you know how.' },
-  gen: { label: '⚙️ Generator indoors', v: { co: 230, co2: 2600, pm: 45, t: 17 }, note: 'Exhaust building up indoors. CO has no smell or color; get everyone to fresh air.' },
-  trapped: { label: '🧱 Trapped in a void', v: { o2: 18.6, co2: 6200, pm: 140, t: 19, rh: 96 }, note: 'A small, dusty enclosed space: oxygen falling, CO₂ rising (above the SCD-41\'s specified 5000 ppm range, so less accurate). These readings now ride along in the SOS message.' },
-  smoke: { label: '🌫 Wildfire smoke', v: { pm: 190, co: 18, co2: 620 }, note: 'Heavy smoke: PM2.5 well into the unhealthy range. Wear an N95 and limit exertion.' },
-  quake: { label: '〰️ Aftershock', v: { g: 0.42 }, note: 'The LIS3DH records the shaking. If you then stop moving for a set time, the hub can start an automatic SOS countdown.' },
+  normal: { label: 'Normal air', v: {}, note: 'Background readings on a cool, damp Portland day.' },
+  gas: { label: 'Gas leak', v: { ch4: 26 }, note: 'A broken gas line nearby. Above 20 % of the lower explosive limit: no flames or sparks, move away, and shut off the gas only if you know how.' },
+  gen: { label: 'Generator indoors', v: { co: 230, co2: 2600, pm: 45, t: 17 }, note: 'Exhaust building up indoors. CO has no smell or color; get everyone to fresh air.' },
+  trapped: { label: 'Trapped in a void', v: { o2: 18.6, co2: 6200, pm: 140, t: 19, rh: 96 }, note: 'A small, dusty enclosed space: oxygen falling, CO₂ rising (above the SCD-41\'s specified 5000 ppm range, so less accurate). These readings now ride along in the SOS message.' },
+  smoke: { label: 'Wildfire smoke', v: { pm: 190, co: 18, co2: 620 }, note: 'Heavy smoke: PM2.5 well into the unhealthy range. Wear an N95 and limit exertion.' },
+  quake: { label: 'Aftershock', v: { g: 0.42 }, note: 'The LIS3DH records the shaking. If you then stop moving for a set time, the hub can start an automatic SOS countdown.' },
 };
 const sensVal = { ...BASE }; let sensTarget = { ...BASE }, lastLevel = 0, peakG = 0, peakTimer = 0, sensTimer = 0, alarmTimer = 0, airLevel = 0;
 for (const [k, sc] of Object.entries(SCEN)) { const b = document.createElement('button'); b.textContent = sc.label; b.dataset.k = k; b.onclick = () => setScen(k); $('scen').appendChild(b); }
@@ -1001,7 +1176,7 @@ function setScen(k) {
   for (const b of $('scen').children) b.classList.toggle('on', b.dataset.k === k);
   $('scenNote').textContent = SCEN[k].note;
   if (k === 'quake') { sensVal.g = 0.42; sensTarget.g = 0.01; if (!anim) anim = { type: 'shake', t: 0 }; }
-  if (podNode && k !== 'normal') { new THREE.Box3().setFromObject(podNode).getCenter(focus.target); focus.active = true; }
+  if (podNode && k !== 'normal') { new THREE.Box3().setFromObject(podNode).getCenter(focus.target); focus.cam = null; focus.tw = null; focus.active = true; }
 }
 function level(s, v) {
   if (s.alarmLo !== undefined && v < s.alarmLo) return 2; if (s.warnLo !== undefined && v < s.warnLo) return 1;
@@ -1084,7 +1259,8 @@ function tick() {
   if (!visibleOnScreen) return;
   if (cadRoot) {
     const prev = explodeT;
-    explodeT += (explodeTarget - explodeT) * Math.min(1, dt * 6);
+    explodeT += (explodeTarget - explodeT) * Math.min(1, dt * explodeRate);
+    if (Math.abs(explodeTarget - explodeT) < 0.002) { explodeT = explodeTarget; explodeRate = 6; }
     if (Math.abs(explodeT - prev) > 1e-4) {
       for (const r of Object.values(comps)) if (r.cad && r.obj.parent === cadRoot) r.obj.position.copy(r.base).addScaledVector(r.dir, explodeT);
       comps.sos.extra.position.copy(comps.sos.extraBase).addScaledVector(comps.sos.dir, explodeT);
@@ -1104,16 +1280,32 @@ function tick() {
   for (const f of fx) if (f.curve) { const k = Math.min(1, f.t / f.life); f.m.position.copy(f.curve.getPointAt(k)); }
   updateAnim(dt);
   if (focus.active) {
-    const k = Math.min(1, dt * 3);
-    controls.target.lerp(focus.target, k);
-    if (focus.cam) camera.position.lerp(focus.cam, k);
-    if (controls.target.distanceTo(focus.target) < 0.01 && (!focus.cam || camera.position.distanceTo(focus.cam) < 0.02)) { focus.active = false; focus.cam = null; }
+    // eased flight: start from wherever the camera is, arrive smoothly (ease-in-out cubic)
+    if (!focus.tw) focus.tw = { k: 0, t0: controls.target.clone(), p0: camera.position.clone(), t1: focus.target.clone(), p1: focus.cam ? focus.cam.clone() : null };
+    const tw = focus.tw; tw.k = Math.min(1, tw.k + dt / (focus.dur || 1.1));
+    const e = tw.k < 0.5 ? 4 * tw.k ** 3 : 1 - (-2 * tw.k + 2) ** 3 / 2;
+    controls.target.lerpVectors(tw.t0, tw.t1, e);
+    if (tw.p1) {
+      camera.position.lerpVectors(tw.p0, tw.p1, e);
+      const lift = Math.sin(e * Math.PI) * Math.min(1.2, tw.p0.distanceTo(tw.p1) * 0.08); camera.position.y += lift;   // gentle arc
+    }
+    if (tw.k >= 1) { focus.active = false; focus.cam = null; focus.tw = null; focus.dur = 1.1; }
   }
+  dust.rotation.y += dt * 0.02; dust.position.y = Math.sin(t * 0.3) * 0.15;
+  camHud(dt);
   controls.update();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 }
 tick();
+
+function camHud(dt) {
+  camHud.t = (camHud.t || 0) + dt; if (camHud.t < 0.15) return; camHud.t = 0;
+  const el = $('camRead'); if (!el) return;
+  sph.setFromVector3(camera.position.clone().sub(controls.target));
+  const az = ((THREE.MathUtils.radToDeg(sph.theta) % 360) + 360) % 360, el2 = 90 - THREE.MathUtils.radToDeg(sph.phi);
+  el.textContent = `AZ ${az.toFixed(0).padStart(3, '0')}°  EL ${el2.toFixed(0).padStart(2, '0')}°  R ${(sph.radius * 0.1).toFixed(2)} m`;
+}
 
 // Public hooks for the written guide (guide.js)
 window.SR = {

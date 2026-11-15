@@ -3,14 +3,14 @@
 // Prices are approximate US retail checked in November 2026; they change often.
 
 export const CAT = {
-  brain: { label: 'Brains & radios', color: '#22d3ee' },
-  sat: { label: 'Satellite', color: '#a78bfa' },
-  loc: { label: 'Location & motion', color: '#38bdf8' },
-  sense: { label: 'Sensors', color: '#fb7185' },
-  power: { label: 'Power', color: '#4ade80' },
-  ui: { label: 'Controls & display', color: '#facc15' },
-  rugged: { label: 'Enclosure & connectors', color: '#f97316' },
-  ext: { label: 'Carry-along gear', color: '#f472b6' },
+  brain: { label: 'Brains & radios', color: '#74d2c3' },
+  sat: { label: 'Satellite', color: '#b9a5ee' },
+  loc: { label: 'Location & motion', color: '#8ab8d8' },
+  sense: { label: 'Sensors', color: '#e8776b' },
+  power: { label: 'Power', color: '#a4cf6a' },
+  ui: { label: 'Controls & display', color: '#f2b33d' },
+  rugged: { label: 'Enclosure & connectors', color: '#ff6b1a' },
+  ext: { label: 'Carry-along gear', color: '#d98cb3' },
 };
 
 export const TIER_NAMES = { 0: 'Tier 0 · carry', 1: 'Tier 1 · DIY hub', 2: 'Tier 2 · ham radio', 3: 'Tier 3 · Starlink' };

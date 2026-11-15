@@ -14,190 +14,13 @@
 <meta property="og:url" content="https://acamaro.com/projects/survival-radio/" />
 <meta property="og:image" content="https://acamaro.com/projects/thumbs/survival-radio.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
+<script src="../../js/theme-init.js"></script>
+<meta name="theme-color" content="#ebe5d2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#11120f" media="(prefers-color-scheme: dark)" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-<style>
-:root{--bg:#0b1120;--panel:#0f172a;--panel2:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#f97316;--accent2:#22d3ee;--ok:#4ade80;--warn:#facc15;--bad:#f87171;--sat:#a78bfa}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:64px}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
-a{color:var(--accent2)}
-code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:#0b1424;border:1px solid #1f2b40;border-radius:4px;padding:1px 5px}
-.topbar{position:fixed;inset:0 0 auto 0;height:52px;display:flex;align-items:center;gap:14px;padding:0 16px;background:rgba(15,23,42,.94);border-bottom:1px solid var(--line);z-index:30;backdrop-filter:blur(6px)}
-.topbar .back{color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}
-.topbar .back:hover{color:var(--text)}
-.topbar h1{font-size:16px;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
-.topbar h1 span{color:var(--accent)}
-.topbar nav{margin-left:auto;display:flex;gap:4px;flex:none}
-.topbar nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:7px;white-space:nowrap}
-.topbar nav a:hover{color:var(--text);background:var(--panel2)}
-/* ---------------- app ---------------- */
-#model{margin-top:52px;height:calc(100svh - 52px);min-height:560px;display:grid;grid-template-columns:1fr 430px;border-bottom:1px solid var(--line)}
-#viewport{position:relative;overflow:hidden;min-height:0;touch-action:none}
-#viewport canvas{display:block}
-#labels{position:absolute;inset:0;pointer-events:none}
-.lbl{font-size:11px;font-weight:500;color:var(--text);background:rgba(15,23,42,.84);border:1px solid var(--line);padding:2px 7px;border-radius:5px;white-space:nowrap;pointer-events:auto;cursor:pointer;user-select:none}
-.lbl:hover,.lbl.sel{border-color:var(--accent);color:#fff}
-.lbl i,.complist i,.links i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
-#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(11,17,32,.85);z-index:4;transition:opacity .5s;font-size:14px;color:var(--muted)}
-#loading.done{opacity:0;pointer-events:none}
-.toolbar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none;z-index:3}
-.toolbar>*{pointer-events:auto}
-.chip,.btn{font:500 12px Inter,sans-serif;color:var(--text);background:rgba(30,41,59,.94);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;user-select:none;text-decoration:none;display:inline-block}
-.chip.on{border-color:var(--accent);background:rgba(249,115,22,.2)}
-.btn:hover,.chip:hover{border-color:#64748b}
-.btn.danger{background:#dc2626;border-color:#ef4444;color:#fff;font-weight:700}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.slider{display:flex;align-items:center;gap:6px;background:rgba(30,41,59,.94);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px}
-.slider input{width:90px;accent-color:var(--accent)}
-.tiers{position:absolute;top:10px;left:10px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 20px);z-index:3}
-.hint{position:absolute;top:10px;right:10px;font-size:11px;color:var(--muted);background:rgba(15,23,42,.7);padding:5px 8px;border-radius:6px;pointer-events:none;z-index:3}
-.toast{position:absolute;left:50%;top:52px;transform:translateX(-50%);max-width:min(580px,92%);background:rgba(15,23,42,.96);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}
-.toast.show{opacity:1}
-#panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
-.tabs button{flex:1;background:none;border:none;color:var(--muted);font:600 12.5px Inter,sans-serif;padding:12px 2px;cursor:pointer;border-bottom:2px solid transparent}
-.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
-.pane{display:none;overflow:auto;padding:16px;flex:1;min-height:0;overscroll-behavior:contain}
-.pane.on{display:block}
-.pane h2{font-size:18px;margin:0 0 4px}
-.pane h3{font-size:13.5px;margin:16px 0 4px;color:var(--accent)}
-.pane p,.pane li{font-size:13.5px;line-height:1.55;color:#cbd5e1}
-.pane ul{padding-left:18px;margin:6px 0}
-.sub{color:var(--muted);font-size:12.5px;margin:0 0 10px}
-.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);margin:2px 4px 2px 0;color:var(--muted)}
-.pill.t0{border-color:#eab308;color:#fde047}.pill.t1{border-color:var(--accent);color:#fdba74}.pill.t2{border-color:#34d399;color:#86efac}.pill.t3{border-color:var(--sat);color:#c4b5fd}
-table.spec{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
-table.spec td{border-bottom:1px solid var(--line);padding:5px 4px;vertical-align:top}
-table.spec td:first-child{color:var(--muted);width:34%}
-.buy{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.buy a{font-size:12px;text-decoration:none;border:1px solid #155e75;background:rgba(34,211,238,.08);padding:4px 8px;border-radius:6px}
-.row-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.complist,.links{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
-.complist .grp,.links .grp{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:8px}
-.complist button,.links button{text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 8px;font:500 12px Inter,sans-serif;cursor:pointer}
-.complist button:hover,.complist button.sel,.links button:hover,.links button.on{border-color:var(--accent)}
-.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:11.5px;color:var(--muted);margin:6px 0 2px}
-.legend span{display:inline-flex;align-items:center;gap:5px}
-.legend b{display:inline-block;width:16px;height:4px;border-radius:2px}
-table.mini-t{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
-table.mini-t td{border-bottom:1px solid var(--line);padding:3px 4px}
-table.mini-t td:first-child{font-family:'JetBrains Mono',monospace;color:#93c5fd;width:30%}
-.steps{list-style:none;padding:0;margin:10px 0}
-.steps li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
-.steps .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);margin-top:1px}
-.steps li.run .dot{border-color:var(--warn);border-top-color:transparent;animation:spin .8s linear infinite}
-.steps li.done .dot{border-color:var(--ok);background:var(--ok)}
-.steps small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;font-family:'JetBrains Mono',monospace;word-break:break-word}
-@keyframes spin{to{transform:rotate(360deg)}}
-.hex{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;word-break:break-all;background:#020617;border:1px solid var(--line);border-radius:8px;padding:10px}
-.hex span{padding:1px 2px;border-radius:3px}
-table.fields{width:100%;border-collapse:collapse;font-size:11.5px;font-family:'JetBrains Mono',monospace;margin-top:8px}
-table.fields th,table.fields td{border-bottom:1px solid var(--line);padding:4px 3px;text-align:left}
-table.fields th{color:var(--muted);font-weight:500}
-label.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;margin:10px 0 4px}
-label.row output{font-family:'JetBrains Mono',monospace;color:var(--accent)}
-input[type=range]{width:100%;accent-color:var(--accent)}
-input[type=text],select{width:100%;background:#020617;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:13px Inter,sans-serif}
-.checks label{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);gap:8px}
-.checks label span:last-child{font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap}
-.bar{height:14px;border-radius:4px;background:var(--line);overflow:hidden;margin:3px 0 8px}
-.bar>div{height:100%;transition:width .3s}
-.big{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
-.kpis small{color:var(--muted);font-size:11.5px}
-.warnbox{border-left:3px solid var(--warn);padding:8px 10px;background:rgba(250,204,21,.07);border-radius:4px;font-size:12.5px;margin:10px 0;line-height:1.5}
-.scen{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
-.scen button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:500 12.5px Inter,sans-serif;cursor:pointer;text-align:left}
-.scen button.on{border-color:var(--accent);background:rgba(249,115,22,.15)}
-.alarm{border-radius:8px;padding:10px 12px;font-weight:600;font-size:13.5px;margin:8px 0}
-.alarm.ok{background:rgba(74,222,128,.12);border:1px solid #166534;color:#86efac}
-.alarm.warn{background:rgba(250,204,21,.12);border:1px solid #a16207;color:#fde047}
-.alarm.bad{background:rgba(248,113,113,.15);border:1px solid #b91c1c;color:#fca5a5;animation:blink 1s steps(2) infinite}
-@keyframes blink{50%{border-color:#f87171}}
-table.sens{width:100%;border-collapse:collapse;font-size:12.5px}
-table.sens td{padding:5px 3px;border-bottom:1px solid var(--line);vertical-align:middle}
-table.sens td.v{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;width:32%}
-table.sens td.v span{color:var(--muted);font-size:10.5px}
-table.sens .mini{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
-table.sens .mini div{height:100%}
-/* ---------------- guide ---------------- */
-.guide-wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1240px;margin:0 auto;padding:40px 24px 80px}
-.toc{position:sticky;top:72px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;font-size:13px}
-.toc b{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 8px;border-left:2px solid var(--line)}
-.toc a.sub{padding-left:20px;font-size:12.5px;margin:0;color:var(--muted)}
-.toc a:hover{color:var(--text)}
-.toc a.on{color:var(--text);border-left-color:var(--accent)}
-article{max-width:860px;min-width:0}
-article h2{font-size:28px;margin:56px 0 10px;line-height:1.2}
-article h2:first-child{margin-top:0}
-article h3{font-size:20px;margin:34px 0 8px;color:#fdba74}
-article h4{font-size:16px;margin:22px 0 6px}
-article p,article li{font-size:16px;line-height:1.7;color:#cbd5e1}
-article ul,article ol{padding-left:22px}
-article .lead{font-size:18px;color:var(--text)}
-.kicker{color:var(--accent);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0}
-.callout{border:1px solid var(--line);border-left:4px solid var(--accent);background:rgba(249,115,22,.06);border-radius:8px;padding:14px 16px;margin:18px 0}
-.callout.blue{border-left-color:var(--accent2);background:rgba(34,211,238,.05)}
-.callout.red{border-left-color:var(--bad);background:rgba(248,113,113,.06)}
-.callout p{margin:6px 0}
-figure{margin:22px 0}
-figure svg{width:100%;height:auto;background:#0b1424;border:1px solid #1f2b40;border-radius:12px}
-figcaption{font-size:13px;color:var(--muted);margin-top:8px}
-.blk{cursor:pointer}
-.blk:hover rect{stroke:#f97316;stroke-width:2}
-.tbl{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0}
-.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 8px;text-align:left;vertical-align:top}
-.tbl th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
-.tbl td code{white-space:nowrap}
-.tbl-wrap{overflow-x:auto}
-pre{background:#0b1424;border:1px solid #1f2b40;border-radius:10px;padding:14px;overflow:auto;font-size:13px;line-height:1.55}
-pre code{background:none;border:none;padding:0}
-.bytes{display:flex;flex-wrap:wrap;gap:4px;margin:12px 0}
-.bytes span{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:#0b1424}
-.bytes span small{display:block;color:var(--muted);font-size:10.5px;font-family:Inter,sans-serif}
-.parts-grid{display:grid;grid-template-columns:1fr;gap:14px}
-.part-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
-.part-card h4{margin:0 0 4px;font-size:17px}
-.part-card .meta{font-size:13px;color:var(--muted);margin-bottom:8px}
-.part-card .meta b{color:var(--text)}
-.part-card dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:10px 0 0;font-size:14.5px;line-height:1.6}
-.part-card dt{color:var(--muted);font-weight:600}
-.part-card dd{margin:0;color:#cbd5e1}
-.part-card .buy a{font-size:12.5px}
-.cat-intro{color:#cbd5e1}
-.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:16px 0}
-.dl{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;color:var(--text);display:block}
-.dl:hover{border-color:var(--accent)}
-.dl b{display:block;font-size:15px;margin-bottom:4px}
-.dl span{display:block;color:var(--muted);font-size:13px;line-height:1.5}
-.dl em{font-style:normal;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px}
-.view3d{font-size:12px;margin-left:8px;cursor:pointer;color:var(--accent2);background:none;border:1px solid #155e75;border-radius:6px;padding:2px 8px}
-footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--muted);font-size:13px}
-@media (max-width:1000px){
-  #model{grid-template-columns:minmax(0,1fr);grid-template-rows:58% 42%;height:calc(100svh - 52px)}
-  #panel{border-left:none;border-top:1px solid var(--line)}
-  .hint{display:none}
-  .topbar nav a.opt{display:none}
-  .guide-wrap{grid-template-columns:minmax(0,1fr);padding:28px 16px 60px}
-  .toc{display:none}
-}
-@media (max-width:600px){
-  .topbar{gap:10px;padding:0 12px}
-  .topbar h1{font-size:15px}
-  .topbar h1 span{display:none}
-  .topbar nav a{padding:6px 7px}
-  .topbar nav a.opt2{display:none}
-  .slider input{width:64px}
-  .chip,.btn{padding:6px 8px;font-size:11px}
-  article h2{font-size:23px}
-  article p,article li{font-size:15.5px}
-  .part-card dl{grid-template-columns:1fr}
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Stencil+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -207,42 +30,161 @@ footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var
 </head>
 <body>
 <header class="topbar">
-  <a class="back" href="../index.html">← Projects</a>
-  <h1>Survival Radio <span>· disaster comms hub</span></h1>
-  <nav>
-    <a class="opt2" href="#model">3D model</a>
-    <a href="#guide">Guide</a>
-    <a class="opt" href="#g-wires">Connections</a>
-    <a href="#g-downloads">Downloads</a>
-  </nav>
+  <a class="back" href="../index.html" title="All projects">←<span> Projects</span></a>
+  <a class="brand" href="#top"><span class="led" id="hdrLed"></span><b>Survival Radio</b></a>
+  <nav class="tuner" id="tuner" aria-label="Sections"><div class="scale" id="scale"></div><div class="needle" id="needle"></div></nav>
+  <div class="readout" id="readout">CH 00 · STANDBY</div>
+  <button class="themeBtn" id="themeBtn" type="button" aria-label="Switch theme" title="Light / dark"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg></button>
+  <button class="menuBtn" id="menuBtn" aria-expanded="false" aria-controls="chanMenu">Channels</button>
+</header>
+<nav class="chanMenu" id="chanMenu"><a href="#g-overview" data-no="01"><span>01</span>Brief</a><a href="#g-why" data-no="02"><span>02</span>Why</a><a href="#bench" data-no="03"><span>03</span>Workbench</a><a href="#g-diagram" data-no="04"><span>04</span>System</a><a href="#g-parts" data-no="05"><span>05</span>Parts</a><a href="#g-wires" data-no="06"><span>06</span>Wiring</a><a href="#g-pcb" data-no="07"><span>07</span>Circuits</a><a href="#g-phone" data-no="08"><span>08</span>Phone</a><a href="#g-journey" data-no="09"><span>09</span>Message</a><a href="#g-energy" data-no="10"><span>10</span>Power</a><a href="#g-pack" data-no="11"><span>11</span>Backpack</a><a href="#g-build" data-no="12"><span>12</span>Build</a><a href="#g-bom" data-no="13"><span>13</span>Materials</a><a href="#g-downloads" data-no="14"><span>14</span>Files</a><a href="#g-safety" data-no="15"><span>15</span>Safety</a><a href="#g-sources" data-no="16"><span>16</span>Sources</a></nav>
+
+<header class="hero" id="top">
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <div>
+    <span class="tag"><span class="led on" id="tagLed"></span>Field build · AI-generated concept design</span>
+    <h1>Survival<em>Radio</em></h1>
+    <p class="lede">A disaster communications hub you can build. When an earthquake takes the cell towers down, it still gets a message out: by Iridium satellite, by LoRa mesh to your neighbors, and by ham radio, from an IP67 case or a backpack.</p>
+    <div class="ctas">
+      <a class="cta primary" href="#bench">Open the 3D workbench ↓</a>
+      <a class="cta" href="#g-bom">Materials &amp; prices</a>
+      <a class="cta" href="#g-downloads">CAD files</a>
+    </div>
+    <div class="facts"><div><b>3</b>independent links out</div><div><b>72 Wh</b>battery, solar + crank</div><div><b>IP67</b>sealed case</div><div><b>28 B</b>SOS packet</div></div>
+  </div>
+  <div class="rx rv" id="rx">
+    <div class="rx-top"><span>Band scope · drag the knob</span><span id="rxClock">--:--:-- UTC</span></div>
+    <div class="scope"><canvas id="scope"></canvas><div class="freq" id="rxFreq">162.550<small>MHz</small></div><div class="band" id="rxBand">NOAA WX</div></div>
+    <div class="rx-row">
+      <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Tuning knob" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><div class="grip"></div><div class="mark"></div></div>
+      <div class="rx-info"><h3 id="rxName">NOAA Weather Radio</h3><p id="rxDesc"></p><div class="use" id="rxUse"></div></div>
+    </div>
+    <div class="presets" id="presets"></div>
+  </div>
+  <div class="morse"><span class="led" id="morseLed"></span><span id="morseTxt">··· ––– ···</span></div>
+  <div class="scroll-cue">SCROLL ↓</div>
 </header>
 
-<!-- ================================================= 3D APP ================================================= -->
-<section id="model">
-  <div id="viewport">
+<main id="guide">
+<div class="doc">
+<section id="g-overview" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">01</span><span class="nm">Brief</span><span class="coord">Three ways out,<br>one backstop</span></aside>
+  <div class="body">
+      
+      <h2>A survival radio you can build, explained from the ground up</h2>
+      <p class="lead">After a major earthquake, a Cascadia event for example, nearby cell towers may be destroyed or without power for a long time. This hub gives you three independent ways to reach the outside world, plus a backstop you buy, in a box that survives drops and water.</p>
+      <ul>
+        <li><b>Satellite</b>: an Iridium modem sends an SOS with your GPS position from anywhere with open sky. It does not need your phone.</li>
+        <li><b>Mesh radio</b>: a Meshtastic LoRa node lets you text neighbors and volunteer networks, phone-to-phone, with no towers.</li>
+        <li><b>Ham radio</b> (licensed): APRS position beacons and Winlink email over the regional emergency networks.</li>
+        <li><b>Personal Locator Beacon</b>: a certified, registered beacon you buy. It is the last resort that must not fail.</li>
+      </ul>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Layer</th><th>What</th><th>Needs</th></tr>
+        <tr><td><span class="pill t0">Tier 0 · carry</span></td><td>Registered 406 MHz PLB, plus your phone's own satellite SOS if it has one (iPhone 14 and later, Pixel 9/10, T-Satellite)</td><td>buy, register</td></tr>
+        <tr><td><span class="pill t1">Tier 1 · DIY hub</span></td><td>This build: Iridium modem, Meshtastic mesh radio, GNSS, sensor pod, e-paper, SOS switch, IP67 case</td><td>build it</td></tr>
+        <tr><td><span class="pill t2">Tier 2 · ham radio</span></td><td>Handheld with APRS and Winlink; an SDR receiver for weather, aircraft and scanner traffic</td><td>amateur license to transmit</td></tr>
+        <tr><td><span class="pill t3">Tier 3 · Starlink</span></td><td>Starlink Mini on its own 12 V battery, for real internet when you can spare the power</td><td>subscription, 25–40 W</td></tr>
+      </table></div>
+      <p>The tier buttons in the top-left corner of the 3D workbench show or hide each layer.</p>
+      <p>Around those radios sit a GNSS receiver, a motion sensor, a pod of air-quality sensors (natural gas, carbon monoxide, oxygen, CO₂, smoke), a 72 Wh battery with solar, USB-C and hand-crank charging, an e-paper screen, and a guarded SOS switch, all in an IP67 case. The same hub can ride in a backpack.</p>
+      <div class="callout">
+        <p><b>Five design rules</b></p>
+        <ol>
+          <li><b>Use certified transmitters; write your own glue code.</b> You don't build radios that transmit on satellite or cellular bands. You connect approved modules and program the controller that coordinates them.</li>
+          <li><b>Every function works without a phone.</b> The phone is a nicer keyboard, not a dependency.</li>
+          <li><b>Plenty of energy, many ways to recharge, everything switchable.</b> Parts that aren't needed are powered off.</li>
+          <li><b>Seal it, then prove it.</b> Dunk the case and drop it before you trust it.</li>
+          <li><b>Modular and repairable.</b> Off-the-shelf boards, plug-in cables, printed brackets.</li>
+        </ol>
+      </div>
+      <div class="callout red"><p><b>Not a certified life-safety device.</b> This is an open, educational design. Carry a registered PLB, test the hub regularly, and never rely on a single path.</p></div>
+      <p>The 3D model in the <a href="#model">workbench below</a> is the real CAD model, at real size, of the hub described here. You can <a href="#g-downloads">download it</a> as STEP, STL or glTF and open it in any CAD program.</p>
+    </div>
+</section>
+<section id="g-why" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">02</span><span class="nm">Why</span><span class="coord">Towers vs.<br>satellites & SDR</span></aside>
+  <div class="body">
+      <h2>Why not just reach a far-away tower? And where does SDR fit?</h2>
+      <p>The first idea most people have is a stronger radio that reaches a distant cell tower that is still standing. It's a good question, and the answer shapes the whole design.</p>
+      <h3>A far tower is the wrong target</h3>
+      <ul>
+        <li><b>The protocols limit range, not just power.</b> A phone has to answer the tower within a precise time slot, and the "timing advance" that corrects for distance runs out at about 35 km for GSM and about 100 km at most for LTE. Real cells are set up far smaller than that, and a phone or booster can't change the tower's settings.</li>
+        <li><b>The link has two directions.</b> Even if you hear the tower, the tower must hear your phone's roughly 0.2 W transmitter, so a big antenna only on your side helps less than you'd hope.</li>
+        <li><b>The tower must still work.</b> After a major quake, surviving sites lose grid power and their fiber backhaul, and the ones still up are jammed with traffic. The Oregon Resilience Plan expects telecom restoration after a Cascadia earthquake to take months in the hardest-hit areas.</li>
+        <li><b>Amplifiers are regulated.</b> Consumer cell boosters are legal in the US only if FCC-certified and registered with your carrier (47 CFR §20.21). A homemade cellular amplifier is illegal and can disrupt the network for everyone.</li>
+        <li><b>The legal version:</b> a certified LTE router with external antenna ports and a directional antenna on a mast, shared to your phone over Wi-Fi. It helps only when a working tower is within normal range, so it's an add-on, not the plan.</li>
+      </ul>
+      <p>So the hub doesn't chase towers. It uses links that need no local infrastructure at all: satellites overhead, and radios carried by your neighbors.</p>
+      <h3>What an SDR can and can't do</h3>
+      <p>A <b>software-defined radio</b> replaces most of a radio's circuits with software: a small receiver turns a slice of spectrum into numbers, and a computer does the tuning, filtering and decoding. That makes it a superb, flexible <b>listener</b>, and an RTL-SDR receiver is part of the Tier 2 kit.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>SDR can (receive)</th><th>SDR can't</th></tr>
+        <tr><td>NOAA Weather Radio, 162.400–162.550 MHz</td><td>Become a cell tower: the bands are licensed to carriers, and an isolated base station has no core network or 911 routing</td></tr>
+        <tr><td>ADS-B aircraft positions at 1090 MHz: see rescue helicopters and planes working your area</td><td>Become a satellite phone: satellite networks only accept certified, provisioned terminals</td></tr>
+        <tr><td>Unencrypted public-safety, scanner and ham traffic, including local emergency nets</td><td>Transmit legally outside amateur bands; on ham bands you need a license, filtering and a transmit-capable SDR</td></tr>
+        <tr><td>Spectrum survey: find which cellular bands are still on the air, and aim an LTE antenna</td><td>Replace the certified radios in this hub</td></tr>
+      </table></div>
+      <p>The SDR setup here is an RTL-SDR Blog V4 on a Raspberry Pi Zero 2 W. The Pi runs its own Wi-Fi network and a web interface, so you listen and look at the aircraft map in your phone's browser. See the <a href="#part-sdr">SDR card</a> in the parts list.</p>
+    </div>
+</section>
+</div>
+<section class="bench" id="bench" aria-label="Interactive 3D workbench">
+  <div class="bench-head rv">
+    <div><span class="no">03 · Workbench</span><h2>The hub on the bench</h2></div>
+    <p>The real CAD model at real size. Drag to orbit, scroll or pinch to zoom, right-drag to pan, and click any part. Double-click to fly to a part.</p>
+    <div class="keys"><kbd>E</kbd> explode <kbd>X</kbd> x-ray <kbd>W</kbd> wiring <kbd>L</kbd> labels <kbd>B</kbd> backpack <kbd>R</kbd> reset <kbd>?</kbd> all keys</div>
+  </div>
+  <div id="model">
+  <div id="viewport" tabindex="0" aria-label="3D model viewport. Press question mark for keyboard controls.">
     <div id="labels"></div>
-    <div id="loading"><span>Loading CAD model…</span></div>
+    <div id="loading"><span>Loading CAD model…</span><div class="bar"><div id="loadBar"></div></div></div>
     <div class="tiers" id="tiers"></div>
-    <div class="hint">Drag to orbit · scroll or pinch to zoom · tap a part</div>
+    <div class="hud">
+      <div class="views" id="views">
+        <button class="btn" data-view="iso" title="Three-quarter view">Iso</button><button class="btn" data-view="front" title="Front">Front</button><button class="btn" data-view="top" title="Top">Top</button><button class="btn" data-view="side" title="Side">Side</button><button class="btn" data-view="inside" title="Look inside">Inside</button>
+      </div>
+      <div class="views">
+        <button class="chip" id="spinBtn" title="Turntable (T)">Spin</button><button class="btn" id="shotBtn" title="Save a PNG of the view (P)">Snapshot</button><button class="btn" id="fsBtn" title="Full screen (F)">Full screen</button><button class="btn" id="helpBtn" title="Keyboard controls (?)">?</button>
+      </div>
+      <div class="cam" id="camRead"></div>
+    </div>
+    <div class="pad" aria-label="Camera pad">
+      <button class="btn" data-pad="left" title="Orbit left (←)">↺</button><button class="btn" data-pad="up" title="Tilt up (↑)">▲</button><button class="btn" data-pad="right" title="Orbit right (→)">↻</button>
+      <button class="btn" data-pad="out" title="Zoom out (−)">−</button><button class="btn" data-pad="down" title="Tilt down (↓)">▼</button><button class="btn" data-pad="in" title="Zoom in (+)">+</button>
+    </div>
     <div class="toast" id="toast"></div>
+    <div class="help" id="help"><div class="box">
+      <h3>Workbench controls</h3>
+      <table>
+        <tr><td>Drag · right-drag · scroll</td><td>orbit · pan · zoom (pinch on touch)</td></tr>
+        <tr><td>Click · double-click</td><td>select a part · fly to it</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>orbit and tilt</td></tr>
+        <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>zoom</td></tr>
+        <tr><td><kbd>E</kbd> / <kbd>A</kbd></td><td>explode / animate assembly</td></tr>
+        <tr><td><kbd>X</kbd> <kbd>W</kbd> <kbd>L</kbd></td><td>x-ray · wiring · labels</td></tr>
+        <tr><td><kbd>B</kbd> <kbd>T</kbd> <kbd>F</kbd> <kbd>P</kbd></td><td>backpack · spin · full screen · snapshot</td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>5</kbd></td><td>panel tabs</td></tr>
+        <tr><td><kbd>R</kbd> · <kbd>Esc</kbd></td><td>reset view · clear selection</td></tr>
+      </table>
+      <div class="row-btns"><button class="btn" id="helpClose">Close</button></div>
+    </div></div>
     <div class="toolbar">
-      <div class="slider">Explode <input id="explode" type="range" min="0" max="1" step="0.01" value="0" /></div>
-      <button class="chip" id="packBtn">🎒 Backpack</button>
-      <button class="chip on" id="xray">X-ray</button>
-      <button class="chip on" id="wiresBtn">Wiring</button>
-      <button class="chip on" id="labelsBtn">Labels</button>
-      <button class="btn" id="dropBtn">Drop test</button>
-      <button class="btn" id="dunkBtn">Submerge</button>
-      <button class="btn" id="resetBtn">Reset view</button>
+      <div class="slider">Explode <input id="explode" type="range" min="0" max="1" step="0.01" value="0" aria-label="Explode" /><output id="explodeOut">0%</output></div>
+      <button class="btn" id="assembleBtn" title="Animate assembly (A)">▶ Assemble</button>
+      <div class="grp-t"><button class="chip on" id="xray">X-ray</button><button class="chip on" id="wiresBtn">Wiring</button><button class="chip on" id="labelsBtn">Labels</button></div>
+      <div class="grp-t"><button class="btn" id="dropBtn">Drop</button><button class="btn" id="dunkBtn">Submerge</button><button class="btn" id="quakeBtn">Aftershock</button></div>
+      <button class="chip" id="packBtn">Backpack</button>
+      <button class="btn" id="resetBtn" style="display:none">Reset view</button>
     </div>
   </div>
   <aside id="panel">
     <nav class="tabs">
-      <button data-tab="explore" class="on">Explore</button>
-      <button data-tab="connect">Connect</button>
-      <button data-tab="sos">SOS</button>
-      <button data-tab="sensors">Sensors</button>
-      <button data-tab="power">Power</button>
+      <button data-tab="explore" title="Shortcut: 1" class="on">Explore</button>
+      <button data-tab="connect" title="Shortcut: 2">Connect</button>
+      <button data-tab="sos" title="Shortcut: 3">SOS</button>
+      <button data-tab="sensors" title="Shortcut: 4">Sensors</button>
+      <button data-tab="power" title="Shortcut: 5">Power</button>
     </nav>
     <section class="pane on" id="pane-explore">
       <div id="info"><h2>Loading…</h2></div>
@@ -329,115 +271,21 @@ footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var
       <button class="btn" id="flowBtn" style="margin-top:10px;width:100%">Show power flow in 3D</button>
     </section>
   </aside>
+  </div>
 </section>
-
-<!-- ================================================= GUIDE ================================================= -->
-<div class="guide-wrap" id="guide">
-  <nav class="toc" id="toc">
-    <b>Build guide</b>
-    <a href="#g-overview">What this is</a>
-    <a href="#g-why">Why not a far tower? SDR?</a>
-    <a href="#g-diagram">The system on one page</a>
-    <a href="#g-parts">The parts</a>
-    <a class="sub" href="#g-brain">Brains & radios</a>
-    <a class="sub" href="#g-sat">Satellite</a>
-    <a class="sub" href="#g-loc">Location & motion</a>
-    <a class="sub" href="#g-sense">Sensors</a>
-    <a class="sub" href="#g-power">Power</a>
-    <a class="sub" href="#g-ui">Controls & display</a>
-    <a class="sub" href="#g-rugged">Enclosure & connectors</a>
-    <a class="sub" href="#g-carry">Carry-along gear</a>
-    <a href="#g-wires">How the parts talk</a>
-    <a class="sub" href="#g-ground">Ground & logic levels</a>
-    <a class="sub" href="#g-uart">UART</a>
-    <a class="sub" href="#g-i2c">I²C</a>
-    <a class="sub" href="#g-spi">SPI</a>
-    <a class="sub" href="#g-gpio">GPIO</a>
-    <a class="sub" href="#g-pwrwire">Power wiring</a>
-    <a class="sub" href="#g-rf">RF coax</a>
-    <a class="sub" href="#g-pinout">Wiring table</a>
-    <a href="#g-phone">Connecting your phone</a>
-    <a href="#g-journey">Follow one message</a>
-    <a href="#g-energy">Energy budget</a>
-    <a href="#g-pack">Backpack version</a>
-    <a href="#g-build">Build it in stages</a>
-    <a href="#g-downloads">Downloads (CAD)</a>
-    <a href="#g-bom">Shopping list</a>
-    <a href="#g-safety">Safety & legal</a>
-    <a href="#g-sources">Sources</a>
-  </nav>
-
-  <article>
-    <!-- ------------------------------------------------ OVERVIEW -->
-    <section id="g-overview">
-      <p class="kicker">Build guide</p>
-      <h2>A survival radio you can build, explained from the ground up</h2>
-      <p class="lead">After a major earthquake, a Cascadia event for example, nearby cell towers may be destroyed or without power for a long time. This hub gives you three independent ways to reach the outside world, plus a backstop you buy, in a box that survives drops and water.</p>
-      <ul>
-        <li><b>Satellite</b>: an Iridium modem sends an SOS with your GPS position from anywhere with open sky. It does not need your phone.</li>
-        <li><b>Mesh radio</b>: a Meshtastic LoRa node lets you text neighbors and volunteer networks, phone-to-phone, with no towers.</li>
-        <li><b>Ham radio</b> (licensed): APRS position beacons and Winlink email over the regional emergency networks.</li>
-        <li><b>Personal Locator Beacon</b>: a certified, registered beacon you buy. It is the last resort that must not fail.</li>
-      </ul>
-      <div class="tbl-wrap"><table class="tbl">
-        <tr><th>Layer</th><th>What</th><th>Needs</th></tr>
-        <tr><td><span class="pill t0">Tier 0 · carry</span></td><td>Registered 406 MHz PLB, plus your phone's own satellite SOS if it has one (iPhone 14 and later, Pixel 9/10, T-Satellite)</td><td>buy, register</td></tr>
-        <tr><td><span class="pill t1">Tier 1 · DIY hub</span></td><td>This build: Iridium modem, Meshtastic mesh radio, GNSS, sensor pod, e-paper, SOS switch, IP67 case</td><td>build it</td></tr>
-        <tr><td><span class="pill t2">Tier 2 · ham radio</span></td><td>Handheld with APRS and Winlink; an SDR receiver for weather, aircraft and scanner traffic</td><td>amateur license to transmit</td></tr>
-        <tr><td><span class="pill t3">Tier 3 · Starlink</span></td><td>Starlink Mini on its own 12 V battery, for real internet when you can spare the power</td><td>subscription, 25–40 W</td></tr>
-      </table></div>
-      <p>The tier buttons at the top of the 3D view show or hide each layer.</p>
-      <p>Around those radios sit a GNSS receiver, a motion sensor, a pod of air-quality sensors (natural gas, carbon monoxide, oxygen, CO₂, smoke), a 72 Wh battery with solar, USB-C and hand-crank charging, an e-paper screen, and a guarded SOS switch, all in an IP67 case. The same hub can ride in a backpack.</p>
-      <div class="callout">
-        <p><b>Five design rules</b></p>
-        <ol>
-          <li><b>Use certified transmitters; write your own glue code.</b> You don't build radios that transmit on satellite or cellular bands. You connect approved modules and program the controller that coordinates them.</li>
-          <li><b>Every function works without a phone.</b> The phone is a nicer keyboard, not a dependency.</li>
-          <li><b>Plenty of energy, many ways to recharge, everything switchable.</b> Parts that aren't needed are powered off.</li>
-          <li><b>Seal it, then prove it.</b> Dunk the case and drop it before you trust it.</li>
-          <li><b>Modular and repairable.</b> Off-the-shelf boards, plug-in cables, printed brackets.</li>
-        </ol>
-      </div>
-      <div class="callout red"><p><b>Not a certified life-safety device.</b> This is an open, educational design. Carry a registered PLB, test the hub regularly, and never rely on a single path.</p></div>
-      <p>The 3D model at the top of this page is the real CAD model, at real size, of the hub described here. You can <a href="#g-downloads">download it</a> as STEP, STL or glTF and open it in any CAD program.</p>
-    </section>
-
-    <!-- ------------------------------------------------ WHY -->
-    <section id="g-why">
-      <h2>Why not just reach a far-away tower? And where does SDR fit?</h2>
-      <p>The first idea most people have is a stronger radio that reaches a distant cell tower that is still standing. It's a good question, and the answer shapes the whole design.</p>
-      <h3>A far tower is the wrong target</h3>
-      <ul>
-        <li><b>The protocols limit range, not just power.</b> A phone has to answer the tower within a precise time slot, and the "timing advance" that corrects for distance runs out at about 35 km for GSM and about 100 km at most for LTE. Real cells are set up far smaller than that, and a phone or booster can't change the tower's settings.</li>
-        <li><b>The link has two directions.</b> Even if you hear the tower, the tower must hear your phone's roughly 0.2 W transmitter, so a big antenna only on your side helps less than you'd hope.</li>
-        <li><b>The tower must still work.</b> After a major quake, surviving sites lose grid power and their fiber backhaul, and the ones still up are jammed with traffic. The Oregon Resilience Plan expects telecom restoration after a Cascadia earthquake to take months in the hardest-hit areas.</li>
-        <li><b>Amplifiers are regulated.</b> Consumer cell boosters are legal in the US only if FCC-certified and registered with your carrier (47 CFR §20.21). A homemade cellular amplifier is illegal and can disrupt the network for everyone.</li>
-        <li><b>The legal version:</b> a certified LTE router with external antenna ports and a directional antenna on a mast, shared to your phone over Wi-Fi. It helps only when a working tower is within normal range, so it's an add-on, not the plan.</li>
-      </ul>
-      <p>So the hub doesn't chase towers. It uses links that need no local infrastructure at all: satellites overhead, and radios carried by your neighbors.</p>
-      <h3>What an SDR can and can't do</h3>
-      <p>A <b>software-defined radio</b> replaces most of a radio's circuits with software: a small receiver turns a slice of spectrum into numbers, and a computer does the tuning, filtering and decoding. That makes it a superb, flexible <b>listener</b>, and an RTL-SDR receiver is part of the Tier 2 kit.</p>
-      <div class="tbl-wrap"><table class="tbl">
-        <tr><th>SDR can (receive)</th><th>SDR can't</th></tr>
-        <tr><td>NOAA Weather Radio, 162.400–162.550 MHz</td><td>Become a cell tower: the bands are licensed to carriers, and an isolated base station has no core network or 911 routing</td></tr>
-        <tr><td>ADS-B aircraft positions at 1090 MHz: see rescue helicopters and planes working your area</td><td>Become a satellite phone: satellite networks only accept certified, provisioned terminals</td></tr>
-        <tr><td>Unencrypted public-safety, scanner and ham traffic, including local emergency nets</td><td>Transmit legally outside amateur bands; on ham bands you need a license, filtering and a transmit-capable SDR</td></tr>
-        <tr><td>Spectrum survey: find which cellular bands are still on the air, and aim an LTE antenna</td><td>Replace the certified radios in this hub</td></tr>
-      </table></div>
-      <p>The SDR setup here is an RTL-SDR Blog V4 on a Raspberry Pi Zero 2 W. The Pi runs its own Wi-Fi network and a web interface, so you listen and look at the aircraft map in your phone's browser. See the <a href="#part-sdr">SDR card</a> in the parts list.</p>
-    </section>
-
-    <!-- ------------------------------------------------ DIAGRAM -->
-    <section id="g-diagram">
+<div class="doc">
+<section id="g-diagram" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">04</span><span class="nm">System</span><span class="coord">Block diagram</span></aside>
+  <div class="body">
       <h2>The whole system on one page</h2>
       <p>Every box is a part; every line is a connection, colored by type. <b>Tap a box</b> to jump to it in the 3D model.</p>
       <figure>
         <svg viewBox="0 0 960 610" role="img" aria-label="System block diagram of the survival radio hub" font-family="Inter, sans-serif">
           <defs>
             <style>
-              #g-diagram .bx{fill:#111c30;stroke:#334155;stroke-width:1.2}
-              #g-diagram .t1{fill:#e2e8f0;font-size:14px;font-weight:600}
-              #g-diagram .t2{fill:#94a3b8;font-size:11.5px}
+              #g-diagram .bx{fill:#1b1d16;stroke:#4b4f3e;stroke-width:1.2}
+              #g-diagram .t1{fill:#ece6d4;font-size:14px;font-weight:600}
+              #g-diagram .t2{fill:#a19c87;font-size:11.5px}
               #g-diagram .pw{stroke:#ef4444;stroke-width:3;fill:none}
               #g-diagram .ua{stroke:#facc15;stroke-width:2.5;fill:none}
               #g-diagram .ic{stroke:#3b82f6;stroke-width:3;fill:none}
@@ -485,7 +333,7 @@ footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var
           <g class="blk" data-c="phone"><rect class="bx" x="800" y="470" width="130" height="90" rx="12" style="stroke:#f472b6"/><text class="t1" x="812" y="495">Your phone</text><text class="t2" x="812" y="514">Meshtastic app</text><text class="t2" x="812" y="531">browser page</text></g>
           <!-- legend -->
           <g transform="translate(20,395)">
-            <text class="t2" x="0" y="0" style="font-weight:600;fill:#cbd5e1">Legend</text>
+            <text class="t2" x="0" y="0" style="font-weight:600;fill:#cfc8b2">Legend</text>
             <path class="pw" d="M0 18H26"/><text class="t2" x="34" y="22">power</text>
             <path class="ua" d="M0 38H26"/><text class="t2" x="34" y="42">UART (serial)</text>
             <path class="ic" d="M0 58H26"/><text class="t2" x="34" y="62">I²C bus</text>
@@ -500,17 +348,19 @@ footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var
         </svg>
         <figcaption>System block diagram. Power comes in on the left; the controller sits in the middle; the radios are on the right; sensors hang off the I²C bus at the bottom.</figcaption>
       </figure>
-    </section>
-
-    <!-- ------------------------------------------------ PARTS (cards rendered from data.js) -->
-    <section id="g-parts">
+    </div>
+</section>
+<section id="g-parts" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">05</span><span class="nm">Parts</span><span class="coord">24 components</span></aside>
+  <div class="body">
       <h2>The parts, one by one</h2>
       <p>Each card says what the part does, why this one, how it connects, its power use, and where to get it. Prices are approximate US retail checked in November 2026 and change often. Where a link goes to a distributor, any equivalent part works.</p>
       <div id="partsList"><p class="sub">Loading the parts list…</p></div>
-    </section>
-
-    <!-- ------------------------------------------------ HOW THEY TALK -->
-    <section id="g-wires">
+    </div>
+</section>
+<section id="g-wires" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">06</span><span class="nm">Wiring</span><span class="coord">UART · I²C · SPI<br>GPIO · power · RF</span></aside>
+  <div class="body">
       <h2>How the parts talk to each other</h2>
       <p>Inside the case, parts talk over <b>wires</b> using a handful of standard "buses", each a set of wires plus agreed rules. Outside, the hub talks over <b>radio</b>. Below are the buses from the ground up, with what actually travels on each one. In the 3D model, the <b>Connect</b> tab lights up each bus.</p>
 
@@ -666,10 +516,64 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <tr><td>GPIO expander</td><td>5 V boost EN, pod LED and vibration (M12 pin 8), panel LED</td><td>I²C</td><td>slow outputs</td></tr>
         <tr><td>BAT / GND</td><td>LOAD rail (≤ 4.4 V) / common ground</td><td>power</td><td>don't plug USB into the Feather while it's wired in</td></tr>
       </table></div>
-    </section>
+    </div>
+</section>
+<section id="g-pcb" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">07</span><span class="nm">Circuits</span><span class="coord">Schematics &amp;<br>carrier PCB</span></aside>
+  <div class="body">
+      <h2>Circuits and a carrier board</h2>
+      <p class="lead">Start by hand-wiring with plug-in cables; it is the fastest way to get each part working. Once everything works, the small circuits around the controller move onto one <b>carrier board</b>: a PCB that the Feather, the boost module and every cable plug into.</p>
+      <h3>Four small circuits, animated</h3>
+      <p>Most of the hub is ready-made modules. These four circuits are the glue you build yourself. Pick one, press the buttons, and watch current flow (moving dashes) and the pins' voltages on the scope.</p>
+      <div class="ckt" id="ckt">
+        <div class="ckt-tabs"></div>
+        <div class="ckt-main">
+          <div class="ckt-svg"></div>
+          <div class="ckt-side"><div class="ckt-ctrl"></div><div class="ckt-read"></div></div>
+        </div>
+        <canvas class="ckt-scope" aria-label="Oscilloscope view of the selected circuit"></canvas>
+      </div>
 
-    <!-- ------------------------------------------------ PHONE -->
-    <section id="g-phone">
+      <h3>The carrier board in 3D</h3>
+      <p>A 100 × 70 mm two-layer board, placed and routed by a script: 106 copper traces and 45 vias, with the whole bottom layer used as a ground plane. <b>Pick a net</b> to light it up and watch signals travel along its copper. <b>Drag the Layers slider</b> to pull the board apart into copper, solder mask, silkscreen and parts. <b>Build it</b> plays the assembly in the order you would solder it.</p>
+      <div class="pcbwrap">
+        <div class="pcbview" id="pcbView">
+          <div class="pcbcap" id="pcbCap"></div><div class="pcbtip" id="pcbTip"></div>
+          <div class="toolbar pcbbar">
+            <div class="slider">Layers <input id="pcbExplode" type="range" min="0" max="1" step="0.01" value="0" aria-label="Explode layers" /></div>
+            <button class="btn" id="pcbBuild">▶ Build it</button>
+            <div class="grp-t" id="pcbLayers"><button class="chip on" data-l="parts">Parts</button><button class="chip on" data-l="silk">Silk</button><button class="chip on" data-l="mask">Mask</button><button class="chip on" data-l="topCu">Top Cu</button><button class="chip on" data-l="bottomCu">Bottom Cu</button></div>
+            <button class="btn" id="pcbFlip">Flip</button><button class="btn" id="pcbReset">Reset</button>
+          </div>
+        </div>
+        <aside class="pcbside">
+          <div id="pcbInfo"><h3>Nets</h3><p class="sub">A net is every pin that is wired together. Pick one below, or click a part or pad on the board.</p></div>
+          <div class="links" id="pcbNets"></div>
+        </aside>
+      </div>
+      <div class="callout red"><p><b>Concept layout, not ready to order.</b> The script checks spacing between copper (0.2 mm minimum), but the board has not been through a full design-rule check, and the footprints are simplified. To make it, redraw the schematic in KiCad from the netlist below, use the manufacturers' footprints, and run KiCad's checks before you order. The Feather and module pin positions must be confirmed against their official drawings.</p></div>
+
+      <h3>What is on the board</h3>
+      <div class="tbl-wrap"><table class="tbl" id="pcbBom"></table></div>
+      <h3>Soldering order</h3>
+      <ol>
+        <li><b>Surface-mount parts first, lowest first</b>: 0805 resistors and capacitors, the SOD-123 diodes, the SOT-23 transistors, then the SOIC expander (pin 1 dot to the silkscreen mark). Tack one pad, check alignment, then solder the rest.</li>
+        <li><b>Through-hole connectors</b>: JST sockets, the 2 × 8 modem header (notch matching the silkscreen), the screw terminal.</li>
+        <li><b>Tall parts</b>: the buzzer and the 100 µF capacitor. Its stripe marks the negative lead.</li>
+        <li><b>Sockets for the modules</b>: plug the Feather into its female headers, put the assembly on the board, and solder with the Feather in place so the sockets line up.</li>
+        <li><b>Before power</b>: with a multimeter, check that LOAD, 5V and 3V3 are not shorted to GND. Then power the board from a bench supply at 3.7 V with the current limit at about 200 mA, and only then plug in the battery.</li>
+      </ol>
+      <div class="dl-grid">
+        <a class="dl" href="downloads/carrier-netlist.csv" download><b>Netlist (.csv)</b><span>Every net, every pin, with part numbers. The starting point for a KiCad schematic.</span><em>csv</em></a>
+        <a class="dl" href="downloads/carrier-top.svg" download><b>Top layer (.svg)</b><span>Copper, pads and vias as seen from above, at 1 mm per unit.</span><em>svg</em></a>
+        <a class="dl" href="downloads/carrier-bottom.svg" download><b>Bottom layer (.svg)</b><span>The ground pour and the bottom-side traces, seen through the board from above.</span><em>svg</em></a>
+        <a class="dl" href="cad/build_pcb.py" download><b>Board script (.py)</b><span>Placement, netlist and the two-layer grid router. <code>python3 build_pcb.py .</code></span><em>python</em></a>
+      </div>
+  </div>
+</section>
+<section id="g-phone" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">08</span><span class="nm">Phone</span><span class="coord">BLE · Wi-Fi · USB</span></aside>
+  <div class="body">
       <h2>Connecting your phone</h2>
       <p>The hub never <i>needs</i> your phone, but a phone makes typing and reading much easier. There are five ways they connect. Each uses a different radio or cable, and each is good for something different.</p>
 
@@ -719,10 +623,11 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <tr><td>Set up, update, debug</td><td>USB-C</td><td>simplest and most reliable</td></tr>
         <tr><td>Full internet</td><td>Starlink Wi-Fi</td><td>needs 25–40 W and its own battery</td></tr>
       </table></div>
-    </section>
-
-    <!-- ------------------------------------------------ JOURNEYS -->
-    <section id="g-journey">
+    </div>
+</section>
+<section id="g-journey" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">09</span><span class="nm">Message</span><span class="coord">Switch → orbit<br>→ inbox</span></aside>
+  <div class="body">
       <h2>Follow one message from start to finish</h2>
       <h3>Journey 1: SOS with no phone</h3>
       <ol>
@@ -741,10 +646,11 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
       <p>You type in the Meshtastic app → the phone writes a <b>ToRadio</b> packet over Bluetooth → the mesh radio encrypts it with your channel key and transmits on 915 MHz → nearby nodes rebroadcast it (up to 3 hops by default) → your neighbor's radio decrypts it and notifies their phone over Bluetooth → an acknowledgement travels back the same way.</p>
       <h3>Journey 3: a satellite text typed on your phone, and the reply</h3>
       <p>Phone → Wi-Fi → the hub's page → controller → UART 1 → RockBLOCK → Iridium → Cloudloop → your contact's email. When they reply, the message is queued in Cloudloop as a <b>mobile-terminated</b> message. Satellites can't wake a powered-off modem, so it waits until the hub's next scheduled check-in. The controller then fetches it with <code>rbReceiveMessage()</code> and shows it on the e-paper and the web page.</p>
-    </section>
-
-    <!-- ------------------------------------------------ ENERGY -->
-    <section id="g-energy">
+    </div>
+</section>
+<section id="g-energy" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">10</span><span class="nm">Power</span><span class="coord">Watt-hours in,<br>watt-hours out</span></aside>
+  <div class="body">
       <h2>Energy budget and charging</h2>
       <p>The <b>Power</b> tab in the 3D view is a live calculator. The rules of thumb behind it:</p>
       <div class="tbl-wrap"><table class="tbl">
@@ -759,22 +665,24 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
       <p>The hub alone needs only a few watt-hours a day, so the 72 Wh pack lasts weeks. Recharging a phone dominates everything. The simple bq24074 charger takes up to about 1.5 A, roughly 25–30 Wh on a sunny day. For bigger panels or car 12 V, the upgrade is an MPPT buck-boost charger such as TI's BQ25798 (3.6–24 V in, up to 5 A).</p>
       <div class="callout blue"><p><b>Charging your phone.</b> The simple bq24074 charger only takes power <i>in</i>. To charge a phone from the hub's battery, build the power board around the BQ25798 instead: its <b>USB OTG</b> mode runs the converter backwards and supplies 5 V at up to 3.32 A on the USB-C port, so the same sealed port charges the hub or your phone. A small USB-C port controller handles the cable's CC pins, which tell each side which way power flows. With the V1 board, charge the phone straight from the solar panel's USB port or from a power bank.</p></div>
       <div class="callout"><p><b>Cold rule:</b> never charge lithium cells below 0 °C. It plates metallic lithium inside the cell and permanently damages it. The 10k NTC thermistor on the pack lets the charger refuse. Discharging in the cold is fine; keep the pack inside your jacket on snowy days.</p></div>
-    </section>
-
-    <!-- ------------------------------------------------ PACK -->
-    <section id="g-pack">
+    </div>
+</section>
+<section id="g-pack" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">11</span><span class="nm">Backpack</span><span class="coord">Wearable mode</span></aside>
+  <div class="body">
       <h2>The backpack version</h2>
-      <p>Tap <b>🎒 Backpack</b> in the 3D view. The same hub stands upright in the padded hydration sleeve, against your back, low and centered for balance. That is the most protected spot if you fall.</p>
+      <p>Press <b>Backpack</b> (or the <kbd>B</kbd> key) in the 3D workbench. The same hub stands upright in the padded hydration sleeve, against your back, low and centered for balance. That is the most protected spot if you fall.</p>
       <ul>
         <li><b>Antennas up</b>: short coax runs from the two lid bulkheads to a telescoping mast clipped to the side of the pack. The LoRa whip and Iridium helical sit above your head. Your body absorbs radio signals, and height adds range.</li>
         <li><b>Sensor pod on the shoulder strap</b>: it samples the air you breathe, and its LED and vibration motor alert you without looking.</li>
         <li><b>Solar on the outside</b>: a 20 W two-panel unit charges as you walk. Treat it as a top-up; aim it at the sun when you stop.</li>
         <li><b>Rain cover and reflective strip</b>: the case is IP67 on its own, and visibility helps rescuers find you at night.</li>
       </ul>
-    </section>
-
-    <!-- ------------------------------------------------ BUILD -->
-    <section id="g-build">
+    </div>
+</section>
+<section id="g-build" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">12</span><span class="nm">Build</span><span class="coord">Ten stages,<br>ten tests</span></aside>
+  <div class="body">
       <h2>Build it in stages</h2>
       <p>Each stage ends with a test you can check off. Get one thing working before adding the next.</p>
       <ol>
@@ -789,10 +697,26 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <li><b>Sensor pod</b>: print the shell, mount the sensors, run the cable. <i>Test: O₂ reads about 20.9 % in fresh air; compare CO and methane against a certified detector, not by exposing yourself to gas.</i></li>
         <li><b>Drill quarterly</b>: a "grid-down day" with the hub on battery and solar only. Send one satellite test, one mesh message across town, and check every reading.</li>
       </ol>
-    </section>
-
-    <!-- ------------------------------------------------ DOWNLOADS -->
-    <section id="g-downloads">
+    </div>
+</section>
+<section id="g-bom" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">13</span><span class="nm">Materials</span><span class="coord">Prices & where<br>to buy</span></aside>
+  <div class="body">
+      <h2>Materials: what to buy and where</h2>
+      <p class="lead" id="bomTotal">Loading the list…</p>
+      <p>Every part of the hub, the build supplies, and the tools, with a price and a store link for each. Tick what you already own and change quantities; the totals update and are remembered in this browser. Prices are US retail checked on the date shown and change often, so treat them as a guide. Where a link goes to a distributor, any equivalent part works.</p>
+      <div class="mat-tools">
+        <input type="search" id="matSearch" placeholder="Search parts, vendors, part numbers…" aria-label="Search materials" />
+        <div class="seg" id="matFilter"></div>
+      </div>
+      <div class="mat-sum" id="matSum"></div>
+      <div class="tbl-wrap"><table class="mat" id="matTable"></table></div>
+      <div class="mat-foot"><button class="btn" id="matCsv" type="button">Download my list (.csv)</button><a class="btn" href="downloads/bom.csv" download>Full list (.csv)</a><button class="btn" id="matReset" type="button">Clear ticks</button></div>
+    </div>
+</section>
+<section id="g-downloads" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">14</span><span class="nm">Files</span><span class="coord">STEP · STL · GLB</span></aside>
+  <div class="body">
       <h2>Downloads: CAD model and files</h2>
       <p>The model is built at real scale in <b>millimetres</b>, with <b>Z up</b> and the latch side of the case facing <b>−Y</b>. It is generated by an open Python script, so you can change any dimension and rebuild it.</p>
       <div class="dl-grid">
@@ -813,17 +737,11 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <li><b>3D printing</b>: open the STL files from the printable-parts zip in your slicer. PETG or ASA, 0.2 mm layers, at least 4 walls.</li>
       </ul>
       <div class="callout"><p><b>About accuracy.</b> The case, boards and modules use published dimensions (Pelican 1200, RockBLOCK 9704 SMA, RAK19007, ESP32-S3 Feather, MAX-M10S, Waveshare 2.9", Adafruit SCD-41 and PMSA003I, DFRobot boards, 21700 cells). Some parts are envelope estimates and are marked <code>APPROX</code> in the script: the charger and boost boards, the methane sensor, the Iridium antenna and the inside of the modem. Measure your actual parts before you drill or print.</p></div>
-    </section>
-
-    <!-- ------------------------------------------------ BOM -->
-    <section id="g-bom">
-      <h2>Shopping list</h2>
-      <p id="bomTotal" class="lead"></p>
-      <div class="tbl-wrap"><table class="tbl" id="bomTable"></table></div>
-    </section>
-
-    <!-- ------------------------------------------------ SAFETY -->
-    <section id="g-safety">
+    </div>
+</section>
+<section id="g-safety" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">15</span><span class="nm">Safety</span><span class="coord">Batteries, gas,<br>FCC rules</span></aside>
+  <div class="body">
       <h2>Safety and legal notes</h2>
       <ul>
         <li><b>Lithium batteries</b>: buy a pre-built pack with a protection board; don't solder directly to cells unless you have the right tools. Fuse at the pack, never charge below 0 °C, and don't seal a damaged or swollen cell in a box.</li>
@@ -840,10 +758,11 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <li><b>Airtime</b>: keep the satellite line active and paid up. Activating a modem after a disaster, when the internet is down, may not be possible.</li>
       </ul>
       <p class="sub">Not legal advice. Rules and services change; check current FCC rules and provider terms.</p>
-    </section>
-
-    <!-- ------------------------------------------------ SOURCES -->
-    <section id="g-sources">
+    </div>
+</section>
+<section id="g-sources" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">16</span><span class="nm">Sources</span><span class="coord">Datasheets & docs</span></aside>
+  <div class="body">
       <h2>Sources</h2>
       <ul class="sources">
         <li><a href="https://docs.groundcontrol.com/iot/rockblock-9704/hardware" target="_blank" rel="noopener">Ground Control: RockBLOCK 9704 hardware (pinout, power, start-up sequence)</a></li>
@@ -871,12 +790,20 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <li><a href="https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-20/section-20.21" target="_blank" rel="noopener">47 CFR §20.21: signal boosters</a></li>
         <li><a href="https://www.oregon.gov/oem/Documents/01_ORP_Cascadia.pdf" target="_blank" rel="noopener">Oregon Resilience Plan: Cascadia</a> · <a href="https://www.portland.gov/sites/default/files/2020-04/2019.04.09.beecn-guidelines.web_.pdf" target="_blank" rel="noopener">Portland BEECN guidelines</a></li>
       </ul>
-    </section>
-  </article>
+    </div>
+</section>
 </div>
-<footer>Survival Radio · concept design by Acamaro Cutcher · <a href="../index.html">more projects</a></footer>
+</main>
+<footer>
+  <p>Survival Radio · concept design by Acamaro Cutcher · <a href="../index.html">more projects</a></p>
+  <p>AI-generated design and visualization (written with Claude, November 2026). It is an untested concept, not a certified life-safety device. Check datasheets, current prices and FCC rules before you build.</p>
+</footer>
 
+<script type="module" src="fx.js"></script>
 <script type="module" src="guide.js"></script>
+<script type="module" src="materials.js"></script>
+<script type="module" src="circuits.js"></script>
+<script type="module" src="pcb.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>

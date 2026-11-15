@@ -22,7 +22,7 @@ const SKIP = new Set(['pack', 'packSolar', 'mast', 'iridiumSat']); // shown in t
 const has3D = (id) => (window.SR && window.SR.has ? window.SR.has(id) : true);
 
 function show3D(fn) {
-  const go = () => { fn(); $('model').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const go = () => { fn(); $('model').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
   if (window.SR && window.SR.ready && window.SR.ready()) go();
   else { $('model').scrollIntoView({ behavior: 'smooth', block: 'start' }); window.addEventListener('sr-ready', go, { once: true }); }
 }
@@ -151,9 +151,7 @@ function tocSpy() {
 }
 
 renderParts();
-renderBOM();
 wireDiagram();
-tocSpy();
 if (window.SR && window.SR.ready && window.SR.ready()) pruneButtons();
 else window.addEventListener('sr-ready', pruneButtons, { once: true });
 // Arriving with a #part-… or #g-… link: content was rendered after load, so jump again
