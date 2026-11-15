@@ -3,119 +3,200 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Survival Radio — Interactive 3D Concept | Acamaro Cutcher</title>
-<meta name="description" content="Interactive 3D concept of a rugged, solar-powered disaster communications hub: Iridium satellite SOS, LoRa mesh, GNSS location sharing, air-quality and gas sensors, amateur radio and SDR receive, in a case or a backpack, designed for a Cascadia earthquake scenario." />
+<title>Survival Radio — Interactive CAD Model & Build Guide | Acamaro Cutcher</title>
+<meta name="description" content="A rugged, solar-powered disaster communications hub you can build: Iridium satellite SOS, Meshtastic LoRa mesh, GNSS, gas and air sensors, in an IP67 case or a backpack. Interactive 3D CAD model, downloadable STEP/STL/GLB files, parts list with sources, and a ground-up guide to how every part connects and talks to your phone." />
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+<link rel="canonical" href="https://acamaro.com/projects/survival-radio/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acamaro Cutcher" />
+<meta property="og:title" content="Survival Radio: a disaster comms hub you can build" />
+<meta property="og:description" content="Interactive CAD model, downloadable STEP/STL/glTF files, parts list with sources, and a ground-up guide to how every part connects and talks to your phone." />
+<meta property="og:url" content="https://acamaro.com/projects/survival-radio/" />
+<meta property="og:image" content="https://acamaro.com/projects/thumbs/survival-radio.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --bg:#0b1120; --panel:#0f172a; --panel2:#1e293b; --line:#334155;
-    --text:#e2e8f0; --muted:#94a3b8; --accent:#f97316; --accent2:#22d3ee;
-    --ok:#4ade80; --warn:#facc15; --bad:#f87171; --sat:#a78bfa; --mesh:#34d399;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;overflow:hidden}
-  a{color:var(--accent2)}
-  .topbar{position:fixed;inset:0 0 auto 0;height:52px;display:flex;align-items:center;gap:14px;padding:0 16px;background:rgba(15,23,42,.92);border-bottom:1px solid var(--line);z-index:20;backdrop-filter:blur(6px)}
-  .topbar .back{color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}
-  .topbar .back:hover{color:var(--text)}
-  .topbar h1{font-size:16px;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .topbar h1 span{color:var(--accent)}
-  .topbar .tag{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--line);padding:3px 8px;border-radius:999px;white-space:nowrap}
-  #app{position:fixed;top:52px;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 410px}
-  #viewport{position:relative;overflow:hidden;min-height:0}
-  #viewport canvas{display:block}
-  #labels{position:absolute;inset:0;pointer-events:none}
-  .lbl{font-size:11px;font-weight:500;color:var(--text);background:rgba(15,23,42,.82);border:1px solid var(--line);padding:2px 7px;border-radius:5px;white-space:nowrap;pointer-events:auto;cursor:pointer;user-select:none;transition:border-color .2s}
-  .lbl:hover,.lbl.sel{border-color:var(--accent);color:#fff}
-  .lbl i{font-style:normal;display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
-  .toolbar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none}
-  .toolbar > *{pointer-events:auto}
-  .chip,.btn{font:500 12px Inter,sans-serif;color:var(--text);background:rgba(30,41,59,.92);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;user-select:none}
-  .chip.on{border-color:var(--accent);background:rgba(249,115,22,.18)}
-  .btn:hover,.chip:hover{border-color:#64748b}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#111;font-weight:700}
-  .btn.danger{background:#dc2626;border-color:#ef4444;color:#fff;font-weight:700}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .slider{display:flex;align-items:center;gap:6px;background:rgba(30,41,59,.92);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px}
-  .slider input{width:90px;accent-color:var(--accent)}
-  .tiers{position:absolute;top:10px;left:10px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 20px)}
-  .hint{position:absolute;top:10px;right:10px;font-size:11px;color:var(--muted);background:rgba(15,23,42,.7);padding:5px 8px;border-radius:6px;pointer-events:none}
-  .toast{position:absolute;left:50%;top:56px;transform:translateX(-50%);max-width:min(560px,92%);background:rgba(15,23,42,.95);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;opacity:0;transition:opacity .3s;pointer-events:none}
-  .toast.show{opacity:1}
-  #panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-  .tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
-  .tabs button{flex:1;background:none;border:none;color:var(--muted);font:600 13px Inter,sans-serif;padding:12px 4px;cursor:pointer;border-bottom:2px solid transparent}
-  .tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
-  .pane{display:none;overflow:auto;padding:16px;flex:1;min-height:0}
-  .pane.on{display:block}
-  h2{font-size:18px;margin:0 0 4px}
-  h3{font-size:14px;margin:18px 0 6px;color:var(--accent)}
-  p,li{font-size:13.5px;line-height:1.55;color:#cbd5e1}
-  ul{padding-left:18px;margin:6px 0}
-  .sub{color:var(--muted);font-size:12.5px;margin:0 0 10px}
-  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);margin:2px 4px 2px 0;color:var(--muted)}
-  .pill.t0{border-color:#eab308;color:#fde047}.pill.t1{border-color:var(--accent);color:#fdba74}.pill.t2{border-color:var(--mesh);color:#86efac}.pill.t3{border-color:var(--sat);color:#c4b5fd}
-  table.spec{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0}
-  table.spec td{border-bottom:1px solid var(--line);padding:5px 4px;vertical-align:top}
-  table.spec td:first-child{color:var(--muted);width:38%}
-  .complist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-  .complist button{text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 8px;font:500 12px Inter,sans-serif;cursor:pointer}
-  .complist button:hover,.complist button.sel{border-color:var(--accent)}
-  .complist button i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-  .card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
-  .steps{list-style:none;padding:0;margin:10px 0}
-  .steps li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
-  .steps .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);margin-top:1px}
-  .steps li.run .dot{border-color:var(--warn);border-top-color:transparent;animation:spin .8s linear infinite}
-  .steps li.done .dot{border-color:var(--ok);background:var(--ok)}
-  .steps li.skip .dot{border-color:#64748b;background:#334155}
-  .steps li.skip{opacity:.6}
-  .steps small{display:block;color:var(--muted);font-size:12px;margin-top:2px;font-family:'JetBrains Mono',monospace;word-break:break-word}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .hex{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;word-break:break-all;background:#020617;border:1px solid var(--line);border-radius:8px;padding:10px}
-  .hex span{padding:1px 2px;border-radius:3px}
-  table.fields{width:100%;border-collapse:collapse;font-size:11.5px;font-family:'JetBrains Mono',monospace;margin-top:8px}
-  table.fields th,table.fields td{border-bottom:1px solid var(--line);padding:4px 3px;text-align:left}
-  table.fields th{color:var(--muted);font-weight:500}
-  label.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;margin:10px 0 4px}
-  label.row output{font-family:'JetBrains Mono',monospace;color:var(--accent)}
-  input[type=range]{width:100%;accent-color:var(--accent)}
-  input[type=text],select{width:100%;background:#020617;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:13px Inter,sans-serif}
-  .checks label{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
-  .checks label span:last-child{font-family:'JetBrains Mono',monospace;color:var(--muted)}
-  .bars{margin-top:10px}
-  .bar{height:14px;border-radius:4px;background:var(--line);overflow:hidden;margin:3px 0 8px}
-  .bar > div{height:100%;transition:width .3s}
-  .big{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}
-  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .kpis .card{margin:0}
-  .kpis small{color:var(--muted);font-size:11.5px}
-  .warnbox{border-left:3px solid var(--warn);padding:8px 10px;background:rgba(250,204,21,.07);border-radius:4px;font-size:12.5px;margin:10px 0}
-  .srcs li{font-size:12px}
-  .scen{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
-  .scen button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:500 12.5px Inter,sans-serif;cursor:pointer;text-align:left}
-  .scen button.on{border-color:var(--accent);background:rgba(249,115,22,.15)}
-  .alarm{border-radius:8px;padding:10px 12px;font-weight:600;font-size:13.5px;margin:8px 0}
-  .alarm.ok{background:rgba(74,222,128,.12);border:1px solid #166534;color:#86efac}
-  .alarm.warn{background:rgba(250,204,21,.12);border:1px solid #a16207;color:#fde047}
-  .alarm.bad{background:rgba(248,113,113,.15);border:1px solid #b91c1c;color:#fca5a5;animation:blink 1s steps(2) infinite}
-  @keyframes blink{50%{border-color:#f87171}}
-  table.sens{width:100%;border-collapse:collapse;font-size:12.5px}
-  table.sens td{padding:5px 3px;border-bottom:1px solid var(--line);vertical-align:middle}
-  table.sens td.v{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;width:30%}
-  table.sens .mini{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
-  table.sens .mini div{height:100%}
-  .scenNote{font-size:12.5px;color:var(--muted);margin:4px 0 8px}
-  @media (max-width: 900px){
-    #app{grid-template-columns:1fr;grid-template-rows:56% 44%}
-    #panel{border-left:none;border-top:1px solid var(--line)}
-    .topbar .tag{display:none}
-    .hint{display:none}
-    .slider input{width:70px}
-    .chip,.btn{padding:6px 8px;font-size:11px}
-  }
+:root{--bg:#0b1120;--panel:#0f172a;--panel2:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#f97316;--accent2:#22d3ee;--ok:#4ade80;--warn:#facc15;--bad:#f87171;--sat:#a78bfa}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+a{color:var(--accent2)}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:#0b1424;border:1px solid #1f2b40;border-radius:4px;padding:1px 5px}
+.topbar{position:fixed;inset:0 0 auto 0;height:52px;display:flex;align-items:center;gap:14px;padding:0 16px;background:rgba(15,23,42,.94);border-bottom:1px solid var(--line);z-index:30;backdrop-filter:blur(6px)}
+.topbar .back{color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}
+.topbar .back:hover{color:var(--text)}
+.topbar h1{font-size:16px;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
+.topbar h1 span{color:var(--accent)}
+.topbar nav{margin-left:auto;display:flex;gap:4px;flex:none}
+.topbar nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:7px;white-space:nowrap}
+.topbar nav a:hover{color:var(--text);background:var(--panel2)}
+/* ---------------- app ---------------- */
+#model{margin-top:52px;height:calc(100svh - 52px);min-height:560px;display:grid;grid-template-columns:1fr 430px;border-bottom:1px solid var(--line)}
+#viewport{position:relative;overflow:hidden;min-height:0;touch-action:none}
+#viewport canvas{display:block}
+#labels{position:absolute;inset:0;pointer-events:none}
+.lbl{font-size:11px;font-weight:500;color:var(--text);background:rgba(15,23,42,.84);border:1px solid var(--line);padding:2px 7px;border-radius:5px;white-space:nowrap;pointer-events:auto;cursor:pointer;user-select:none}
+.lbl:hover,.lbl.sel{border-color:var(--accent);color:#fff}
+.lbl i,.complist i,.links i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(11,17,32,.85);z-index:4;transition:opacity .5s;font-size:14px;color:var(--muted)}
+#loading.done{opacity:0;pointer-events:none}
+.toolbar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none;z-index:3}
+.toolbar>*{pointer-events:auto}
+.chip,.btn{font:500 12px Inter,sans-serif;color:var(--text);background:rgba(30,41,59,.94);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;user-select:none;text-decoration:none;display:inline-block}
+.chip.on{border-color:var(--accent);background:rgba(249,115,22,.2)}
+.btn:hover,.chip:hover{border-color:#64748b}
+.btn.danger{background:#dc2626;border-color:#ef4444;color:#fff;font-weight:700}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.slider{display:flex;align-items:center;gap:6px;background:rgba(30,41,59,.94);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px}
+.slider input{width:90px;accent-color:var(--accent)}
+.tiers{position:absolute;top:10px;left:10px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 20px);z-index:3}
+.hint{position:absolute;top:10px;right:10px;font-size:11px;color:var(--muted);background:rgba(15,23,42,.7);padding:5px 8px;border-radius:6px;pointer-events:none;z-index:3}
+.toast{position:absolute;left:50%;top:52px;transform:translateX(-50%);max-width:min(580px,92%);background:rgba(15,23,42,.96);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}
+.toast.show{opacity:1}
+#panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
+.tabs button{flex:1;background:none;border:none;color:var(--muted);font:600 12.5px Inter,sans-serif;padding:12px 2px;cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
+.pane{display:none;overflow:auto;padding:16px;flex:1;min-height:0;overscroll-behavior:contain}
+.pane.on{display:block}
+.pane h2{font-size:18px;margin:0 0 4px}
+.pane h3{font-size:13.5px;margin:16px 0 4px;color:var(--accent)}
+.pane p,.pane li{font-size:13.5px;line-height:1.55;color:#cbd5e1}
+.pane ul{padding-left:18px;margin:6px 0}
+.sub{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);margin:2px 4px 2px 0;color:var(--muted)}
+.pill.t0{border-color:#eab308;color:#fde047}.pill.t1{border-color:var(--accent);color:#fdba74}.pill.t2{border-color:#34d399;color:#86efac}.pill.t3{border-color:var(--sat);color:#c4b5fd}
+table.spec{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+table.spec td{border-bottom:1px solid var(--line);padding:5px 4px;vertical-align:top}
+table.spec td:first-child{color:var(--muted);width:34%}
+.buy{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.buy a{font-size:12px;text-decoration:none;border:1px solid #155e75;background:rgba(34,211,238,.08);padding:4px 8px;border-radius:6px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.complist,.links{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.complist .grp,.links .grp{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:8px}
+.complist button,.links button{text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 8px;font:500 12px Inter,sans-serif;cursor:pointer}
+.complist button:hover,.complist button.sel,.links button:hover,.links button.on{border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:11.5px;color:var(--muted);margin:6px 0 2px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend b{display:inline-block;width:16px;height:4px;border-radius:2px}
+table.mini-t{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
+table.mini-t td{border-bottom:1px solid var(--line);padding:3px 4px}
+table.mini-t td:first-child{font-family:'JetBrains Mono',monospace;color:#93c5fd;width:30%}
+.steps{list-style:none;padding:0;margin:10px 0}
+.steps li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.steps .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);margin-top:1px}
+.steps li.run .dot{border-color:var(--warn);border-top-color:transparent;animation:spin .8s linear infinite}
+.steps li.done .dot{border-color:var(--ok);background:var(--ok)}
+.steps small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;font-family:'JetBrains Mono',monospace;word-break:break-word}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hex{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;word-break:break-all;background:#020617;border:1px solid var(--line);border-radius:8px;padding:10px}
+.hex span{padding:1px 2px;border-radius:3px}
+table.fields{width:100%;border-collapse:collapse;font-size:11.5px;font-family:'JetBrains Mono',monospace;margin-top:8px}
+table.fields th,table.fields td{border-bottom:1px solid var(--line);padding:4px 3px;text-align:left}
+table.fields th{color:var(--muted);font-weight:500}
+label.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;margin:10px 0 4px}
+label.row output{font-family:'JetBrains Mono',monospace;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=text],select{width:100%;background:#020617;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:13px Inter,sans-serif}
+.checks label{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);gap:8px}
+.checks label span:last-child{font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap}
+.bar{height:14px;border-radius:4px;background:var(--line);overflow:hidden;margin:3px 0 8px}
+.bar>div{height:100%;transition:width .3s}
+.big{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.kpis small{color:var(--muted);font-size:11.5px}
+.warnbox{border-left:3px solid var(--warn);padding:8px 10px;background:rgba(250,204,21,.07);border-radius:4px;font-size:12.5px;margin:10px 0;line-height:1.5}
+.scen{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.scen button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:500 12.5px Inter,sans-serif;cursor:pointer;text-align:left}
+.scen button.on{border-color:var(--accent);background:rgba(249,115,22,.15)}
+.alarm{border-radius:8px;padding:10px 12px;font-weight:600;font-size:13.5px;margin:8px 0}
+.alarm.ok{background:rgba(74,222,128,.12);border:1px solid #166534;color:#86efac}
+.alarm.warn{background:rgba(250,204,21,.12);border:1px solid #a16207;color:#fde047}
+.alarm.bad{background:rgba(248,113,113,.15);border:1px solid #b91c1c;color:#fca5a5;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{border-color:#f87171}}
+table.sens{width:100%;border-collapse:collapse;font-size:12.5px}
+table.sens td{padding:5px 3px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.sens td.v{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;width:32%}
+table.sens td.v span{color:var(--muted);font-size:10.5px}
+table.sens .mini{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+table.sens .mini div{height:100%}
+/* ---------------- guide ---------------- */
+.guide-wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1240px;margin:0 auto;padding:40px 24px 80px}
+.toc{position:sticky;top:72px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;font-size:13px}
+.toc b{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 8px;border-left:2px solid var(--line)}
+.toc a.sub{padding-left:20px;font-size:12.5px;margin:0;color:var(--muted)}
+.toc a:hover{color:var(--text)}
+.toc a.on{color:var(--text);border-left-color:var(--accent)}
+article{max-width:860px;min-width:0}
+article h2{font-size:28px;margin:56px 0 10px;line-height:1.2}
+article h2:first-child{margin-top:0}
+article h3{font-size:20px;margin:34px 0 8px;color:#fdba74}
+article h4{font-size:16px;margin:22px 0 6px}
+article p,article li{font-size:16px;line-height:1.7;color:#cbd5e1}
+article ul,article ol{padding-left:22px}
+article .lead{font-size:18px;color:var(--text)}
+.kicker{color:var(--accent);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0}
+.callout{border:1px solid var(--line);border-left:4px solid var(--accent);background:rgba(249,115,22,.06);border-radius:8px;padding:14px 16px;margin:18px 0}
+.callout.blue{border-left-color:var(--accent2);background:rgba(34,211,238,.05)}
+.callout.red{border-left-color:var(--bad);background:rgba(248,113,113,.06)}
+.callout p{margin:6px 0}
+figure{margin:22px 0}
+figure svg{width:100%;height:auto;background:#0b1424;border:1px solid #1f2b40;border-radius:12px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+.blk{cursor:pointer}
+.blk:hover rect{stroke:#f97316;stroke-width:2}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 8px;text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+.tbl td code{white-space:nowrap}
+.tbl-wrap{overflow-x:auto}
+pre{background:#0b1424;border:1px solid #1f2b40;border-radius:10px;padding:14px;overflow:auto;font-size:13px;line-height:1.55}
+pre code{background:none;border:none;padding:0}
+.bytes{display:flex;flex-wrap:wrap;gap:4px;margin:12px 0}
+.bytes span{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:#0b1424}
+.bytes span small{display:block;color:var(--muted);font-size:10.5px;font-family:Inter,sans-serif}
+.parts-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.part-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.part-card h4{margin:0 0 4px;font-size:17px}
+.part-card .meta{font-size:13px;color:var(--muted);margin-bottom:8px}
+.part-card .meta b{color:var(--text)}
+.part-card dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:10px 0 0;font-size:14.5px;line-height:1.6}
+.part-card dt{color:var(--muted);font-weight:600}
+.part-card dd{margin:0;color:#cbd5e1}
+.part-card .buy a{font-size:12.5px}
+.cat-intro{color:#cbd5e1}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:16px 0}
+.dl{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;color:var(--text);display:block}
+.dl:hover{border-color:var(--accent)}
+.dl b{display:block;font-size:15px;margin-bottom:4px}
+.dl span{display:block;color:var(--muted);font-size:13px;line-height:1.5}
+.dl em{font-style:normal;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px}
+.view3d{font-size:12px;margin-left:8px;cursor:pointer;color:var(--accent2);background:none;border:1px solid #155e75;border-radius:6px;padding:2px 8px}
+footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--muted);font-size:13px}
+@media (max-width:1000px){
+  #model{grid-template-columns:minmax(0,1fr);grid-template-rows:58% 42%;height:calc(100svh - 52px)}
+  #panel{border-left:none;border-top:1px solid var(--line)}
+  .hint{display:none}
+  .topbar nav a.opt{display:none}
+  .guide-wrap{grid-template-columns:minmax(0,1fr);padding:28px 16px 60px}
+  .toc{display:none}
+}
+@media (max-width:600px){
+  .topbar{gap:10px;padding:0 12px}
+  .topbar h1{font-size:15px}
+  .topbar h1 span{display:none}
+  .topbar nav a{padding:6px 7px}
+  .topbar nav a.opt2{display:none}
+  .slider input{width:64px}
+  .chip,.btn{padding:6px 8px;font-size:11px}
+  article h2{font-size:23px}
+  article p,article li{font-size:15.5px}
+  .part-card dl{grid-template-columns:1fr}
+}
 </style>
 <script type="importmap">
 { "imports": {
@@ -128,44 +209,56 @@
 <header class="topbar">
   <a class="back" href="../index.html">← Projects</a>
   <h1>Survival Radio <span>· disaster comms hub</span></h1>
-  <div class="tag">Concept model · not to scale</div>
+  <nav>
+    <a class="opt2" href="#model">3D model</a>
+    <a href="#guide">Guide</a>
+    <a class="opt" href="#g-wires">Connections</a>
+    <a href="#g-downloads">Downloads</a>
+  </nav>
 </header>
 
-<div id="app">
+<!-- ================================================= 3D APP ================================================= -->
+<section id="model">
   <div id="viewport">
     <div id="labels"></div>
+    <div id="loading"><span>Loading CAD model…</span></div>
     <div class="tiers" id="tiers"></div>
-    <div class="hint">Drag to orbit · scroll/pinch to zoom · tap a part</div>
+    <div class="hint">Drag to orbit · scroll or pinch to zoom · tap a part</div>
     <div class="toast" id="toast"></div>
     <div class="toolbar">
       <div class="slider">Explode <input id="explode" type="range" min="0" max="1" step="0.01" value="0" /></div>
-      <button class="chip" id="packBtn">🎒 Backpack mode</button>
+      <button class="chip" id="packBtn">🎒 Backpack</button>
       <button class="chip on" id="xray">X-ray</button>
+      <button class="chip on" id="wiresBtn">Wiring</button>
       <button class="chip on" id="labelsBtn">Labels</button>
       <button class="btn" id="dropBtn">Drop test</button>
-      <button class="btn" id="dunkBtn">Submerge test</button>
+      <button class="btn" id="dunkBtn">Submerge</button>
       <button class="btn" id="resetBtn">Reset view</button>
     </div>
   </div>
-
   <aside id="panel">
     <nav class="tabs">
       <button data-tab="explore" class="on">Explore</button>
-      <button data-tab="sos">SOS sim</button>
+      <button data-tab="connect">Connect</button>
+      <button data-tab="sos">SOS</button>
       <button data-tab="sensors">Sensors</button>
       <button data-tab="power">Power</button>
-      <button data-tab="notes">Notes</button>
     </nav>
-
     <section class="pane on" id="pane-explore">
-      <div id="info"></div>
+      <div id="info"><h2>Loading…</h2></div>
       <h3>All components</h3>
       <div class="complist" id="complist"></div>
     </section>
-
+    <section class="pane" id="pane-connect">
+      <h2>How the parts talk</h2>
+      <p class="sub">Pick a link. Wires light up in the model and data flows along them; radio links animate in the sky.</p>
+      <div class="legend"><span><b style="background:#ef4444"></b>power</span><span><b style="background:#facc15"></b>UART</span><span><b style="background:#3b82f6"></b>I²C</span><span><b style="background:#a855f7"></b>SPI</span><span><b style="background:#e5e7eb"></b>GPIO</span><span><b style="background:#d4a52a"></b>RF coax</span><span><b style="background:#1f2937;border:1px solid #64748b"></b>pod cable</span></div>
+      <div class="links" id="linkBtns"></div>
+      <div id="linkInfo" style="margin-top:12px"></div>
+    </section>
     <section class="pane" id="pane-sos">
       <h2>One-button SOS</h2>
-      <p class="sub">Walk through what the firmware does when the guarded switch is flipped. Works with no phone attached.</p>
+      <p class="sub">What the controller firmware does when the guarded switch is flipped. No phone needed.</p>
       <label class="row">Message text <output id="msgLen">0</output></label>
       <input type="text" id="msgText" maxlength="60" value="Trapped in building, leg injured, 2 people" />
       <label class="row" style="margin-top:12px">Simulated location</label>
@@ -181,1303 +274,609 @@
       </div>
       <ul class="steps" id="steps"></ul>
       <div id="packetBox" style="display:none">
-        <h3>The SOS packet, byte by byte</h3>
-        <p class="sub">Compact binary instead of text: a full fix plus air readings fits in 28 bytes, far below the 340-byte RockBLOCK 9603 SBD limit and the 100 KB RockBLOCK 9704 IMT limit.</p>
+        <h3>The SOS message, byte by byte</h3>
+        <p class="sub">Compact binary instead of text: position, time, battery and four air readings fit in 28 bytes, followed by your text.</p>
         <div class="hex" id="hex"></div>
         <table class="fields" id="fields"></table>
       </div>
     </section>
-
     <section class="pane" id="pane-sensors">
       <h2>Sensor pod</h2>
-      <p class="sub">Simulated readings. Pick a scenario and watch the pod (and its LED in the 3D view) respond.</p>
+      <p class="sub">Simulated readings. Pick a scenario and watch the pod's LED in the 3D view.</p>
       <div class="scen" id="scen"></div>
-      <div class="scenNote" id="scenNote"></div>
+      <p class="sub" id="scenNote"></p>
       <div id="alarmBanner" class="alarm ok">All readings normal</div>
       <table class="sens" id="sensTable"></table>
-      <div class="warnbox">Alarm set points shown are common ones: oxygen-deficient below 19.5% (OSHA), CO 35 ppm (NIOSH limit) and 200 ppm (ceiling), CO₂ 5,000 ppm (OSHA 8-hour limit), PM2.5 from the EPA air-quality index. A homemade pod is an awareness tool, not a certified gas detector. Professionals use a calibrated 4-gas meter before entering a confined space.</div>
-      <h3>Which sensor, and why</h3>
-      <ul>
-        <li><b>Methane (natural gas):</b> broken gas lines are a top post-quake fire and explosion risk. Use an NDIR sensor such as SGX INIR; cheap MQ-4 sensors burn about 0.8 W heating their element.</li>
-        <li><b>Carbon monoxide:</b> generators and stoves run indoors after disasters cause CO poisoning. Electrochemical cells use microwatts.</li>
-        <li><b>Oxygen:</b> matters in basements and collapsed spaces. Electrochemical O₂ cells wear out in about 2 years.</li>
-        <li><b>CO₂:</b> Sensirion SCD41. Rising CO₂ in a small space means the air isn't being refreshed.</li>
-        <li><b>PM2.5:</b> PMSA003I or SPS30 for collapse dust and wildfire smoke. Run the fan only part of the time to save power.</li>
-        <li><b>Temperature, humidity, pressure:</b> BME280. Pressure also gives altitude and storm trends.</li>
-        <li><b>Motion (IMU):</b> logs aftershocks, detects falls, and can send an automatic SOS if you stop moving.</li>
-        <li><b>Radiation (optional):</b> a Radiacode over Bluetooth, or a Geiger-tube kit as a learning build.</li>
-      </ul>
-      <p>The latest O₂, CO, CO₂ and temperature readings ride along in every SOS packet (6 extra bytes), so rescuers know about bad air before they reach you.</p>
+      <div class="warnbox">Alarm points shown are common ones: oxygen-deficient below 19.5 % (OSHA), CO 35 ppm (NIOSH limit) and 200 ppm (ceiling), CO₂ 5,000 ppm (OSHA 8-hour limit), PM2.5 from the EPA air-quality index. A homemade pod is an awareness tool, not a certified gas detector.</div>
+      <p><a href="#g-sense">Read about each sensor ↓</a></p>
     </section>
-
     <section class="pane" id="pane-power">
       <h2>Power budget</h2>
-      <p class="sub">Daily energy in vs. out. Defaults follow typical datasheet values; measure your own build.</p>
+      <p class="sub">Energy in vs out per day. Typical datasheet values; measure your own build.</p>
       <label class="row">Battery capacity <output id="oBat"></output></label>
-      <input type="range" id="pBat" min="20" max="200" step="2" value="74" />
+      <input type="range" id="pBat" min="20" max="200" step="2" value="72" />
       <label class="row">Solar panel <output id="oSol"></output></label>
-      <input type="range" id="pSol" min="0" max="100" step="5" value="40" />
+      <input type="range" id="pSol" min="0" max="60" step="5" value="20" />
       <label class="row">Season (Portland)</label>
       <select id="pSeason">
-        <option value="3.5">Summer, about 3–4 Wh per panel-watt per day</option>
-        <option value="2">Spring / fall, about 2 Wh/W/day</option>
-        <option value="0.7">Overcast winter, under 1 Wh/W/day</option>
+        <option value="3.5">Summer: about 3–4 Wh per panel-watt per day</option>
+        <option value="2">Spring / fall: about 2 Wh per panel-watt per day</option>
+        <option value="0.7">Overcast winter: under 1 Wh per panel-watt per day</option>
       </select>
-      <label class="row">Hand cranking per day (at ~8 W) <output id="oCrank"></output></label>
+      <label class="row">Charger board</label>
+      <select id="pChg">
+        <option value="v1">V1: Adafruit bq24074 (simple, about 6 W max)</option>
+        <option value="v2">V2: TI BQ25798 (MPPT, up to 5 A, can charge a phone)</option>
+      </select>
+      <label class="row">Hand cranking per day (~8 W) <output id="oCrank"></output></label>
       <input type="range" id="pCrank" min="0" max="60" step="5" value="10" />
       <h3>Loads</h3>
       <div class="checks">
-        <label><span><input type="checkbox" id="lHub" checked /> Hub: MCU, LoRa, GNSS, e-ink, Iridium (24 msgs)</span><span>3.5 Wh</span></label>
-        <label><span><input type="checkbox" id="lPhone" checked /> Recharge phone once</span><span>21 Wh</span></label>
-        <label><span><input type="checkbox" id="lHT" /> VHF HT: 1 h RX, 5 min TX</span><span>2.5 Wh</span></label>
-        <label><span><input type="checkbox" id="lSDR" /> Pi Zero 2 W + RTL-SDR, 2 h</span><span>3 Wh</span></label>
+        <label><span><input type="checkbox" id="lHub" checked /> Hub: controller, mesh radio, GNSS, display, 24 satellite messages</span><span>3.5 Wh</span></label>
         <label><span><input type="checkbox" id="lSens" checked /> Sensor pod, duty-cycled (estimate)</span><span>2 Wh</span></label>
+        <label><span><input type="checkbox" id="lPhone" /> Recharge phone once</span><span>21 Wh</span></label>
+        <label><span><input type="checkbox" id="lHT" /> Ham radio: 1 h listen, 5 min transmit</span><span>2.5 Wh</span></label>
+        <label><span><input type="checkbox" id="lSDR" /> SDR receiver + Pi Zero, 2 h</span><span>3.5 Wh</span></label>
       </div>
-      <label class="row">Starlink Mini hours/day (~30 W) <output id="oSL"></output></label>
+      <label class="row">Starlink Mini hours/day (~30 W, own battery) <output id="oSL"></output></label>
       <input type="range" id="pSL" min="0" max="6" step="0.5" value="0" />
-      <div class="bars">
-        <div style="font-size:12px;color:var(--muted)">Generated per day</div>
-        <div class="bar"><div id="bIn" style="background:var(--ok)"></div></div>
-        <div style="font-size:12px;color:var(--muted)">Consumed per day</div>
-        <div class="bar"><div id="bOut" style="background:var(--accent)"></div></div>
+      <div style="margin-top:10px">
+        <div class="sub">Generated per day</div><div class="bar"><div id="bIn" style="background:var(--ok)"></div></div>
+        <div class="sub">Consumed per day</div><div class="bar"><div id="bOut" style="background:var(--accent)"></div></div>
       </div>
-      <div class="kpis">
-        <div class="card"><small>Net per day</small><div class="big" id="kNet"></div></div>
-        <div class="card"><small>Runtime with no sun</small><div class="big" id="kDays"></div></div>
-      </div>
+      <div class="kpis"><div class="card"><small>Net per day</small><div class="big" id="kNet"></div></div><div class="card"><small>Runtime with no sun</small><div class="big" id="kDays"></div></div></div>
       <div id="powerNote"></div>
       <button class="btn" id="flowBtn" style="margin-top:10px;width:100%">Show power flow in 3D</button>
-      <h3>Why these choices</h3>
-      <ul>
-        <li><b>Li-ion 21700 cells</b> give the most watt-hours per gram for the handheld hub. LiFePO4 is safer and longer-lived, so it goes in the separate 12 V bank for Starlink or an HF rig.</li>
-        <li><b>Never charge below 0 °C.</b> It plates lithium and permanently damages the cells, so the BMS needs a thermistor cutoff.</li>
-        <li><b>The hand crank is a trickle.</b> Ten minutes yields about 1.3 Wh, enough for several satellite messages but not a phone charge.</li>
-        <li><b>Supercapacitors</b> absorb the Iridium modem's 1.3 A transmit spikes so the battery sees a smooth load.</li>
-        <li><b>A sealed holder of lithium AA primaries</b> keeps SOS-only mode alive if the main pack is dead or frozen.</li>
-      </ul>
-    </section>
-
-    <section class="pane" id="pane-notes">
-      <h2>Design notes</h2>
-      <div class="warnbox"><b>Bottom line:</b> don't try to reach distant towers or turn an SDR into a satellite phone. Layer certified satellite modules, LoRa mesh, and licensed amateur radio, and carry a registered 406 MHz PLB as the backstop.</div>
-      <h3>The scenario: Cascadia M9</h3>
-      <p>The Oregon Resilience Plan estimates months to restore power and telecom after a Cascadia earthquake. Surviving cell sites lose grid power and backhaul and are flooded with traffic. Portland's BEECN volunteer radio sites take about 24–48 h to set up, so the first days are on you.</p>
-      <h3>Why not just reach a far-away tower?</h3>
-      <ul>
-        <li>Protocol timing caps cell radius: about 35 km for GSM (timing advance) and about 100 km for LTE at most. Real cells are configured much smaller.</li>
-        <li>The tower must be standing, powered, backhauled and uncongested, which is unlikely across the I-5 corridor.</li>
-        <li>Consumer boosters are legal only if FCC-certified and registered with your carrier (47 CFR §20.21). A homemade cellular amplifier is illegal.</li>
-        <li>A legal bonus option: a certified LTE router with external MIMO ports and a directional antenna, shared to the phone over Wi-Fi.</li>
-      </ul>
-      <h3>What the SDR can and can't do</h3>
-      <ul>
-        <li><b>Can (receive):</b> NOAA Weather Radio (162.400–162.550 MHz), ADS-B at 1090 MHz to see rescue aircraft, scanner traffic, ham nets, and spectrum surveys to find which cell bands are still alive.</li>
-        <li><b>Can't:</b> act as a cell tower or satellite modem. Those bands are exclusively licensed, an isolated base station has no core network or 911 routing, and satellite networks need certified, provisioned hardware.</li>
-        <li>Transmit experiments belong on amateur bands, with a license and proper filtering.</li>
-      </ul>
-      <h3>Communication layers</h3>
-      <table class="spec">
-        <tr><td><span class="pill t0">Tier 0</span>Carry</td><td>Registered 406 MHz PLB, plus a satellite-capable phone (iPhone 14+, Pixel 9/10, or T-Satellite)</td></tr>
-        <tr><td><span class="pill t1">Tier 1</span>Build</td><td>Hub: nRF52840 + SX1262 LoRa (Meshtastic), u-blox M10 GNSS, RockBLOCK 9704 Iridium, e-ink, guarded SOS switch, IP67 case</td></tr>
-        <tr><td><span class="pill t2">Tier 2</span>Licensed</td><td>VHF/UHF HT for APRS and Winlink (Technician), HF NVIS later (General), RTL-SDR receive</td></tr>
-        <tr><td><span class="pill t3">Tier 3</span>High power</td><td>Starlink Mini or LTE router on its own 12 V LiFePO4 bank, used only when needed</td></tr>
-      </table>
-      <h3>Legal quick reference (US)</h3>
-      <ul>
-        <li><b>Part 15:</b> LoRa at 902–928 MHz, BLE and Wi-Fi with certified modules, no license.</li>
-        <li><b>Part 95:</b> FRS needs no license, GMRS needs one (no exam), and PLBs must be certified and registered with NOAA, so they can't be homebuilt.</li>
-        <li><b>Part 97:</b> APRS, Winlink, HF and homebrew transmitters need an amateur license, with no encryption allowed. §97.403 is a narrow safe harbor for genuine distress, not a design basis.</li>
-        <li><b>Part 20:</b> only certified, carrier-registered signal boosters are allowed.</li>
-      </ul>
-      <h3>Suggested build order</h3>
-      <ol style="padding-left:18px">
-        <li>LoRa + GNSS + phone over BLE</li>
-        <li>RockBLOCK + SOS state machine</li>
-        <li>Ruggedize: IP67 case, bulkheads, conformal coat, drop tests</li>
-        <li>Power: solar MPPT, USB-C PD, cold-charge cutoff</li>
-        <li>Licensed HT (APRS, VARA FM), then SDR receive suite</li>
-        <li>Starlink/LTE tier on its own battery</li>
-      </ol>
-      <p>Approximate cost for Tier 1: <b>$700–1,400</b>, plus a <b>$300–450 PLB</b>.</p>
-      <h3>Sources</h3>
-      <ul class="srcs">
-        <li><a href="https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-20/section-20.21" target="_blank" rel="noopener">47 CFR §20.21: Signal boosters</a></li>
-        <li><a href="https://www.law.cornell.edu/cfr/text/47/97.403" target="_blank" rel="noopener">47 CFR §97.403: Safety of life</a></li>
-        <li><a href="https://www.ecfr.gov/current/title-47/chapter-I/subchapter-D/part-95/subpart-K/section-95.2993" target="_blank" rel="noopener">47 CFR Part 95 Subpart K: PLBs</a></li>
-        <li><a href="https://store.groundcontrol.com/products/rockblock-9704" target="_blank" rel="noopener">Ground Control: RockBLOCK 9704</a></li>
-        <li><a href="https://cdn.rock7.com/docs/9603-Developers-guide.pdf" target="_blank" rel="noopener">RockBLOCK 9603 developer guide</a></li>
-        <li><a href="https://starlink.com/support/article/a7fe6525-5356-a837-48e6-33df176cdbc5" target="_blank" rel="noopener">Starlink Mini power specs</a></li>
-        <li><a href="https://www.t-mobile.com/news/un-carrier/reaching-for-the-stars-with-t-satellite" target="_blank" rel="noopener">T-Mobile T-Satellite</a></li>
-        <li><a href="https://support.apple.com/en-us/101573" target="_blank" rel="noopener">Apple Emergency SOS via satellite</a></li>
-        <li><a href="https://meshtastic.org/docs/community/local-groups/" target="_blank" rel="noopener">Meshtastic local groups (PDXMesh)</a></li>
-        <li><a href="https://www.oregon.gov/oem/Documents/01_ORP_Cascadia.pdf" target="_blank" rel="noopener">Oregon Resilience Plan: Cascadia</a></li>
-        <li><a href="https://www.portland.gov/sites/default/files/2020-04/2019.04.09.beecn-guidelines.web_.pdf" target="_blank" rel="noopener">Portland BEECN guidelines</a></li>
-        <li><a href="https://clackamasares.org/wp/wp-content/uploads/2022/11/CARES-Winlink-Training-v1.0.2022.09.17.pdf" target="_blank" rel="noopener">Clackamas ARES Winlink training</a></li>
-        <li><a href="https://en.wikipedia.org/wiki/Timing_advance" target="_blank" rel="noopener">GSM timing advance</a></li>
-      </ul>
-      <p class="sub" style="margin-top:14px">Not legal advice. Satellite service status changes quickly; verify before relying on it.</p>
     </section>
   </aside>
+</section>
+
+<!-- ================================================= GUIDE ================================================= -->
+<div class="guide-wrap" id="guide">
+  <nav class="toc" id="toc">
+    <b>Build guide</b>
+    <a href="#g-overview">What this is</a>
+    <a href="#g-why">Why not a far tower? SDR?</a>
+    <a href="#g-diagram">The system on one page</a>
+    <a href="#g-parts">The parts</a>
+    <a class="sub" href="#g-brain">Brains & radios</a>
+    <a class="sub" href="#g-sat">Satellite</a>
+    <a class="sub" href="#g-loc">Location & motion</a>
+    <a class="sub" href="#g-sense">Sensors</a>
+    <a class="sub" href="#g-power">Power</a>
+    <a class="sub" href="#g-ui">Controls & display</a>
+    <a class="sub" href="#g-rugged">Enclosure & connectors</a>
+    <a class="sub" href="#g-carry">Carry-along gear</a>
+    <a href="#g-wires">How the parts talk</a>
+    <a class="sub" href="#g-ground">Ground & logic levels</a>
+    <a class="sub" href="#g-uart">UART</a>
+    <a class="sub" href="#g-i2c">I²C</a>
+    <a class="sub" href="#g-spi">SPI</a>
+    <a class="sub" href="#g-gpio">GPIO</a>
+    <a class="sub" href="#g-pwrwire">Power wiring</a>
+    <a class="sub" href="#g-rf">RF coax</a>
+    <a class="sub" href="#g-pinout">Wiring table</a>
+    <a href="#g-phone">Connecting your phone</a>
+    <a href="#g-journey">Follow one message</a>
+    <a href="#g-energy">Energy budget</a>
+    <a href="#g-pack">Backpack version</a>
+    <a href="#g-build">Build it in stages</a>
+    <a href="#g-downloads">Downloads (CAD)</a>
+    <a href="#g-bom">Shopping list</a>
+    <a href="#g-safety">Safety & legal</a>
+    <a href="#g-sources">Sources</a>
+  </nav>
+
+  <article>
+    <!-- ------------------------------------------------ OVERVIEW -->
+    <section id="g-overview">
+      <p class="kicker">Build guide</p>
+      <h2>A survival radio you can build, explained from the ground up</h2>
+      <p class="lead">After a major earthquake, a Cascadia event for example, nearby cell towers may be destroyed or without power for a long time. This hub gives you three independent ways to reach the outside world, plus a backstop you buy, in a box that survives drops and water.</p>
+      <ul>
+        <li><b>Satellite</b>: an Iridium modem sends an SOS with your GPS position from anywhere with open sky. It does not need your phone.</li>
+        <li><b>Mesh radio</b>: a Meshtastic LoRa node lets you text neighbors and volunteer networks, phone-to-phone, with no towers.</li>
+        <li><b>Ham radio</b> (licensed): APRS position beacons and Winlink email over the regional emergency networks.</li>
+        <li><b>Personal Locator Beacon</b>: a certified, registered beacon you buy. It is the last resort that must not fail.</li>
+      </ul>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Layer</th><th>What</th><th>Needs</th></tr>
+        <tr><td><span class="pill t0">Tier 0 · carry</span></td><td>Registered 406 MHz PLB, plus your phone's own satellite SOS if it has one (iPhone 14 and later, Pixel 9/10, T-Satellite)</td><td>buy, register</td></tr>
+        <tr><td><span class="pill t1">Tier 1 · DIY hub</span></td><td>This build: Iridium modem, Meshtastic mesh radio, GNSS, sensor pod, e-paper, SOS switch, IP67 case</td><td>build it</td></tr>
+        <tr><td><span class="pill t2">Tier 2 · ham radio</span></td><td>Handheld with APRS and Winlink; an SDR receiver for weather, aircraft and scanner traffic</td><td>amateur license to transmit</td></tr>
+        <tr><td><span class="pill t3">Tier 3 · Starlink</span></td><td>Starlink Mini on its own 12 V battery, for real internet when you can spare the power</td><td>subscription, 25–40 W</td></tr>
+      </table></div>
+      <p>The tier buttons at the top of the 3D view show or hide each layer.</p>
+      <p>Around those radios sit a GNSS receiver, a motion sensor, a pod of air-quality sensors (natural gas, carbon monoxide, oxygen, CO₂, smoke), a 72 Wh battery with solar, USB-C and hand-crank charging, an e-paper screen, and a guarded SOS switch, all in an IP67 case. The same hub can ride in a backpack.</p>
+      <div class="callout">
+        <p><b>Five design rules</b></p>
+        <ol>
+          <li><b>Use certified transmitters; write your own glue code.</b> You don't build radios that transmit on satellite or cellular bands. You connect approved modules and program the controller that coordinates them.</li>
+          <li><b>Every function works without a phone.</b> The phone is a nicer keyboard, not a dependency.</li>
+          <li><b>Plenty of energy, many ways to recharge, everything switchable.</b> Parts that aren't needed are powered off.</li>
+          <li><b>Seal it, then prove it.</b> Dunk the case and drop it before you trust it.</li>
+          <li><b>Modular and repairable.</b> Off-the-shelf boards, plug-in cables, printed brackets.</li>
+        </ol>
+      </div>
+      <div class="callout red"><p><b>Not a certified life-safety device.</b> This is an open, educational design. Carry a registered PLB, test the hub regularly, and never rely on a single path.</p></div>
+      <p>The 3D model at the top of this page is the real CAD model, at real size, of the hub described here. You can <a href="#g-downloads">download it</a> as STEP, STL or glTF and open it in any CAD program.</p>
+    </section>
+
+    <!-- ------------------------------------------------ WHY -->
+    <section id="g-why">
+      <h2>Why not just reach a far-away tower? And where does SDR fit?</h2>
+      <p>The first idea most people have is a stronger radio that reaches a distant cell tower that is still standing. It's a good question, and the answer shapes the whole design.</p>
+      <h3>A far tower is the wrong target</h3>
+      <ul>
+        <li><b>The protocols limit range, not just power.</b> A phone has to answer the tower within a precise time slot, and the "timing advance" that corrects for distance runs out at about 35 km for GSM and about 100 km at most for LTE. Real cells are set up far smaller than that, and a phone or booster can't change the tower's settings.</li>
+        <li><b>The link has two directions.</b> Even if you hear the tower, the tower must hear your phone's roughly 0.2 W transmitter, so a big antenna only on your side helps less than you'd hope.</li>
+        <li><b>The tower must still work.</b> After a major quake, surviving sites lose grid power and their fiber backhaul, and the ones still up are jammed with traffic. The Oregon Resilience Plan expects telecom restoration after a Cascadia earthquake to take months in the hardest-hit areas.</li>
+        <li><b>Amplifiers are regulated.</b> Consumer cell boosters are legal in the US only if FCC-certified and registered with your carrier (47 CFR §20.21). A homemade cellular amplifier is illegal and can disrupt the network for everyone.</li>
+        <li><b>The legal version:</b> a certified LTE router with external antenna ports and a directional antenna on a mast, shared to your phone over Wi-Fi. It helps only when a working tower is within normal range, so it's an add-on, not the plan.</li>
+      </ul>
+      <p>So the hub doesn't chase towers. It uses links that need no local infrastructure at all: satellites overhead, and radios carried by your neighbors.</p>
+      <h3>What an SDR can and can't do</h3>
+      <p>A <b>software-defined radio</b> replaces most of a radio's circuits with software: a small receiver turns a slice of spectrum into numbers, and a computer does the tuning, filtering and decoding. That makes it a superb, flexible <b>listener</b>, and an RTL-SDR receiver is part of the Tier 2 kit.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>SDR can (receive)</th><th>SDR can't</th></tr>
+        <tr><td>NOAA Weather Radio, 162.400–162.550 MHz</td><td>Become a cell tower: the bands are licensed to carriers, and an isolated base station has no core network or 911 routing</td></tr>
+        <tr><td>ADS-B aircraft positions at 1090 MHz: see rescue helicopters and planes working your area</td><td>Become a satellite phone: satellite networks only accept certified, provisioned terminals</td></tr>
+        <tr><td>Unencrypted public-safety, scanner and ham traffic, including local emergency nets</td><td>Transmit legally outside amateur bands; on ham bands you need a license, filtering and a transmit-capable SDR</td></tr>
+        <tr><td>Spectrum survey: find which cellular bands are still on the air, and aim an LTE antenna</td><td>Replace the certified radios in this hub</td></tr>
+      </table></div>
+      <p>The SDR setup here is an RTL-SDR Blog V4 on a Raspberry Pi Zero 2 W. The Pi runs its own Wi-Fi network and a web interface, so you listen and look at the aircraft map in your phone's browser. See the <a href="#part-sdr">SDR card</a> in the parts list.</p>
+    </section>
+
+    <!-- ------------------------------------------------ DIAGRAM -->
+    <section id="g-diagram">
+      <h2>The whole system on one page</h2>
+      <p>Every box is a part; every line is a connection, colored by type. <b>Tap a box</b> to jump to it in the 3D model.</p>
+      <figure>
+        <svg viewBox="0 0 960 610" role="img" aria-label="System block diagram of the survival radio hub" font-family="Inter, sans-serif">
+          <defs>
+            <style>
+              #g-diagram .bx{fill:#111c30;stroke:#334155;stroke-width:1.2}
+              #g-diagram .t1{fill:#e2e8f0;font-size:14px;font-weight:600}
+              #g-diagram .t2{fill:#94a3b8;font-size:11.5px}
+              #g-diagram .pw{stroke:#ef4444;stroke-width:3;fill:none}
+              #g-diagram .ua{stroke:#facc15;stroke-width:2.5;fill:none}
+              #g-diagram .ic{stroke:#3b82f6;stroke-width:3;fill:none}
+              #g-diagram .sp{stroke:#a855f7;stroke-width:2.5;fill:none}
+              #g-diagram .gp{stroke:#e5e7eb;stroke-width:2;fill:none}
+              #g-diagram .rf{stroke:#d4a52a;stroke-width:3;fill:none}
+              #g-diagram .air{stroke-width:2;fill:none;stroke-dasharray:6 5}
+            </style>
+          </defs>
+          <!-- power lines -->
+          <path class="pw" d="M60 80V120 M150 80V120 M105 180V215 M190 165H215V335H190 M190 140H330V262H360 M330 140H700V306H720 M190 350H205V585H945V198H930 M260 585V536"/>
+          <!-- uart -->
+          <path class="ua" d="M580 250H650V198H720 M580 320H720 M400 350V395H345V450"/>
+          <!-- i2c -->
+          <path class="ic" d="M470 350V420 M300 420H700 M320 420V450 M550 420V450 M680 420V450"/>
+          <!-- spi / gpio -->
+          <path class="sp" d="M405 230V90"/>
+          <path class="gp" d="M545 230V90"/>
+          <!-- rf -->
+          <path class="rf" d="M825 170V84 M825 346V390 M550 502V520"/>
+          <!-- air -->
+          <path class="air" stroke="#60a5fa" d="M922 346V470"/>
+          <path class="air" stroke="#34d399" d="M575 350Q690 380 800 500"/>
+          <text class="t2" x="928" y="452" style="fill:#60a5fa">BLE</text>
+          <text class="t2" x="690" y="372" style="fill:#34d399">Wi-Fi</text>
+          <text class="t2" x="740" y="26" style="fill:#a78bfa">↑ to Iridium satellites</text>
+          <text class="t2" x="873" y="413">→ mesh</text>
+
+          <g class="blk" data-c="ports"><rect class="bx" x="20" y="30" width="80" height="50" rx="9"/><text class="t1" x="32" y="52">USB-C</text><text class="t2" x="32" y="70">5 V in</text></g>
+          <g class="blk" data-c="ports"><rect class="bx" x="110" y="30" width="80" height="50" rx="9"/><text class="t1" x="120" y="52">DC-IN</text><text class="t2" x="120" y="70">6–10 V</text></g>
+          <g class="blk" data-c="power"><rect class="bx" x="20" y="120" width="170" height="60" rx="9"/><text class="t1" x="32" y="145">Charger</text><text class="t2" x="32" y="164">bq24074 · power path</text></g>
+          <g class="blk" data-c="battery"><rect class="bx" x="20" y="215" width="170" height="60" rx="9"/><text class="t1" x="32" y="240">Battery</text><text class="t2" x="32" y="259">1S4P 21700 · 72 Wh</text></g>
+          <g class="blk" data-c="power"><rect class="bx" x="20" y="310" width="170" height="50" rx="9"/><text class="t1" x="32" y="331">5 V boost</text><text class="t2" x="32" y="349">switched by controller</text></g>
+          <g class="blk" data-c="display"><rect class="bx" x="330" y="40" width="150" height="50" rx="9"/><text class="t1" x="342" y="62">E-paper</text><text class="t2" x="342" y="79">SPI · 296 × 128</text></g>
+          <g class="blk" data-c="sos"><rect class="bx" x="500" y="40" width="190" height="50" rx="9"/><text class="t1" x="512" y="62">SOS switch · buttons</text><text class="t2" x="512" y="79">GPIO · buzzer · LED</text></g>
+          <g class="blk" data-c="feather"><rect class="bx" x="360" y="230" width="220" height="120" rx="12" style="stroke:#22d3ee;stroke-width:2"/><text class="t1" x="376" y="262" style="font-size:16px">Controller</text><text class="t2" x="376" y="282">Adafruit ESP32-S3 Feather</text><text class="t2" x="376" y="302">UART ×3 · I²C · SPI · GPIO</text><text class="t2" x="376" y="322">Wi-Fi · Bluetooth LE</text><text class="t2" x="376" y="340">your firmware</text></g>
+          <g class="blk" data-c="iridiumAnt"><rect class="bx" x="720" y="40" width="210" height="44" rx="9"/><text class="t1" x="732" y="67">Iridium helical antenna</text></g>
+          <g class="blk" data-c="rockblock"><rect class="bx" x="720" y="170" width="210" height="56" rx="9"/><text class="t1" x="732" y="194">RockBLOCK 9704</text><text class="t2" x="732" y="213">Iridium · UART 230400</text></g>
+          <g class="blk" data-c="rak"><rect class="bx" x="720" y="290" width="210" height="56" rx="9"/><text class="t1" x="732" y="314">Mesh radio RAK4631</text><text class="t2" x="732" y="333">Meshtastic · UART (PROTO)</text></g>
+          <g class="blk" data-c="loraAnt"><rect class="bx" x="720" y="390" width="150" height="40" rx="9"/><text class="t1" x="732" y="415">LoRa whip 915 MHz</text></g>
+          <g class="blk" data-c="sensorPod"><rect class="bx" x="230" y="450" width="230" height="86" rx="9"/><text class="t1" x="242" y="472">Sensor pod (M12 cable)</text><text class="t2" x="242" y="491">SCD-41 0x62 · BME280 0x77</text><text class="t2" x="242" y="507">PMSA003I 0x12 · O₂ 0x73 · CO</text><text class="t2" x="242" y="523">methane on UART</text></g>
+          <g class="blk" data-c="gnss"><rect class="bx" x="480" y="450" width="140" height="52" rx="9"/><text class="t1" x="492" y="472">GNSS</text><text class="t2" x="492" y="490">MAX-M10S · 0x42</text></g>
+          <g class="blk" data-c="gnssPatch"><rect class="bx" x="480" y="520" width="140" height="34" rx="9"/><text class="t2" x="492" y="541">patch antenna (in lid)</text></g>
+          <g class="blk" data-c="imu"><rect class="bx" x="630" y="450" width="110" height="52" rx="9"/><text class="t1" x="642" y="472">Motion</text><text class="t2" x="642" y="490">LIS3DH · 0x18</text></g>
+          <g class="blk" data-c="phone"><rect class="bx" x="800" y="470" width="130" height="90" rx="12" style="stroke:#f472b6"/><text class="t1" x="812" y="495">Your phone</text><text class="t2" x="812" y="514">Meshtastic app</text><text class="t2" x="812" y="531">browser page</text></g>
+          <!-- legend -->
+          <g transform="translate(20,395)">
+            <text class="t2" x="0" y="0" style="font-weight:600;fill:#cbd5e1">Legend</text>
+            <path class="pw" d="M0 18H26"/><text class="t2" x="34" y="22">power</text>
+            <path class="ua" d="M0 38H26"/><text class="t2" x="34" y="42">UART (serial)</text>
+            <path class="ic" d="M0 58H26"/><text class="t2" x="34" y="62">I²C bus</text>
+            <path class="sp" d="M0 78H26"/><text class="t2" x="34" y="82">SPI</text>
+            <path class="gp" d="M0 98H26"/><text class="t2" x="34" y="102">GPIO</text>
+            <path class="rf" d="M0 118H26"/><text class="t2" x="34" y="122">RF coax</text>
+            <path class="air" stroke="#94a3b8" d="M0 138H26"/><text class="t2" x="34" y="142">radio link</text>
+          </g>
+          <text class="t2" x="563" y="440">I²C bus</text>
+          <text class="t2" x="220" y="600">5 V rail to RockBLOCK and pod</text>
+          <text class="t2" x="214" y="132">LOAD rail ≤ 4.4 V</text>
+        </svg>
+        <figcaption>System block diagram. Power comes in on the left; the controller sits in the middle; the radios are on the right; sensors hang off the I²C bus at the bottom.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ------------------------------------------------ PARTS (cards rendered from data.js) -->
+    <section id="g-parts">
+      <h2>The parts, one by one</h2>
+      <p>Each card says what the part does, why this one, how it connects, its power use, and where to get it. Prices are approximate US retail checked in November 2026 and change often. Where a link goes to a distributor, any equivalent part works.</p>
+      <div id="partsList"><p class="sub">Loading the parts list…</p></div>
+    </section>
+
+    <!-- ------------------------------------------------ HOW THEY TALK -->
+    <section id="g-wires">
+      <h2>How the parts talk to each other</h2>
+      <p>Inside the case, parts talk over <b>wires</b> using a handful of standard "buses", each a set of wires plus agreed rules. Outside, the hub talks over <b>radio</b>. Below are the buses from the ground up, with what actually travels on each one. In the 3D model, the <b>Connect</b> tab lights up each bus.</p>
+
+      <h3 id="g-ground">First: ground and 3.3-volt logic</h3>
+      <p>A digital signal is a voltage measured <i>relative to ground</i>. In this hub, "1" (HIGH) is about 3.3 V and "0" (LOW) is about 0 V. Two consequences:</p>
+      <ul>
+        <li><b>Every board must share ground.</b> If the controller and the modem don't have a ground wire between them, neither can tell what voltage the other is sending. A missing ground is the most common reason a "correctly wired" link does nothing.</li>
+        <li><b>Don't feed 5 V signals into 3.3 V pins.</b> The ESP32-S3's pins are not 5 V tolerant. The RockBLOCK 9704's logic inputs accept at most 3.6 V, and the methane sensor's UART runs at 3.0 V levels. Power rails can be 5 V; signal lines stay at 3.3 V.</li>
+      </ul>
+
+      <h3 id="g-uart">UART (serial): one wire each way</h3>
+      <p>A UART link is the simplest: one wire for sending (<b>TX</b>) and one for receiving (<b>RX</b>), plus ground. The wires <b>cross</b>: my TX goes to your RX. There is no clock wire, so both sides must agree on the speed in advance. That speed is the <b>baud rate</b> (bits per second).</p>
+      <p>When idle the line sits HIGH. To send a byte, the sender pulls it LOW for one bit-time (the <b>start bit</b>), sends 8 data bits least-significant first, then returns HIGH for a <b>stop bit</b>. That's 10 bit-times per byte, called "8N1". Here is the letter "A" (0x41 = 0100 0001):</p>
+      <figure>
+        <svg viewBox="0 0 720 130" font-family="Inter, sans-serif" aria-label="UART waveform of the byte 0x41">
+          <polyline points="0,30 40,30 40,80 100,80 100,30 160,30 160,80 460,80 460,30 520,30 520,80 580,80 580,30 700,30" fill="none" stroke="#facc15" stroke-width="3"/>
+          <g fill="#94a3b8" font-size="12" text-anchor="middle">
+            <text x="20" y="105">idle</text><text x="70" y="105">start</text><text x="130" y="105">1</text><text x="190" y="105">0</text><text x="250" y="105">0</text><text x="310" y="105">0</text><text x="370" y="105">0</text><text x="430" y="105">0</text><text x="490" y="105">1</text><text x="550" y="105">0</text><text x="610" y="105">stop</text><text x="670" y="105">idle</text>
+            <text x="310" y="125">data bits b0 → b7 (least significant first)</text>
+          </g>
+          <text x="706" y="34" fill="#94a3b8" font-size="11">3.3 V</text><text x="706" y="84" fill="#94a3b8" font-size="11">0 V</text>
+        </svg>
+        <figcaption>At 230400 baud each bit lasts 1 ÷ 230400 ≈ 4.34 µs, so one byte takes about 43 µs, and the 28-byte SOS header about 1.2 ms on the wire.</figcaption>
+      </figure>
+      <p>The controller (an ESP32-S3) has three hardware UARTs and can route each to almost any pin. The hub uses all three:</p>
+      <h4>UART 1 · Controller ↔ RockBLOCK 9704 (satellite)</h4>
+      <ul>
+        <li><b>Wiring</b>: Feather TX (GPIO39) → RockBLOCK pin 14 <code>RXD</code>; Feather RX (GPIO38) ← pin 13 <code>TXD</code>; ground ↔ pins 1/4/10. Logic is 3.3 V TTL.</li>
+        <li><b>Speed</b>: fixed at <b>230400 baud</b>; the library notes the modem hardware requires it.</li>
+        <li><b>Language</b>: the Iridium 9704 uses <b>JSPR</b>, a JSON-based serial protocol. Ground Control's open-source library (C, Arduino, Python) handles the protocol, message chunking and power modes, so you call a few functions. Your binary message is encoded as text for the trip over the wire, so slightly more bytes travel than you send.</li>
+      </ul>
+      <pre><code>// pseudo-code; see the RockBLOCK-9704 library examples for exact signatures
+modemPowerOn();                       // drive I_EN HIGH, wait for I_BTD HIGH (GPIO, below)
+rbBegin(port);                        // open UART at 230400 baud, configure the modem
+bool ok = rbSendMessage(sos, len, timeout);   // default Cloudloop topic 244
+char *reply; size_t n = rbReceiveMessage(&amp;reply);   // any message queued for you
+modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</code></pre>
+
+      <h4>UART 2 · Controller ↔ mesh radio (Meshtastic)</h4>
+      <ul>
+        <li><b>Wiring</b>: Feather A0 (GPIO18, TX) → RAK19007 <code>RXD1</code> (pin 15); Feather A1 (GPIO17, RX) ← <code>TXD1</code> (pin 16); ground.</li>
+        <li><b>Setup in the Meshtastic app</b>: <i>Module config → Serial</i>: enabled, RX 15, TX 16, and a baud rate. The default is 38400; 115200 is a common choice. Then set <i>Position → GPS mode</i> to <code>Not_Present</code>, because the RAK19007 shares this UART with its GPS slot (the hub's GNSS is on the controller instead).</li>
+        <li><b>Easy mode, <code>TEXTMSG</code></b>: any line of text the controller sends is broadcast as a mesh message, and incoming messages arrive as <code>ShortName: text</code>. Good for a first test.</li>
+        <li><b>Full mode, <code>PROTO</code></b>: the same protobuf API the phone app uses. Every frame starts with two magic bytes and a 2-byte length:</li>
+      </ul>
+      <div class="bytes"><span>94<small>START1</small></span><span>C3<small>START2</small></span><span>00<small>length hi</small></span><span>2A<small>length lo = 42</small></span><span>0A 28 15 …<small>ToRadio protobuf (≤ 512 bytes)</small></span></div>
+      <p>With PROTO mode the controller can send text, broadcast its GNSS position to the mesh, read incoming messages and see which nodes are nearby. You compile Meshtastic's published protobuf definitions with a small protobuf library for microcontrollers, such as nanopb.</p>
+
+      <h4>UART 3 · Controller ↔ methane sensor (through the pod cable)</h4>
+      <ul>
+        <li><b>Wiring</b>: Feather A2 (GPIO16, TX) → M12 pin 6 → sensor RX; Feather A3 (GPIO15, RX) ← M12 pin 7 ← sensor TX.</li>
+        <li><b>Format</b>: NDIR methane modules like the Winsen MH-440D use short fixed-length frames (typically 9600 baud). The manual shows a 9-byte reply such as <code>FF 86 02 60 47 00 00 00 D1</code>: bytes 2–3 hold the concentration, and the last byte is a checksum. It needs about 3 minutes to warm up after power-on.</li>
+      </ul>
+
+      <h3 id="g-i2c">I²C: two wires, many sensors</h3>
+      <p>I²C (say "I-squared-C") lets one controller talk to many devices over just two shared wires: <b>SDA</b> (data) and <b>SCL</b> (clock), plus power and ground. Each device has a 7-bit <b>address</b>. The controller starts every conversation by sending an address, and only the device with that address answers.</p>
+      <ul>
+        <li><b>Clocked</b>: the controller drives SCL, so no baud-rate agreement is needed. Common speeds are 100 kHz and 400 kHz.</li>
+        <li><b>Open-drain with pull-ups</b>: devices only ever pull a line LOW; resistors pull it back HIGH. The Feather has 5 kΩ pull-ups and most breakout boards add their own. They add in parallel, which is fine for a handful of boards; if you chain many, disable some.</li>
+        <li><b>Qwiic / STEMMA QT</b>: a 4-pin JST-SH plug carries GND (black), 3.3 V (red), SDA (blue) and SCL (yellow), so you daisy-chain boards with no soldering. The Feather can switch this port's power off (GPIO7) to save energy in sleep.</li>
+      </ul>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Address</th><th>Device</th><th>Where</th><th>What it reports</th></tr>
+        <tr><td><code>0x42</code></td><td>u-blox MAX-M10S GNSS</td><td>hub</td><td>position, time, satellites (UBX binary)</td></tr>
+        <tr><td><code>0x18</code></td><td>LIS3DH accelerometer</td><td>hub</td><td>motion, free-fall; INT1 pin wakes the controller</td></tr>
+        <tr><td><code>0x36</code></td><td>MAX17048 fuel gauge</td><td>on the Feather</td><td>battery voltage and % charge</td></tr>
+        <tr><td><code>0x62</code></td><td>Sensirion SCD-41</td><td>pod</td><td>CO₂, temperature, humidity</td></tr>
+        <tr><td><code>0x77</code></td><td>BME280</td><td>pod</td><td>temperature, humidity, pressure</td></tr>
+        <tr><td><code>0x12</code></td><td>PMSA003I</td><td>pod</td><td>PM1.0 / PM2.5 / PM10 (fixed address)</td></tr>
+        <tr><td><code>0x70–0x73</code></td><td>DFRobot O₂ sensor</td><td>pod</td><td>oxygen % (address set by a switch)</td></tr>
+        <tr><td>set by dial</td><td>DFRobot CO sensor (SEN0466)</td><td>pod</td><td>CO ppm, factory-calibrated</td></tr>
+        <tr><td><code>0x20</code>-ish</td><td>I²C GPIO expander</td><td>hub</td><td>extra outputs (boost enable, pod LED and vibration, panel LED)</td></tr>
+      </table></div>
+      <p><b>Example: reading CO₂.</b> To read the SCD-41, the controller writes the 2-byte command <code>0xEC05</code> ("read measurement") to address <code>0x62</code>, waits a millisecond, then reads 9 bytes: CO₂, temperature and humidity, each as 2 bytes followed by a 1-byte checksum (CRC).</p>
+      <div class="bytes"><span>S<small>start</small></span><span>0x62+W<small>address</small></span><span>EC 05<small>command</small></span><span>P<small>stop</small></span><span>…1 ms…</span><span>S<small>start</small></span><span>0x62+R<small>address</small></span><span>01 F4 · crc<small>CO₂ = 500 ppm</small></span><span>66 66 · crc<small>temperature</small></span><span>5E B8 · crc<small>humidity</small></span><span>P<small>stop</small></span></div>
+      <p>The datasheet gives the conversions: temperature = −45 + 175 × raw ÷ 65535 °C, humidity = 100 × raw ÷ 65535 %. A library does this for you, but now you know what's on the wire.</p>
+      <div class="callout blue"><p><b>The pod cable.</b> I²C was designed for short traces on a circuit board. Over the pod's M12 cable, keep the length under about 1 m and run the bus at 100 kHz. For longer runs, use a differential I²C extender (PCA9615-based boards).</p></div>
+
+      <h3 id="g-spi">SPI: the display link</h3>
+      <p>SPI is a fast, clocked bus for one device per <b>chip-select</b> wire. The controller drives <b>SCK</b> (clock) and <b>MOSI</b> (data out); a third data line, MISO, is unused because the e-paper only listens. The display adds three control wires:</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>E-paper pin</th><th>Feather pin</th><th>Meaning</th></tr>
+        <tr><td><code>CLK</code></td><td>SCK (GPIO36)</td><td>clock: one pulse per bit</td></tr>
+        <tr><td><code>DIN</code></td><td>MOSI (GPIO35)</td><td>data from controller to display</td></tr>
+        <tr><td><code>CS</code></td><td>D10</td><td>"I'm talking to you" (active LOW)</td></tr>
+        <tr><td><code>DC</code></td><td>D9</td><td>LOW = command byte, HIGH = pixel data</td></tr>
+        <tr><td><code>RST</code></td><td>D6</td><td>hardware reset</td></tr>
+        <tr><td><code>BUSY</code></td><td>D12</td><td>display says "still repainting, wait"</td></tr>
+        <tr><td><code>VCC</code> / <code>GND</code></td><td>3.3 V / GND</td><td>power</td></tr>
+      </table></div>
+      <p>A full refresh takes a few seconds; a partial refresh (just the changed lines) is under a second. Between refreshes the panel draws essentially nothing and keeps showing the last image.</p>
+
+      <h3 id="g-gpio">GPIO: switches, buttons, buzzer and enable lines</h3>
+      <ul>
+        <li><b>SOS switch</b> (D5 / GPIO5): input with a pull-up resistor; the switch connects it to ground. Flipping it makes a HIGH→LOW edge. On the ESP32-S3, pins GPIO0–21 can wake the chip from deep sleep, so the switch wakes it in milliseconds.</li>
+        <li><b>Debouncing</b>: mechanical contacts "bounce" for a few milliseconds. Ignore changes for about 20 ms after the first edge.</li>
+        <li><b>Buttons</b>: three buttons on one analog pin (A4) through a resistor ladder, so each press reads a different voltage. This saves pins.</li>
+        <li><b>Buzzer</b> (D13): a PWM square wave sets the tone; a small transistor drives it. The vibration motor needs a transistor and a flyback diode.</li>
+        <li><b>Motion wake</b> (A5 / GPIO8): the LIS3DH's INT1 pin, for wake-on-motion and free-fall.</li>
+      </ul>
+      <h4>The RockBLOCK power handshake</h4>
+      <p>The satellite modem must be started and stopped in order, or it can be damaged. Ground Control documents this sequence:</p>
+      <ol>
+        <li>Keep the controller's pins to the modem LOW or high-impedance, then apply power (5 V boost on).</li>
+        <li>Raise <code>I_EN</code> (pin 3, from D11).</li>
+        <li>Wait until <code>I_BTD</code> (pin 7, to MI / GPIO37) goes HIGH, meaning "booted". From cold this takes tens of seconds while the supercapacitors charge.</li>
+        <li>Open the UART and talk.</li>
+        <li>To shut down: stop talking, drop <code>I_EN</code>, wait for <code>I_BTD</code> to go LOW, then remove power.</li>
+      </ol>
+      <div class="callout"><p><b>Pin budget.</b> The Feather has about 22 usable pins and this design needs about that many. Slow outputs (boost enable, pod LED, vibration motor, panel LED) therefore go through a small <b>I²C GPIO expander</b>. Running out of pins is a normal design problem, and an expander on the bus you already have is the usual fix.</p></div>
+
+      <h3 id="g-pwrwire">Power wiring</h3>
+      <p>Power is a bus too: energy flows from sources to the battery and then to each part.</p>
+      <ol>
+        <li><b>Inputs</b>: USB-C (5 V) and DC-IN (6–10 V solar or crank), each through a TVS diode that clamps voltage spikes.</li>
+        <li><b>Charger with power path</b> (bq24074): runs the hub from the input when there is one, and charges the battery with what's left.</li>
+        <li><b>Battery</b> (3.0–4.2 V) through an inline fuse right at the pack. A shorted wire then blows the fuse instead of starting a fire.</li>
+        <li><b>LOAD rail</b> (≤ 4.4 V) → controller BAT pin and mesh radio battery input; each board's own regulator makes its 3.3 V.</li>
+        <li><b>Switched 5 V rail</b> from a boost converter → RockBLOCK <code>V_IN+</code> (4.0–5.3 V, up to 500 mA), the particle sensor and the methane sensor. Off when not needed.</li>
+        <li><b>Switched 3.3 V sensor rail</b>: the Feather's STEMMA QT power (GPIO7).</li>
+        <li><b>One ground</b> joining everything, ideally at a single point.</li>
+      </ol>
+
+      <h3 id="g-rf">RF coax: the antenna links</h3>
+      <p>Radio-frequency signals travel on <b>coaxial cable</b>: a center conductor inside a shield that keeps the signal in and noise out. Each radio board has a tiny <b>u.FL</b> connector. A thin pigtail runs from it to an <b>SMA bulkhead</b> through the lid, with an O-ring on the outside, and the antenna screws on top.</p>
+      <ul>
+        <li><b>LoRa</b>: RAK4631 → 915 MHz whip. <b>Never transmit without an antenna attached</b>; the power has nowhere to go and can damage the radio.</li>
+        <li><b>Iridium</b>: RockBLOCK SMA → passive helical (1616–1626.5 MHz). Ground Control sells a 1 m low-loss cable with a sealed bulkhead for exactly this.</li>
+        <li><b>GNSS</b>: receiver SMA → small active patch inside the lid. The plastic lid lets GNSS signals through, so no extra hole is needed.</li>
+        <li>Keep coax short, don't kink it, and remember u.FL connectors are rated for only a few dozen connect/disconnect cycles.</li>
+        <li>Check SMA vs RP-SMA when buying antennas and pigtails. They look alike but don't mate properly.</li>
+      </ul>
+
+      <h3 id="g-pinout">Wiring table</h3>
+      <p>Pin names follow Adafruit's ESP32-S3 Feather pinout. Treat this as a starting plan and check every pin against the official pinout card before soldering.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Feather pin (GPIO)</th><th>Connects to</th><th>Bus</th><th>Notes</th></tr>
+        <tr><td>TX (39)</td><td>RockBLOCK pin 14 <code>RXD</code></td><td>UART 1</td><td>230400 8N1</td></tr>
+        <tr><td>RX (38)</td><td>RockBLOCK pin 13 <code>TXD</code></td><td>UART 1</td><td></td></tr>
+        <tr><td>D11 (11)</td><td>RockBLOCK pin 3 <code>I_EN</code></td><td>GPIO out</td><td>modem on/off</td></tr>
+        <tr><td>MI (37)</td><td>RockBLOCK pin 7 <code>I_BTD</code></td><td>GPIO in</td><td>"booted"</td></tr>
+        <tr><td>A0 (18)</td><td>RAK19007 <code>RXD1</code> (pin 15)</td><td>UART 2</td><td>Meshtastic PROTO / TEXTMSG</td></tr>
+        <tr><td>A1 (17)</td><td>RAK19007 <code>TXD1</code> (pin 16)</td><td>UART 2</td><td></td></tr>
+        <tr><td>A2 (16)</td><td>Pod M12 pin 6 → methane RX</td><td>UART 3</td><td>~9600 baud</td></tr>
+        <tr><td>A3 (15)</td><td>Pod M12 pin 7 ← methane TX</td><td>UART 3</td><td></td></tr>
+        <tr><td>SDA (3) / SCL (4)</td><td>STEMMA QT chain: GNSS, LIS3DH, GPIO expander; pod M12 pins 4/5</td><td>I²C</td><td>100 kHz with the pod cable</td></tr>
+        <tr><td>SCK (36) / MO (35)</td><td>E-paper CLK / DIN</td><td>SPI</td><td></td></tr>
+        <tr><td>D10 · D9 · D6 · D12</td><td>E-paper CS · DC · RST · BUSY</td><td>SPI control</td><td></td></tr>
+        <tr><td>D5 (5)</td><td>SOS switch → GND</td><td>GPIO in</td><td>wakes from deep sleep</td></tr>
+        <tr><td>A5 (8)</td><td>LIS3DH INT1</td><td>GPIO in</td><td>wake on motion</td></tr>
+        <tr><td>A4 (14)</td><td>3 buttons on a resistor ladder</td><td>ADC</td><td>one pin, three buttons</td></tr>
+        <tr><td>D13 (13)</td><td>Buzzer driver transistor</td><td>PWM</td><td>shares the red onboard LED</td></tr>
+        <tr><td>GPIO expander</td><td>5 V boost EN, pod LED and vibration (M12 pin 8), panel LED</td><td>I²C</td><td>slow outputs</td></tr>
+        <tr><td>BAT / GND</td><td>LOAD rail (≤ 4.4 V) / common ground</td><td>power</td><td>don't plug USB into the Feather while it's wired in</td></tr>
+      </table></div>
+    </section>
+
+    <!-- ------------------------------------------------ PHONE -->
+    <section id="g-phone">
+      <h2>Connecting your phone</h2>
+      <p>The hub never <i>needs</i> your phone, but a phone makes typing and reading much easier. There are five ways they connect. Each uses a different radio or cable, and each is good for something different.</p>
+
+      <h3>1 · Bluetooth LE to the mesh radio (Meshtastic app)</h3>
+      <p>Use it for texting people on the mesh, seeing the map of nearby nodes, and sharing your position.</p>
+      <ol>
+        <li>Install the free Meshtastic app (iPhone or Android) and turn on Bluetooth.</li>
+        <li>Power the hub. The mesh radio advertises itself over Bluetooth LE.</li>
+        <li>In the app, scan and pick your radio. It asks for a PIN: with no screen attached, the default is a <b>fixed PIN, 123456</b>. Change it to your own six digits once connected.</li>
+        <li>Set the region to <b>US</b> (902–928 MHz), and create a private channel with its own encryption key. Share it with family by QR code.</li>
+        <li>Decide whether to share your phone's location with the mesh.</li>
+      </ol>
+      <div class="callout blue">
+        <p><b>Under the hood.</b> Bluetooth LE devices expose <b>services</b> made of <b>characteristics</b>, small named slots the phone can read, write or subscribe to. The Meshtastic service <code>6ba1b218-15a8-461f-9fa8-5dcae273eafd</code> has three that matter:</p>
+        <ul>
+          <li><b>ToRadio</b> (write): the app writes a protobuf packet, such as a text message.</li>
+          <li><b>FromRadio</b> (read): the app reads packets one at a time until it gets an empty one.</li>
+          <li><b>FromNum</b> (notify): the radio "taps the app on the shoulder" when new packets are waiting.</li>
+        </ul>
+        <p>On connecting, the app asks for a 512-byte maximum packet size (MTU), downloads the radio's configuration and node list, then waits for FromNum notifications. These are the same protobuf messages the controller uses over its UART in PROTO mode, just carried over a different link.</p>
+      </div>
+
+      <h3>2 · Wi-Fi to the hub's own web page (no app)</h3>
+      <p>Use it for typing satellite messages, checking battery, GPS and air readings, and reading replies, from any phone or laptop browser.</p>
+      <ol>
+        <li>Press <b>Menu</b> on the hub to switch Wi-Fi on. It is off by default because Wi-Fi uses a lot of power, and it turns itself off after about 10 minutes idle.</li>
+        <li>On your phone, join the network <code>SURVIVAL-HUB</code> with the password you chose.</li>
+        <li>Open <b>http://192.168.4.1</b>, or wait for the sign-in-style popup if you enable a captive portal.</li>
+        <li>If the phone warns "no internet", choose <b>stay connected</b>. The page works entirely offline.</li>
+      </ol>
+      <div class="callout blue"><p><b>Under the hood.</b> The ESP32-S3 runs in <b>access-point mode</b>: it is the Wi-Fi network. A tiny DHCP server hands your phone an address, and a small web server sends the page. A <b>WebSocket</b> then keeps a live two-way channel open, so readings update without reloading. When you press <i>Send via Iridium</i>, the page sends your text to the controller, which queues it for the satellite modem over UART 1.</p></div>
+
+      <h3>3 · Bluetooth LE to the controller (optional)</h3>
+      <p>Use it for a custom app, or a web page using Web Bluetooth (Chrome on Android and desktop; Safari on iPhone doesn't support Web Bluetooth). The common choice is the <b>Nordic UART Service</b> (<code>6E400001-B5A3-F393-E0A9-E50E24DCCA9E</code>), a de-facto standard that makes Bluetooth LE look like a serial port.</p>
+
+      <h3>4 · USB-C cable</h3>
+      <p>Use it for setup, firmware updates and debugging. Android phones with USB-OTG can open a serial terminal app; a laptop can do everything. Inside the case, the boards' own USB ports are for development only; the sealed USB-C port on the case is for power: it charges the hub, and with the V2 power board it can also charge your phone (see <a href="#g-energy">Energy</a>).</p>
+
+      <h3>5 · No hub at all</h3>
+      <p>Many phones now have their own satellite emergency features: Emergency SOS via satellite on iPhone 14 and later, Satellite SOS on Pixel 9/10, and carrier services such as T-Mobile's T-Satellite. A Starlink Mini, if you carry one, gives full internet over Wi-Fi. Know what your phone can do before you need it.</p>
+
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Need</th><th>Best link</th><th>Why</th></tr>
+        <tr><td>Text neighbors, family nearby, volunteer nets</td><td>Bluetooth → mesh radio</td><td>free, instant, no infrastructure</td></tr>
+        <tr><td>Reach anyone, anywhere</td><td>Wi-Fi page → satellite</td><td>works far from everyone; costs a little airtime</td></tr>
+        <tr><td>Emergency with a dead or broken phone</td><td>SOS switch</td><td>no phone involved at all</td></tr>
+        <tr><td>Set up, update, debug</td><td>USB-C</td><td>simplest and most reliable</td></tr>
+        <tr><td>Full internet</td><td>Starlink Wi-Fi</td><td>needs 25–40 W and its own battery</td></tr>
+      </table></div>
+    </section>
+
+    <!-- ------------------------------------------------ JOURNEYS -->
+    <section id="g-journey">
+      <h2>Follow one message from start to finish</h2>
+      <h3>Journey 1: SOS with no phone</h3>
+      <ol>
+        <li><b>Switch</b>: you lift the guard and flip the switch. GPIO5 goes LOW and the ESP32-S3 wakes from deep sleep in milliseconds.</li>
+        <li><b>Power</b>: the controller turns on the 5 V boost, raises <code>I_EN</code> and waits for <code>I_BTD</code>. Meanwhile it works on the next steps.</li>
+        <li><b>Position</b>: it reads the GNSS over I²C. A "hot start" from saved data takes seconds; if there's no fix, it uses the last stored position and marks its age.</li>
+        <li><b>Air</b>: it reads O₂, CO, CO₂ and temperature from the pod.</li>
+        <li><b>Pack</b>: it builds a 28-byte binary header (position, time, battery, status, air readings) plus your short preset text. Try it in the <b>SOS</b> tab to see every byte.</li>
+        <li><b>Send</b>: <code>rbSendMessage()</code> hands the bytes to the modem over UART at 230400 baud. The modem waits for a satellite in view and transmits.</li>
+        <li><b>Space and ground</b>: Iridium satellites pass the message between themselves to a ground station, and it arrives in <b>Cloudloop</b>, typically within seconds.</li>
+        <li><b>Delivery</b>: Cloudloop forwards it to the destinations you set up: email, an HTTP webhook, MQTT and others. A tiny cloud function on the webhook can decode the bytes and text your family a map link.</li>
+        <li><b>Mesh too</b>: the controller also sends a ToRadio packet over UART 2. The mesh radio broadcasts your position and alert on your private channel.</li>
+        <li><b>Repeat</b>: it powers the modem down, sleeps, and repeats every 10–30 minutes until you cancel. Each check-in also collects any reply waiting in Cloudloop.</li>
+      </ol>
+      <h3>Journey 2: a text to a neighbor over the mesh</h3>
+      <p>You type in the Meshtastic app → the phone writes a <b>ToRadio</b> packet over Bluetooth → the mesh radio encrypts it with your channel key and transmits on 915 MHz → nearby nodes rebroadcast it (up to 3 hops by default) → your neighbor's radio decrypts it and notifies their phone over Bluetooth → an acknowledgement travels back the same way.</p>
+      <h3>Journey 3: a satellite text typed on your phone, and the reply</h3>
+      <p>Phone → Wi-Fi → the hub's page → controller → UART 1 → RockBLOCK → Iridium → Cloudloop → your contact's email. When they reply, the message is queued in Cloudloop as a <b>mobile-terminated</b> message. Satellites can't wake a powered-off modem, so it waits until the hub's next scheduled check-in. The controller then fetches it with <code>rbReceiveMessage()</code> and shows it on the e-paper and the web page.</p>
+    </section>
+
+    <!-- ------------------------------------------------ ENERGY -->
+    <section id="g-energy">
+      <h2>Energy budget and charging</h2>
+      <p>The <b>Power</b> tab in the 3D view is a live calculator. The rules of thumb behind it:</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Load</th><th>Typical</th><th>Per day (estimate)</th></tr>
+        <tr><td>Controller in deep sleep, waking briefly</td><td>~100 µA asleep</td><td>&lt; 0.5 Wh</td></tr>
+        <tr><td>Mesh radio, mostly listening</td><td>5–6 mA RX, 100–120 mA TX</td><td>0.5–1.5 Wh</td></tr>
+        <tr><td>GNSS, duty-cycled</td><td>&lt; 25 mW tracking</td><td>0.1–0.6 Wh</td></tr>
+        <tr><td>Satellite modem, powered only to send</td><td>1.4 W peak, 60 mW idle</td><td>0.2–1.5 Wh for ~24 messages</td></tr>
+        <tr><td>Sensor pod, duty-cycled</td><td>PM fan ≤ 100 mA, methane &lt; 85 mA</td><td>~2 Wh</td></tr>
+        <tr><td><b>Phone recharge</b></td><td>~15–20 Wh battery + losses</td><td><b>~21 Wh</b></td></tr>
+      </table></div>
+      <p>The hub alone needs only a few watt-hours a day, so the 72 Wh pack lasts weeks. Recharging a phone dominates everything. The simple bq24074 charger takes up to about 1.5 A, roughly 25–30 Wh on a sunny day. For bigger panels or car 12 V, the upgrade is an MPPT buck-boost charger such as TI's BQ25798 (3.6–24 V in, up to 5 A).</p>
+      <div class="callout blue"><p><b>Charging your phone.</b> The simple bq24074 charger only takes power <i>in</i>. To charge a phone from the hub's battery, build the power board around the BQ25798 instead: its <b>USB OTG</b> mode runs the converter backwards and supplies 5 V at up to 3.32 A on the USB-C port, so the same sealed port charges the hub or your phone. A small USB-C port controller handles the cable's CC pins, which tell each side which way power flows. With the V1 board, charge the phone straight from the solar panel's USB port or from a power bank.</p></div>
+      <div class="callout"><p><b>Cold rule:</b> never charge lithium cells below 0 °C. It plates metallic lithium inside the cell and permanently damages it. The 10k NTC thermistor on the pack lets the charger refuse. Discharging in the cold is fine; keep the pack inside your jacket on snowy days.</p></div>
+    </section>
+
+    <!-- ------------------------------------------------ PACK -->
+    <section id="g-pack">
+      <h2>The backpack version</h2>
+      <p>Tap <b>🎒 Backpack</b> in the 3D view. The same hub stands upright in the padded hydration sleeve, against your back, low and centered for balance. That is the most protected spot if you fall.</p>
+      <ul>
+        <li><b>Antennas up</b>: short coax runs from the two lid bulkheads to a telescoping mast clipped to the side of the pack. The LoRa whip and Iridium helical sit above your head. Your body absorbs radio signals, and height adds range.</li>
+        <li><b>Sensor pod on the shoulder strap</b>: it samples the air you breathe, and its LED and vibration motor alert you without looking.</li>
+        <li><b>Solar on the outside</b>: a 20 W two-panel unit charges as you walk. Treat it as a top-up; aim it at the sun when you stop.</li>
+        <li><b>Rain cover and reflective strip</b>: the case is IP67 on its own, and visibility helps rescuers find you at night.</li>
+      </ul>
+    </section>
+
+    <!-- ------------------------------------------------ BUILD -->
+    <section id="g-build">
+      <h2>Build it in stages</h2>
+      <p>Each stage ends with a test you can check off. Get one thing working before adding the next.</p>
+      <ol>
+        <li><b>Mesh radio + phone</b>: unbox the RAK kit, attach the antenna <i>first</i>, update Meshtastic, pair your phone, make a private channel, and walk around the block testing range. <i>Test: message two phones across the neighborhood.</i></li>
+        <li><b>Controller + I²C</b>: flash a "Blink", then an I²C scanner sketch with the GNSS and LIS3DH plugged in. <i>Test: the scanner prints <code>0x18</code>, <code>0x36</code> and <code>0x42</code>; you read a GNSS fix outdoors.</i></li>
+        <li><b>Display + buttons + SOS switch</b>: draw the status screen; wake from deep sleep on the switch. <i>Test: measured sleep current under 1 mA.</i></li>
+        <li><b>Mesh link</b>: wire UART 2, start in TEXTMSG mode, then move to PROTO. <i>Test: a line from the controller appears on your phone.</i></li>
+        <li><b>Satellite</b>: first try the RockBLOCK alone over USB with Ground Control's Python library on a laptop. Set up a Cloudloop destination such as email. Then wire UART 1 and the power handshake. <i>Test: one real message reaches your inbox. Airtime is billed, so use dry runs while developing.</i></li>
+        <li><b>SOS state machine</b>: write it as explicit states (IDLE → ARMED → FIX → SEND → WAIT → RETRY) and log every transition to flash. <i>Test: pulling the battery mid-send never leaves the modem in a bad state.</i></li>
+        <li><b>Power</b>: battery pack with fuse, charger, boost and NTC. <i>Test: charge from USB-C, solar and the crank; confirm no charging in a freezer test (pack only).</i></li>
+        <li><b>Enclosure</b>: print the plate, cradle and bezel (see Downloads). Drill on flat areas with a step drill, deburr, and fit the bulkheads with O-rings on the outside. Conformal-coat the boards, masking connectors, antennas and sensor openings. Mount the plate on silicone pads, strain-relieve every cable, and add a desiccant pack. <i>Test: 30 minutes under water with a paper towel inside, then a set of 1.2 m drops onto plywood over concrete.</i></li>
+        <li><b>Sensor pod</b>: print the shell, mount the sensors, run the cable. <i>Test: O₂ reads about 20.9 % in fresh air; compare CO and methane against a certified detector, not by exposing yourself to gas.</i></li>
+        <li><b>Drill quarterly</b>: a "grid-down day" with the hub on battery and solar only. Send one satellite test, one mesh message across town, and check every reading.</li>
+      </ol>
+    </section>
+
+    <!-- ------------------------------------------------ DOWNLOADS -->
+    <section id="g-downloads">
+      <h2>Downloads: CAD model and files</h2>
+      <p>The model is built at real scale in <b>millimetres</b>, with <b>Z up</b> and the latch side of the case facing <b>−Y</b>. It is generated by an open Python script, so you can change any dimension and rebuild it.</p>
+      <div class="dl-grid">
+        <a class="dl" href="downloads/survival-radio-hub.step" download><b>STEP assembly (.step)</b><span>For any CAD program: Fusion 360, SolidWorks, FreeCAD, Onshape, Inventor, Solid Edge, Rhino. True solids with part names and colors.</span><em id="sz-step">4.6 MB</em></a>
+        <a class="dl" href="models/survival-radio-hub.glb" download><b>glTF binary (.glb)</b><span>For Blender, Windows 3D Viewer and web viewers. The same file this page uses.</span><em id="sz-glb">1.9 MB</em></a>
+        <a class="dl" href="downloads/survival-radio-hub.stl" download><b>STL mesh (.stl)</b><span>The whole assembly as one mesh, for slicers and quick viewers.</span><em id="sz-stl">2.2 MB</em></a>
+        <a class="dl" href="downloads/printable-parts.zip" download><b>3D-printable parts (.zip)</b><span>Mounting plate, battery cradle, control-panel bezel, sensor-pod front and back. STL files plus print notes.</span><em id="sz-zip">250 KB · 5 STL files + notes</em></a>
+        <a class="dl" href="downloads/bom.csv" download><b>Shopping list (.csv)</b><span>Every part, example part number, price and link. Opens in Excel, Google Sheets or Numbers.</span><em>csv</em></a>
+        <a class="dl" href="cad/build_cad.py" download><b>CAD source (.py)</b><span>The CadQuery script that builds everything. Run <code>pip install cadquery</code>, then <code>python build_cad.py out/</code>.</span><em>python</em></a>
+      </div>
+      <h3>Opening the files</h3>
+      <ul>
+        <li><b>Fusion 360</b>: upload or open the .step file. It arrives as an assembly with one component per part.</li>
+        <li><b>FreeCAD</b>: File → Open (or Import) the .step. Part names and colors come through.</li>
+        <li><b>Onshape</b>: import the .step into a Part Studio or Assembly.</li>
+        <li><b>SolidWorks / Inventor</b>: File → Open and choose the STEP file type.</li>
+        <li><b>Blender</b>: File → Import → glTF 2.0 (.glb).</li>
+        <li><b>3D printing</b>: open the STL files from the printable-parts zip in your slicer. PETG or ASA, 0.2 mm layers, at least 4 walls.</li>
+      </ul>
+      <div class="callout"><p><b>About accuracy.</b> The case, boards and modules use published dimensions (Pelican 1200, RockBLOCK 9704 SMA, RAK19007, ESP32-S3 Feather, MAX-M10S, Waveshare 2.9", Adafruit SCD-41 and PMSA003I, DFRobot boards, 21700 cells). Some parts are envelope estimates and are marked <code>APPROX</code> in the script: the charger and boost boards, the methane sensor, the Iridium antenna and the inside of the modem. Measure your actual parts before you drill or print.</p></div>
+    </section>
+
+    <!-- ------------------------------------------------ BOM -->
+    <section id="g-bom">
+      <h2>Shopping list</h2>
+      <p id="bomTotal" class="lead"></p>
+      <div class="tbl-wrap"><table class="tbl" id="bomTable"></table></div>
+    </section>
+
+    <!-- ------------------------------------------------ SAFETY -->
+    <section id="g-safety">
+      <h2>Safety and legal notes</h2>
+      <ul>
+        <li><b>Lithium batteries</b>: buy a pre-built pack with a protection board; don't solder directly to cells unless you have the right tools. Fuse at the pack, never charge below 0 °C, and don't seal a damaged or swollen cell in a box.</li>
+        <li><b>Gas sensors</b>: a homemade pod is an awareness aid, not a certified detector. Electrochemical cells age (about 2 years for O₂), so calibrate and replace them. Don't decide whether a confined space is safe using this pod alone.</li>
+        <li><b>False alerts</b>: label test messages clearly, use the switch guard, and tell your contacts what a real alert looks like.</li>
+        <li><b>Radio rules (US), quick reference</b>:
+          <ul>
+            <li><b>Part 15</b>: LoRa at 902–928 MHz, Bluetooth and Wi-Fi with certified modules, no license.</li>
+            <li><b>Part 95</b>: FRS needs no license; GMRS needs one (no exam). 406 MHz PLBs must be type-approved and registered with NOAA, so you cannot build one.</li>
+            <li><b>Part 97</b>: amateur radio (APRS, Winlink, HF, homebrew transmitters) needs a license and forbids encryption. §97.403 lets an amateur station use any means of radio communication at its disposal when life is in immediate danger and normal systems are down. It is a narrow emergency provision, not a design basis.</li>
+            <li><b>Part 20</b>: only FCC-certified, carrier-registered signal boosters are allowed.</li>
+            <li>The RockBLOCK is a certified, network-approved transmitter you integrate; receive-only SDRs need no license. Never transmit on cellular or satellite bands with a homemade radio or SDR.</li>
+          </ul></li>
+        <li><b>Airtime</b>: keep the satellite line active and paid up. Activating a modem after a disaster, when the internet is down, may not be possible.</li>
+      </ul>
+      <p class="sub">Not legal advice. Rules and services change; check current FCC rules and provider terms.</p>
+    </section>
+
+    <!-- ------------------------------------------------ SOURCES -->
+    <section id="g-sources">
+      <h2>Sources</h2>
+      <ul class="sources">
+        <li><a href="https://docs.groundcontrol.com/iot/rockblock-9704/hardware" target="_blank" rel="noopener">Ground Control: RockBLOCK 9704 hardware (pinout, power, start-up sequence)</a></li>
+        <li><a href="https://www.groundcontrol.com/wp-content/uploads/2026/07/RockBLOCK-9704-Data-Sheet.pdf" target="_blank" rel="noopener">RockBLOCK 9704 data sheet</a></li>
+        <li><a href="https://rock7.github.io/RockBLOCK-9704/rockblock__9704_8h.html" target="_blank" rel="noopener">RockBLOCK 9704 C library reference</a></li>
+        <li><a href="https://groundcontrol.com/products/iridium-messaging-transport-imt-pricing/" target="_blank" rel="noopener">Ground Control: IMT airtime pricing</a></li>
+        <li><a href="https://docs.groundcontrol.com/software-services/cloudloop/data" target="_blank" rel="noopener">Cloudloop Data: delivery options</a></li>
+        <li><a href="https://meshtastic.org/docs/development/device/client-api/" target="_blank" rel="noopener">Meshtastic client API (serial framing, BLE service)</a></li>
+        <li><a href="https://meshtastic.org/docs/configuration/module/serial/" target="_blank" rel="noopener">Meshtastic Serial module (PROTO, TEXTMSG, RAK pins)</a></li>
+        <li><a href="https://meshtastic.org/docs/configuration/radio/bluetooth/" target="_blank" rel="noopener">Meshtastic Bluetooth pairing modes</a></li>
+        <li><a href="https://docs.rakwireless.com/product-categories/wisblock/rak19007/datasheet/" target="_blank" rel="noopener">RAK19007 WisBlock base board datasheet</a></li>
+        <li><a href="https://www.adafruit.com/product/5477" target="_blank" rel="noopener">Adafruit ESP32-S3 Feather</a> · <a href="https://learn.adafruit.com/adafruit-esp32-s3-feather/pinouts" target="_blank" rel="noopener">pinouts</a></li>
+        <li><a href="https://www.sparkfun.com/sparkfun-gnss-receiver-breakout-max-m10s-qwiic.html" target="_blank" rel="noopener">SparkFun MAX-M10S GNSS breakout</a></li>
+        <li><a href="https://www.mouser.com/ProductDetail/485-5190" target="_blank" rel="noopener">Adafruit SCD-41</a> · <a href="https://www.adafruit.com/product/4632" target="_blank" rel="noopener">Adafruit PMSA003I</a> · <a href="https://www.adafruit.com/products/2809" target="_blank" rel="noopener">Adafruit LIS3DH</a></li>
+        <li><a href="https://www.dfrobot.com/product-2508.html" target="_blank" rel="noopener">DFRobot calibrated CO sensor (SEN0466)</a> · <a href="https://www.robotshop.com/products/dfrobot-gravity-i2c-oxygen-sensor" target="_blank" rel="noopener">DFRobot O₂ sensor (SEN0322)</a></li>
+        <li><a href="https://www.winsen-sensor.com/product/mh-440d.html" target="_blank" rel="noopener">Winsen MH-440D NDIR methane sensor</a></li>
+        <li><a href="https://www.waveshare.com/2.9inch-e-Paper-Module.htm" target="_blank" rel="noopener">Waveshare 2.9" e-Paper module</a></li>
+        <li><a href="https://www.adafruit.com/products/4755" target="_blank" rel="noopener">Adafruit bq24074 charger</a></li>
+        <li><a href="https://innerspacecases.com/solutions/pelican-cases/small-cases/pelican-1200-no-foam-black/" target="_blank" rel="noopener">Pelican 1200 case dimensions</a></li>
+        <li><a href="https://store.groundcontrol.com/products/helical-iridium-certified-passive-antenna" target="_blank" rel="noopener">Ground Control helical Iridium antenna</a></li>
+        <li><a href="https://www.digikey.com/en/products/detail/amphenol-ltw/UC-00PMFY-SC7001/9561519" target="_blank" rel="noopener">Amphenol LTW IP67 USB-C bulkhead</a></li>
+        <li><a href="https://starlink.com/support/article/a7fe6525-5356-a837-48e6-33df176cdbc5" target="_blank" rel="noopener">Starlink Mini power</a></li>
+        <li><a href="https://www.rtl-sdr.com/rtl-sdr-blog-v4-dongle-initial-release/" target="_blank" rel="noopener">RTL-SDR Blog V4 release notes</a> · <a href="https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" target="_blank" rel="noopener">Raspberry Pi Zero 2 W</a></li>
+        <li><a href="https://www.ti.com/product/BQ25798" target="_blank" rel="noopener">TI BQ25798 (MPPT charger with USB OTG output)</a></li>
+        <li><a href="https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-20/section-20.21" target="_blank" rel="noopener">47 CFR §20.21: signal boosters</a></li>
+        <li><a href="https://www.oregon.gov/oem/Documents/01_ORP_Cascadia.pdf" target="_blank" rel="noopener">Oregon Resilience Plan: Cascadia</a> · <a href="https://www.portland.gov/sites/default/files/2020-04/2019.04.09.beecn-guidelines.web_.pdf" target="_blank" rel="noopener">Portland BEECN guidelines</a></li>
+      </ul>
+    </section>
+  </article>
 </div>
+<footer>Survival Radio · concept design by Acamaro Cutcher · <a href="../index.html">more projects</a></footer>
 
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-
-/* ---------------- Scene setup ---------------- */
-const viewport = document.getElementById('viewport');
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b1120);
-scene.fog = new THREE.Fog(0x0b1120, 30, 70);
-
-const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 300);
-const NARROW = window.innerWidth < 700;
-const CAM_CASE = NARROW ? new THREE.Vector3(6.5, 6, 10) : new THREE.Vector3(7, 5.5, 9.5);
-const TGT_CASE = new THREE.Vector3(0, 0.8, 0.3);
-const CAM_PACK = NARROW ? new THREE.Vector3(9, 6, -7) : new THREE.Vector3(8, 4.8, -5.5);
-const TGT_PACK = new THREE.Vector3(0, 1.8, 0);
-const HOME_CAM = CAM_CASE.clone(), HOME_TARGET = TGT_CASE.clone();
-camera.position.copy(HOME_CAM);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-viewport.prepend(renderer.domElement);
-
-const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labels') });
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.copy(HOME_TARGET);
-controls.enableDamping = true;
-controls.minDistance = 2.5;
-controls.maxDistance = 45;
-controls.maxPolarAngle = Math.PI * 0.495;
-
-scene.add(new THREE.HemisphereLight(0xc7d7ff, 0x1e293b, 0.9));
-const sun = new THREE.DirectionalLight(0xffffff, 1.7);
-sun.position.set(6, 12, 6);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 40 });
-scene.add(sun);
-const rim = new THREE.DirectionalLight(0x38bdf8, 0.5);
-rim.position.set(-8, 4, -6);
-scene.add(rim);
-
-const ground = new THREE.Mesh(new THREE.CircleGeometry(40, 64), new THREE.MeshStandardMaterial({ color: 0x151d2e, roughness: 1 }));
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-const grid = new THREE.GridHelper(40, 40, 0x24314a, 0x1a2438);
-grid.position.y = 0.002;
-scene.add(grid);
-
-// stars
-{
-  const g = new THREE.BufferGeometry();
-  const pts = [];
-  for (let i = 0; i < 900; i++) {
-    const th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI * 0.45;
-    const r = 120;
-    pts.push(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph) + 5, r * Math.sin(ph) * Math.sin(th));
-  }
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  const s = new THREE.Points(g, new THREE.PointsMaterial({ color: 0x94a3b8, size: 0.35, fog: false }));
-  scene.add(s);
-}
-
-/* ---------------- Helpers ---------------- */
-const M = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.r ?? 0.6, metalness: o.m ?? 0.1, ...(o.x || {}) });
-function mesh(geo, mat, x = 0, y = 0, z = 0) {
-  const m = new THREE.Mesh(geo, mat);
-  m.position.set(x, y, z);
-  m.castShadow = true; m.receiveShadow = true;
-  return m;
-}
-const box = (w, h, d, mat, x, y, z) => mesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z);
-const rbox = (w, h, d, r, mat, x, y, z) => mesh(new RoundedBoxGeometry(w, h, d, 3, r), mat, x, y, z);
-const cyl = (rt, rb, h, mat, x, y, z, seg = 24) => mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat, x, y, z);
-
-function canvasTex(w, h, draw) {
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const ctx = c.getContext('2d');
-  draw(ctx, w, h);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  t.userData = { c, ctx };
-  return t;
-}
-
-const COLORS = { comms: '#22d3ee', power: '#4ade80', rugged: '#f97316', ui: '#facc15', sat: '#a78bfa', ext: '#f472b6', sense: '#fb7185' };
-
-/* ---------------- Component registry ---------------- */
-const comps = {};
-const rig = new THREE.Group();
-scene.add(rig);
-const deviceRoot = new THREE.Group();
-rig.add(deviceRoot);
-let MODE = 'case';
-const externals = new THREE.Group();
-scene.add(externals);
-
-function addComp(id, info, build, { pos = [0, 0, 0], dir = [0, 0, 0], tier = 1, parent = deviceRoot, label = [0, 0.35, 0], rotY = 0, mode = 'both', posPack = null, rotPack = 0 } = {}) {
-  const g = new THREE.Group();
-  build(g);
-  g.position.set(...pos);
-  g.rotation.y = rotY;
-  g.userData.compId = id;
-  g.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.userData.baseEmissive = o.material.emissive ? o.material.emissive.clone() : null; } });
-  parent.add(g);
-  const div = document.createElement('div');
-  div.className = 'lbl';
-  div.innerHTML = `<i style="background:${COLORS[info.cat]}"></i>${info.short || info.name}`;
-  div.addEventListener('click', e => { e.stopPropagation(); select(id); });
-  const lab = new CSS2DObject(div);
-  lab.position.set(...label);
-  g.add(lab);
-  comps[id] = { id, g, info, tier, base: new THREE.Vector3(...pos), dir: new THREE.Vector3(...dir), label: lab, div, mode, posCase: pos, posPack, rotYCase: rotY, rotPack };
-  return comps[id];
-}
-
-/* ---------------- Canvas textures (screens) ---------------- */
-const einkTex = canvasTex(512, 256, () => {});
-function drawEink(s) {
-  const { ctx } = einkTex.userData; const w = 512, h = 256;
-  ctx.fillStyle = '#d9dccf'; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#111'; ctx.font = 'bold 30px monospace';
-  ctx.fillText(s.mode === 'SOS' ? '!! SOS ACTIVE !!' : 'SURVIVAL HUB', 18, 42);
-  ctx.font = '22px monospace';
-  ctx.fillText(`BATT ${s.batt}%   ${s.charge}`, 18, 84);
-  ctx.fillText(`FIX  ${s.fix}`, 18, 118);
-  ctx.fillText(`SAT  ${s.sat}`, 18, 152);
-  ctx.fillText(`MESH ${s.mesh}`, 18, 186);
-  ctx.fillText(`${s.footer}`, 18, 228);
-  ctx.fillRect(18, 56, w - 36, 3);
-  einkTex.needsUpdate = true;
-}
-const einkState = { mode: 'IDLE', batt: 87, charge: 'SOLAR +6.1W', fix: 'last 45.5118N 122.6847W', sat: 'Iridium: idle (sleep <5mW)', mesh: 'Meshtastic: 14 nodes heard', footer: 'Q:0 msgs   BLE: phone linked' };
-drawEink(einkState);
-
-const phoneTex = canvasTex(256, 512, () => {});
-function drawPhone(sos, lines) {
-  const { ctx } = phoneTex.userData; const w = 256, h = 512;
-  ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#67e8f9'; ctx.font = 'bold 20px sans-serif'; ctx.fillText('Mesh / Hub', 16, 40);
-  ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif'; ctx.fillText('BLE ▸ Survival Hub (RAK4631)', 16, 62);
-  let y = 92;
-  if (sos) { ctx.fillStyle = '#dc2626'; ctx.fillRect(10, 76, w - 20, 64); ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif'; ctx.fillText('SOS SENT ✓', 22, 104); ctx.font = '13px sans-serif'; ctx.fillText('Iridium + mesh, retry 10 min', 22, 126); y = 162; }
-  for (const [who, txt, mine] of lines) {
-    ctx.fillStyle = mine ? '#0e7490' : '#1e293b';
-    ctx.fillRect(mine ? 60 : 12, y, w - 72, 52);
-    ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.fillText(who, (mine ? 68 : 20), y + 16);
-    ctx.fillStyle = '#e2e8f0'; ctx.font = '14px sans-serif'; ctx.fillText(txt, (mine ? 68 : 20), y + 38);
-    y += 62;
-  }
-  phoneTex.needsUpdate = true;
-}
-const idleChat = [['NET-Tabor', 'Check-in: all OK on 4th', false], ['me', 'Copy, hub on solar', true], ['PDXMesh relay', 'Weather: rain tonight', false]];
-drawPhone(false, idleChat);
-
-const rbLabel = canvasTex(256, 256, (ctx, w, h) => {
-  ctx.fillStyle = '#18181b'; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#f97316'; ctx.fillRect(0, 0, w, 36);
-  ctx.fillStyle = '#111'; ctx.font = 'bold 22px sans-serif'; ctx.fillText('RockBLOCK 9704', 14, 26);
-  ctx.fillStyle = '#e4e4e7'; ctx.font = '18px sans-serif';
-  ctx.fillText('Iridium IMT', 14, 80); ctx.fillText('4.8 kbps', 14, 110); ctx.fillText('≤100 KB / msg', 14, 140);
-  ctx.fillStyle = '#71717a'; ctx.font = '14px sans-serif'; ctx.fillText('UART · 5V · SMA', 14, 220);
-});
-
-const solarTex = canvasTex(256, 196, (ctx, w, h) => {
-  ctx.fillStyle = '#0b1f4d'; ctx.fillRect(0, 0, w, h);
-  const cols = 6, rows = 4;
-  for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-    const x = 6 + i * (w - 12) / cols, y = 6 + j * (h - 12) / rows;
-    ctx.fillStyle = '#12306e'; ctx.fillRect(x + 2, y + 2, (w - 12) / cols - 4, (h - 12) / rows - 4);
-    ctx.strokeStyle = 'rgba(203,213,225,.35)'; ctx.lineWidth = 1;
-    for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(x + 2, y + 2 + k * ((h - 12) / rows - 4) / 4); ctx.lineTo(x + (w - 12) / cols - 2, y + 2 + k * ((h - 12) / rows - 4) / 4); ctx.stroke(); }
-  }
-});
-
-/* ---------------- Build the device ---------------- */
-const tips = {}; // named anchor points for signal effects
-const packTips = {}; // overrides used in backpack mode
-const tip = n => (MODE === 'pack' && packTips[n]) ? packTips[n] : tips[n];
-
-addComp('case', {
-  name: 'Rugged IP67 enclosure', short: 'IP67 case', cat: 'rugged', part: 'Pelican 1200 / Nanuk 910 class',
-  price: '$40–80',
-  desc: 'A hard case with an O-ring lid is IP67 out of the box: dust-tight and survives 1 m of water for 30 minutes. Every hole you drill for a connector is a potential leak, so seal it and test the case submerged.',
-  specs: [['Ingress', 'IP67 (1 m, 30 min)'], ['Shock target', 'MIL-STD-810H Method 516 transit drop: 26 drops from 48 in'], ['Inside', 'PCBs on silicone grommets, battery and modem bracketed, locking JST-GH connectors'], ['Vent', 'Pressure-purge valve or Gore ePTFE vent (seen on the left wall)']]
-}, g => {
-  const shell = M(0xea580c, { r: 0.55 });
-  g.add(rbox(3.0, 1.0, 2.2, 0.12, shell, 0, 0.5, 0));
-  for (const x of [-1.05, 1.05]) g.add(rbox(0.12, 0.92, 2.28, 0.04, M(0xc2410c, { r: 0.6 }), x, 0.5, 0));
-  g.add(box(3.02, 0.03, 2.22, M(0x111827), 0, 1.0, 0)); // gasket line
-  for (const x of [-0.8, 0.8]) g.add(box(0.36, 0.26, 0.08, M(0x1f2937, { m: 0.4 }), x, 0.92, 1.12));
-  const handle = mesh(new THREE.TorusGeometry(0.32, 0.055, 10, 24, Math.PI), M(0x111827));
-  handle.rotation.x = Math.PI / 2; handle.position.set(0, 0.62, 1.1);
-  g.add(handle);
-  const vent = cyl(0.12, 0.12, 0.06, M(0x111827), -1.53, 0.55, 0); vent.rotation.z = Math.PI / 2; g.add(vent);
-  g.add(cyl(0.05, 0.05, 0.07, M(0xe5e7eb), -1.56, 0.55, 0));
-}, { label: [0, -0.15, 1.3] });
-
-addComp('lid', {
-  name: 'Lid with O-ring seal', short: 'Sealed lid', cat: 'rugged', part: 'Case lid + O-ring gasket',
-  price: 'incl. with case',
-  desc: 'The display, SOS switch and antennas mount through the lid on bulkhead connectors with O-rings. Conformal coating (acrylic or silicone) on every PCB adds protection if water does get in.',
-  specs: [['Board protection', 'MG Chemicals 419D/422C conformal coat; mask RF pads, connectors, buttons'], ['Potting', 'Silicone (not epoxy) on power-entry, so it stays serviceable'], ['Thermal', 'A dark case in sun can exceed 60 °C inside, so shade it']]
-}, g => {
-  g.add(rbox(3.0, 0.28, 2.2, 0.1, M(0xea580c, { r: 0.55 }), 0, 0, 0));
-}, { pos: [0, 1.15, 0], dir: [0, 2.2, 0], label: [-1.2, 0.25, 0.9] });
-
-addComp('battery', {
-  name: 'Battery pack, 4× 21700 Li-ion (1S4P)', short: 'Battery 74 Wh', cat: 'power', part: 'Molicel / Samsung 21700 ~5 Ah ×4 + BMS',
-  price: '$40–90',
-  desc: 'About 74 Wh nominal. The radio hub needs only about 2–5 Wh per day, so this pack runs it for roughly 2–3 weeks, but it keeps a phone alive for only 2–3 days. The phone is the dominant load.',
-  specs: [['Chemistry', 'Li-ion NMC, about 200–270 Wh/kg'], ['BMS', 'Over/under-voltage, over-current, short circuit, low-temp charge cutoff'], ['Rule', 'No charging below 0 °C (lithium plating)'], ['Avoid', 'LiPo pouches: puncture and swelling risk in a drop-prone device'], ['Fallback', 'Sealed lithium AA primaries for SOS-only mode']]
-}, g => {
-  g.add(box(0.82, 0.05, 1.0, M(0x1f2937), 0, -0.12, 0));
-  const cellMat = M(0x0e7490, { r: 0.35, m: 0.2 });
-  for (const z of [-0.345, -0.115, 0.115, 0.345]) {
-    const c = cyl(0.105, 0.105, 0.72, cellMat, 0, 0, z); c.rotation.z = Math.PI / 2; g.add(c);
-    for (const x of [-0.365, 0.365]) { const e = cyl(0.07, 0.07, 0.02, M(0xd1d5db, { m: 0.9, r: 0.3 }), x, 0, z); e.rotation.z = Math.PI / 2; g.add(e); }
-  }
-  for (const x of [-0.38, 0.38]) g.add(box(0.015, 0.16, 0.92, M(0xcbd5e1, { m: 0.9, r: 0.3 }), x, 0, 0));
-  g.add(box(0.5, 0.025, 0.18, M(0x166534), 0, 0.12, 0));
-  g.add(box(0.12, 0.02, 0.1, M(0x111827), 0.1, 0.14, 0));
-}, { pos: [-0.85, 0.27, -0.45], dir: [-1.5, 0.4, -1.0], label: [0, 0.3, 0] });
-
-addComp('power', {
-  name: 'Power management board', short: 'Power / MPPT', cat: 'power', part: 'STUSB4500 PD sink + CN3791/BQ24650 MPPT + MAX17048',
-  price: '$30–70',
-  desc: 'Takes in USB-C PD (9–20 V from power banks, car chargers, PD solar panels), solar through an MPPT charger, 12 V from a vehicle, and the hand crank. It protects everything, then feeds separately switched 3.3 V and 5 V rails.',
-  specs: [['Inputs', 'USB-C PD, solar (M12), 12 V Powerpole, crank'], ['Protection', 'Inline fuse, ideal-diode reverse polarity, TVS on every external input'], ['Fuel gauge', 'MAX17048 for state of charge on the e-ink'], ['Rails', '3.3 V MCU/GNSS/LoRa, 5 V RockBLOCK, each behind a load switch']]
-}, g => {
-  g.add(box(0.85, 0.04, 0.6, M(0x166534, { r: 0.5 }), 0, 0, 0));
-  g.add(cyl(0.09, 0.09, 0.1, M(0x27272a), -0.2, 0.07, 0.1));
-  g.add(box(0.12, 0.03, 0.12, M(0x0a0a0a), 0.05, 0.035, -0.12));
-  g.add(box(0.1, 0.03, 0.1, M(0x0a0a0a), 0.22, 0.035, 0.1));
-  g.add(box(0.1, 0.05, 0.04, M(0xeab308), 0.3, 0.045, -0.18));
-  g.add(cyl(0.05, 0.05, 0.12, M(0x1e3a8a), -0.3, 0.08, -0.15));
-}, { pos: [-0.85, 0.14, 0.58], dir: [-1.5, 0.6, 1.2], label: [0, 0.25, 0] });
-
-addComp('mcu', {
-  name: 'Controller + LoRa radio', short: 'MCU + LoRa', cat: 'comms', part: 'RAK4631 WisBlock (nRF52840 + SX1262)',
-  price: '$35–70',
-  desc: 'The brain and the mesh radio. It runs Meshtastic firmware, talks to your phone over Bluetooth LE, and drives the satellite modem and GNSS over UART. The nRF52840 has very low sleep current, so the hub can idle for weeks.',
-  specs: [['LoRa', '902–928 MHz, Part 15, no license'], ['Packets', '239 bytes (~200 B payload)'], ['Range', '2–5 km per hop typical; much more from hilltops'], ['Hops', '3 by default, 7 max'], ['Draw', 'RX ~5–6 mA, TX ~100–120 mA at +22 dBm'], ['Alt firmware', 'MeshCore on a second board (repeater network)']]
-}, g => {
-  g.add(box(0.8, 0.04, 0.85, M(0x1e293b, { r: 0.5 }), 0, 0, 0));
-  g.add(box(0.32, 0.05, 0.26, M(0xd4d4d8, { m: 0.85, r: 0.25 }), -0.15, 0.045, -0.18));
-  g.add(box(0.16, 0.03, 0.16, M(0x0a0a0a), 0.2, 0.035, 0.0));
-  g.add(cyl(0.025, 0.025, 0.03, M(0xfbbf24, { m: 0.9 }), 0.3, 0.04, -0.33));
-  for (let i = 0; i < 6; i++) g.add(box(0.04, 0.03, 0.02, M(0x52525b), -0.3 + i * 0.07, 0.035, 0.38));
-}, { pos: [0.12, 0.14, 0.02], dir: [0, 1.1, 0.4], label: [0, 0.25, 0] });
-
-addComp('gnss', {
-  name: 'GNSS receiver', short: 'GNSS (u-blox M10)', cat: 'comms', part: 'u-blox MAX-M10S breakout + backup supercap',
-  price: '$25–60',
-  desc: 'Tracks GPS, Galileo, GLONASS and BeiDou together on tens of milliwatts. A backup supercap keeps the almanac for hot starts, and the hub logs a fix every few minutes so a last-known position survives if you end up indoors or under rubble.',
-  specs: [['Accuracy', '3–5 m is plenty for rescue'], ['Power', '~25–40 mW tracking'], ['Upgrade', 'u-blox F9 (dual-band) resists multipath in debris fields but is overkill'], ['Antenna', 'Active patch on the lid']]
-}, g => {
-  g.add(box(0.32, 0.03, 0.32, M(0x1d4ed8, { r: 0.5 }), 0, 0, 0));
-  g.add(box(0.2, 0.04, 0.2, M(0xd4d4d8, { m: 0.85, r: 0.25 }), 0, 0.035, 0));
-  g.add(cyl(0.05, 0.05, 0.03, M(0x111827), 0.11, 0.03, 0.11));
-}, { pos: [0.3, 0.14, 0.78], dir: [0.4, 1.6, 1.0], label: [0, 0.2, 0] });
-
-addComp('rockblock', {
-  name: 'Iridium satellite modem', short: 'RockBLOCK 9704', cat: 'sat', part: 'Ground Control RockBLOCK 9704 (or 9603)',
-  price: '$279–299 (+ airtime from ~$0.29/KB)',
-  desc: 'The phone-independent path to the outside world. It is an FCC-certified, Iridium-approved transmitter, so wiring it to your MCU over UART is completely legal. Iridium covers the whole globe, pole to pole. Messages land at a backend that turns them into SMS or email for your pre-registered contacts.',
-  specs: [['Messages', '10 B – 100 KB (IMT) at 4.8 kbps'], ['Latency', '< ~10 s end-to-cloud with sky view'], ['Power', '1.4 W TX, 60 mW idle, < 5 mW sleep'], ['Alternative', 'RockBLOCK 9603: SBD, 340 B per message, 1.3 A TX peaks buffered by supercaps'], ['Drop-in option', 'RockBLOCK Plus 9704 ($479): IP67 with built-in GNSS']]
-}, g => {
-  const body = rbox(0.7, 0.28, 0.95, 0.04, M(0x27272a, { r: 0.4, m: 0.5 }), 0, 0, 0);
-  g.add(body);
-  const top = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.85), new THREE.MeshStandardMaterial({ map: rbLabel, roughness: 0.6 }));
-  top.rotation.x = -Math.PI / 2; top.position.y = 0.142; g.add(top);
-  for (const z of [-0.25, 0.0]) { const s = cyl(0.06, 0.06, 0.22, M(0x1e40af, { r: 0.4 }), 0.42, -0.02, z); s.rotation.z = Math.PI / 2; g.add(s); }
-  const sma = cyl(0.04, 0.04, 0.1, M(0xfbbf24, { m: 0.9, r: 0.3 }), 0, 0, -0.52); sma.rotation.x = Math.PI / 2; g.add(sma);
-}, { pos: [0.95, 0.22, -0.3], dir: [1.5, 0.8, -0.9], label: [0, 0.3, 0] });
-
-addComp('sdr', {
-  name: 'SDR receiver + Pi Zero 2 W', short: 'RTL-SDR (receive)', cat: 'comms', part: 'RTL-SDR v4 + Raspberry Pi Zero 2 W',
-  price: '$80–180',
-  desc: 'The SDR is a receiver here. It listens to NOAA Weather Radio, decodes ADS-B so you can see rescue helicopters working your area, monitors scanner and ham traffic, and surveys which cellular bands are still on the air. It cannot be a cell tower or a satellite modem: those bands are exclusively licensed and the networks need certified, provisioned hardware.',
-  specs: [['NOAA WX', '162.400–162.550 MHz'], ['ADS-B', '1090 MHz (dump1090 / readsb)'], ['Survey', 'Find live cell bands, then aim the LTE antenna'], ['Transmit?', 'Only on amateur bands, with a license and bandpass filtering (HackRF / Pluto)']]
-}, g => {
-  g.add(box(0.6, 0.03, 0.3, M(0x15803d), 0, 0, 0));
-  g.add(box(0.12, 0.03, 0.12, M(0x0a0a0a), -0.1, 0.03, 0));
-  g.add(rbox(0.42, 0.1, 0.16, 0.02, M(0x9ca3af, { m: 0.8, r: 0.35 }), 0.12, 0.08, 0));
-}, { pos: [0.95, 0.14, 0.72], dir: [1.5, 0.5, 1.2], tier: 2, label: [0, 0.22, 0] });
-
-addComp('display', {
-  name: 'E-ink status display + buttons', short: 'E-ink display', cat: 'ui', part: '2.9" e-paper + IP67 pushbuttons',
-  price: '$25–50',
-  desc: 'Shows the last fix, message queue and battery level, and holds the image with zero power, so you can glance at it at any time. With the buttons, the hub is usable even if your phone is dead or broken.',
-  specs: [['Power', '0 W to hold the image; energy only on refresh'], ['Shows', 'Battery %, charge source, last fix + age, Iridium & mesh status']]
-}, g => {
-  g.add(box(1.2, 0.05, 0.7, M(0x111827), 0, 0, 0));
-  const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 0.52), new THREE.MeshStandardMaterial({ map: einkTex, roughness: 0.9 }));
-  scr.rotation.x = -Math.PI / 2; scr.position.set(0, 0.027, -0.02); g.add(scr);
-  for (const x of [-0.75, -0.75]) {}
-  for (let i = 0; i < 3; i++) g.add(cyl(0.06, 0.06, 0.05, M(0x374151), 0.75, 0.03, -0.2 + i * 0.2));
-}, { pos: [-0.45, 1.31, 0.3], dir: [0, 2.45, 0], label: [0, 0.2, -0.45] });
-
-let sosCover;
-addComp('sos', {
-  name: 'Guarded SOS switch', short: 'SOS switch', cat: 'ui', part: 'Flip-cover toggle (missile-switch style)',
-  price: '~$10',
-  desc: 'One deliberate action triggers the whole SOS routine without a phone: get a GNSS fix, send over Iridium with retries, broadcast on the mesh, beacon on APRS if a licensed radio is attached, then repeat every 10–30 minutes. The cover prevents a false alert from a bump in your bag. Try it in the "SOS sim" tab.',
-  specs: [['Sequence', 'Fix → Iridium (retry w/ backoff) → Meshtastic → APRS → repeat'], ['Logging', 'Everything logged to flash']]
-}, g => {
-  g.add(box(0.36, 0.06, 0.36, M(0x111827), 0, 0, 0));
-  const bat = cyl(0.025, 0.035, 0.18, M(0xd1d5db, { m: 0.9, r: 0.2 }), 0, 0.1, 0); bat.rotation.x = 0.35; g.add(bat);
-  const pivot = new THREE.Group(); pivot.position.set(0, 0.03, -0.17);
-  const cover = rbox(0.33, 0.16, 0.34, 0.03, M(0xdc2626, { r: 0.3, x: { transparent: true, opacity: 0.85 } }), 0, 0.08, 0.17);
-  pivot.add(cover); g.add(pivot); sosCover = pivot;
-}, { pos: [0.85, 1.31, 0.5], dir: [0, 2.45, 0], label: [0, 0.3, 0] });
-
-addComp('gnssPatch', {
-  name: 'GNSS patch antenna', short: 'GNSS antenna', cat: 'comms', part: 'Active ceramic patch, SMA bulkhead',
-  price: 'incl. with GNSS',
-  desc: 'Needs a view of the sky. Keep a small internal ceramic patch as a fallback in case an external antenna snaps off.',
-  specs: [['Type', 'Active patch, multi-band L1'], ['Mount', 'Through-lid, O-ring sealed']]
-}, g => {
-  g.add(box(0.3, 0.025, 0.3, M(0xd1d5db, { m: 0.8, r: 0.3 }), 0, 0, 0));
-  g.add(box(0.22, 0.06, 0.22, M(0xd6c7a1, { r: 0.7 }), 0, 0.04, 0));
-  g.add(cyl(0.025, 0.025, 0.01, M(0xfbbf24, { m: 0.9 }), 0, 0.075, 0));
-  const t = new THREE.Object3D(); t.position.set(0, 0.1, 0); g.add(t); tips.gnss = t;
-}, { pos: [0.85, 1.3, -0.25], dir: [0, 2.45, 0], label: [0, 0.22, 0] });
-
-addComp('loraAnt', {
-  name: 'LoRa antenna (915 MHz)', short: 'LoRa antenna', cat: 'comms', part: 'Flexible whip on SMA bulkhead (+ 5–8 dBi collinear for elevated use)',
-  price: '$15–60',
-  desc: 'A flexible whip survives drops. For real range, mount a collinear high up. Mesh range is mostly about height: Portland meshes reach farthest from hilltop and rooftop solar nodes.',
-  specs: [['Connector', 'SMA bulkhead with O-ring'], ['Tip', 'Elevation beats gain: hang it high']]
-}, g => {
-  const hex = cyl(0.07, 0.07, 0.06, M(0xfbbf24, { m: 0.9, r: 0.3 }), 0, 0.03, 0, 6); g.add(hex);
-  g.add(cyl(0.05, 0.05, 0.18, M(0x111827), 0, 0.15, 0));
-  g.add(cyl(0.03, 0.035, 1.35, M(0x0a0a0a, { r: 0.8 }), 0, 0.9, 0));
-  g.add(cyl(0.04, 0.03, 0.06, M(0x0a0a0a), 0, 1.6, 0));
-  const t = new THREE.Object3D(); t.position.set(0, 1.55, 0); g.add(t); tips.lora = t;
-}, { pos: [1.25, 1.29, -0.8], dir: [0.4, 2.2, -0.3], label: [0, 1.75, 0] });
-
-addComp('iridiumAnt', {
-  name: 'Iridium helical antenna', short: 'Iridium antenna', cat: 'sat', part: 'Iridium-certified passive helical, TNC/SMA bulkhead',
-  price: '$40–90',
-  desc: 'Iridium satellites orbit at roughly 780 km, so the antenna needs open sky. Under heavy canopy or rubble every satellite option degrades, which is why the mesh, ham and PLB layers exist. A magnetic-mount version on a car roof also works.',
-  specs: [['Type', 'Quadrifilar-style helix in a radome'], ['Cable', 'Short, low-loss (every dB matters)']]
-}, g => {
-  g.add(cyl(0.08, 0.08, 0.06, M(0xfbbf24, { m: 0.9, r: 0.3 }), 0, 0.03, 0, 6));
-  g.add(cyl(0.035, 0.035, 0.5, M(0x334155, { m: 0.5 }), 0, 0.3, 0));
-  const pts = [];
-  for (let i = 0; i <= 160; i++) { const a = i / 160 * Math.PI * 2 * 4; pts.push(new THREE.Vector3(0.09 * Math.cos(a), 0.58 + i / 160 * 0.45, 0.09 * Math.sin(a))); }
-  g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 300, 0.012, 6), M(0xb45309, { m: 0.9, r: 0.3 })));
-  g.add(cyl(0.13, 0.13, 0.55, M(0xf8fafc, { r: 0.2, x: { transparent: true, opacity: 0.25, depthWrite: false } }), 0, 0.81, 0));
-  const t = new THREE.Object3D(); t.position.set(0, 1.12, 0); g.add(t); tips.iridium = t;
-}, { pos: [-1.2, 1.29, -0.8], dir: [-0.4, 2.2, -0.3], label: [0, 1.35, 0] });
-
-addComp('ports', {
-  name: 'Sealed ports', short: 'Ports (USB-C, M12, 12 V)', cat: 'rugged', part: 'IP67 USB-C w/ captive cap, M12 / Amphenol LTW, Anderson Powerpole',
-  price: '$40–80',
-  desc: 'Every external input is IP-rated, and the 12 V input has a gland. A gas-discharge arrestor goes on long external feedlines. USB-C PD charges from almost anything; the M12 takes the solar panel; the Powerpoles take car 12 V or the crank.',
-  specs: [['USB-C', 'IP67 panel mount, PD 9–20 V in, 5 V out to phone'], ['Solar', 'M12 circular, IP68'], ['12 V', 'Anderson Powerpole (car = 500+ Wh battery)'], ['Protection', 'TVS + fuse on each']]
-}, g => {
-  g.add(box(1.3, 0.34, 0.04, M(0x111827), 0, 0, 0));
-  g.add(rbox(0.22, 0.12, 0.08, 0.03, M(0xd1d5db, { m: 0.9, r: 0.3 }), -0.45, 0, 0.04));
-  g.add(box(0.12, 0.04, 0.02, M(0x0a0a0a), -0.45, 0, 0.085));
-  const m12 = cyl(0.09, 0.09, 0.12, M(0x9ca3af, { m: 0.85, r: 0.3 }), -0.05, 0, 0.06); m12.rotation.x = Math.PI / 2; g.add(m12);
-  g.add(box(0.1, 0.12, 0.12, M(0xdc2626), 0.32, 0, 0.06));
-  g.add(box(0.1, 0.12, 0.12, M(0x111827), 0.43, 0, 0.06));
-  const t1 = new THREE.Object3D(); t1.position.set(-0.05, 0, 0.13); g.add(t1); tips.solarPort = t1;
-  const t2 = new THREE.Object3D(); t2.position.set(0.37, 0, 0.13); g.add(t2); tips.ppPort = t2;
-  const t3 = new THREE.Object3D(); t3.position.set(-0.45, 0, 0.1); g.add(t3); tips.usbPort = t3;
-}, { pos: [-0.25, 0.48, 1.12], dir: [0, 0, 1.1], label: [0, -0.3, 0.1] });
-
-/* ---------------- External components ---------------- */
-addComp('solar', {
-  name: 'Foldable solar panel', short: 'Solar 40 W', cat: 'power', part: '20–40 W foldable ETFE, USB-C PD / DC out',
-  price: '$60–150',
-  desc: 'In a Portland summer, expect roughly 3–4 Wh per panel-watt per day; on overcast winter days it drops well under 1. About 40 W is the minimum to sustain the hub plus a phone year-round. Starlink needs 100 W or more on its own bank.',
-  specs: [['Output', 'DC to the MPPT charger via M12'], ['Fold', '4 panels, fabric hinges, grommets for hanging'], ['Tip', 'Point it south and keep it out of shade']]
-}, g => {
-  const fab = M(0x1f2937, { r: 0.9 });
-  const pv = new THREE.MeshStandardMaterial({ map: solarTex, roughness: 0.25, metalness: 0.3 });
-  for (let i = 0; i < 4; i++) {
-    const x = (i - 1.5) * 1.12;
-    g.add(box(1.08, 0.03, 0.86, fab, x, 0, 0));
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(0.98, 0.76), pv); p.rotation.x = -Math.PI / 2; p.position.set(x, 0.017, 0); p.receiveShadow = true; g.add(p);
-  }
-  g.add(box(0.28, 0.08, 0.18, M(0x111827), 1.75, 0.04, 0.52));
-  g.rotation.x = -0.32;
-  const t = new THREE.Object3D(); t.position.set(1.75, 0.05, 0.6); g.add(t); tips.solar = t;
-}, { pos: [-4.3, 0.35, -0.3], parent: externals, label: [0, 0.5, 0], mode: 'case' });
-
-let crankArm;
-addComp('crank', {
-  name: 'Hand-crank generator', short: 'Hand crank', cat: 'power', part: 'K-Tor-class pocket generator (~10 W)',
-  price: '$40–100',
-  desc: 'A last-resort trickle. Consumer cranks give about 5–15 W electrical, so ten minutes at ~8 W is roughly 1.3 Wh: enough for several satellite messages, not a phone charge. Lab studies put sustained one-hand cranking near 54 W mechanical, but small generators can\'t capture that.',
-  specs: [['Output', '5–15 W typical'], ['Use', 'Top up the hub for SOS when solar and battery are gone']]
-}, g => {
-  const body = cyl(0.2, 0.2, 0.4, M(0x14532d, { r: 0.5 }), 0, 0.2, 0); body.rotation.z = Math.PI / 2; g.add(body);
-  g.add(box(0.5, 0.06, 0.3, M(0x111827), 0, 0.03, 0));
-  const arm = new THREE.Group(); arm.position.set(0.24, 0.2, 0);
-  arm.add(box(0.04, 0.38, 0.06, M(0x9ca3af, { m: 0.8 }), 0, 0.17, 0));
-  const knob = cyl(0.05, 0.05, 0.16, M(0x111827), 0.08, 0.34, 0); knob.rotation.z = Math.PI / 2; arm.add(knob);
-  g.add(arm); crankArm = arm;
-  const t = new THREE.Object3D(); t.position.set(-0.22, 0.2, 0); g.add(t); tips.crank = t;
-}, { pos: [-2.1, 0, 2.6], parent: externals, label: [0, 0.6, 0], rotY: 0.4, mode: 'case' });
-
-addComp('phone', {
-  name: 'Your phone', short: 'Phone (BLE)', cat: 'ext', part: 'Any smartphone; iPhone 14+/Pixel 9+ add native satellite SOS',
-  price: 'already owned',
-  desc: 'The phone is the keyboard and screen; the hub is the radio stack. The Meshtastic app talks to the LoRa node over Bluetooth LE. Many phones now have their own satellite path: Apple Emergency SOS via satellite (Globalstar), Pixel Satellite SOS (Skylo), or T-Mobile T-Satellite (Starlink Direct to Cell) on almost any LTE phone. Phones die and break, so the hub must work fully without it.',
-  specs: [['Link', 'BLE GATT; optional Wi-Fi AP with a local web UI'], ['Native sat', 'iPhone 14+, Pixel 9/10, T-Satellite (~$10/mo standalone)'], ['Power tip', 'Low-power or airplane mode with Bluetooth on']]
-}, g => {
-  g.add(rbox(0.75, 0.06, 1.5, 0.05, M(0x0a0a0a, { r: 0.3, m: 0.4 }), 0, 0.03, 0));
-  const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 1.32), new THREE.MeshBasicMaterial({ map: phoneTex }));
-  scr.rotation.x = -Math.PI / 2; scr.position.y = 0.062; g.add(scr);
-  const t = new THREE.Object3D(); t.position.set(0, 0.1, 0); g.add(t); tips.phone = t;
-}, { pos: [2.2, 0, 2.7], parent: externals, tier: 0, label: [0, 0.3, -0.8], rotY: -0.35, posPack: [-2.6, 0, 1.4], rotPack: 0.4 });
-
-addComp('plb', {
-  name: '406 MHz Personal Locator Beacon', short: 'PLB (buy, register)', cat: 'sat', part: 'ACR ResQLink / Ocean Signal rescueME',
-  price: '$300–450, no subscription',
-  desc: 'The one part you must buy, not build. FCC Part 95 Subpart K requires PLBs to be COSPAS-SARSAT type-approved, FCC-certified, NOAA-coded and registered with NOAA, so homebuilt beacons are illegal. Registration is free; renew every two years. Alerts go straight into the search-and-rescue system.',
-  specs: [['System', 'COSPAS-SARSAT + 121.5 MHz homing'], ['Runtime', 'Designed for 24+ h of transmission'], ['Routes to', 'Air Force Rescue Coordination Center']]
-}, g => {
-  g.add(rbox(0.36, 0.2, 0.62, 0.06, M(0xfacc15, { r: 0.5 }), 0, 0.1, 0));
-  g.add(cyl(0.025, 0.025, 0.5, M(0x111827), 0, 0.42, -0.2));
-  g.add(cyl(0.05, 0.05, 0.03, M(0xdc2626), 0, 0.21, 0.12));
-}, { pos: [3.3, 0, 1.0], parent: externals, tier: 0, label: [0, 0.75, 0], posPack: [2.2, 0, 1.2] });
-
-addComp('ht', {
-  name: 'VHF/UHF handheld with APRS', short: 'Ham HT (APRS)', cat: 'comms', part: 'Yaesu FT-5DR / Kenwood TH-D75, or cheap HT + Digirig',
-  price: '$100–650',
-  desc: 'This is the regional backbone. APRS on 144.390 MHz sends your position to digipeaters and iGates, where it shows up on aprs.fi. Winlink over VARA FM sends email and ICS forms; Oregon OEM and ARES have standardized on Winlink. It requires an amateur Technician license. Portland\'s BEECN and NET volunteers operate on these bands.',
-  specs: [['License', 'Technician (VHF/UHF); General for HF NVIS'], ['APRS', '144.390 MHz, ~1200 bps, position in a few dozen bytes'], ['Range', '5–50 km simplex, more via repeaters/digipeaters'], ['Rule', 'No encryption on amateur bands']]
-}, g => {
-  g.add(rbox(0.42, 0.95, 0.2, 0.06, M(0x18181b, { r: 0.5 }), 0, 0.475, 0));
-  g.add(box(0.28, 0.18, 0.02, M(0x0e7490, { x: { emissive: 0x0e7490, emissiveIntensity: 0.4 } }), 0, 0.72, 0.105));
-  g.add(cyl(0.035, 0.035, 0.08, M(0x3f3f46), 0.1, 1.0, 0));
-  g.add(cyl(0.02, 0.03, 0.9, M(0x0a0a0a), -0.1, 1.4, 0));
-  const t = new THREE.Object3D(); t.position.set(-0.1, 1.8, 0); g.add(t); tips.ht = t;
-}, { pos: [3.0, 0, -1.0], parent: externals, tier: 2, label: [0, 2.05, 0], rotY: -0.5, mode: 'case' });
-
-addComp('starlink', {
-  name: 'Starlink Mini + 12 V LiFePO4 bank', short: 'Starlink Mini', cat: 'sat', part: 'Starlink Mini + 300–500 Wh LiFePO4 + 100 W panel',
-  price: '$700–1,300 + subscription',
-  desc: 'The only option here that gives real internet: Signal, email, Winlink over telnet, and an MQTT gateway that bridges the whole neighborhood mesh to the internet. It draws about 25–40 W, roughly 120 Wh for 4 hours, so it lives on its own LiFePO4 bank and is switched on only when needed.',
-  specs: [['Power', '20–40 W average, ~60 W boot surge'], ['Input', '12–48 V DC or USB-C PD 100 W'], ['Battery', 'LiFePO4: very resistant to thermal runaway, long cycle life']]
-}, g => {
-  const dish = new THREE.Group();
-  dish.add(rbox(1.5, 0.07, 1.2, 0.04, M(0xf1f5f9, { r: 0.35 }), 0, 0, 0));
-  dish.position.set(0, 0.62, 0); dish.rotation.x = -0.95; g.add(dish);
-  const leg = box(0.06, 0.7, 0.06, M(0x94a3b8), 0, 0.32, 0.35); leg.rotation.x = 0.5; g.add(leg);
-  g.add(rbox(0.75, 0.45, 0.5, 0.04, M(0x334155, { r: 0.5 }), 1.3, 0.225, 0.5));
-  g.add(box(0.5, 0.12, 0.01, M(0x4ade80), 1.3, 0.3, 0.755));
-  const t = new THREE.Object3D(); t.position.set(0, 1.0, -0.3); g.add(t); tips.starlink = t;
-}, { pos: [-3.6, 0, -3.0], parent: externals, tier: 3, label: [0.5, 1.5, 0], rotY: 0.5, mode: 'case' });
-
-/* ---------------- Sensor pod (both modes) ---------------- */
-let podLed;
-addComp('sensorPod', {
-  name: 'Air-quality and hazard sensor pod', short: 'Sensor pod', cat: 'sense',
-  part: 'SGX INIR methane (NDIR) · electrochemical CO and O₂ · Sensirion SCD41 CO₂ · PMSA003I PM2.5 · BME280 · IMU',
-  price: '$150–350 (the gas sensors are most of it)',
-  desc: 'Samples the air you actually breathe: on the side of the case, or on the shoulder strap near your face in backpack mode. After an earthquake the worst air hazards are natural gas from broken lines, carbon monoxide from generators and stoves run indoors, and stale air in a confined space. The pod beeps, vibrates and flashes, and its latest readings ride along in every SOS packet. It is an awareness tool, not a certified gas detector. Try the Sensors tab.',
-  specs: [['Methane', 'NDIR (avoid MQ-4: ~0.8 W heater)'], ['CO / O₂', 'Electrochemical, microwatts; O₂ cells last ~2 years'], ['CO₂', 'Sensirion SCD41 (photoacoustic NDIR)'], ['Particulates', 'PMSA003I / SPS30, fan duty-cycled'], ['Environment', 'BME280: temperature, humidity, pressure'], ['Motion', 'IMU: aftershocks, falls, no-motion auto-SOS'], ['Radiation (optional)', 'Radiacode over BLE, or a Geiger-tube kit'], ['Alerts', 'Buzzer, vibration motor, RGB LED, e-ink line']]
-}, g => {
-  g.add(rbox(0.38, 0.55, 0.18, 0.06, M(0x27272a, { r: 0.5 }), 0, 0, 0));
-  for (let i = 0; i < 5; i++) g.add(box(0.26, 0.025, 0.02, M(0x0a0a0a), 0, 0.2 - i * 0.065, 0.095));
-  const led = mesh(new THREE.SphereGeometry(0.04, 12, 12), new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1.4 }), 0.11, -0.19, 0.09);
-  led.userData.keep = true; g.add(led); podLed = led;
-  const bz = cyl(0.055, 0.055, 0.03, M(0x111827), -0.09, -0.19, 0.095); bz.rotation.x = Math.PI / 2; g.add(bz);
-  const t = new THREE.Object3D(); t.position.set(0, 0, 0.12); g.add(t); tips.pod = t;
-}, { pos: [-1.62, 0.55, 0.55], rotY: -Math.PI / 2, posPack: [-0.62, 2.15, -1.27], rotPack: Math.PI, parent: rig, label: [0, 0.45, 0] });
-
-/* ---------------- Backpack (pack mode) ---------------- */
-addComp('pack', {
-  name: 'Backpack carrier', short: 'Backpack', cat: 'rugged', part: '30–40 L pack with hydration sleeve, hip belt and MOLLE webbing',
-  price: '$60–150',
-  desc: 'The hub rides in the padded hydration sleeve against your back, the most protected spot if you fall. Heavy parts sit low and close to your spine for balance. Coax runs up to a mast so the antennas are above your head, the solar panel straps to the outside so it charges while you walk, and the sensor pod clips to the shoulder strap near your face.',
-  specs: [['Hub', 'Padded sleeve on the back-panel side'], ['Balance', 'Battery low and centered'], ['Weather', 'Rain cover; the hub case is IP67 on its own'], ['Visibility', 'Reflective strip and a strobe help rescuers find you at night']]
-}, g => {
-  const fab = M(0x6b7a3a, { r: 0.95 }), dark = M(0x48532a, { r: 0.95 });
-  g.add(rbox(2.0, 3.0, 1.1, 0.28, fab, 0, 1.5, 0));
-  g.add(rbox(2.06, 0.42, 1.16, 0.18, dark, 0, 3.0, 0.02));
-  g.add(rbox(1.5, 1.1, 0.3, 0.12, dark, 0, 0.85, 0.62));
-  for (const s of [-1, 1]) g.add(rbox(0.3, 0.8, 0.5, 0.1, dark, s * 1.08, 0.6, 0.1));
-  for (const s of [-1, 1]) {
-    const c = new THREE.CatmullRomCurve3([new THREE.Vector3(s * 0.45, 2.85, -0.5), new THREE.Vector3(s * 0.55, 2.7, -1.05), new THREE.Vector3(s * 0.62, 1.8, -1.15), new THREE.Vector3(s * 0.75, 0.9, -0.95), new THREE.Vector3(s * 0.8, 0.55, -0.55)]);
-    g.add(mesh(new THREE.TubeGeometry(c, 40, 0.1, 8), dark));
-  }
-  g.add(box(1.15, 0.06, 0.04, M(0x111827), 0, 2.0, -1.17));
-  for (const s of [-1, 1]) { const hb = rbox(0.6, 0.3, 0.5, 0.1, dark, s * 1.1, 0.45, -0.45); hb.rotation.y = s * 0.6; g.add(hb); }
-  g.add(box(1.4, 0.06, 0.02, M(0xe5e7eb, { x: { emissive: 0x9ca3af, emissiveIntensity: 0.5 } }), 0, 0.45, 0.785));
-}, { parent: rig, mode: 'pack', label: [-1.3, 3.3, 0] });
-
-addComp('packSolar', {
-  name: 'Backpack solar panel', short: 'Pack solar 20 W', cat: 'power', part: '20–28 W foldable ETFE, strapped to the outside',
-  price: '$60–120',
-  desc: 'Charges while you walk or while the pack hangs in a tree. On the move the angle and shade keep changing, so output is lower than a carefully aimed panel: treat it as a top-up, and point it at the sun whenever you stop.',
-  specs: [['Mount', 'Bungee or MOLLE straps on the outer face'], ['Cable', 'Into the hub through the sealed M12 port'], ['Reality', 'Easily keeps the hub running; the phone is what needs more']]
-}, g => {
-  const pv = new THREE.MeshStandardMaterial({ map: solarTex, roughness: 0.25, metalness: 0.3 });
-  g.add(box(1.5, 1.25, 0.04, M(0x1f2937, { r: 0.9 }), 0, 0, 0));
-  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.12), pv); pl.position.z = 0.025; g.add(pl);
-  for (const y of [-0.5, 0.5]) g.add(box(1.75, 0.06, 0.06, M(0x111827), 0, y, 0.04));
-  g.rotation.x = -0.08;
-}, { pos: [0, 2.15, 0.6], parent: rig, mode: 'pack', label: [0, 0.85, 0.1] });
-
-addComp('mast', {
-  name: 'Antenna mast', short: 'Antenna mast', cat: 'comms', part: 'Telescoping fiberglass pole, LoRa collinear, Iridium puck, low-loss coax',
-  price: '$30–80',
-  desc: 'Radio range depends far more on antenna height than on transmit power, and your body absorbs signal. Short runs of low-loss coax go from the hub up a pole clipped to the side of the pack, putting the LoRa antenna and the Iridium antenna above your head with open sky.',
-  specs: [['Height', '~0.5–1 m above the pack'], ['Coax', 'Short and low-loss (e.g., LMR-195)'], ['Iridium', 'Needs an unobstructed view of the sky']]
-}, g => {
-  g.add(cyl(0.05, 0.06, 1.9, M(0x52525b, { m: 0.5 }), 0, 0.95, 0));
-  g.add(cyl(0.16, 0.16, 0.08, M(0xf1f5f9, { r: 0.3 }), 0, 1.94, 0));
-  g.add(cyl(0.03, 0.035, 1.0, M(0x0a0a0a), 0, 2.5, 0));
-  g.add(box(0.14, 0.22, 0.14, M(0x111827), 0, 0.25, 0));
-  const t1 = new THREE.Object3D(); t1.position.set(0, 2.95, 0); g.add(t1); packTips.lora = t1;
-  const t2 = new THREE.Object3D(); t2.position.set(0, 2.0, 0); g.add(t2); packTips.iridium = t2;
-}, { pos: [1.1, 1.3, -0.3], parent: rig, mode: 'pack', label: [0, 3.15, 0] });
-
-/* ---------------- Sky: satellites ---------------- */
-function makeSat(color, scale = 1) {
-  const g = new THREE.Group();
-  g.add(box(0.5, 0.5, 0.9, M(color, { m: 0.7, r: 0.3 }), 0, 0, 0));
-  for (const s of [-1, 1]) g.add(box(1.6, 0.04, 0.6, M(0x1e3a8a, { m: 0.4, r: 0.3, x: { emissive: 0x1e3a8a, emissiveIntensity: 0.3 } }), s * 1.1, 0, 0));
-  g.add(cyl(0.03, 0.03, 0.4, M(0xe5e7eb), 0, -0.4, 0));
-  g.scale.setScalar(scale);
-  return g;
-}
-const iridiumSat = makeSat(0xd4a017, 1);
-scene.add(iridiumSat);
-iridiumSat.userData.compId = 'iridiumSat';
-{
-  const div = document.createElement('div'); div.className = 'lbl';
-  div.innerHTML = `<i style="background:${COLORS.sat}"></i>Iridium satellite`;
-  div.addEventListener('click', e => { e.stopPropagation(); select('iridiumSat'); });
-  const lab = new CSS2DObject(div); lab.position.set(0, 1.2, 0); iridiumSat.add(lab);
-  comps.iridiumSat = { id: 'iridiumSat', g: iridiumSat, tier: 1, base: new THREE.Vector3(), dir: new THREE.Vector3(), label: lab, div, external: true, info: {
-    name: 'Iridium constellation', short: 'Iridium satellite', cat: 'sat', part: '66 active LEO satellites, ~780 km',
-    price: 'pay-as-you-go airtime',
-    desc: 'Iridium satellites cross-link to each other in orbit, which is why coverage is truly global, oceans and poles included. Not to scale: at true scale the satellite would be about 780 km up, roughly 8,000 times higher than shown.',
-    specs: [['Used by', 'RockBLOCK, Garmin inReach, ZOLEO'], ['Others', 'Globalstar (Apple), Skylo (Pixel), Starlink D2C (T-Mobile)']]
-  } };
-}
-const orbitR = 11;
-const orbit = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(Array.from({ length: 128 }, (_, i) => { const a = i / 128 * Math.PI * 2; return new THREE.Vector3(orbitR * Math.cos(a), 12, orbitR * Math.sin(a) - 2); })), new THREE.LineDashedMaterial({ color: 0x6d5bd0, dashSize: 0.4, gapSize: 0.3, transparent: true, opacity: 0.5 }));
-orbit.computeLineDistances();
-scene.add(orbit);
-
-const gnssSats = [[-7, 15, -6], [6, 16, -8], [0, 17, 7], [-9, 14, 4]].map(p => { const s = makeSat(0x9ca3af, 0.5); s.position.set(...p); scene.add(s); return s; });
-
-/* ---------------- Cables ---------------- */
-const cables = [];
-function cable(fromTip, toTip, color, sag = 0.4) {
-  const geo = new THREE.BufferGeometry();
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7 });
-  const m = new THREE.Mesh(geo, mat); m.castShadow = true;
-  scene.add(m);
-  const c = { m, fromTip, toTip, sag, curve: null };
-  cables.push(c);
-  return c;
-}
-function updateCables() {
-  for (const c of cables) {
-    const a = tips[c.fromTip].getWorldPosition(new THREE.Vector3());
-    const b = tips[c.toTip].getWorldPosition(new THREE.Vector3());
-    const mid = a.clone().lerp(b, 0.5); mid.y = Math.max(0.04, Math.min(a.y, b.y) - c.sag);
-    const m1 = a.clone().lerp(mid, 0.6); m1.y = Math.max(0.04, m1.y - 0.1);
-    const m2 = b.clone().lerp(mid, 0.6); m2.y = Math.max(0.04, m2.y - 0.1);
-    c.curve = new THREE.CatmullRomCurve3([a, m1, mid, m2, b]);
-    c.m.geometry.dispose();
-    c.m.geometry = new THREE.TubeGeometry(c.curve, 48, 0.025, 6);
-  }
-}
-cable('solar', 'solarPort', 0x111827, 0.5);
-cable('crank', 'ppPort', 0x7f1d1d, 0.5);
-
-/* ---------------- Signal effects ---------------- */
-const fx = [];
-const ringGeo = new THREE.RingGeometry(0.92, 1, 64);
-function spawnRing(tipName, color, { vertical = false, maxR = 6, life = 2.2 } = {}) {
-  const p = tip(tipName).getWorldPosition(new THREE.Vector3());
-  const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
-  m.position.copy(p);
-  if (!vertical) m.rotation.x = -Math.PI / 2;
-  else m.lookAt(camera.position);
-  scene.add(m);
-  fx.push({ type: 'ring', m, t: 0, life, maxR });
-}
-const dotGeo = new THREE.SphereGeometry(0.07, 12, 12);
-function spawnDot(getA, getB, color, { life = 1.2, size = 1, curveUp = 0 } = {}) {
-  const m = new THREE.Mesh(dotGeo, new THREE.MeshBasicMaterial({ color, transparent: true }));
-  m.scale.setScalar(size);
-  scene.add(m);
-  fx.push({ type: 'dot', m, t: 0, life, getA, getB, curveUp });
-}
-function spawnAlongCurve(cab, color) {
-  const m = new THREE.Mesh(dotGeo, new THREE.MeshBasicMaterial({ color }));
-  m.scale.setScalar(0.7);
-  scene.add(m);
-  fx.push({ type: 'curve', m, t: 0, life: 1.6, cab });
-}
-const beams = {};
-function setBeam(name, getA, getB, color, on) {
-  if (!beams[name]) {
-    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
-    const l = new THREE.Line(geo, new THREE.LineDashedMaterial({ color, dashSize: 0.3, gapSize: 0.2, transparent: true, opacity: 0 }));
-    scene.add(l);
-    beams[name] = { l, getA, getB, on: false, o: 0 };
-  }
-  beams[name].on = on;
-}
-const W = n => () => tip(n).getWorldPosition(new THREE.Vector3());
-const satPos = () => iridiumSat.position.clone();
-
-function updateFx(dt) {
-  for (let i = fx.length - 1; i >= 0; i--) {
-    const f = fx[i]; f.t += dt;
-    const k = f.t / f.life;
-    if (k >= 1) { scene.remove(f.m); f.m.material.dispose(); fx.splice(i, 1); continue; }
-    if (f.type === 'ring') { const s = 0.15 + k * f.maxR; f.m.scale.set(s, s, s); f.m.material.opacity = 0.8 * (1 - k); }
-    if (f.type === 'dot') {
-      const a = f.getA(), b = f.getB();
-      const p = a.lerp(b, k); p.y += Math.sin(k * Math.PI) * f.curveUp;
-      f.m.position.copy(p); f.m.material.opacity = k < 0.9 ? 1 : (1 - k) * 10;
-    }
-    if (f.type === 'curve' && f.cab.curve) f.m.position.copy(f.cab.curve.getPoint(k));
-  }
-  for (const b of Object.values(beams)) {
-    b.o += ((b.on ? 0.9 : 0) - b.o) * Math.min(1, dt * 5);
-    b.l.material.opacity = b.o; b.l.visible = b.o > 0.02;
-    if (b.l.visible) {
-      const pos = b.l.geometry.attributes.position;
-      const a = b.getA(), c = b.getB();
-      pos.setXYZ(0, a.x, a.y, a.z); pos.setXYZ(1, c.x, c.y, c.z); pos.needsUpdate = true;
-      b.l.computeLineDistances();
-    }
-  }
-}
-
-/* ---------------- UI: tiers, toggles ---------------- */
-const tierState = { 0: true, 1: true, 2: true, 3: true };
-const tierNames = { 0: 'Tier 0 · carry', 1: 'Tier 1 · DIY hub', 2: 'Tier 2 · licensed + SDR', 3: 'Tier 3 · Starlink' };
-const tierShort = { 0: 'T0 carry', 1: 'T1 hub', 2: 'T2 ham+SDR', 3: 'T3 Starlink' };
-const tiersEl = document.getElementById('tiers');
-for (const t of [0, 1, 2, 3]) {
-  const b = document.createElement('button');
-  b.className = 'chip on'; b.textContent = NARROW ? tierShort[t] : tierNames[t];
-  b.onclick = () => { if (t === 1) { toast('Tier 1 is the core hub. It is always shown.'); return; } tierState[t] = !tierState[t]; b.classList.toggle('on', tierState[t]); applyVisibility(); };
-  tiersEl.appendChild(b);
-}
-let labelsOn = !NARROW, xray = true;
-if (NARROW) document.getElementById('labelsBtn').classList.remove('on');
-const INTERNAL = new Set(['battery', 'power', 'mcu', 'gnss', 'rockblock', 'sdr']);
-function applyVisibility() {
-  for (const c of Object.values(comps)) {
-    const vis = tierState[c.tier] && (c.mode === 'both' || c.mode === MODE);
-    c.g.visible = vis;
-    const hidden = (INTERNAL.has(c.id) || (MODE === 'pack' && c.g.parent === deviceRoot)) && explodeT <= 0.3 && selected !== c.id;
-    c.label.visible = labelsOn && vis && !hidden;
-  }
-}
-function applyXray() {
-  for (const id of ['case', 'lid', 'pack']) comps[id].g.traverse(o => {
-    if (o.isMesh) { o.material.transparent = xray; o.material.opacity = xray ? (id === 'pack' ? 0.38 : 0.2) : 1; o.material.depthWrite = !xray; o.material.needsUpdate = true; o.castShadow = !xray; }
-  });
-}
-applyXray();
-document.getElementById('xray').onclick = e => { xray = !xray; e.target.classList.toggle('on', xray); applyXray(); };
-document.getElementById('labelsBtn').onclick = e => { labelsOn = !labelsOn; e.target.classList.toggle('on', labelsOn); applyVisibility(); };
-
-let explodeTarget = 0, explodeT = 0;
-document.getElementById('explode').oninput = e => { explodeTarget = +e.target.value; };
-
-const toastEl = document.getElementById('toast');
-let toastTimer;
-function toast(html, ms = 4500) { toastEl.innerHTML = html; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
-
-/* ---------------- Selection ---------------- */
-let selected = null;
-const infoEl = document.getElementById('info');
-const listEl = document.getElementById('complist');
-const order = ['sensorPod', 'pack', 'packSolar', 'mast', 'case', 'lid', 'ports', 'battery', 'power', 'solar', 'crank', 'mcu', 'loraAnt', 'gnss', 'gnssPatch', 'rockblock', 'iridiumAnt', 'display', 'sos', 'phone', 'plb', 'ht', 'sdr', 'starlink', 'iridiumSat'];
-for (const id of order) {
-  const c = comps[id]; const b = document.createElement('button');
-  b.innerHTML = `<i style="background:${COLORS[c.info.cat]}"></i>${c.info.short || c.info.name}`;
-  b.onclick = () => select(id, true); b.dataset.id = id; listEl.appendChild(b);
-}
-function renderIntro() {
-  infoEl.innerHTML = `
-    <h2>A layered survival comms hub</h2>
-    <p class="sub">Concept for a rugged device that still reaches the outside world when every nearby cell tower is down.</p>
-    <p>Rather than trying to reach a far-away tower (unreliable after a big quake) or turning an SDR into a satellite phone (illegal and not possible), the hub combines <b>certified building blocks</b>:</p>
-    <ul>
-      <li><b style="color:${COLORS.sat}">Satellite:</b> an Iridium modem for SOS and location from anywhere with sky view</li>
-      <li><b style="color:${COLORS.comms}">LoRa mesh:</b> Meshtastic for neighborhood messaging, paired to your phone</li>
-      <li><b style="color:${COLORS.comms}">GNSS:</b> your position in every message</li>
-      <li><b style="color:${COLORS.power}">Power:</b> 74 Wh Li-ion pack, solar MPPT, USB-C PD, car 12 V, hand crank</li>
-      <li><b style="color:${COLORS.rugged}">Rugged:</b> IP67 case, sealed bulkheads, shock-mounted boards</li>
-      <li><b style="color:${COLORS.sense}">Sensors:</b> natural gas, CO, O₂, CO₂, smoke and dust, plus motion for aftershocks and falls</li>
-      <li><b>🎒 Backpack mode:</b> the same hub carried in a pack, with solar on the outside and an antenna mast</li>
-    </ul>
-    <p>Tap any part in the 3D view or in the list below. Then try the <b>SOS sim</b>, the <b>Power</b> budget, the <b>Explode</b> slider (it reveals the internal part labels), or the drop and submerge tests.</p>
-    <div style="margin-top:8px">${[0, 1, 2, 3].map(t => `<span class="pill t${t}">${tierNames[t]}</span>`).join('')}</div>`;
-}
-renderIntro();
-
-function setHighlight(id, on) {
-  const c = comps[id]; if (!c) return;
-  c.g.traverse(o => { if (o.isMesh && o.material.emissive && !(o.material.map) && !o.userData.keep) { if (on) { o.material.emissive.setHex(0xf97316); o.material.emissiveIntensity = 0.35; } else { o.material.emissive.copy(o.userData.baseEmissive || new THREE.Color(0)); o.material.emissiveIntensity = 1; } } });
-  c.div.classList.toggle('sel', on);
-}
-const focus = { target: HOME_TARGET.clone(), active: false };
-function select(id, fromList = false) {
-  if (selected) setHighlight(selected, false);
-  selected = id; setHighlight(id, true); applyVisibility();
-  const c = comps[id], i = c.info;
-  infoEl.innerHTML = `
-    <div><span class="pill t${c.tier}">${tierNames[c.tier]}</span><span class="pill" style="border-color:${COLORS[i.cat]};color:${COLORS[i.cat]}">${({ comms: 'Comms', power: 'Power', rugged: 'Ruggedization', ui: 'Interface', sat: 'Satellite', ext: 'External', sense: 'Sensors' })[i.cat]}</span></div>
-    <h2 style="margin-top:8px">${i.name}</h2>
-    <p class="sub">${i.part} · <b style="color:var(--text)">${i.price}</b></p>
-    <p>${i.desc}</p>
-    <table class="spec">${i.specs.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>
-    <button class="btn" id="clearSel">← Overview</button>`;
-  document.getElementById('clearSel').onclick = () => { if (selected) setHighlight(selected, false); selected = null; renderIntro(); markList(); applyVisibility(); };
-  markList();
-  switchTab('explore');
-  if (c.mode !== 'both' && c.mode !== MODE) setMode(c.mode);
-  if (!c.g.visible) { tierState[c.tier] = true; tiersEl.children[c.tier].classList.add('on'); applyVisibility(); }
-  if (fromList || c.external) { focus.target = c.g.getWorldPosition(new THREE.Vector3()); if (id === 'iridiumSat') focus.target.set(0, 4, 0); focus.active = true; }
-}
-function markList() { for (const b of listEl.children) b.classList.toggle('sel', b.dataset.id === selected); }
-
-/* picking */
-const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
-let downXY = null;
-function pick(ev) {
-  const r = renderer.domElement.getBoundingClientRect();
-  ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
-  ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects([rig, externals, iridiumSat], true);
-  let fallback = null;
-  for (const h of hits) {
-    let o = h.object, visible = true, id = null;
-    while (o) { if (!o.visible) visible = false; if (!id && o.userData.compId) id = o.userData.compId; o = o.parent; }
-    if (!visible || !id) continue;
-    if (xray && (id === 'case' || id === 'lid' || id === 'pack')) { fallback ??= id; continue; }
-    return id;
-  }
-  return fallback;
-}
-renderer.domElement.addEventListener('pointerdown', e => { downXY = [e.clientX, e.clientY]; });
-renderer.domElement.addEventListener('pointerup', e => {
-  if (!downXY) return;
-  const d = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]); downXY = null;
-  if (d > 6) return;
-  const id = pick(e); if (id) select(id);
-});
-let hoverPending = false;
-renderer.domElement.addEventListener('pointermove', e => {
-  if (hoverPending || e.pointerType !== 'mouse') return; hoverPending = true;
-  requestAnimationFrame(() => { renderer.domElement.style.cursor = pick(e) ? 'pointer' : 'grab'; hoverPending = false; });
-});
-controls.addEventListener('start', () => { focus.active = false; });
-
-document.getElementById('resetBtn').onclick = () => {
-  HOME_CAM.copy(MODE === 'pack' ? CAM_PACK : CAM_CASE); HOME_TARGET.copy(MODE === 'pack' ? TGT_PACK : TGT_CASE);
-  camera.position.copy(HOME_CAM); focus.target.copy(HOME_TARGET); focus.active = true;
-  document.getElementById('explode').value = 0; explodeTarget = 0;
-};
-
-/* ---------------- Tabs ---------------- */
-function switchTab(name) {
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
-  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + name));
-}
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
-
-/* ---------------- Drop & submerge tests ---------------- */
-let anim = null; // {type, t}
-const water = new THREE.Mesh(new THREE.BoxGeometry(5, 1, 4), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.35, depthWrite: false, roughness: 0.1 }));
-water.visible = false; scene.add(water);
-const bubbles = [];
-document.getElementById('dropBtn').onclick = () => {
-  if (anim) return;
-  explodeTarget = 0; document.getElementById('explode').value = 0;
-  anim = { type: 'drop', t: 0, y: 4.5, v: 0, bounces: 0, spin: 0 };
-  toast('<b>Drop test.</b> MIL-STD-810H Method 516 transit drop: 26 drops from about 1.2 m (48 in) onto plywood over concrete. Shock-mount the PCBs on silicone grommets, bracket the battery and modem, use locking connectors, and strain-relieve every cable.', 7000);
-};
-document.getElementById('dunkBtn').onclick = () => {
-  if (anim) return;
-  explodeTarget = 0; document.getElementById('explode').value = 0;
-  anim = { type: 'dunk', t: 0 };
-  toast('<b>Submerge test (IP67).</b> Dust-tight, and survives 1 m of water for 30 minutes. Test the case underwater after drilling every bulkhead hole. A Gore ePTFE vent or purge valve equalizes pressure without letting water in.', 7000);
-};
-function updateAnim(dt) {
-  if (!anim) return;
-  anim.t += dt;
-  if (anim.type === 'drop') {
-    anim.v -= 22 * dt; anim.y += anim.v * dt;
-    if (anim.y <= 0) { anim.y = 0; if (anim.bounces < 4 && Math.abs(anim.v) > 1) { anim.v = -anim.v * 0.35; anim.bounces++; spawnShock(); } else { anim.v = 0; } }
-    rig.position.y = anim.y;
-    rig.rotation.z = anim.y > 0 ? Math.sin(anim.t * 6) * 0.05 * Math.min(1, anim.y) : rig.rotation.z * 0.8;
-    if (anim.t > 3.2) { rig.position.y = 0; rig.rotation.z = 0; anim = null; }
-  } else if (anim.type === 'shake') {
-    rig.position.x = Math.sin(anim.t * 45) * 0.06 * Math.max(0, 1 - anim.t / 1.8);
-    rig.rotation.z = Math.sin(anim.t * 31) * 0.015 * Math.max(0, 1 - anim.t / 1.8);
-    if (anim.t > 1.8) { rig.position.x = 0; rig.rotation.z = 0; anim = null; }
-  } else if (anim.type === 'dunk') {
-    const T = anim.t; water.visible = true; const H = MODE === 'pack' ? 3.8 : 2.6;
-    const h = T < 1.5 ? T / 1.5 * H : T < 4.5 ? H : Math.max(0, H - (T - 4.5) / 1.5 * H);
-    water.scale.y = Math.max(0.001, h); water.position.y = h / 2;
-    if (T > 1.5 && T < 4.5 && Math.random() < 0.25) {
-      const b = new THREE.Mesh(new THREE.SphereGeometry(0.03 + Math.random() * 0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.7 }));
-      b.position.copy(new THREE.Vector3(-1.6, 0.55, (Math.random() - 0.5) * 0.3).applyMatrix4(deviceRoot.matrixWorld)); scene.add(b); bubbles.push(b);
-    }
-    if (T > 6) { water.visible = false; anim = null; bubbles.forEach(b => scene.remove(b)); bubbles.length = 0; }
-  }
-  for (const b of bubbles) b.position.y += dt * 0.8;
-}
-function spawnShock() {
-  const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
-  m.rotation.x = -Math.PI / 2; m.position.set(0, 0.02, 0); scene.add(m);
-  fx.push({ type: 'ring', m, t: 0, life: 0.6, maxR: 3 });
-}
-
-/* ---------------- SOS simulation ---------------- */
-const msgText = document.getElementById('msgText');
-const msgLen = document.getElementById('msgLen');
-const updLen = () => msgLen.textContent = `${new TextEncoder().encode(msgText.value).length}/60 bytes`;
-msgText.oninput = updLen; updLen();
-
-const stepsEl = document.getElementById('steps');
-const STEPS = [
-  ['cover', 'Flip guard and toggle SOS'],
-  ['fix', 'Wake GNSS and get a fix'],
-  ['pack', 'Encode binary SOS packet'],
-  ['sat', 'Iridium transmission'],
-  ['mesh', 'Meshtastic broadcast (LoRa)'],
-  ['ble', 'Notify phone over BLE'],
-  ['aprs', 'APRS beacon on 144.390 MHz'],
-  ['loop', 'Schedule retries'],
-];
-function resetSteps() { stepsEl.innerHTML = STEPS.map(([k, t]) => `<li id="st-${k}"><span class="dot"></span><div>${t}<small></small></div></li>`).join(''); }
-resetSteps();
-function step(k, state, detail) { const li = document.getElementById('st-' + k); li.className = state; if (detail !== undefined) li.querySelector('small').textContent = detail; }
-let sosRun = 0; let sosActive = false;
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const sosBtn = document.getElementById('sosBtn'), cancelBtn = document.getElementById('cancelBtn');
-
-const FIELD_COLORS = ['#f97316', '#a78bfa', '#22d3ee', '#22d3ee', '#4ade80', '#facc15', '#f472b6', '#f472b6', '#4ade80', '#f87171', '#fb7185', '#fb7185', '#fb7185', '#fb7185', '#94a3b8', '#e2e8f0'];
-function encodeSOS(f) {
-  const txt = new TextEncoder().encode(f.text).slice(0, 60);
-  const buf = new ArrayBuffer(28 + txt.length); const v = new DataView(buf);
-  const fields = []; let o = 0;
-  const put = (name, bytes, setter, val, show) => { fields.push({ name, off: o, bytes, show: show ?? String(val) }); setter(o, val); o += bytes; };
-  put('version', 1, (a, b) => v.setUint8(a, b), 1);
-  put('device id', 2, (a, b) => v.setUint16(a, b), f.id, '0x' + f.id.toString(16).toUpperCase());
-  put('lat × 1e7', 4, (a, b) => v.setInt32(a, b), Math.round(f.lat * 1e7), `${f.lat.toFixed(5)}°`);
-  put('lon × 1e7', 4, (a, b) => v.setInt32(a, b), Math.round(f.lon * 1e7), `${f.lon.toFixed(5)}°`);
-  put('alt (m)', 2, (a, b) => v.setUint16(a, b), f.alt);
-  put('unix time', 4, (a, b) => v.setUint32(a, b), f.time, new Date(f.time * 1000).toISOString().replace('.000', ''));
-  put('hdop × 10', 1, (a, b) => v.setUint8(a, b), Math.round(f.hdop * 10), f.hdop.toFixed(1));
-  put('sats used', 1, (a, b) => v.setUint8(a, b), f.sats);
-  put('battery %', 1, (a, b) => v.setUint8(a, b), f.batt);
-  put('status', 1, (a, b) => v.setUint8(a, b), f.status, '0x' + f.status.toString(16).toUpperCase() + ' (SOS, injured)');
-  put('O₂ % × 10', 1, (a, b) => v.setUint8(a, b), Math.round(f.o2 * 10), f.o2.toFixed(1) + ' %');
-  put('CO ppm', 2, (a, b) => v.setUint16(a, b), Math.round(f.co));
-  put('CO₂ ppm', 2, (a, b) => v.setUint16(a, b), Math.round(f.co2));
-  put('temp °C', 1, (a, b) => v.setInt8(a, b), Math.round(f.t));
-  put('text len', 1, (a, b) => v.setUint8(a, b), txt.length);
-  new Uint8Array(buf, o).set(txt); fields.push({ name: 'text (UTF-8)', off: o, bytes: txt.length, show: `"${f.text.slice(0, 60)}"` });
-  return { bytes: new Uint8Array(buf), fields };
-}
-function renderPacket(pk) {
-  const hex = document.getElementById('hex');
-  let html = '';
-  pk.fields.forEach((fd, i) => {
-    const seg = Array.from(pk.bytes.slice(fd.off, fd.off + fd.bytes)).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
-    html += `<span style="color:${FIELD_COLORS[i]};background:${FIELD_COLORS[i]}14">${seg}</span> `;
-  });
-  hex.innerHTML = html;
-  document.getElementById('fields').innerHTML = '<tr><th>field</th><th>off</th><th>B</th><th>value</th></tr>' + pk.fields.map((fd, i) => `<tr><td style="color:${FIELD_COLORS[i]}">${fd.name}</td><td>${fd.off}</td><td>${fd.bytes}</td><td>${fd.show}</td></tr>`).join('') +
-    `<tr><td><b>total</b></td><td></td><td><b>${pk.bytes.length}</b></td><td>${(pk.bytes.length / 340 * 100).toFixed(1)}% of a 9603 SBD message</td></tr>`;
-  document.getElementById('packetBox').style.display = 'block';
-}
-
-let coverTarget = 0;
-async function runSOS() {
-  const my = ++sosRun; sosActive = true;
-  sosBtn.disabled = true; cancelBtn.disabled = false; resetSteps();
-  document.getElementById('packetBox').style.display = 'none';
-  const alive = () => my === sosRun;
-  const [lat, lon, alt] = document.getElementById('locSel').value.split(',').map(Number);
-  // look at device
-  focus.active = true;
-  camera.position.set(13, 7, 19); focus.target.set(0, 4.5, 0);
-
-  step('cover', 'run', 'cover open → toggle ON');
-  coverTarget = 1; await sleep(900); if (!alive()) return;
-  step('cover', 'done', 'SOS mode latched (works without phone)');
-  Object.assign(einkState, { mode: 'SOS', footer: 'SOS: acquiring fix…' }); drawEink(einkState);
-
-  step('fix', 'run', 'tracking GPS + Galileo + GLONASS + BeiDou…');
-  setBeam('g0', () => gnssSats[0].position.clone(), W('gnss'), 0x94a3b8, true);
-  setBeam('g1', () => gnssSats[1].position.clone(), W('gnss'), 0x94a3b8, true);
-  setBeam('g2', () => gnssSats[2].position.clone(), W('gnss'), 0x94a3b8, true);
-  setBeam('g3', () => gnssSats[3].position.clone(), W('gnss'), 0x94a3b8, true);
-  await sleep(2200); if (!alive()) return;
-  ['g0', 'g1', 'g2', 'g3'].forEach(n => setBeam(n, null, null, 0, false));
-  const fix = { lat, lon, alt, time: Math.floor(Date.now() / 1000), hdop: 0.9, sats: 11, batt: einkState.batt, status: 0x81, id: 0xACE1, text: msgText.value, o2: sensVal.o2, co: sensVal.co, co2: sensVal.co2, t: sensVal.t };
-  step('fix', 'done', `${Math.abs(lat).toFixed(5)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(5)}°${lon >= 0 ? 'E' : 'W'} · ±3 m · 11 sats · hot start`);
-  einkState.fix = `${Math.abs(lat).toFixed(4)}N ${Math.abs(lon).toFixed(4)}W ±3m`; drawEink(einkState);
-
-  step('pack', 'run');
-  const pk = encodeSOS(fix); await sleep(500); if (!alive()) return;
-  renderPacket(pk);
-  step('pack', 'done', `${pk.bytes.length} bytes (fix + air readings 28, text ${pk.bytes.length - 28})`);
-
-  step('sat', 'run', 'waiting for satellite in view…');
-  einkState.sat = 'Iridium: TX session…'; drawEink(einkState);
-  setBeam('ir', W('iridium'), satPos, 0xa78bfa, true);
-  for (let i = 0; i < 10 && alive(); i++) { spawnDot(W('iridium'), satPos, 0xc4b5fd, { life: 0.9 }); await sleep(250); }
-  if (!alive()) return;
-  step('sat', 'run', 'MO message accepted by satellite → gateway…');
-  for (let i = 0; i < 4 && alive(); i++) { spawnDot(satPos, () => new THREE.Vector3(-14, 0.5, -10), 0xc4b5fd, { life: 1.0 }); await sleep(250); }
-  if (!alive()) return;
-  setBeam('ir', null, null, 0, false);
-  step('sat', 'done', 'Delivered. Backend → SMS + email to 3 pre-registered contacts with map link');
-  einkState.sat = 'Iridium: DELIVERED ✓'; drawEink(einkState);
-
-  step('mesh', 'run', 'POSITION + ALERT on primary channel, hop limit 3');
-  for (let i = 0; i < 4 && alive(); i++) { spawnRing('lora', 0x34d399, { maxR: 7, life: 2.4 }); await sleep(450); }
-  if (!alive()) return;
-  step('mesh', 'done', 'ACK from 3 nodes (incl. NET volunteer node)');
-  einkState.mesh = 'Meshtastic: ALERT sent, 3 ACK'; drawEink(einkState);
-
-  step('ble', 'run');
-  for (let i = 0; i < 5 && alive(); i++) { spawnDot(W('gnss'), W('phone'), 0x60a5fa, { life: 0.8, curveUp: 1.2, size: 0.8 }); await sleep(160); }
-  await sleep(500); if (!alive()) return;
-  drawPhone(true, [['me → SOS', msgText.value.slice(0, 26) + (msgText.value.length > 26 ? '…' : ''), true], ['NET-Tabor', 'Copy SOS, relaying to BEECN', false]]);
-  step('ble', 'done', 'Phone app shows SOS status and replies');
-
-  if (comps.ht.g.visible) {
-    step('aprs', 'run', 'licensed operators only (Technician+)');
-    for (let i = 0; i < 3 && alive(); i++) { spawnRing('ht', 0xfacc15, { maxR: 9, life: 2.4 }); await sleep(500); }
-    if (!alive()) return;
-    step('aprs', 'done', 'Position + emergency status → digipeater → iGate → aprs.fi');
-  } else step('aprs', 'skip', 'Skipped: no licensed HT attached in this view');
-
-  step('loop', 'done', 'Re-send every 10 min until cancelled · all events logged to flash');
-  einkState.footer = 'SOS: next retry 09:59'; drawEink(einkState);
-  sosBtn.disabled = false; sosBtn.textContent = 'SEND AGAIN';
-}
-function cancelSOS() {
-  sosRun++; sosActive = false; coverTarget = 0;
-  Object.values(beams).forEach(b => b.on = false);
-  Object.assign(einkState, { mode: 'IDLE', sat: 'Iridium: idle (sleep <5mW)', mesh: 'Meshtastic: 14 nodes heard', footer: 'SOS cancelled · logged' }); drawEink(einkState);
-  drawPhone(false, idleChat);
-  sosBtn.disabled = false; sosBtn.textContent = 'FLIP COVER & SEND SOS'; cancelBtn.disabled = true;
-  resetSteps();
-}
-sosBtn.onclick = runSOS;
-cancelBtn.onclick = cancelSOS;
-
-/* ---------------- Power budget ---------------- */
-const $ = id => document.getElementById(id);
-let powerFlow = false;
-function calcPower() {
-  const bat = +$('pBat').value, sol = +$('pSol').value, season = +$('pSeason').value, crank = +$('pCrank').value, sl = +$('pSL').value;
-  $('oBat').textContent = bat + ' Wh'; $('oSol').textContent = sol + ' W'; $('oCrank').textContent = crank + ' min'; $('oSL').textContent = sl + ' h';
-  const gen = sol * season + crank / 60 * 8;
-  const use = ($('lHub').checked ? 3.5 : 0) + ($('lSens').checked ? 2 : 0) + ($('lPhone').checked ? 21 : 0) + ($('lHT').checked ? 2.5 : 0) + ($('lSDR').checked ? 3 : 0) + sl * 30;
-  const max = Math.max(gen, use, 1);
-  $('bIn').style.width = (gen / max * 100) + '%'; $('bOut').style.width = (use / max * 100) + '%';
-  const net = gen - use;
-  $('kNet').textContent = (net >= 0 ? '+' : '') + net.toFixed(1) + ' Wh';
-  $('kNet').style.color = net >= 0 ? 'var(--ok)' : 'var(--bad)';
-  $('kDays').textContent = use > 0 ? (bat / use).toFixed(1) + ' days' : '∞';
-  let note = `<p class="sub" style="margin-top:10px">Generating ${gen.toFixed(1)} Wh/day vs. using ${use.toFixed(1)} Wh/day. `;
-  note += net >= 0 ? '<b style="color:var(--ok)">Energy-positive: sustainable indefinitely in this season.</b>' : `<b style="color:var(--bad)">Draining: battery lasts about ${(bat / -net).toFixed(1)} days at this rate.</b>`;
-  note += '</p>';
-  if (sl > 0) note += '<div class="warnbox">Starlink at ~30 W should run from its own 12 V LiFePO4 bank (300–500 Wh) and a 100 W+ panel, not the handheld hub pack.</div>';
-  if (!$('lPhone').checked && $('lHub').checked) note += `<p class="sub">The hub alone runs about ${(bat / 3.5).toFixed(0)} days on this pack.</p>`;
-  $('powerNote').innerHTML = note;
-  einkState.charge = sol > 0 ? `SOLAR +${(sol * 0.15).toFixed(1)}W` : 'NO INPUT'; einkState.batt = Math.min(99, Math.round(60 + bat / 6)); drawEink(einkState);
-  if (comps.starlink) { if (sl > 0 && !tierState[3]) { tierState[3] = true; tiersEl.children[3].classList.add('on'); applyVisibility(); } }
-}
-['pBat', 'pSol', 'pSeason', 'pCrank', 'pSL', 'lHub', 'lPhone', 'lHT', 'lSDR', 'lSens'].forEach(id => $(id).addEventListener('input', calcPower));
-calcPower();
-$('flowBtn').onclick = () => {
-  powerFlow = !powerFlow; $('flowBtn').textContent = powerFlow ? 'Hide power flow' : 'Show power flow in 3D';
-  if (powerFlow) { focus.target.set(-2, 0.5, 1); focus.active = true; toast('Orange dots show energy flowing from the solar panel and hand crank into the MPPT/PD board, then the battery.'); }
-};
-
-/* ---------------- Backpack mode ---------------- */
-const packBtn = document.getElementById('packBtn');
-function setMode(m) {
-  MODE = m; const pack = m === 'pack';
-  deviceRoot.scale.setScalar(pack ? 0.45 : 1);
-  deviceRoot.position.set(0, pack ? 0.32 : 0, pack ? -0.05 : 0);
-  for (const c of Object.values(comps)) if (c.posPack) {
-    const p = pack ? c.posPack : c.posCase;
-    c.base.set(...p); c.g.position.set(...p); c.g.rotation.y = pack ? c.rotPack : c.rotYCase;
-  }
-  packBtn.classList.toggle('on', pack);
-  applyVisibility(); applyXray();
-  HOME_CAM.copy(pack ? CAM_PACK : CAM_CASE); HOME_TARGET.copy(pack ? TGT_PACK : TGT_CASE);
-  camera.position.copy(HOME_CAM); focus.target.copy(HOME_TARGET); focus.active = true;
-  if (pack) toast('<b>Backpack mode.</b> The hub rides in the hydration sleeve against your back, the solar panel is on the outside, coax runs up a mast to the antennas, and the sensor pod clips to the shoulder strap near your face.', 6500);
-}
-packBtn.onclick = () => setMode(MODE === 'pack' ? 'case' : 'pack');
-
-/* ---------------- Sensors ---------------- */
-const SENS = [
-  { k: 'o2', name: 'Oxygen', unit: '%', dec: 1, alarmLo: 18, warnLo: 19.5, warnHi: 23.5, min: 15, max: 25 },
-  { k: 'co', name: 'Carbon monoxide', unit: 'ppm', dec: 0, warn: 35, alarm: 200, max: 300 },
-  { k: 'ch4', name: 'Natural gas (methane)', unit: '% LEL', dec: 0, warn: 10, alarm: 20, max: 50 },
-  { k: 'co2', name: 'CO₂', unit: 'ppm', dec: 0, warn: 1000, alarm: 5000, max: 10000 },
-  { k: 'pm', name: 'PM2.5 (smoke, dust)', unit: 'µg/m³', dec: 0, warn: 35.5, alarm: 55.5, max: 250 },
-  { k: 't', name: 'Temperature', unit: '°C', dec: 1, min: -10, max: 45 },
-  { k: 'rh', name: 'Humidity', unit: '%', dec: 0, max: 100 },
-  { k: 'p', name: 'Pressure', unit: 'hPa', dec: 0, min: 950, max: 1050 },
-  { k: 'g', name: 'Shaking (peak)', unit: 'g', dec: 2, warn: 0.1, alarm: 0.3, max: 1 },
-  { k: 'rad', name: 'Radiation (optional)', unit: 'µSv/h', dec: 2, warn: 1, alarm: 10, max: 1 },
-];
-const BASE = { o2: 20.9, co: 1, ch4: 0, co2: 450, pm: 6, t: 12, rh: 72, p: 1013, g: 0.0, rad: 0.12 };
-const SCEN = {
-  normal: { label: '🌤 Normal air', v: {}, note: 'Background readings on a cool, damp Portland day.' },
-  gas: { label: '🔥 Gas leak', v: { ch4: 26 }, note: 'A broken gas line nearby. Above 20% of the lower explosive limit: no flames or sparks, move away, and shut off the gas only if you know how.' },
-  gen: { label: '⚙️ Generator indoors', v: { co: 230, co2: 2600, pm: 45, t: 17 }, note: 'Exhaust building up indoors. CO has no smell or color; get everyone to fresh air.' },
-  trapped: { label: '🧱 Trapped in a void', v: { o2: 18.6, co2: 7200, pm: 140, t: 19, rh: 96 }, note: 'A small enclosed space full of dust: oxygen falling and CO₂ rising. These readings now ride along in the SOS packet.' },
-  smoke: { label: '🌫 Wildfire smoke', v: { pm: 190, co: 18, co2: 620 }, note: 'Heavy smoke: PM2.5 well into the unhealthy range. Wear an N95 and limit exertion.' },
-  quake: { label: '〰️ Aftershock', v: { g: 0.42 }, note: 'The IMU records the shaking. If you then stop moving for a set time, the hub can send an automatic SOS.' },
-};
-const sensVal = { ...BASE }; let sensTarget = { ...BASE }; let curScen = 'normal'; let lastLevel = 0;
-const scenEl = document.getElementById('scen');
-for (const [k, sc] of Object.entries(SCEN)) {
-  const b = document.createElement('button'); b.textContent = sc.label; b.dataset.k = k;
-  b.onclick = () => setScen(k); scenEl.appendChild(b);
-}
-function setScen(k) {
-  curScen = k; sensTarget = { ...BASE, ...SCEN[k].v };
-  for (const b of scenEl.children) b.classList.toggle('on', b.dataset.k === k);
-  document.getElementById('scenNote').textContent = SCEN[k].note;
-  if (k === 'quake') { sensVal.g = 0.42; sensTarget.g = 0.01; if (!anim) anim = { type: 'shake', t: 0 }; }
-  focus.target.copy(tip('pod').getWorldPosition(new THREE.Vector3())); focus.active = true;
-}
-function level(s, v) {
-  if (s.alarmLo !== undefined && v < s.alarmLo) return 2;
-  if (s.warnLo !== undefined && v < s.warnLo) return 1;
-  if (s.warnHi !== undefined && v > s.warnHi) return 1;
-  if (s.alarm !== undefined && v >= s.alarm) return 2;
-  if (s.warn !== undefined && v >= s.warn) return 1;
-  return 0;
-}
-let peakG = 0, peakTimer = 0;
-function renderSensors() {
-  let worst = 0; const bad = [];
-  const rows = SENS.map(s => {
-    const v = s.k === 'g' ? peakG : sensVal[s.k]; const L = level(s, v); worst = Math.max(worst, L);
-    if (L) bad.push(`${s.name.split(' (')[0]} ${v.toFixed(s.dec)} ${s.unit}`);
-    const lo = s.min ?? 0, frac = Math.max(0, Math.min(1, (v - lo) / (s.max - lo)));
-    const col = L === 2 ? 'var(--bad)' : L === 1 ? 'var(--warn)' : 'var(--ok)';
-    const lim = s.alarm !== undefined ? `alarm ${s.alarm}` : s.alarmLo !== undefined ? `alarm < ${s.alarmLo}` : '';
-    return `<tr><td>${s.name}<div class="mini"><div style="width:${(frac * 100).toFixed(1)}%;background:${col}"></div></div></td><td class="v" style="color:${col}">${v.toFixed(s.dec)} ${s.unit}<br><span style="color:var(--muted);font-size:10.5px">${lim}</span></td></tr>`;
-  }).join('');
-  document.getElementById('sensTable').innerHTML = rows;
-  const ban = document.getElementById('alarmBanner');
-  ban.className = 'alarm ' + (worst === 2 ? 'bad' : worst === 1 ? 'warn' : 'ok');
-  ban.textContent = worst === 2 ? '⚠ ALARM: ' + bad.join(' · ') : worst === 1 ? 'Caution: ' + bad.join(' · ') : 'All readings normal';
-  if (worst !== lastLevel) {
-    einkState.footer = worst === 2 ? 'AIR ALARM: ' + (bad[0] || '') : worst === 1 ? 'AIR CAUTION: ' + (bad[0] || '') : 'Q:0 msgs   BLE: phone linked';
-    drawEink(einkState); lastLevel = worst;
-  }
-  return worst;
-}
-let sensTimer = 0, alarmRingTimer = 0, airLevel = 0;
-function updateSensors(dt) {
-  for (const k of Object.keys(sensVal)) {
-    const span = Math.abs(sensTarget[k] - sensVal[k]);
-    sensVal[k] += (sensTarget[k] - sensVal[k]) * Math.min(1, dt * (k === 'g' ? 1.5 : 0.8));
-    if (k !== 'g' && k !== 'ch4') sensVal[k] += (Math.random() - 0.5) * dt * (k === 'co2' ? 40 : k === 'p' ? 0.6 : k === 'pm' || k === 'co' ? 3 : 0.2);
-    if (k === 'ch4' || k === 'co' || k === 'pm') sensVal[k] = Math.max(0, sensVal[k]);
-  }
-  if (sensVal.g > peakG) { peakG = sensVal.g; peakTimer = 0; } else { peakTimer += dt; if (peakTimer > 5) peakG = Math.max(sensVal.g, peakG * (1 - dt)); }
-  sensTimer += dt; if (sensTimer > 0.25) { sensTimer = 0; airLevel = renderSensors(); }
-  if (podLed) {
-    const m = podLed.material, t = clock.elapsedTime;
-    const c = airLevel === 2 ? (Math.sin(t * 12) > 0 ? 0xef4444 : 0x450a0a) : airLevel === 1 ? 0xfacc15 : 0x22c55e;
-    m.color.setHex(c); m.emissive.setHex(c);
-  }
-  if (airLevel === 2 && comps.sensorPod.g.visible) { alarmRingTimer += dt; if (alarmRingTimer > 0.9) { alarmRingTimer = 0; spawnRing('pod', 0xef4444, { vertical: true, maxR: 1.2, life: 0.9 }); } }
-}
-setScen('normal'); focus.active = false;
-
-/* ---------------- Resize ---------------- */
-function resize() {
-  const w = viewport.clientWidth, h = viewport.clientHeight;
-  camera.aspect = w / h; camera.updateProjectionMatrix();
-  renderer.setSize(w, h); labelRenderer.setSize(w, h);
-  if (w < 600) { camera.fov = 55; camera.updateProjectionMatrix(); }
-}
-new ResizeObserver(resize).observe(viewport);
-resize();
-
-/* ---------------- Loop ---------------- */
-const clock = new THREE.Clock();
-let meshTimer = 0, flowTimer = 0, cableTimer = 0;
-let lastExplode = -1;
-function tick() {
-  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
-  // explode
-  const prevE = explodeT;
-  explodeT += (explodeTarget - explodeT) * Math.min(1, dt * 6);
-  if ((prevE > 0.3) !== (explodeT > 0.3)) applyVisibility();
-  for (const c of Object.values(comps)) if (c.g.parent === deviceRoot) c.g.position.copy(c.base).addScaledVector(c.dir, explodeT);
-  const cablesVis = MODE === 'case' && explodeT < 0.03 && (!anim || anim.type !== 'drop');
-  cables.forEach(c => c.m.visible = cablesVis);
-  if (Math.abs(explodeT - lastExplode) > 1e-4 || anim) { lastExplode = explodeT; }
-  cableTimer += dt; if (cableTimer > 0.1 && cablesVis) { updateCables(); cableTimer = 0; }
-  // sos cover
-  if (sosCover) sosCover.rotation.x += ((-coverTarget * 1.9) - sosCover.rotation.x) * Math.min(1, dt * 6);
-  // satellites
-  const a = t * 0.12;
-  iridiumSat.position.set(orbitR * Math.cos(a), 12, orbitR * Math.sin(a) - 2);
-  iridiumSat.lookAt(0, 0, -2);
-  gnssSats.forEach((s, i) => { s.position.x += Math.sin(t * 0.1 + i) * dt * 0.2; s.rotation.y += dt * 0.2; });
-  // idle mesh beacons
-  meshTimer += dt; if (!sosActive && meshTimer > 4.5 && tierState[1]) { spawnRing('lora', 0x34d399, { maxR: 3.5, life: 2 }); meshTimer = 0; }
-  // power flow
-  if (powerFlow && cablesVis) {
-    flowTimer += dt;
-    if (flowTimer > 0.25) { flowTimer = 0; spawnAlongCurve(cables[0], 0xf97316); spawnAlongCurve(cables[1], 0xfb923c); }
-    crankArm.rotation.x -= dt * 6;
-  }
-  updateFx(dt);
-  updateAnim(dt);
-  updateSensors(dt);
-  if (focus.active) { controls.target.lerp(focus.target, Math.min(1, dt * 3)); if (controls.target.distanceTo(focus.target) < 0.01) focus.active = false; }
-  controls.update();
-  renderer.render(scene, camera);
-  labelRenderer.render(scene, camera);
-  requestAnimationFrame(tick);
-}
-applyVisibility();
-updateCables();
-tick();
-</script>
+<script type="module" src="guide.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

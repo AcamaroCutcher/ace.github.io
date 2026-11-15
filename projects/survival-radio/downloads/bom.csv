@@ -1,0 +1,32 @@
+﻿Category,Item,Example part,Qty,"Price (USD, approx. Nov 2026)",Link
+Brains & radios,Controller,Adafruit ESP32-S3 Feather (5477),1,17.50,https://www.adafruit.com/product/5477
+Brains & radios,Mesh radio,"RAK WisBlock Meshtastic Starter Kit (RAK4631 + RAK19007), US915",1,24.99,https://store.rakwireless.com/products/wisblock-meshtastic-starter-kit
+Brains & radios,LoRa antenna + u.FL→SMA bulkhead pigtail,"915 MHz whip, SMA",1,10–30,
+Satellite,Satellite modem,Ground Control RockBLOCK 9704 SMA,1,279.00,https://store.groundcontrol.com/products/rockblock-9704
+Satellite,Iridium antenna,Maxtena M1621HCT-P-SMA helical (passive),1,80.00,https://store.groundcontrol.com/products/helical-iridium-certified-passive-antenna
+Satellite,Airtime,IMT: $15/month access + 64 KB pack $29,1,15/mo + data,https://groundcontrol.com/products/iridium-messaging-transport-imt-pricing/
+Location & motion,GNSS receiver,SparkFun MAX-M10S Qwiic (GPS-18037),1,45.95,https://www.sparkfun.com/sparkfun-gnss-receiver-breakout-max-m10s-qwiic.html
+Location & motion,GNSS antenna,Active L1 patch with SMA cable,1,10–25,
+Location & motion,Accelerometer,Adafruit LIS3DH STEMMA QT (2809),1,4.95,https://www.adafruit.com/products/2809
+Sensors,CO₂ / temp / humidity,Adafruit SCD-41 (5190),1,49.95,https://www.mouser.com/ProductDetail/485-5190
+Sensors,Particles (smoke/dust),Adafruit PMSA003I breakout (4632),1,44.95,https://www.adafruit.com/product/4632
+Sensors,Carbon monoxide,"DFRobot SEN0466 (calibrated, I²C/UART)",1,66.90,https://www.dfrobot.com/product-2508.html
+Sensors,Oxygen,DFRobot SEN0322 (I²C),1,67.16,https://www.robotshop.com/products/dfrobot-gravity-i2c-oxygen-sensor
+Sensors,Methane (natural gas),Winsen MH-440D NDIR (UART),1,varies,https://www.winsen-sensor.com/product/mh-440d.html
+Sensors,Temp / humidity / pressure,Adafruit BME280 (2652),1,~15,
+Controls & display,E-paper display,"Waveshare 2.9"" e-Paper Module (SPI)",1,20–28,https://www.waveshare.com/2.9inch-e-Paper-Module.htm
+Controls & display,SOS switch,IP-rated toggle + flip-up safety cover,1,10–25,
+Controls & display,"Buttons, LED, buzzer, vibration motor","IP67 momentary pushbuttons ×3, LED, piezo, coin motor",1,15–35,
+Power,Battery pack,1S4P 21700 (~5 Ah cells) with BMS + 10k NTC,1,40–90,
+Power,Charger / power path,Adafruit bq24074 Universal Charger (4755),1,14.95,https://www.adafruit.com/products/4755
+Power,"5 V boost, fuse, TVS diodes",1 A 5 V boost with enable pin; inline fuse; TVS,1,~10,
+Power,Solar panel,20–40 W folding panel with USB / 6–10 V output,1,60–150,
+Power,Hand crank,USB hand-crank generator,1,40–100,
+Enclosure & connectors,Case,Pelican 1200 (no foam),1,70–85,https://innerspacecases.com/solutions/pelican-cases/small-cases/pelican-1200-no-foam-black/
+Enclosure & connectors,USB-C bulkhead,"IP67 USB-C, e.g. Amphenol LTW UC-00PMFY-SC7001",1,20–40,https://www.digikey.com/en/products/detail/amphenol-ltw/UC-00PMFY-SC7001/9561519
+Enclosure & connectors,DC-IN + pod connectors,M12 2-pin and 8-pin panel connectors + cordset,1,30–70,
+Enclosure & connectors,"SMA bulkheads, coax, Qwiic cables, standoffs","O-ring SMA bulkheads ×2, STEMMA QT cables, M2.5 brass standoffs",1,25–50,
+Enclosure & connectors,Printed parts,"Mounting plate, battery cradle, control-panel bezel, sensor-pod shell (STL downloads)",1,~10 filament,
+Carry-along,406 MHz PLB (buy + register with NOAA),ACR ResQLink or Ocean Signal rescueME,1,300–450,
+Carry-along,SDR receiver (receive only),"RTL-SDR Blog V4 + dipole kit, Raspberry Pi Zero 2 W, microSD",1,60–90,https://www.rtl-sdr.com/rtl-sdr-blog-v4-dongle-initial-release/
+Carry-along,Ham radio handheld with APRS (license needed),Yaesu FT-5DR or Kenwood TH-D75,1,400–650,

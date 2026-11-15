@@ -37,15 +37,18 @@ window.PROJECT_LIBRARY = {
     {
       id: 'survival-radio',
       title: 'Survival Radio: Disaster Communications Hub',
-      summary: 'An AI-assisted design concept, with an interactive 3-D model, for a rugged device that still reaches the outside world after a Cascadia earthquake knocks out nearby cell towers. It layers an Iridium satellite modem for SOS and GPS location, a LoRa/Meshtastic mesh radio paired to a phone, amateur radio (APRS, Winlink) and an SDR receiver, plus a sensor pod for natural gas, carbon monoxide, oxygen, CO₂ and smoke, powered by Li-ion, solar, USB-C and a hand crank. It can be built as an IP67 case or carried as a backpack with a solar panel and antenna mast. Includes hazard scenarios, a byte-by-byte SOS packet walkthrough, a power-budget calculator, and drop and submerge tests.',
+      summary: 'An AI-assisted, open design for a rugged device that still reaches the outside world after a Cascadia earthquake knocks out nearby cell towers. An Iridium satellite modem sends SOS messages with GPS location without needing a phone, and a Meshtastic LoRa mesh radio pairs with your phone for neighborhood texting. Ham radio (APRS, Winlink) and a receive-only SDR add more layers, and a sensor pod checks for natural gas, carbon monoxide, oxygen, CO₂ and smoke. It runs on Li-ion with solar, USB-C and hand-crank charging, in an IP67 case or a backpack. The page has a real-scale CAD model you can explore in 3-D or download as STEP, STL or glTF, plus 3-D-printable parts. The build guide covers every component and where to buy it, and explains UART, I²C, SPI, GPIO and RF wiring down to the bytes. It also shows how your phone connects over Bluetooth and Wi-Fi. Interactive extras include an SOS packet walkthrough, sensor scenarios and a power-budget calculator.',
       disciplines: ['electronics', 'earth'],
       types: ['interactive'],
       status: 'current',
       year: 2026,
       featured: false,
-      tags: ['RF', 'SDR', 'LoRa', 'Iridium', 'Gas sensors', 'Emergency comms', 'Three.js', 'Cascadia'],
+      thumb: 'thumbs/survival-radio.jpg',
+      tags: ['RF', 'SDR', 'LoRa', 'Iridium', 'CAD', 'Gas sensors', 'Emergency comms', 'Three.js', 'Cascadia'],
       links: [
         { label: 'Explore the 3-D model', href: 'survival-radio/index.html', icon: 'fa-arrow-right', primary: true },
+        { label: 'Build guide', href: 'survival-radio/index.html#guide', icon: 'fa-book' },
+        { label: 'Download CAD (STEP)', href: 'survival-radio/downloads/survival-radio-hub.step', icon: 'fa-download' },
       ],
     },
     {
