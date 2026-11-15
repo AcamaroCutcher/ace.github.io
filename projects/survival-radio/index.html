@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Survival Radio — Interactive 3D Concept | Acamaro Cutcher</title>
-<meta name="description" content="Interactive 3D concept of a rugged, solar-powered disaster communications hub: Iridium satellite SOS, LoRa mesh, GNSS location sharing, amateur radio and SDR receive, designed for a Cascadia earthquake scenario." />
+<meta name="description" content="Interactive 3D concept of a rugged, solar-powered disaster communications hub: Iridium satellite SOS, LoRa mesh, GNSS location sharing, air-quality and gas sensors, amateur radio and SDR receive, in a case or a backpack, designed for a Cascadia earthquake scenario." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -94,6 +94,20 @@
   .kpis small{color:var(--muted);font-size:11.5px}
   .warnbox{border-left:3px solid var(--warn);padding:8px 10px;background:rgba(250,204,21,.07);border-radius:4px;font-size:12.5px;margin:10px 0}
   .srcs li{font-size:12px}
+  .scen{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+  .scen button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px;font:500 12.5px Inter,sans-serif;cursor:pointer;text-align:left}
+  .scen button.on{border-color:var(--accent);background:rgba(249,115,22,.15)}
+  .alarm{border-radius:8px;padding:10px 12px;font-weight:600;font-size:13.5px;margin:8px 0}
+  .alarm.ok{background:rgba(74,222,128,.12);border:1px solid #166534;color:#86efac}
+  .alarm.warn{background:rgba(250,204,21,.12);border:1px solid #a16207;color:#fde047}
+  .alarm.bad{background:rgba(248,113,113,.15);border:1px solid #b91c1c;color:#fca5a5;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{border-color:#f87171}}
+  table.sens{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.sens td{padding:5px 3px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.sens td.v{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;width:30%}
+  table.sens .mini{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+  table.sens .mini div{height:100%}
+  .scenNote{font-size:12.5px;color:var(--muted);margin:4px 0 8px}
   @media (max-width: 900px){
     #app{grid-template-columns:1fr;grid-template-rows:56% 44%}
     #panel{border-left:none;border-top:1px solid var(--line)}
@@ -125,7 +139,8 @@
     <div class="toast" id="toast"></div>
     <div class="toolbar">
       <div class="slider">Explode <input id="explode" type="range" min="0" max="1" step="0.01" value="0" /></div>
-      <button class="chip on" id="xray">X-ray case</button>
+      <button class="chip" id="packBtn">🎒 Backpack mode</button>
+      <button class="chip on" id="xray">X-ray</button>
       <button class="chip on" id="labelsBtn">Labels</button>
       <button class="btn" id="dropBtn">Drop test</button>
       <button class="btn" id="dunkBtn">Submerge test</button>
@@ -137,8 +152,9 @@
     <nav class="tabs">
       <button data-tab="explore" class="on">Explore</button>
       <button data-tab="sos">SOS sim</button>
+      <button data-tab="sensors">Sensors</button>
       <button data-tab="power">Power</button>
-      <button data-tab="notes">Design notes</button>
+      <button data-tab="notes">Notes</button>
     </nav>
 
     <section class="pane on" id="pane-explore">
@@ -166,10 +182,32 @@
       <ul class="steps" id="steps"></ul>
       <div id="packetBox" style="display:none">
         <h3>The SOS packet, byte by byte</h3>
-        <p class="sub">Compact binary instead of text: a full fix fits in 22 bytes, far below the 340-byte RockBLOCK 9603 SBD limit and the 100 KB RockBLOCK 9704 IMT limit.</p>
+        <p class="sub">Compact binary instead of text: a full fix plus air readings fits in 28 bytes, far below the 340-byte RockBLOCK 9603 SBD limit and the 100 KB RockBLOCK 9704 IMT limit.</p>
         <div class="hex" id="hex"></div>
         <table class="fields" id="fields"></table>
       </div>
+    </section>
+
+    <section class="pane" id="pane-sensors">
+      <h2>Sensor pod</h2>
+      <p class="sub">Simulated readings. Pick a scenario and watch the pod (and its LED in the 3D view) respond.</p>
+      <div class="scen" id="scen"></div>
+      <div class="scenNote" id="scenNote"></div>
+      <div id="alarmBanner" class="alarm ok">All readings normal</div>
+      <table class="sens" id="sensTable"></table>
+      <div class="warnbox">Alarm set points shown are common ones: oxygen-deficient below 19.5% (OSHA), CO 35 ppm (NIOSH limit) and 200 ppm (ceiling), CO₂ 5,000 ppm (OSHA 8-hour limit), PM2.5 from the EPA air-quality index. A homemade pod is an awareness tool, not a certified gas detector. Professionals use a calibrated 4-gas meter before entering a confined space.</div>
+      <h3>Which sensor, and why</h3>
+      <ul>
+        <li><b>Methane (natural gas):</b> broken gas lines are a top post-quake fire and explosion risk. Use an NDIR sensor such as SGX INIR; cheap MQ-4 sensors burn about 0.8 W heating their element.</li>
+        <li><b>Carbon monoxide:</b> generators and stoves run indoors after disasters cause CO poisoning. Electrochemical cells use microwatts.</li>
+        <li><b>Oxygen:</b> matters in basements and collapsed spaces. Electrochemical O₂ cells wear out in about 2 years.</li>
+        <li><b>CO₂:</b> Sensirion SCD41. Rising CO₂ in a small space means the air isn't being refreshed.</li>
+        <li><b>PM2.5:</b> PMSA003I or SPS30 for collapse dust and wildfire smoke. Run the fan only part of the time to save power.</li>
+        <li><b>Temperature, humidity, pressure:</b> BME280. Pressure also gives altitude and storm trends.</li>
+        <li><b>Motion (IMU):</b> logs aftershocks, detects falls, and can send an automatic SOS if you stop moving.</li>
+        <li><b>Radiation (optional):</b> a Radiacode over Bluetooth, or a Geiger-tube kit as a learning build.</li>
+      </ul>
+      <p>The latest O₂, CO, CO₂ and temperature readings ride along in every SOS packet (6 extra bytes), so rescuers know about bad air before they reach you.</p>
     </section>
 
     <section class="pane" id="pane-power">
@@ -193,6 +231,7 @@
         <label><span><input type="checkbox" id="lPhone" checked /> Recharge phone once</span><span>21 Wh</span></label>
         <label><span><input type="checkbox" id="lHT" /> VHF HT: 1 h RX, 5 min TX</span><span>2.5 Wh</span></label>
         <label><span><input type="checkbox" id="lSDR" /> Pi Zero 2 W + RTL-SDR, 2 h</span><span>3 Wh</span></label>
+        <label><span><input type="checkbox" id="lSens" checked /> Sensor pod, duty-cycled (estimate)</span><span>2 Wh</span></label>
       </div>
       <label class="row">Starlink Mini hours/day (~30 W) <output id="oSL"></output></label>
       <input type="range" id="pSL" min="0" max="6" step="0.5" value="0" />
@@ -295,8 +334,11 @@ scene.fog = new THREE.Fog(0x0b1120, 30, 70);
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 300);
 const NARROW = window.innerWidth < 700;
-const HOME_CAM = NARROW ? new THREE.Vector3(6.5, 6, 10) : new THREE.Vector3(7, 5.5, 9.5);
-const HOME_TARGET = new THREE.Vector3(0, 0.8, 0.3);
+const CAM_CASE = NARROW ? new THREE.Vector3(6.5, 6, 10) : new THREE.Vector3(7, 5.5, 9.5);
+const TGT_CASE = new THREE.Vector3(0, 0.8, 0.3);
+const CAM_PACK = NARROW ? new THREE.Vector3(9, 6, -7) : new THREE.Vector3(8, 4.8, -5.5);
+const TGT_PACK = new THREE.Vector3(0, 1.8, 0);
+const HOME_CAM = CAM_CASE.clone(), HOME_TARGET = TGT_CASE.clone();
 camera.position.copy(HOME_CAM);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -371,16 +413,19 @@ function canvasTex(w, h, draw) {
   return t;
 }
 
-const COLORS = { comms: '#22d3ee', power: '#4ade80', rugged: '#f97316', ui: '#facc15', sat: '#a78bfa', ext: '#f472b6' };
+const COLORS = { comms: '#22d3ee', power: '#4ade80', rugged: '#f97316', ui: '#facc15', sat: '#a78bfa', ext: '#f472b6', sense: '#fb7185' };
 
 /* ---------------- Component registry ---------------- */
 const comps = {};
+const rig = new THREE.Group();
+scene.add(rig);
 const deviceRoot = new THREE.Group();
-scene.add(deviceRoot);
+rig.add(deviceRoot);
+let MODE = 'case';
 const externals = new THREE.Group();
 scene.add(externals);
 
-function addComp(id, info, build, { pos = [0, 0, 0], dir = [0, 0, 0], tier = 1, parent = deviceRoot, label = [0, 0.35, 0], rotY = 0 } = {}) {
+function addComp(id, info, build, { pos = [0, 0, 0], dir = [0, 0, 0], tier = 1, parent = deviceRoot, label = [0, 0.35, 0], rotY = 0, mode = 'both', posPack = null, rotPack = 0 } = {}) {
   const g = new THREE.Group();
   build(g);
   g.position.set(...pos);
@@ -395,7 +440,7 @@ function addComp(id, info, build, { pos = [0, 0, 0], dir = [0, 0, 0], tier = 1, 
   const lab = new CSS2DObject(div);
   lab.position.set(...label);
   g.add(lab);
-  comps[id] = { id, g, info, tier, base: new THREE.Vector3(...pos), dir: new THREE.Vector3(...dir), label: lab, div };
+  comps[id] = { id, g, info, tier, base: new THREE.Vector3(...pos), dir: new THREE.Vector3(...dir), label: lab, div, mode, posCase: pos, posPack, rotYCase: rotY, rotPack };
   return comps[id];
 }
 
@@ -460,6 +505,8 @@ const solarTex = canvasTex(256, 196, (ctx, w, h) => {
 
 /* ---------------- Build the device ---------------- */
 const tips = {}; // named anchor points for signal effects
+const packTips = {}; // overrides used in backpack mode
+const tip = n => (MODE === 'pack' && packTips[n]) ? packTips[n] : tips[n];
 
 addComp('case', {
   name: 'Rugged IP67 enclosure', short: 'IP67 case', cat: 'rugged', part: 'Pelican 1200 / Nanuk 910 class',
@@ -669,7 +716,7 @@ addComp('solar', {
   g.add(box(0.28, 0.08, 0.18, M(0x111827), 1.75, 0.04, 0.52));
   g.rotation.x = -0.32;
   const t = new THREE.Object3D(); t.position.set(1.75, 0.05, 0.6); g.add(t); tips.solar = t;
-}, { pos: [-4.3, 0.35, -0.3], parent: externals, label: [0, 0.5, 0] });
+}, { pos: [-4.3, 0.35, -0.3], parent: externals, label: [0, 0.5, 0], mode: 'case' });
 
 let crankArm;
 addComp('crank', {
@@ -685,7 +732,7 @@ addComp('crank', {
   const knob = cyl(0.05, 0.05, 0.16, M(0x111827), 0.08, 0.34, 0); knob.rotation.z = Math.PI / 2; arm.add(knob);
   g.add(arm); crankArm = arm;
   const t = new THREE.Object3D(); t.position.set(-0.22, 0.2, 0); g.add(t); tips.crank = t;
-}, { pos: [-2.1, 0, 2.6], parent: externals, label: [0, 0.6, 0], rotY: 0.4 });
+}, { pos: [-2.1, 0, 2.6], parent: externals, label: [0, 0.6, 0], rotY: 0.4, mode: 'case' });
 
 addComp('phone', {
   name: 'Your phone', short: 'Phone (BLE)', cat: 'ext', part: 'Any smartphone; iPhone 14+/Pixel 9+ add native satellite SOS',
@@ -697,7 +744,7 @@ addComp('phone', {
   const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 1.32), new THREE.MeshBasicMaterial({ map: phoneTex }));
   scr.rotation.x = -Math.PI / 2; scr.position.y = 0.062; g.add(scr);
   const t = new THREE.Object3D(); t.position.set(0, 0.1, 0); g.add(t); tips.phone = t;
-}, { pos: [2.2, 0, 2.7], parent: externals, tier: 0, label: [0, 0.3, -0.8], rotY: -0.35 });
+}, { pos: [2.2, 0, 2.7], parent: externals, tier: 0, label: [0, 0.3, -0.8], rotY: -0.35, posPack: [-2.6, 0, 1.4], rotPack: 0.4 });
 
 addComp('plb', {
   name: '406 MHz Personal Locator Beacon', short: 'PLB (buy, register)', cat: 'sat', part: 'ACR ResQLink / Ocean Signal rescueME',
@@ -708,7 +755,7 @@ addComp('plb', {
   g.add(rbox(0.36, 0.2, 0.62, 0.06, M(0xfacc15, { r: 0.5 }), 0, 0.1, 0));
   g.add(cyl(0.025, 0.025, 0.5, M(0x111827), 0, 0.42, -0.2));
   g.add(cyl(0.05, 0.05, 0.03, M(0xdc2626), 0, 0.21, 0.12));
-}, { pos: [3.3, 0, 1.0], parent: externals, tier: 0, label: [0, 0.75, 0] });
+}, { pos: [3.3, 0, 1.0], parent: externals, tier: 0, label: [0, 0.75, 0], posPack: [2.2, 0, 1.2] });
 
 addComp('ht', {
   name: 'VHF/UHF handheld with APRS', short: 'Ham HT (APRS)', cat: 'comms', part: 'Yaesu FT-5DR / Kenwood TH-D75, or cheap HT + Digirig',
@@ -721,7 +768,7 @@ addComp('ht', {
   g.add(cyl(0.035, 0.035, 0.08, M(0x3f3f46), 0.1, 1.0, 0));
   g.add(cyl(0.02, 0.03, 0.9, M(0x0a0a0a), -0.1, 1.4, 0));
   const t = new THREE.Object3D(); t.position.set(-0.1, 1.8, 0); g.add(t); tips.ht = t;
-}, { pos: [3.0, 0, -1.0], parent: externals, tier: 2, label: [0, 2.05, 0], rotY: -0.5 });
+}, { pos: [3.0, 0, -1.0], parent: externals, tier: 2, label: [0, 2.05, 0], rotY: -0.5, mode: 'case' });
 
 addComp('starlink', {
   name: 'Starlink Mini + 12 V LiFePO4 bank', short: 'Starlink Mini', cat: 'sat', part: 'Starlink Mini + 300–500 Wh LiFePO4 + 100 W panel',
@@ -736,7 +783,72 @@ addComp('starlink', {
   g.add(rbox(0.75, 0.45, 0.5, 0.04, M(0x334155, { r: 0.5 }), 1.3, 0.225, 0.5));
   g.add(box(0.5, 0.12, 0.01, M(0x4ade80), 1.3, 0.3, 0.755));
   const t = new THREE.Object3D(); t.position.set(0, 1.0, -0.3); g.add(t); tips.starlink = t;
-}, { pos: [-3.6, 0, -3.0], parent: externals, tier: 3, label: [0.5, 1.5, 0], rotY: 0.5 });
+}, { pos: [-3.6, 0, -3.0], parent: externals, tier: 3, label: [0.5, 1.5, 0], rotY: 0.5, mode: 'case' });
+
+/* ---------------- Sensor pod (both modes) ---------------- */
+let podLed;
+addComp('sensorPod', {
+  name: 'Air-quality and hazard sensor pod', short: 'Sensor pod', cat: 'sense',
+  part: 'SGX INIR methane (NDIR) · electrochemical CO and O₂ · Sensirion SCD41 CO₂ · PMSA003I PM2.5 · BME280 · IMU',
+  price: '$150–350 (the gas sensors are most of it)',
+  desc: 'Samples the air you actually breathe: on the side of the case, or on the shoulder strap near your face in backpack mode. After an earthquake the worst air hazards are natural gas from broken lines, carbon monoxide from generators and stoves run indoors, and stale air in a confined space. The pod beeps, vibrates and flashes, and its latest readings ride along in every SOS packet. It is an awareness tool, not a certified gas detector. Try the Sensors tab.',
+  specs: [['Methane', 'NDIR (avoid MQ-4: ~0.8 W heater)'], ['CO / O₂', 'Electrochemical, microwatts; O₂ cells last ~2 years'], ['CO₂', 'Sensirion SCD41 (photoacoustic NDIR)'], ['Particulates', 'PMSA003I / SPS30, fan duty-cycled'], ['Environment', 'BME280: temperature, humidity, pressure'], ['Motion', 'IMU: aftershocks, falls, no-motion auto-SOS'], ['Radiation (optional)', 'Radiacode over BLE, or a Geiger-tube kit'], ['Alerts', 'Buzzer, vibration motor, RGB LED, e-ink line']]
+}, g => {
+  g.add(rbox(0.38, 0.55, 0.18, 0.06, M(0x27272a, { r: 0.5 }), 0, 0, 0));
+  for (let i = 0; i < 5; i++) g.add(box(0.26, 0.025, 0.02, M(0x0a0a0a), 0, 0.2 - i * 0.065, 0.095));
+  const led = mesh(new THREE.SphereGeometry(0.04, 12, 12), new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1.4 }), 0.11, -0.19, 0.09);
+  led.userData.keep = true; g.add(led); podLed = led;
+  const bz = cyl(0.055, 0.055, 0.03, M(0x111827), -0.09, -0.19, 0.095); bz.rotation.x = Math.PI / 2; g.add(bz);
+  const t = new THREE.Object3D(); t.position.set(0, 0, 0.12); g.add(t); tips.pod = t;
+}, { pos: [-1.62, 0.55, 0.55], rotY: -Math.PI / 2, posPack: [-0.62, 2.15, -1.27], rotPack: Math.PI, parent: rig, label: [0, 0.45, 0] });
+
+/* ---------------- Backpack (pack mode) ---------------- */
+addComp('pack', {
+  name: 'Backpack carrier', short: 'Backpack', cat: 'rugged', part: '30–40 L pack with hydration sleeve, hip belt and MOLLE webbing',
+  price: '$60–150',
+  desc: 'The hub rides in the padded hydration sleeve against your back, the most protected spot if you fall. Heavy parts sit low and close to your spine for balance. Coax runs up to a mast so the antennas are above your head, the solar panel straps to the outside so it charges while you walk, and the sensor pod clips to the shoulder strap near your face.',
+  specs: [['Hub', 'Padded sleeve on the back-panel side'], ['Balance', 'Battery low and centered'], ['Weather', 'Rain cover; the hub case is IP67 on its own'], ['Visibility', 'Reflective strip and a strobe help rescuers find you at night']]
+}, g => {
+  const fab = M(0x6b7a3a, { r: 0.95 }), dark = M(0x48532a, { r: 0.95 });
+  g.add(rbox(2.0, 3.0, 1.1, 0.28, fab, 0, 1.5, 0));
+  g.add(rbox(2.06, 0.42, 1.16, 0.18, dark, 0, 3.0, 0.02));
+  g.add(rbox(1.5, 1.1, 0.3, 0.12, dark, 0, 0.85, 0.62));
+  for (const s of [-1, 1]) g.add(rbox(0.3, 0.8, 0.5, 0.1, dark, s * 1.08, 0.6, 0.1));
+  for (const s of [-1, 1]) {
+    const c = new THREE.CatmullRomCurve3([new THREE.Vector3(s * 0.45, 2.85, -0.5), new THREE.Vector3(s * 0.55, 2.7, -1.05), new THREE.Vector3(s * 0.62, 1.8, -1.15), new THREE.Vector3(s * 0.75, 0.9, -0.95), new THREE.Vector3(s * 0.8, 0.55, -0.55)]);
+    g.add(mesh(new THREE.TubeGeometry(c, 40, 0.1, 8), dark));
+  }
+  g.add(box(1.15, 0.06, 0.04, M(0x111827), 0, 2.0, -1.17));
+  for (const s of [-1, 1]) { const hb = rbox(0.6, 0.3, 0.5, 0.1, dark, s * 1.1, 0.45, -0.45); hb.rotation.y = s * 0.6; g.add(hb); }
+  g.add(box(1.4, 0.06, 0.02, M(0xe5e7eb, { x: { emissive: 0x9ca3af, emissiveIntensity: 0.5 } }), 0, 0.45, 0.785));
+}, { parent: rig, mode: 'pack', label: [-1.3, 3.3, 0] });
+
+addComp('packSolar', {
+  name: 'Backpack solar panel', short: 'Pack solar 20 W', cat: 'power', part: '20–28 W foldable ETFE, strapped to the outside',
+  price: '$60–120',
+  desc: 'Charges while you walk or while the pack hangs in a tree. On the move the angle and shade keep changing, so output is lower than a carefully aimed panel: treat it as a top-up, and point it at the sun whenever you stop.',
+  specs: [['Mount', 'Bungee or MOLLE straps on the outer face'], ['Cable', 'Into the hub through the sealed M12 port'], ['Reality', 'Easily keeps the hub running; the phone is what needs more']]
+}, g => {
+  const pv = new THREE.MeshStandardMaterial({ map: solarTex, roughness: 0.25, metalness: 0.3 });
+  g.add(box(1.5, 1.25, 0.04, M(0x1f2937, { r: 0.9 }), 0, 0, 0));
+  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.12), pv); pl.position.z = 0.025; g.add(pl);
+  for (const y of [-0.5, 0.5]) g.add(box(1.75, 0.06, 0.06, M(0x111827), 0, y, 0.04));
+  g.rotation.x = -0.08;
+}, { pos: [0, 2.15, 0.6], parent: rig, mode: 'pack', label: [0, 0.85, 0.1] });
+
+addComp('mast', {
+  name: 'Antenna mast', short: 'Antenna mast', cat: 'comms', part: 'Telescoping fiberglass pole, LoRa collinear, Iridium puck, low-loss coax',
+  price: '$30–80',
+  desc: 'Radio range depends far more on antenna height than on transmit power, and your body absorbs signal. Short runs of low-loss coax go from the hub up a pole clipped to the side of the pack, putting the LoRa antenna and the Iridium antenna above your head with open sky.',
+  specs: [['Height', '~0.5–1 m above the pack'], ['Coax', 'Short and low-loss (e.g., LMR-195)'], ['Iridium', 'Needs an unobstructed view of the sky']]
+}, g => {
+  g.add(cyl(0.05, 0.06, 1.9, M(0x52525b, { m: 0.5 }), 0, 0.95, 0));
+  g.add(cyl(0.16, 0.16, 0.08, M(0xf1f5f9, { r: 0.3 }), 0, 1.94, 0));
+  g.add(cyl(0.03, 0.035, 1.0, M(0x0a0a0a), 0, 2.5, 0));
+  g.add(box(0.14, 0.22, 0.14, M(0x111827), 0, 0.25, 0));
+  const t1 = new THREE.Object3D(); t1.position.set(0, 2.95, 0); g.add(t1); packTips.lora = t1;
+  const t2 = new THREE.Object3D(); t2.position.set(0, 2.0, 0); g.add(t2); packTips.iridium = t2;
+}, { pos: [1.1, 1.3, -0.3], parent: rig, mode: 'pack', label: [0, 3.15, 0] });
 
 /* ---------------- Sky: satellites ---------------- */
 function makeSat(color, scale = 1) {
@@ -799,7 +911,7 @@ cable('crank', 'ppPort', 0x7f1d1d, 0.5);
 const fx = [];
 const ringGeo = new THREE.RingGeometry(0.92, 1, 64);
 function spawnRing(tipName, color, { vertical = false, maxR = 6, life = 2.2 } = {}) {
-  const p = tips[tipName].getWorldPosition(new THREE.Vector3());
+  const p = tip(tipName).getWorldPosition(new THREE.Vector3());
   const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
   m.position.copy(p);
   if (!vertical) m.rotation.x = -Math.PI / 2;
@@ -830,7 +942,7 @@ function setBeam(name, getA, getB, color, on) {
   }
   beams[name].on = on;
 }
-const W = n => () => tips[n].getWorldPosition(new THREE.Vector3());
+const W = n => () => tip(n).getWorldPosition(new THREE.Vector3());
 const satPos = () => iridiumSat.position.clone();
 
 function updateFx(dt) {
@@ -874,14 +986,15 @@ if (NARROW) document.getElementById('labelsBtn').classList.remove('on');
 const INTERNAL = new Set(['battery', 'power', 'mcu', 'gnss', 'rockblock', 'sdr']);
 function applyVisibility() {
   for (const c of Object.values(comps)) {
-    const vis = tierState[c.tier];
+    const vis = tierState[c.tier] && (c.mode === 'both' || c.mode === MODE);
     c.g.visible = vis;
-    c.label.visible = labelsOn && vis && (!INTERNAL.has(c.id) || explodeT > 0.3 || selected === c.id);
+    const hidden = (INTERNAL.has(c.id) || (MODE === 'pack' && c.g.parent === deviceRoot)) && explodeT <= 0.3 && selected !== c.id;
+    c.label.visible = labelsOn && vis && !hidden;
   }
 }
 function applyXray() {
-  for (const id of ['case', 'lid']) comps[id].g.traverse(o => {
-    if (o.isMesh) { o.material.transparent = xray; o.material.opacity = xray ? 0.2 : 1; o.material.depthWrite = !xray; o.material.needsUpdate = true; o.castShadow = !xray; }
+  for (const id of ['case', 'lid', 'pack']) comps[id].g.traverse(o => {
+    if (o.isMesh) { o.material.transparent = xray; o.material.opacity = xray ? (id === 'pack' ? 0.38 : 0.2) : 1; o.material.depthWrite = !xray; o.material.needsUpdate = true; o.castShadow = !xray; }
   });
 }
 applyXray();
@@ -899,7 +1012,7 @@ function toast(html, ms = 4500) { toastEl.innerHTML = html; toastEl.classList.ad
 let selected = null;
 const infoEl = document.getElementById('info');
 const listEl = document.getElementById('complist');
-const order = ['case', 'lid', 'ports', 'battery', 'power', 'solar', 'crank', 'mcu', 'loraAnt', 'gnss', 'gnssPatch', 'rockblock', 'iridiumAnt', 'display', 'sos', 'phone', 'plb', 'ht', 'sdr', 'starlink', 'iridiumSat'];
+const order = ['sensorPod', 'pack', 'packSolar', 'mast', 'case', 'lid', 'ports', 'battery', 'power', 'solar', 'crank', 'mcu', 'loraAnt', 'gnss', 'gnssPatch', 'rockblock', 'iridiumAnt', 'display', 'sos', 'phone', 'plb', 'ht', 'sdr', 'starlink', 'iridiumSat'];
 for (const id of order) {
   const c = comps[id]; const b = document.createElement('button');
   b.innerHTML = `<i style="background:${COLORS[c.info.cat]}"></i>${c.info.short || c.info.name}`;
@@ -916,6 +1029,8 @@ function renderIntro() {
       <li><b style="color:${COLORS.comms}">GNSS:</b> your position in every message</li>
       <li><b style="color:${COLORS.power}">Power:</b> 74 Wh Li-ion pack, solar MPPT, USB-C PD, car 12 V, hand crank</li>
       <li><b style="color:${COLORS.rugged}">Rugged:</b> IP67 case, sealed bulkheads, shock-mounted boards</li>
+      <li><b style="color:${COLORS.sense}">Sensors:</b> natural gas, CO, O₂, CO₂, smoke and dust, plus motion for aftershocks and falls</li>
+      <li><b>🎒 Backpack mode:</b> the same hub carried in a pack, with solar on the outside and an antenna mast</li>
     </ul>
     <p>Tap any part in the 3D view or in the list below. Then try the <b>SOS sim</b>, the <b>Power</b> budget, the <b>Explode</b> slider (it reveals the internal part labels), or the drop and submerge tests.</p>
     <div style="margin-top:8px">${[0, 1, 2, 3].map(t => `<span class="pill t${t}">${tierNames[t]}</span>`).join('')}</div>`;
@@ -924,7 +1039,7 @@ renderIntro();
 
 function setHighlight(id, on) {
   const c = comps[id]; if (!c) return;
-  c.g.traverse(o => { if (o.isMesh && o.material.emissive && !(o.material.map)) { if (on) { o.material.emissive.setHex(0xf97316); o.material.emissiveIntensity = 0.35; } else { o.material.emissive.copy(o.userData.baseEmissive || new THREE.Color(0)); o.material.emissiveIntensity = 1; } } });
+  c.g.traverse(o => { if (o.isMesh && o.material.emissive && !(o.material.map) && !o.userData.keep) { if (on) { o.material.emissive.setHex(0xf97316); o.material.emissiveIntensity = 0.35; } else { o.material.emissive.copy(o.userData.baseEmissive || new THREE.Color(0)); o.material.emissiveIntensity = 1; } } });
   c.div.classList.toggle('sel', on);
 }
 const focus = { target: HOME_TARGET.clone(), active: false };
@@ -933,7 +1048,7 @@ function select(id, fromList = false) {
   selected = id; setHighlight(id, true); applyVisibility();
   const c = comps[id], i = c.info;
   infoEl.innerHTML = `
-    <div><span class="pill t${c.tier}">${tierNames[c.tier]}</span><span class="pill" style="border-color:${COLORS[i.cat]};color:${COLORS[i.cat]}">${({ comms: 'Comms', power: 'Power', rugged: 'Ruggedization', ui: 'Interface', sat: 'Satellite', ext: 'External' })[i.cat]}</span></div>
+    <div><span class="pill t${c.tier}">${tierNames[c.tier]}</span><span class="pill" style="border-color:${COLORS[i.cat]};color:${COLORS[i.cat]}">${({ comms: 'Comms', power: 'Power', rugged: 'Ruggedization', ui: 'Interface', sat: 'Satellite', ext: 'External', sense: 'Sensors' })[i.cat]}</span></div>
     <h2 style="margin-top:8px">${i.name}</h2>
     <p class="sub">${i.part} · <b style="color:var(--text)">${i.price}</b></p>
     <p>${i.desc}</p>
@@ -942,6 +1057,7 @@ function select(id, fromList = false) {
   document.getElementById('clearSel').onclick = () => { if (selected) setHighlight(selected, false); selected = null; renderIntro(); markList(); applyVisibility(); };
   markList();
   switchTab('explore');
+  if (c.mode !== 'both' && c.mode !== MODE) setMode(c.mode);
   if (!c.g.visible) { tierState[c.tier] = true; tiersEl.children[c.tier].classList.add('on'); applyVisibility(); }
   if (fromList || c.external) { focus.target = c.g.getWorldPosition(new THREE.Vector3()); if (id === 'iridiumSat') focus.target.set(0, 4, 0); focus.active = true; }
 }
@@ -954,13 +1070,13 @@ function pick(ev) {
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects([deviceRoot, externals, iridiumSat], true);
+  const hits = ray.intersectObjects([rig, externals, iridiumSat], true);
   let fallback = null;
   for (const h of hits) {
     let o = h.object, visible = true, id = null;
     while (o) { if (!o.visible) visible = false; if (!id && o.userData.compId) id = o.userData.compId; o = o.parent; }
     if (!visible || !id) continue;
-    if (xray && (id === 'case' || id === 'lid')) { fallback ??= id; continue; }
+    if (xray && (id === 'case' || id === 'lid' || id === 'pack')) { fallback ??= id; continue; }
     return id;
   }
   return fallback;
@@ -980,6 +1096,7 @@ renderer.domElement.addEventListener('pointermove', e => {
 controls.addEventListener('start', () => { focus.active = false; });
 
 document.getElementById('resetBtn').onclick = () => {
+  HOME_CAM.copy(MODE === 'pack' ? CAM_PACK : CAM_CASE); HOME_TARGET.copy(MODE === 'pack' ? TGT_PACK : TGT_CASE);
   camera.position.copy(HOME_CAM); focus.target.copy(HOME_TARGET); focus.active = true;
   document.getElementById('explode').value = 0; explodeTarget = 0;
 };
@@ -1014,16 +1131,20 @@ function updateAnim(dt) {
   if (anim.type === 'drop') {
     anim.v -= 22 * dt; anim.y += anim.v * dt;
     if (anim.y <= 0) { anim.y = 0; if (anim.bounces < 4 && Math.abs(anim.v) > 1) { anim.v = -anim.v * 0.35; anim.bounces++; spawnShock(); } else { anim.v = 0; } }
-    deviceRoot.position.y = anim.y;
-    deviceRoot.rotation.z = anim.y > 0 ? Math.sin(anim.t * 6) * 0.05 * Math.min(1, anim.y) : deviceRoot.rotation.z * 0.8;
-    if (anim.t > 3.2) { deviceRoot.position.y = 0; deviceRoot.rotation.z = 0; anim = null; }
+    rig.position.y = anim.y;
+    rig.rotation.z = anim.y > 0 ? Math.sin(anim.t * 6) * 0.05 * Math.min(1, anim.y) : rig.rotation.z * 0.8;
+    if (anim.t > 3.2) { rig.position.y = 0; rig.rotation.z = 0; anim = null; }
+  } else if (anim.type === 'shake') {
+    rig.position.x = Math.sin(anim.t * 45) * 0.06 * Math.max(0, 1 - anim.t / 1.8);
+    rig.rotation.z = Math.sin(anim.t * 31) * 0.015 * Math.max(0, 1 - anim.t / 1.8);
+    if (anim.t > 1.8) { rig.position.x = 0; rig.rotation.z = 0; anim = null; }
   } else if (anim.type === 'dunk') {
-    const T = anim.t; water.visible = true;
-    const h = T < 1.5 ? T / 1.5 * 2.6 : T < 4.5 ? 2.6 : Math.max(0, 2.6 - (T - 4.5) / 1.5 * 2.6);
+    const T = anim.t; water.visible = true; const H = MODE === 'pack' ? 3.8 : 2.6;
+    const h = T < 1.5 ? T / 1.5 * H : T < 4.5 ? H : Math.max(0, H - (T - 4.5) / 1.5 * H);
     water.scale.y = Math.max(0.001, h); water.position.y = h / 2;
     if (T > 1.5 && T < 4.5 && Math.random() < 0.25) {
       const b = new THREE.Mesh(new THREE.SphereGeometry(0.03 + Math.random() * 0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.7 }));
-      b.position.set(-1.6, 0.55, (Math.random() - 0.5) * 0.3); scene.add(b); bubbles.push(b);
+      b.position.copy(new THREE.Vector3(-1.6, 0.55, (Math.random() - 0.5) * 0.3).applyMatrix4(deviceRoot.matrixWorld)); scene.add(b); bubbles.push(b);
     }
     if (T > 6) { water.visible = false; anim = null; bubbles.forEach(b => scene.remove(b)); bubbles.length = 0; }
   }
@@ -1059,10 +1180,10 @@ let sosRun = 0; let sosActive = false;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const sosBtn = document.getElementById('sosBtn'), cancelBtn = document.getElementById('cancelBtn');
 
-const FIELD_COLORS = ['#f97316', '#a78bfa', '#22d3ee', '#22d3ee', '#4ade80', '#facc15', '#f472b6', '#f472b6', '#4ade80', '#f87171', '#94a3b8', '#e2e8f0'];
+const FIELD_COLORS = ['#f97316', '#a78bfa', '#22d3ee', '#22d3ee', '#4ade80', '#facc15', '#f472b6', '#f472b6', '#4ade80', '#f87171', '#fb7185', '#fb7185', '#fb7185', '#fb7185', '#94a3b8', '#e2e8f0'];
 function encodeSOS(f) {
   const txt = new TextEncoder().encode(f.text).slice(0, 60);
-  const buf = new ArrayBuffer(22 + txt.length); const v = new DataView(buf);
+  const buf = new ArrayBuffer(28 + txt.length); const v = new DataView(buf);
   const fields = []; let o = 0;
   const put = (name, bytes, setter, val, show) => { fields.push({ name, off: o, bytes, show: show ?? String(val) }); setter(o, val); o += bytes; };
   put('version', 1, (a, b) => v.setUint8(a, b), 1);
@@ -1075,6 +1196,10 @@ function encodeSOS(f) {
   put('sats used', 1, (a, b) => v.setUint8(a, b), f.sats);
   put('battery %', 1, (a, b) => v.setUint8(a, b), f.batt);
   put('status', 1, (a, b) => v.setUint8(a, b), f.status, '0x' + f.status.toString(16).toUpperCase() + ' (SOS, injured)');
+  put('O₂ % × 10', 1, (a, b) => v.setUint8(a, b), Math.round(f.o2 * 10), f.o2.toFixed(1) + ' %');
+  put('CO ppm', 2, (a, b) => v.setUint16(a, b), Math.round(f.co));
+  put('CO₂ ppm', 2, (a, b) => v.setUint16(a, b), Math.round(f.co2));
+  put('temp °C', 1, (a, b) => v.setInt8(a, b), Math.round(f.t));
   put('text len', 1, (a, b) => v.setUint8(a, b), txt.length);
   new Uint8Array(buf, o).set(txt); fields.push({ name: 'text (UTF-8)', off: o, bytes: txt.length, show: `"${f.text.slice(0, 60)}"` });
   return { bytes: new Uint8Array(buf), fields };
@@ -1115,14 +1240,14 @@ async function runSOS() {
   setBeam('g3', () => gnssSats[3].position.clone(), W('gnss'), 0x94a3b8, true);
   await sleep(2200); if (!alive()) return;
   ['g0', 'g1', 'g2', 'g3'].forEach(n => setBeam(n, null, null, 0, false));
-  const fix = { lat, lon, alt, time: Math.floor(Date.now() / 1000), hdop: 0.9, sats: 11, batt: einkState.batt, status: 0x81, id: 0xACE1, text: msgText.value };
+  const fix = { lat, lon, alt, time: Math.floor(Date.now() / 1000), hdop: 0.9, sats: 11, batt: einkState.batt, status: 0x81, id: 0xACE1, text: msgText.value, o2: sensVal.o2, co: sensVal.co, co2: sensVal.co2, t: sensVal.t };
   step('fix', 'done', `${Math.abs(lat).toFixed(5)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(5)}°${lon >= 0 ? 'E' : 'W'} · ±3 m · 11 sats · hot start`);
   einkState.fix = `${Math.abs(lat).toFixed(4)}N ${Math.abs(lon).toFixed(4)}W ±3m`; drawEink(einkState);
 
   step('pack', 'run');
   const pk = encodeSOS(fix); await sleep(500); if (!alive()) return;
   renderPacket(pk);
-  step('pack', 'done', `${pk.bytes.length} bytes (header 22 + text ${pk.bytes.length - 22})`);
+  step('pack', 'done', `${pk.bytes.length} bytes (fix + air readings 28, text ${pk.bytes.length - 28})`);
 
   step('sat', 'run', 'waiting for satellite in view…');
   einkState.sat = 'Iridium: TX session…'; drawEink(einkState);
@@ -1148,12 +1273,12 @@ async function runSOS() {
   drawPhone(true, [['me → SOS', msgText.value.slice(0, 26) + (msgText.value.length > 26 ? '…' : ''), true], ['NET-Tabor', 'Copy SOS, relaying to BEECN', false]]);
   step('ble', 'done', 'Phone app shows SOS status and replies');
 
-  if (tierState[2]) {
+  if (comps.ht.g.visible) {
     step('aprs', 'run', 'licensed operators only (Technician+)');
     for (let i = 0; i < 3 && alive(); i++) { spawnRing('ht', 0xfacc15, { maxR: 9, life: 2.4 }); await sleep(500); }
     if (!alive()) return;
     step('aprs', 'done', 'Position + emergency status → digipeater → iGate → aprs.fi');
-  } else step('aprs', 'skip', 'Skipped: no licensed HT attached (Tier 2 hidden)');
+  } else step('aprs', 'skip', 'Skipped: no licensed HT attached in this view');
 
   step('loop', 'done', 'Re-send every 10 min until cancelled · all events logged to flash');
   einkState.footer = 'SOS: next retry 09:59'; drawEink(einkState);
@@ -1177,7 +1302,7 @@ function calcPower() {
   const bat = +$('pBat').value, sol = +$('pSol').value, season = +$('pSeason').value, crank = +$('pCrank').value, sl = +$('pSL').value;
   $('oBat').textContent = bat + ' Wh'; $('oSol').textContent = sol + ' W'; $('oCrank').textContent = crank + ' min'; $('oSL').textContent = sl + ' h';
   const gen = sol * season + crank / 60 * 8;
-  const use = ($('lHub').checked ? 3.5 : 0) + ($('lPhone').checked ? 21 : 0) + ($('lHT').checked ? 2.5 : 0) + ($('lSDR').checked ? 3 : 0) + sl * 30;
+  const use = ($('lHub').checked ? 3.5 : 0) + ($('lSens').checked ? 2 : 0) + ($('lPhone').checked ? 21 : 0) + ($('lHT').checked ? 2.5 : 0) + ($('lSDR').checked ? 3 : 0) + sl * 30;
   const max = Math.max(gen, use, 1);
   $('bIn').style.width = (gen / max * 100) + '%'; $('bOut').style.width = (use / max * 100) + '%';
   const net = gen - use;
@@ -1193,12 +1318,113 @@ function calcPower() {
   einkState.charge = sol > 0 ? `SOLAR +${(sol * 0.15).toFixed(1)}W` : 'NO INPUT'; einkState.batt = Math.min(99, Math.round(60 + bat / 6)); drawEink(einkState);
   if (comps.starlink) { if (sl > 0 && !tierState[3]) { tierState[3] = true; tiersEl.children[3].classList.add('on'); applyVisibility(); } }
 }
-['pBat', 'pSol', 'pSeason', 'pCrank', 'pSL', 'lHub', 'lPhone', 'lHT', 'lSDR'].forEach(id => $(id).addEventListener('input', calcPower));
+['pBat', 'pSol', 'pSeason', 'pCrank', 'pSL', 'lHub', 'lPhone', 'lHT', 'lSDR', 'lSens'].forEach(id => $(id).addEventListener('input', calcPower));
 calcPower();
 $('flowBtn').onclick = () => {
   powerFlow = !powerFlow; $('flowBtn').textContent = powerFlow ? 'Hide power flow' : 'Show power flow in 3D';
   if (powerFlow) { focus.target.set(-2, 0.5, 1); focus.active = true; toast('Orange dots show energy flowing from the solar panel and hand crank into the MPPT/PD board, then the battery.'); }
 };
+
+/* ---------------- Backpack mode ---------------- */
+const packBtn = document.getElementById('packBtn');
+function setMode(m) {
+  MODE = m; const pack = m === 'pack';
+  deviceRoot.scale.setScalar(pack ? 0.45 : 1);
+  deviceRoot.position.set(0, pack ? 0.32 : 0, pack ? -0.05 : 0);
+  for (const c of Object.values(comps)) if (c.posPack) {
+    const p = pack ? c.posPack : c.posCase;
+    c.base.set(...p); c.g.position.set(...p); c.g.rotation.y = pack ? c.rotPack : c.rotYCase;
+  }
+  packBtn.classList.toggle('on', pack);
+  applyVisibility(); applyXray();
+  HOME_CAM.copy(pack ? CAM_PACK : CAM_CASE); HOME_TARGET.copy(pack ? TGT_PACK : TGT_CASE);
+  camera.position.copy(HOME_CAM); focus.target.copy(HOME_TARGET); focus.active = true;
+  if (pack) toast('<b>Backpack mode.</b> The hub rides in the hydration sleeve against your back, the solar panel is on the outside, coax runs up a mast to the antennas, and the sensor pod clips to the shoulder strap near your face.', 6500);
+}
+packBtn.onclick = () => setMode(MODE === 'pack' ? 'case' : 'pack');
+
+/* ---------------- Sensors ---------------- */
+const SENS = [
+  { k: 'o2', name: 'Oxygen', unit: '%', dec: 1, alarmLo: 18, warnLo: 19.5, warnHi: 23.5, min: 15, max: 25 },
+  { k: 'co', name: 'Carbon monoxide', unit: 'ppm', dec: 0, warn: 35, alarm: 200, max: 300 },
+  { k: 'ch4', name: 'Natural gas (methane)', unit: '% LEL', dec: 0, warn: 10, alarm: 20, max: 50 },
+  { k: 'co2', name: 'CO₂', unit: 'ppm', dec: 0, warn: 1000, alarm: 5000, max: 10000 },
+  { k: 'pm', name: 'PM2.5 (smoke, dust)', unit: 'µg/m³', dec: 0, warn: 35.5, alarm: 55.5, max: 250 },
+  { k: 't', name: 'Temperature', unit: '°C', dec: 1, min: -10, max: 45 },
+  { k: 'rh', name: 'Humidity', unit: '%', dec: 0, max: 100 },
+  { k: 'p', name: 'Pressure', unit: 'hPa', dec: 0, min: 950, max: 1050 },
+  { k: 'g', name: 'Shaking (peak)', unit: 'g', dec: 2, warn: 0.1, alarm: 0.3, max: 1 },
+  { k: 'rad', name: 'Radiation (optional)', unit: 'µSv/h', dec: 2, warn: 1, alarm: 10, max: 1 },
+];
+const BASE = { o2: 20.9, co: 1, ch4: 0, co2: 450, pm: 6, t: 12, rh: 72, p: 1013, g: 0.0, rad: 0.12 };
+const SCEN = {
+  normal: { label: '🌤 Normal air', v: {}, note: 'Background readings on a cool, damp Portland day.' },
+  gas: { label: '🔥 Gas leak', v: { ch4: 26 }, note: 'A broken gas line nearby. Above 20% of the lower explosive limit: no flames or sparks, move away, and shut off the gas only if you know how.' },
+  gen: { label: '⚙️ Generator indoors', v: { co: 230, co2: 2600, pm: 45, t: 17 }, note: 'Exhaust building up indoors. CO has no smell or color; get everyone to fresh air.' },
+  trapped: { label: '🧱 Trapped in a void', v: { o2: 18.6, co2: 7200, pm: 140, t: 19, rh: 96 }, note: 'A small enclosed space full of dust: oxygen falling and CO₂ rising. These readings now ride along in the SOS packet.' },
+  smoke: { label: '🌫 Wildfire smoke', v: { pm: 190, co: 18, co2: 620 }, note: 'Heavy smoke: PM2.5 well into the unhealthy range. Wear an N95 and limit exertion.' },
+  quake: { label: '〰️ Aftershock', v: { g: 0.42 }, note: 'The IMU records the shaking. If you then stop moving for a set time, the hub can send an automatic SOS.' },
+};
+const sensVal = { ...BASE }; let sensTarget = { ...BASE }; let curScen = 'normal'; let lastLevel = 0;
+const scenEl = document.getElementById('scen');
+for (const [k, sc] of Object.entries(SCEN)) {
+  const b = document.createElement('button'); b.textContent = sc.label; b.dataset.k = k;
+  b.onclick = () => setScen(k); scenEl.appendChild(b);
+}
+function setScen(k) {
+  curScen = k; sensTarget = { ...BASE, ...SCEN[k].v };
+  for (const b of scenEl.children) b.classList.toggle('on', b.dataset.k === k);
+  document.getElementById('scenNote').textContent = SCEN[k].note;
+  if (k === 'quake') { sensVal.g = 0.42; sensTarget.g = 0.01; if (!anim) anim = { type: 'shake', t: 0 }; }
+  focus.target.copy(tip('pod').getWorldPosition(new THREE.Vector3())); focus.active = true;
+}
+function level(s, v) {
+  if (s.alarmLo !== undefined && v < s.alarmLo) return 2;
+  if (s.warnLo !== undefined && v < s.warnLo) return 1;
+  if (s.warnHi !== undefined && v > s.warnHi) return 1;
+  if (s.alarm !== undefined && v >= s.alarm) return 2;
+  if (s.warn !== undefined && v >= s.warn) return 1;
+  return 0;
+}
+let peakG = 0, peakTimer = 0;
+function renderSensors() {
+  let worst = 0; const bad = [];
+  const rows = SENS.map(s => {
+    const v = s.k === 'g' ? peakG : sensVal[s.k]; const L = level(s, v); worst = Math.max(worst, L);
+    if (L) bad.push(`${s.name.split(' (')[0]} ${v.toFixed(s.dec)} ${s.unit}`);
+    const lo = s.min ?? 0, frac = Math.max(0, Math.min(1, (v - lo) / (s.max - lo)));
+    const col = L === 2 ? 'var(--bad)' : L === 1 ? 'var(--warn)' : 'var(--ok)';
+    const lim = s.alarm !== undefined ? `alarm ${s.alarm}` : s.alarmLo !== undefined ? `alarm < ${s.alarmLo}` : '';
+    return `<tr><td>${s.name}<div class="mini"><div style="width:${(frac * 100).toFixed(1)}%;background:${col}"></div></div></td><td class="v" style="color:${col}">${v.toFixed(s.dec)} ${s.unit}<br><span style="color:var(--muted);font-size:10.5px">${lim}</span></td></tr>`;
+  }).join('');
+  document.getElementById('sensTable').innerHTML = rows;
+  const ban = document.getElementById('alarmBanner');
+  ban.className = 'alarm ' + (worst === 2 ? 'bad' : worst === 1 ? 'warn' : 'ok');
+  ban.textContent = worst === 2 ? '⚠ ALARM: ' + bad.join(' · ') : worst === 1 ? 'Caution: ' + bad.join(' · ') : 'All readings normal';
+  if (worst !== lastLevel) {
+    einkState.footer = worst === 2 ? 'AIR ALARM: ' + (bad[0] || '') : worst === 1 ? 'AIR CAUTION: ' + (bad[0] || '') : 'Q:0 msgs   BLE: phone linked';
+    drawEink(einkState); lastLevel = worst;
+  }
+  return worst;
+}
+let sensTimer = 0, alarmRingTimer = 0, airLevel = 0;
+function updateSensors(dt) {
+  for (const k of Object.keys(sensVal)) {
+    const span = Math.abs(sensTarget[k] - sensVal[k]);
+    sensVal[k] += (sensTarget[k] - sensVal[k]) * Math.min(1, dt * (k === 'g' ? 1.5 : 0.8));
+    if (k !== 'g' && k !== 'ch4') sensVal[k] += (Math.random() - 0.5) * dt * (k === 'co2' ? 40 : k === 'p' ? 0.6 : k === 'pm' || k === 'co' ? 3 : 0.2);
+    if (k === 'ch4' || k === 'co' || k === 'pm') sensVal[k] = Math.max(0, sensVal[k]);
+  }
+  if (sensVal.g > peakG) { peakG = sensVal.g; peakTimer = 0; } else { peakTimer += dt; if (peakTimer > 5) peakG = Math.max(sensVal.g, peakG * (1 - dt)); }
+  sensTimer += dt; if (sensTimer > 0.25) { sensTimer = 0; airLevel = renderSensors(); }
+  if (podLed) {
+    const m = podLed.material, t = clock.elapsedTime;
+    const c = airLevel === 2 ? (Math.sin(t * 12) > 0 ? 0xef4444 : 0x450a0a) : airLevel === 1 ? 0xfacc15 : 0x22c55e;
+    m.color.setHex(c); m.emissive.setHex(c);
+  }
+  if (airLevel === 2 && comps.sensorPod.g.visible) { alarmRingTimer += dt; if (alarmRingTimer > 0.9) { alarmRingTimer = 0; spawnRing('pod', 0xef4444, { vertical: true, maxR: 1.2, life: 0.9 }); } }
+}
+setScen('normal'); focus.active = false;
 
 /* ---------------- Resize ---------------- */
 function resize() {
@@ -1221,7 +1447,7 @@ function tick() {
   explodeT += (explodeTarget - explodeT) * Math.min(1, dt * 6);
   if ((prevE > 0.3) !== (explodeT > 0.3)) applyVisibility();
   for (const c of Object.values(comps)) if (c.g.parent === deviceRoot) c.g.position.copy(c.base).addScaledVector(c.dir, explodeT);
-  const cablesVis = explodeT < 0.03 && (!anim || anim.type !== 'drop');
+  const cablesVis = MODE === 'case' && explodeT < 0.03 && (!anim || anim.type !== 'drop');
   cables.forEach(c => c.m.visible = cablesVis);
   if (Math.abs(explodeT - lastExplode) > 1e-4 || anim) { lastExplode = explodeT; }
   cableTimer += dt; if (cableTimer > 0.1 && cablesVis) { updateCables(); cableTimer = 0; }
@@ -1242,6 +1468,7 @@ function tick() {
   }
   updateFx(dt);
   updateAnim(dt);
+  updateSensors(dt);
   if (focus.active) { controls.target.lerp(focus.target, Math.min(1, dt * 3)); if (controls.target.distanceTo(focus.target) < 0.01) focus.active = false; }
   controls.update();
   renderer.render(scene, camera);
