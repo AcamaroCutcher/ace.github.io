@@ -35,9 +35,26 @@ window.PROJECT_LIBRARY = {
   // any others make it show up when filtering by that field too.
   projects: [
     {
+      id: 'wildfire-data',
+      title: 'Fire Archive: a Wildfire–Satellite Database',
+      summary: 'A PostgreSQL/PostGIS database that links every US wildfire since 2020 to its satellite record, built for training neural ODEs, deep networks and graph neural networks. It holds 8.25 million VIIRS and MODIS fire detections, each linked to its fire with a scored space-and-time match, plus 110,000 mapped perimeters, 2,284 USGS LiDAR collections matched to fires before and after the burn, and references to imagery, burn severity, fuels and weather. The guide covers every fire satellite (VIIRS after the end of Suomi-NPP, FireSat, GOES, MODIS, Landsat, airborne IR, LiDAR), the schema, the linking query, recipes for model training and the 20 questions from the original proposal, answered from the real database. A 3-D app plays Pacific Northwest fires overpass by overpass over terrain, with Sentinel-2 before and after, burn severity and LiDAR point clouds and canopy change, and shows fires burning now from NIFC, VIIRS and GOES.',
+      disciplines: ['earth', 'ml'],
+      types: ['interactive', 'code'],
+      status: 'current',
+      year: 2026,
+      featured: false,
+      thumb: 'thumbs/wildfire-data.jpg',
+      tags: ['PostGIS', 'VIIRS', 'FireSat', 'LiDAR', 'Sentinel-2', 'Machine learning', 'GNN', 'Neural ODE', 'MapLibre'],
+      links: [
+        { label: 'Open the 3-D fire app', href: 'wildfire-data/app/', icon: 'fa-arrow-right', primary: true },
+        { label: 'Guide', href: 'wildfire-data/index.html', icon: 'fa-book' },
+        { label: 'Code', href: 'https://github.com/AcamaroCutcher/Wildfire_Database', icon: 'fa-github', brand: true },
+      ],
+    },
+    {
       id: 'survival-radio',
       title: 'Survival Radio: Disaster Communications Hub',
-      summary: 'An AI-assisted, open design for a rugged device that still reaches the outside world after a Cascadia earthquake knocks out nearby cell towers. An Iridium satellite modem sends SOS messages with GPS location without needing a phone, and a Meshtastic LoRa mesh radio pairs with your phone for neighborhood texting. Ham radio (APRS, Winlink) and a receive-only SDR add more layers, and a sensor pod checks for natural gas, carbon monoxide, oxygen, CO₂ and smoke. It runs on Li-ion with solar, USB-C and hand-crank charging, in an IP67 case or a backpack. The page has a real-scale CAD model you can explore in 3-D or download as STEP, STL or glTF, plus 3-D-printable parts. The build guide covers every component and where to buy it, and explains UART, I²C, SPI, GPIO and RF wiring down to the bytes. It also shows how your phone connects over Bluetooth and Wi-Fi. Interactive extras include an SOS packet walkthrough, sensor scenarios and a power-budget calculator.',
+      summary: 'An AI-assisted, open design for a rugged device that still reaches the outside world after a Cascadia earthquake knocks out nearby cell towers. An Iridium satellite modem sends SOS messages with GPS location without needing a phone, and a Meshtastic LoRa mesh radio pairs with your phone for neighborhood texting. Ham radio (APRS, Winlink) and a receive-only SDR add more layers, and a sensor pod checks for natural gas, carbon monoxide, oxygen, CO₂ and smoke. It runs on Li-ion with solar, USB-C and hand-crank charging, in an IP67 case or a backpack. The page has a real-scale CAD model you can explore in 3-D or download as STEP, STL or glTF, plus 3-D-printable parts. The build guide covers every component and where to buy it, and explains UART, I²C, SPI, GPIO and RF wiring down to the bytes. It also shows how your phone connects over Bluetooth and Wi-Fi. Interactive extras include an SOS packet walkthrough, sensor scenarios and a power-budget calculator, animated schematics, a KiCad carrier board (schematic, layout and Gerbers) viewable in 3-D, and a budget kit builder for an under-$500 version made from ready-made gear.',
       disciplines: ['electronics', 'earth'],
       types: ['interactive'],
       status: 'current',

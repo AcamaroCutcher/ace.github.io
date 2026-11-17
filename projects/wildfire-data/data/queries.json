@@ -1,0 +1,1035 @@
+[
+ {
+  "id": "b01",
+  "question": "List the names and total recorded acres burned for all incidents, sorted from largest to smallest.",
+  "sql": "SELECT incident_name, round(acres_burned) AS acres_burned\nFROM vw_wildfire_historical_record\nWHERE acres_burned IS NOT NULL\nORDER BY acres_burned DESC\nLIMIT 50;   -- remove LIMIT for the full list",
+  "columns": [
+   "incident_name",
+   "acres_burned"
+  ],
+  "rows": [
+   [
+    "Smokehouse Creek",
+    "1,054,153"
+   ],
+   [
+    "DIXIE",
+    "963,309"
+   ],
+   [
+    "Morrill",
+    "642,029"
+   ],
+   [
+    "DOE",
+    "589,368"
+   ],
+   [
+    "BIG GRASS",
+    "579,134"
+   ],
+   [
+    "LMU021030",
+    "540,000"
+   ],
+   [
+    "PARK",
+    "429,603"
+   ],
+   [
+    "Bootleg 321 - ODF",
+    "413,717"
+   ]
+  ],
+  "rows_total": 50,
+  "ms": 40
+ },
+ {
+  "id": "b02",
+  "question": "What are the latitude, longitude, and brightness of the top 10 brightest thermal hotspots recorded in the year 2024?",
+  "sql": "-- brightness_k is the fire-channel brightness temperature (MODIS band 21/22, VIIRS I4).\n-- The instruments saturate differently, so the sensor is shown alongside.\nSELECT h.latitude, h.longitude, h.brightness_k, s.code AS sensor, h.acq_time\nFROM hotspot h JOIN sensor s USING (sensor_id)\nWHERE h.acq_time >= '2024-01-01' AND h.acq_time < '2025-01-01'\n  AND h.brightness_k IS NOT NULL\n  AND coalesce(h.fire_type, 0) = 0      -- wildfire detections only (no volcanoes or industrial heat)\nORDER BY h.brightness_k DESC\nLIMIT 10;",
+  "columns": [
+   "latitude",
+   "longitude",
+   "brightness_k",
+   "sensor",
+   "acq_time"
+  ],
+  "rows": [
+   [
+    "40.02",
+    "-121.67",
+    "509.50",
+    "MODIS_AQUA",
+    "2024-07-26 22:16"
+   ],
+   [
+    "40.78",
+    "-123.67",
+    "509.20",
+    "MODIS_AQUA",
+    "2024-07-16 22:03"
+   ],
+   [
+    "40.01",
+    "-121.67",
+    "508.70",
+    "MODIS_AQUA",
+    "2024-07-26 22:16"
+   ],
+   [
+    "40.05",
+    "-121.74",
+    "508.70",
+    "MODIS_AQUA",
+    "2024-07-25 21:36"
+   ],
+   [
+    "39.89",
+    "-121.73",
+    "508.70",
+    "MODIS_AQUA",
+    "2024-07-25 21:36"
+   ],
+   [
+    "44.26",
+    "-115.06",
+    "508.70",
+    "MODIS_AQUA",
+    "2024-08-23 21:33"
+   ],
+   [
+    "43.78",
+    "-118.71",
+    "508.60",
+    "MODIS_AQUA",
+    "2024-08-01 21:26"
+   ],
+   [
+    "40.00",
+    "-121.65",
+    "508.60",
+    "MODIS_AQUA",
+    "2024-07-26 22:16"
+   ]
+  ],
+  "rows_total": 10,
+  "ms": 124
+ },
+ {
+  "id": "b03",
+  "question": "List the names and total acres burned for all incidents discovered in 2021 that exceeded 10,000 acres.",
+  "sql": "SELECT incident_name, round(acres_burned) AS acres_burned, discovered_at::date\nFROM vw_wildfire_historical_record\nWHERE discovered_at >= '2021-01-01' AND discovered_at < '2022-01-01'\n  AND acres_burned > 10000\nORDER BY acres_burned DESC;",
+  "columns": [
+   "incident_name",
+   "acres_burned",
+   "discovered_at"
+  ],
+  "rows": [
+   [
+    "DIXIE",
+    "963,309",
+    "2021-07-14"
+   ],
+   [
+    "LMU021030",
+    "540,000",
+    "2021-07-04"
+   ],
+   [
+    "Bootleg",
+    "413,717",
+    "2021-07-06"
+   ],
+   [
+    "Bootleg 321 - ODF",
+    "413,717",
+    "2021-07-06"
+   ],
+   [
+    "MONUMENT",
+    "223,124",
+    "2021-07-31"
+   ],
+   [
+    "CALDOR",
+    "221,835",
+    "2021-08-15"
+   ],
+   [
+    "Telegraph",
+    "180,757",
+    "2021-06-04"
+   ],
+   [
+    "Richard Spring",
+    "171,130",
+    "2021-08-08"
+   ]
+  ],
+  "rows_total": 126,
+  "ms": 30
+ },
+ {
+  "id": "b04",
+  "question": "List the names of all incidents from 2023, sorted chronologically by their recorded discovery date.",
+  "sql": "SELECT incident_name, discovered_at\nFROM vw_wildfire_historical_record\nWHERE discovered_at >= '2023-01-01' AND discovered_at < '2024-01-01'\nORDER BY discovered_at\nLIMIT 100;   -- tens of thousands of 2023 incidents; remove LIMIT for all",
+  "columns": [
+   "incident_name",
+   "discovered_at"
+  ],
+  "rows": [
+   [
+    "WALKER",
+    "2023-01-01 00:00"
+   ],
+   [
+    "SYCAMORE",
+    "2023-01-01 00:30"
+   ],
+   [
+    "KS20228319",
+    "2023-01-01 00:59"
+   ],
+   [
+    "TEX",
+    "2023-01-01 01:30"
+   ],
+   [
+    "Unknown",
+    "2023-01-01 01:35"
+   ],
+   [
+    "Riversedge",
+    "2023-01-01 01:59"
+   ],
+   [
+    "Unknown",
+    "2023-01-01 02:49"
+   ],
+   [
+    "6TH ST / CESAR CHAVEZ ST",
+    "2023-01-01 03:57"
+   ]
+  ],
+  "rows_total": 100,
+  "ms": 1
+ },
+ {
+  "id": "b05",
+  "question": "Which specific incident names had daily perimeters recorded on more than 10 distinct days?",
+  "sql": "SELECT e.name, e.unique_fire_identifier, count(DISTINCT p.observed_at::date) AS mapped_days\nFROM perimeter_obs p JOIN fire_event e USING (event_id)\nWHERE p.source = 'WFIGS' AND NOT p.is_final\nGROUP BY e.event_id, e.name, e.unique_fire_identifier\nHAVING count(DISTINCT p.observed_at::date) > 10\nORDER BY mapped_days DESC;",
+  "columns": [
+   "name",
+   "unique_fire_identifier",
+   "mapped_days"
+  ],
+  "rows": [
+   [
+    "LITTLE GIANT",
+    "2026-WAOWF-260406",
+    "61"
+   ],
+   [
+    "Fuller Lake",
+    "2024-ORUPF-240232",
+    "48"
+   ],
+   [
+    "Horse Heaven",
+    "2024-ORUPF-240260",
+    "47"
+   ],
+   [
+    "No Man",
+    "2024-ORUPF-240282",
+    "43"
+   ],
+   [
+    "PIONEER",
+    "2024-WASES-000173",
+    "43"
+   ],
+   [
+    "WAPITI",
+    "2024-IDBOF-000683",
+    "42"
+   ],
+   [
+    "GOAT",
+    "2024-IDBOF-000904",
+    "40"
+   ],
+   [
+    "Lookout",
+    "2023-ORWIF-230327",
+    "38"
+   ]
+  ],
+  "rows_total": 264,
+  "ms": 92
+ },
+ {
+  "id": "b06",
+  "question": "List the descriptions of all unique fire types available in the database.",
+  "sql": "SELECT code, description FROM lk_incident_type ORDER BY description;",
+  "columns": [
+   "code",
+   "description"
+  ],
+  "rows": [
+   [
+    "DF",
+    "Debris/Product Fire"
+   ],
+   [
+    "BR",
+    "Emergency Stabilization"
+   ],
+   [
+    "FA",
+    "False Alarm"
+   ],
+   [
+    "FR",
+    "Fire Rehabilitation"
+   ],
+   [
+    "CX",
+    "Incident Complex"
+   ],
+   [
+    "SU",
+    "Incident/Event Support"
+   ],
+   [
+    "NS",
+    "Non-Statistical/Other"
+   ],
+   [
+    "OR",
+    "Out of Area Response"
+   ]
+  ],
+  "rows_total": 13,
+  "ms": 0
+ },
+ {
+  "id": "b07",
+  "question": "List the distinct names of all incidents in 2022 that had at least one recorded satellite hotspot with a confidence level strictly greater than 90%.",
+  "sql": "-- Only MODIS reports a percentage. VIIRS reports low / nominal / high, so for VIIRS \"high\" is the\n-- closest equivalent (FIRMS: high = no ambiguity in the fire test). Both are included and labelled.\nSELECT e.name, e.unique_fire_identifier,\n       count(*)                                                                   AS qualifying_detections,\n       coalesce(bool_or(h.confidence_pct > 90), false)                                AS modis_over_90,\n       coalesce(bool_or(h.confidence_pct IS NULL AND h.confidence_class = 'high'), false) AS viirs_high\nFROM fire_event e\nJOIN hotspot_event_link l USING (event_id)\nJOIN hotspot h USING (hotspot_id, acq_time)\nWHERE e.discovered_at >= '2022-01-01' AND e.discovered_at < '2023-01-01'\n  AND (h.confidence_pct > 90 OR (h.confidence_pct IS NULL AND h.confidence_class = 'high'))\nGROUP BY e.event_id, e.name, e.unique_fire_identifier\nORDER BY qualifying_detections DESC;",
+  "columns": [
+   "name",
+   "unique_fire_identifier",
+   "qualifying_detections",
+   "modis_over_90",
+   "viirs_high"
+  ],
+  "rows": [
+   [
+    "Calf Canyon",
+    "2022-NMSNF-000028",
+    "4654",
+    "yes",
+    "yes"
+   ],
+   [
+    "BLACK",
+    "2022-NMGNF-000185",
+    "4153",
+    "yes",
+    "yes"
+   ],
+   [
+    "Cedar Creek",
+    "2022-ORWIF-220180",
+    "1667",
+    "yes",
+    "yes"
+   ],
+   [
+    "Moose",
+    "2022-IDSCF-022105",
+    "1466",
+    "yes",
+    "yes"
+   ],
+   [
+    "Tatlawiksuk",
+    "2022-AKSWS-204183",
+    "1433",
+    "yes",
+    "yes"
+   ],
+   [
+    "Koktuli River",
+    "2022-AKSWS-204240",
+    "1390",
+    "yes",
+    "yes"
+   ],
+   [
+    "Cerro Pelado",
+    "2022-NMSNF-000049",
+    "1179",
+    "yes",
+    "yes"
+   ],
+   [
+    "Hog Butte",
+    "2022-AKTAD-000185",
+    "1120",
+    "yes",
+    "yes"
+   ]
+  ],
+  "rows_total": 2857,
+  "ms": 951
+ },
+ {
+  "id": "b08",
+  "question": "List the names and discovery dates of all incidents located in Oregon that were classified with a 'Type 1' Incident Complexity Level.",
+  "sql": "SELECT incident_name, discovered_at::date\nFROM vw_wildfire_historical_record\nWHERE state = 'OR' AND complexity_level = 1\nORDER BY discovered_at;",
+  "columns": [
+   "incident_name",
+   "discovered_at"
+  ],
+  "rows": [
+   [
+    "MOSIER CREEK",
+    "2020-08-12"
+   ],
+   [
+    "P515",
+    "2020-08-16"
+   ],
+   [
+    "Sweet Creek MP 2",
+    "2020-08-30"
+   ],
+   [
+    "Bootleg",
+    "2021-07-06"
+   ],
+   [
+    "OShae Cr.",
+    "2021-08-02"
+   ],
+   [
+    "IKE BUTTE",
+    "2021-08-02"
+   ],
+   [
+    "Poole Cr.",
+    "2021-08-02"
+   ],
+   [
+    "Sweat Cr.",
+    "2021-08-02"
+   ]
+  ],
+  "rows_total": 16,
+  "ms": 10
+ },
+ {
+  "id": "b09",
+  "question": "List all unique incident type categories present in the database without any duplicates.",
+  "sql": "SELECT DISTINCT e.incident_type, t.description\nFROM fire_event e JOIN lk_incident_type t ON t.code = e.incident_type\nORDER BY 1;",
+  "columns": [
+   "incident_type",
+   "description"
+  ],
+  "rows": [
+   [
+    "CX",
+    "Incident Complex"
+   ],
+   [
+    "DF",
+    "Debris/Product Fire"
+   ],
+   [
+    "FA",
+    "False Alarm"
+   ],
+   [
+    "NS",
+    "Non-Statistical/Other"
+   ],
+   [
+    "OR",
+    "Out of Area Response"
+   ],
+   [
+    "RX",
+    "Prescribed Fire"
+   ],
+   [
+    "SF",
+    "Structure Fire"
+   ],
+   [
+    "SU",
+    "Incident/Event Support"
+   ]
+  ],
+  "rows_total": 10,
+  "ms": 61
+ },
+ {
+  "id": "b10",
+  "question": "List the names of all incidents in California, strictly excluding any that are categorized as a 'Prescribed Fire'.",
+  "sql": "SELECT incident_name, discovered_at::date, fire_type\nFROM vw_wildfire_historical_record\nWHERE state = 'CA' AND incident_type IS DISTINCT FROM 'RX'\nORDER BY discovered_at DESC\nLIMIT 100;   -- remove LIMIT for all",
+  "columns": [
+   "incident_name",
+   "discovered_at",
+   "fire_type"
+  ],
+  "rows": [
+   [
+    "GARLOCK",
+    "2026-11-09",
+    "Wildfire"
+   ],
+   [
+    "ORANGE STREET",
+    "2026-11-04",
+    "Wildfire"
+   ],
+   [
+    "HALLORAN 6",
+    "2026-10-25",
+    "Wildfire"
+   ],
+   [
+    "WALLACE 3",
+    "2026-10-21",
+    "Wildfire"
+   ],
+   [
+    "SODA",
+    "2026-10-19",
+    "Wildfire"
+   ],
+   [
+    "COOLEY",
+    "2026-10-17",
+    "Wildfire"
+   ],
+   [
+    "SOLAR",
+    "2026-10-16",
+    "Wildfire"
+   ],
+   [
+    "NORTE",
+    "2026-10-16",
+    "Wildfire"
+   ]
+  ],
+  "rows_total": 100,
+  "ms": 62
+ },
+ {
+  "id": "a01",
+  "question": "List the state, the year, and the average total acres burned for incidents in that state, grouped by both state and year, sorted from highest average acreage to lowest.",
+  "sql": "SELECT state, extract(year FROM discovered_at)::int AS year, round(avg(acres_burned), 1) AS avg_acres, count(*) AS incidents\nFROM vw_wildfire_historical_record\nWHERE state IS NOT NULL AND acres_burned IS NOT NULL AND discovered_at IS NOT NULL\nGROUP BY state, year\nORDER BY avg_acres DESC;",
+  "columns": [
+   "state",
+   "year",
+   "avg_acres",
+   "incidents"
+  ],
+  "rows": [
+   [
+    "NE",
+    "2026",
+    "10,437",
+    "90"
+   ],
+   [
+    "AK",
+    "2022",
+    "5,206",
+    "611"
+   ],
+   [
+    "KS",
+    "2026",
+    "2,508",
+    "76"
+   ],
+   [
+    "AK",
+    "2025",
+    "2,211",
+    "488"
+   ],
+   [
+    "CA",
+    "2020",
+    "2,154",
+    "2205"
+   ],
+   [
+    "AK",
+    "2024",
+    "1,734",
+    "407"
+   ],
+   [
+    "OR",
+    "2026",
+    "1,682",
+    "1591"
+   ],
+   [
+    "OR",
+    "2024",
+    "1,110",
+    "1877"
+   ]
+  ],
+  "rows_total": 368,
+  "ms": 264
+ },
+ {
+  "id": "a02",
+  "question": "Which single state recorded the highest overall average satellite hotspot confidence level, and what was that average percentage?",
+  "sql": "-- A percentage average only exists for MODIS. For all sensors together, the share of high-confidence\n-- detections is the comparable measure, so both are reported. (REFRESH MATERIALIZED VIEW mv_hotspot_state first.)\n-- Wildfire detections only: FIRMS type 0 (vegetation fire). Volcanoes (e.g. Kilauea), industrial heat and offshore flares are excluded.\nSELECT st.usps AS state,\n       round(avg(h.confidence_pct), 1)                                   AS avg_modis_confidence_pct,\n       round(100.0 * avg((h.confidence_class = 'high')::int), 1)         AS pct_high_all_sensors,\n       count(*)                                                          AS detections\nFROM mv_hotspot_state m\nJOIN hotspot h USING (hotspot_id, acq_time)\nJOIN us_state st ON st.code = m.state_code\nWHERE coalesce(h.fire_type, 0) = 0\nGROUP BY st.usps\nHAVING count(h.confidence_pct) >= 100\nORDER BY avg_modis_confidence_pct DESC\nLIMIT 1;",
+  "columns": [
+   "state",
+   "avg_modis_confidence_pct",
+   "pct_high_all_sensors",
+   "detections"
+  ],
+  "rows": [
+   [
+    "NV",
+    "77.90",
+    "17.60",
+    "43152"
+   ]
+  ],
+  "rows_total": 1,
+  "ms": 21874
+ },
+ {
+  "id": "a03",
+  "question": "Which state had the highest total count of thermal hotspots recorded specifically by the MODIS satellite in the year 2022?",
+  "sql": "-- Wildfire detections only: FIRMS type 0 (vegetation fire). Volcanoes (e.g. Kilauea), industrial heat and offshore flares are excluded.\nSELECT st.usps AS state, count(*) AS modis_hotspots\nFROM mv_hotspot_state m\nJOIN hotspot h USING (hotspot_id, acq_time)\nJOIN sensor s ON s.sensor_id = m.sensor_id\nJOIN us_state st ON st.code = m.state_code\nWHERE s.instrument = 'MODIS' AND coalesce(h.fire_type, 0) = 0 AND m.acq_time >= '2022-01-01' AND m.acq_time < '2023-01-01'\nGROUP BY st.usps\nORDER BY modis_hotspots DESC\nLIMIT 1;",
+  "columns": [
+   "state",
+   "modis_hotspots"
+  ],
+  "rows": [
+   [
+    "AK",
+    "23958"
+   ]
+  ],
+  "rows_total": 1,
+  "ms": 2100
+ },
+ {
+  "id": "a04",
+  "question": "Which state had the highest average thermal hotspot brightness temperature across all years recorded in the database?",
+  "sql": "-- Wildfire detections only: FIRMS type 0 (vegetation fire). Volcanoes (e.g. Kilauea), industrial heat and offshore flares are excluded.\n-- Averaged per instrument family, because MODIS and VIIRS fire channels are not on the same scale.\nSELECT s.instrument, st.usps AS state, round(avg(h.brightness_k)::numeric, 2) AS avg_brightness_k, count(*) AS detections\nFROM mv_hotspot_state m\nJOIN hotspot h USING (hotspot_id, acq_time)\nJOIN sensor s ON s.sensor_id = h.sensor_id\nJOIN us_state st ON st.code = m.state_code\nWHERE coalesce(h.fire_type, 0) = 0\nGROUP BY s.instrument, st.usps\nHAVING count(*) >= 1000\nORDER BY s.instrument, avg_brightness_k DESC;\n-- the top row of each instrument answers the question",
+  "columns": [
+   "instrument",
+   "state",
+   "avg_brightness_k",
+   "detections"
+  ],
+  "rows": [
+   [
+    "MODIS",
+    "CO",
+    "344.53",
+    "10423"
+   ],
+   [
+    "MODIS",
+    "NV",
+    "341.67",
+    "4033"
+   ],
+   [
+    "MODIS",
+    "WY",
+    "340.49",
+    "8087"
+   ],
+   [
+    "MODIS",
+    "UT",
+    "338.78",
+    "6861"
+   ],
+   [
+    "MODIS",
+    "NM",
+    "338.20",
+    "14891"
+   ],
+   [
+    "MODIS",
+    "AZ",
+    "336.18",
+    "20088"
+   ],
+   [
+    "MODIS",
+    "CA",
+    "336.17",
+    "127824"
+   ],
+   [
+    "MODIS",
+    "OR",
+    "333.60",
+    "50593"
+   ]
+  ],
+  "rows_total": 85,
+  "ms": 10880
+ },
+ {
+  "id": "a05",
+  "question": "List the county name and the total number of incidents it experienced in the year 2023, sorted to show the county with the most incidents at the top.",
+  "sql": "SELECT county, state, count(*) AS incidents\nFROM vw_wildfire_historical_record\nWHERE discovered_at >= '2023-01-01' AND discovered_at < '2024-01-01' AND county IS NOT NULL\nGROUP BY county, state\nORDER BY incidents DESC\nLIMIT 25;",
+  "columns": [
+   "county",
+   "state",
+   "incidents"
+  ],
+  "rows": [
+   [
+    "Riverside",
+    "CA",
+    "4497"
+   ],
+   [
+    "Los Angeles",
+    "CA",
+    "3525"
+   ],
+   [
+    "El Paso",
+    "CO",
+    "1167"
+   ],
+   [
+    "Fresno",
+    "CA",
+    "775"
+   ],
+   [
+    "San Diego",
+    "CA",
+    "680"
+   ],
+   [
+    "Weld",
+    "CO",
+    "673"
+   ],
+   [
+    "San Bernardino",
+    "CA",
+    "588"
+   ],
+   [
+    "Wayne",
+    "MI",
+    "563"
+   ]
+  ],
+  "rows_total": 25,
+  "ms": 88
+ },
+ {
+  "id": "a06",
+  "question": "For each year in the database, what are the names, state locations, and maximum brightness temperatures of the incidents that recorded the absolute hottest single hotspot for that specific year?",
+  "sql": "WITH linked AS (\n    SELECT extract(year FROM h.acq_time)::int AS year, e.name, st.usps AS state, h.brightness_k, s.code AS sensor,\n           rank() OVER (PARTITION BY extract(year FROM h.acq_time) ORDER BY h.brightness_k DESC) AS rk\n    FROM hotspot_event_link l\n    JOIN hotspot h USING (hotspot_id, acq_time)\n    JOIN sensor s ON s.sensor_id = h.sensor_id\n    JOIN fire_event e ON e.event_id = l.event_id\n    LEFT JOIN us_state st ON st.code = e.state_code\n    WHERE h.brightness_k IS NOT NULL\n)\nSELECT year, name, state, brightness_k AS max_brightness_k, sensor\nFROM linked WHERE rk = 1\nORDER BY year;",
+  "columns": [
+   "year",
+   "name",
+   "state",
+   "max_brightness_k",
+   "sensor"
+  ],
+  "rows": [
+   [
+    "2020",
+    "Claremont",
+    "CA",
+    "507",
+    "MODIS_AQUA"
+   ],
+   [
+    "2021",
+    "CALDOR",
+    "CA",
+    "508.80",
+    "MODIS_AQUA"
+   ],
+   [
+    "2021",
+    "Bootleg",
+    "OR",
+    "508.80",
+    "MODIS_AQUA"
+   ],
+   [
+    "2022",
+    "Calf Canyon",
+    "NM",
+    "507.80",
+    "MODIS_AQUA"
+   ],
+   [
+    "2023",
+    "YORK",
+    "CA",
+    "505.30",
+    "MODIS_AQUA"
+   ],
+   [
+    "2024",
+    "PARK",
+    "CA",
+    "509.50",
+    "MODIS_AQUA"
+   ],
+   [
+    "2025",
+    "HOPE",
+    "WA",
+    "510",
+    "MODIS_AQUA"
+   ]
+  ],
+  "rows_total": 7,
+  "ms": 6393
+ },
+ {
+  "id": "a07",
+  "question": "Create a view named vw_wildfire_historical_record that joins the Incidents, Fire_Types, and Jurisdictions tables. Using only this view, list the state, incident name, acres burned, and discovery date for all \"Wildfires\" (excluding \"Prescribed Fires\") that burned more than 10,000 acres, sorted by state, then by acres burned (descending), and finally by date.",
+  "sql": "-- The view is defined in schema/70_views.sql (fire_event + lk_incident_type + state/county/agency).\nSELECT state, incident_name, round(acres_burned) AS acres_burned, discovered_at::date\nFROM vw_wildfire_historical_record\nWHERE fire_type = 'Wildfire' AND acres_burned > 10000\nORDER BY state, acres_burned DESC, discovered_at;",
+  "columns": [
+   "state",
+   "incident_name",
+   "acres_burned",
+   "discovered_at"
+  ],
+  "rows": [
+   [
+    "AK",
+    "Tatlawiksuk",
+    "233,008",
+    "2022-06-05"
+   ],
+   [
+    "AK",
+    "Hog Butte",
+    "206,057",
+    "2022-06-05"
+   ],
+   [
+    "AK",
+    "Koktuli River",
+    "204,223",
+    "2022-06-09"
+   ],
+   [
+    "AK",
+    "East Fork",
+    "166,760",
+    "2022-05-31"
+   ],
+   [
+    "AK",
+    "McDonald",
+    "153,729",
+    "2024-06-08"
+   ],
+   [
+    "AK",
+    "Klikhtentotzna",
+    "117,908",
+    "2025-06-17"
+   ],
+   [
+    "AK",
+    "Aghaluk Mountain",
+    "115,030",
+    "2022-06-06"
+   ],
+   [
+    "AK",
+    "Door Mountain",
+    "112,646",
+    "2022-06-09"
+   ]
+  ],
+  "rows_total": 814,
+  "ms": 113
+ },
+ {
+  "id": "a08",
+  "question": "Which specific incident names had daily perimeters recorded on more than 10 distinct days, and what was the average recorded acreage across those mapped days?",
+  "sql": "WITH daily AS (\n    SELECT p.event_id, p.observed_at::date AS day, max(p.acres) AS acres   -- largest perimeter mapped that day\n    FROM perimeter_obs p\n    WHERE p.source = 'WFIGS' AND NOT p.is_final\n    GROUP BY p.event_id, p.observed_at::date\n)\nSELECT e.name, count(*) AS mapped_days, round(avg(d.acres)) AS avg_mapped_acres\nFROM daily d JOIN fire_event e USING (event_id)\nGROUP BY e.event_id, e.name\nHAVING count(*) > 10\nORDER BY mapped_days DESC;",
+  "columns": [
+   "name",
+   "mapped_days",
+   "avg_mapped_acres"
+  ],
+  "rows": [
+   [
+    "LITTLE GIANT",
+    "61",
+    "120,260"
+   ],
+   [
+    "Fuller Lake",
+    "48",
+    "2,199"
+   ],
+   [
+    "Horse Heaven",
+    "47",
+    "2,005"
+   ],
+   [
+    "No Man",
+    "43",
+    "1,575"
+   ],
+   [
+    "PIONEER",
+    "43",
+    "19,434"
+   ],
+   [
+    "WAPITI",
+    "42",
+    "79,306"
+   ],
+   [
+    "GOAT",
+    "40",
+    "15,264"
+   ],
+   [
+    "Lookout",
+    "38",
+    "18,922"
+   ]
+  ],
+  "rows_total": 264,
+  "ms": 167
+ },
+ {
+  "id": "a09",
+  "question": "For the incident named 'Palisades', what is the total count of high-confidence (greater than 80%) hotspots detected by each distinct satellite instrument type?",
+  "sql": "-- MODIS: confidence_pct > 80. VIIRS has no percentage; its 'high' class is used and labelled.\nWITH fire AS (\n    SELECT event_id FROM fire_event\n    WHERE lower(name) = 'palisades' AND incident_type = 'WF'\n    ORDER BY coalesce(reported_acres, final_acres) DESC NULLS LAST\n    LIMIT 1                                           -- the largest fire of that name (Jan 2025, Los Angeles)\n)\nSELECT s.platform, s.instrument,\n       count(*) FILTER (WHERE h.confidence_pct > 80 OR (h.confidence_pct IS NULL AND h.confidence_class = 'high')) AS high_confidence,\n       count(*) AS all_detections\nFROM fire JOIN hotspot_event_link l USING (event_id)\nJOIN hotspot h USING (hotspot_id, acq_time)\nJOIN sensor s ON s.sensor_id = h.sensor_id\nGROUP BY s.platform, s.instrument\nORDER BY high_confidence DESC;",
+  "columns": [
+   "platform",
+   "instrument",
+   "high_confidence",
+   "all_detections"
+  ],
+  "rows": [
+   [
+    "NOAA-21 (JPSS-2)",
+    "VIIRS",
+    "254",
+    "1516"
+   ],
+   [
+    "Suomi NPP",
+    "VIIRS",
+    "124",
+    "976"
+   ],
+   [
+    "Aqua",
+    "MODIS",
+    "102",
+    "130"
+   ],
+   [
+    "NOAA-20 (JPSS-1)",
+    "VIIRS",
+    "84",
+    "948"
+   ],
+   [
+    "Terra",
+    "MODIS",
+    "74",
+    "92"
+   ]
+  ],
+  "rows_total": 5,
+  "ms": 15
+ },
+ {
+  "id": "a10",
+  "question": "What is the average total acres burned per incident, grouped by each distinct Incident Complexity Level (Type 1 through Type 5)?",
+  "sql": "SELECT complexity_level, complexity_code, round(avg(acres_burned), 1) AS avg_acres, count(*) AS incidents\nFROM vw_wildfire_historical_record\nWHERE complexity_level IS NOT NULL AND acres_burned IS NOT NULL\nGROUP BY complexity_level, complexity_code\nORDER BY complexity_level;",
+  "columns": [
+   "complexity_level",
+   "complexity_code",
+   "avg_acres",
+   "incidents"
+  ],
+  "rows": [
+   [
+    "1",
+    "Type 1 Incident",
+    "36,358",
+    "115"
+   ],
+   [
+    "1",
+    "Type 1 Prescribed Fire",
+    "160.40",
+    "768"
+   ],
+   [
+    "2",
+    "Type 2 Incident",
+    "17,804",
+    "82"
+   ],
+   [
+    "3",
+    "Type 3 Incident",
+    "6,524",
+    "852"
+   ],
+   [
+    "3",
+    "Type 3 Prescribed Fire",
+    "25.10",
+    "7"
+   ],
+   [
+    "4",
+    "Type 4 Incident",
+    "3,172",
+    "3018"
+   ],
+   [
+    "5",
+    "Type 5 Incident",
+    "344.60",
+    "18745"
+   ]
+  ],
+  "rows_total": 7,
+  "ms": 28
+ }
+]

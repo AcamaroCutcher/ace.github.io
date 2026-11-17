@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Fire Archive 3D: wildfire spread, thermal detections and LiDAR | Acamaro Cutcher</title>
+<meta name="description" content="Watch wildfires spread in 3D over terrain: VIIRS and MODIS detections overpass by overpass, daily perimeters, Sentinel-2 before and after, burn severity and LiDAR canopy before and after the burn. Live mode shows today's fires from NIFC, VIIRS and GOES." />
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml" />
+<link rel="canonical" href="https://acamaro.com/projects/wildfire-data/app/" />
+<script src="../../../js/theme-init.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" />
+<link rel="stylesheet" href="app.css" />
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/deck.gl@9.1.14/dist.min.js"></script>
+</head>
+<body>
+<div id="map" aria-label="3D map"></div>
+
+<aside class="panel" id="panel">
+  <header class="ph">
+    <a class="back" href="../" title="Back to the guide">← Guide</a>
+    <b>Fire Archive <span>3D</span></b>
+    <button class="ico" id="themeBtn" type="button" title="Light / dark" aria-label="Switch theme">◐</button>
+    <button class="ico" id="collapse" type="button" title="Hide panel" aria-label="Hide panel">⟨</button>
+  </header>
+  <nav class="modes" role="tablist">
+    <button type="button" data-mode="archive" class="on" role="tab">Case fires</button>
+    <button type="button" data-mode="live" role="tab">Live now</button>
+  </nav>
+
+  <section class="pane on" id="pane-archive">
+    <div class="firelist" id="fireList"></div>
+    <div class="phase" id="phaseBtns">
+      <button type="button" data-phase="before">Before</button>
+      <button type="button" data-phase="during" class="on">During</button>
+      <button type="button" data-phase="after">After</button>
+      <button type="button" data-phase="canopy" title="LiDAR point cloud, close up">Canopy 3D</button>
+    </div>
+    <div class="timeline">
+      <div class="tl-top"><button type="button" class="play" id="play" aria-label="Play">▶</button><output id="tNow">–</output><select id="speed" aria-label="Speed"><option value="0.5">½×</option><option value="1" selected>1×</option><option value="3">3×</option></select></div>
+      <input type="range" id="scrub" min="0" max="1000" value="1000" aria-label="Time" />
+      <canvas id="chart" aria-label="Burned area and detections over time"></canvas>
+      <div class="tl-leg"><span><i class="l-area"></i>mapped area</span><span><i class="l-traced"></i>traced from VIIRS</span><span><i class="l-det"></i>detections per overpass</span></div>
+    </div>
+    <div class="layers" id="layers">
+      <h4>Layers</h4>
+      <label><input type="checkbox" data-l="hotspots" checked /> Satellite detections <small>VIIRS · MODIS</small></label>
+      <label><input type="checkbox" data-l="perims" checked /> Mapped perimeters <small>NIFC</small></label>
+      <label><input type="checkbox" data-l="derived" /> Traced from detections <small>VIIRS</small></label>
+      <label><input type="checkbox" data-l="ignition" checked /> Ignition (estimated)</label>
+      <div class="sel"><span>Image</span><select id="imgSel"><option value="">Aerial basemap</option><option value="s2_pre">Sentinel-2 before</option><option value="s2_post">Sentinel-2 after</option><option value="swir_pre">Shortwave IR before</option><option value="swir_post">Shortwave IR after</option><option value="dnbr">Burn severity (dNBR)</option></select></div>
+      <div class="sel"><span>LiDAR</span><select id="lidarSel"><option value="">Off</option></select></div>
+      <div class="sel"><span>Canopy</span><select id="chmSel"><option value="">Off</option></select></div>
+      <label class="rng">Terrain relief <input type="range" id="exag" min="1" max="3" step="0.1" value="1.4" /><output id="exagOut">1.4×</output></label>
+    </div>
+    <div class="info" id="info"></div>
+  </section>
+
+  <section class="pane" id="pane-live">
+    <p class="sub">Fires with a current perimeter in NIFC's interagency service (active fires, and recent ones until they are declared out), with satellite heat from VIIRS (daily) and GOES (every 10 minutes) drawn by NASA GIBS. Pick a day to see that day's VIIRS detections.</p>
+    <div class="layers">
+      <label><input type="checkbox" id="liveViirs" checked /> VIIRS fire detections <small>NOAA-20 + NOAA-21</small></label>
+      <div class="sel"><span>Day</span><input type="date" id="liveDate" /></div>
+      <label><input type="checkbox" id="liveGoes" /> GOES fire temperature <small>latest 10 min</small></label>
+      <label><input type="checkbox" id="livePerims" checked /> Current perimeters <small>NIFC WFIGS</small></label>
+    </div>
+    <div class="firelist live" id="liveList"><p class="sub">Loading current fires…</p></div>
+    <p class="sub" id="liveNote"></p>
+  </section>
+  <footer class="pf">Imagery: USGS The National Map · EOX Sentinel-2 cloudless · Terrain: AWS Terrain Tiles · Fire data: NIFC, NASA FIRMS/GIBS, USGS 3DEP, ESA Copernicus Sentinel-2. AI-generated app (Claude, Nov 2026).</footer>
+</aside>
+<button class="reopen" id="reopen" type="button" aria-label="Show panel">⟩ Fire Archive</button>
+<div class="legend" id="legend"></div>
+<div class="toast" id="toast"></div>
+<div class="loader" id="loader"><span>Loading…</span><div><i id="loadBar"></i></div></div>
+<script src="app.js"></script>
+</body>
+</html>

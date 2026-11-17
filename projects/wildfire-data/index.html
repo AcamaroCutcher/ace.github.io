@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Wildfire–Satellite Database: linking fires to VIIRS, FireSat, LiDAR and imagery | Acamaro Cutcher</title>
+<meta name="description" content="A PostgreSQL/PostGIS database that links every US wildfire to its satellite record: VIIRS and MODIS hotspots, daily perimeters, LiDAR before and after, burn-severity imagery, fuels and weather, built for training neural ODEs, deep networks and graph neural networks. With a guide to every fire satellite, including FireSat, and a 3D fire-spread app." />
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+<link rel="canonical" href="https://acamaro.com/projects/wildfire-data/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acamaro Cutcher" />
+<meta property="og:title" content="Wildfire–Satellite Database" />
+<meta property="og:description" content="Every US wildfire linked to its satellite record: VIIRS hotspots, daily perimeters, LiDAR before and after, imagery, fuels and weather, ready for machine learning." />
+<meta property="og:url" content="https://acamaro.com/projects/wildfire-data/" />
+<meta property="og:image" content="https://acamaro.com/projects/thumbs/wildfire-data.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<script src="../../js/theme-init.js"></script>
+<meta name="theme-color" content="#ebe5d2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#11120f" media="(prefers-color-scheme: dark)" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Stencil+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="page.css" />
+</head>
+<body>
+<header class="topbar">
+  <a class="back" href="../index.html" title="All projects">←<span> Projects</span></a>
+  <a class="brand" href="#top"><span class="led on" id="hdrLed"></span><b>Fire Archive</b></a>
+  <nav class="tuner" id="tuner" aria-label="Sections"><div class="scale" id="scale"></div><div class="needle" id="needle"></div></nav>
+  <div class="readout" id="readout">CH 00 · STANDBY</div>
+  <button class="themeBtn" id="themeBtn" type="button" aria-label="Switch theme" title="Light / dark"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg></button>
+  <button class="menuBtn" id="menuBtn" aria-expanded="false" aria-controls="chanMenu">Channels</button>
+</header>
+<nav class="chanMenu" id="chanMenu"><a href="#g-gap" data-no="01"><span>01</span>Gap</a><a href="#g-sats" data-no="02"><span>02</span>Satellites</a><a href="#g-schema" data-no="03"><span>03</span>Schema</a><a href="#g-link" data-no="04"><span>04</span>Linking</a><a href="#g-ml" data-no="05"><span>05</span>Models</a><a href="#g-queries" data-no="06"><span>06</span>Questions</a><a href="#g-cases" data-no="07"><span>07</span>Case fires</a><a href="#g-host" data-no="08"><span>08</span>Hosting</a><a href="#g-sources" data-no="09"><span>09</span>Sources</a></nav>
+
+<header class="hero" id="top">
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <div>
+    <span class="tag"><span class="led on"></span>Research database · AI-generated guide</span>
+    <h1>Fire<em>Archive</em></h1>
+    <p class="lede">One PostgreSQL database that links every US wildfire to its satellite record: VIIRS and MODIS heat detections, daily perimeters, LiDAR from before and after the burn, burn-severity imagery, fuels and weather. Built so a spread model can ask for a fire and get back everything it needs to learn from.</p>
+    <div class="ctas">
+      <a class="cta primary" href="app/">Open the 3D fire app →</a>
+      <a class="cta" href="#g-schema">The schema</a>
+      <a class="cta" href="https://github.com/AcamaroCutcher/Wildfire_Database">Code on GitHub</a>
+    </div>
+    <div class="facts" id="heroFacts">
+      <div><b data-stat="hotspots">8.25 M</b>satellite fire detections</div>
+      <div><b data-stat="events">672 k</b>incidents since 2020</div>
+      <div><b data-stat="perimeters">110 k</b>mapped perimeters</div>
+      <div><b data-stat="lidar">2,284</b>LiDAR collections</div>
+    </div>
+  </div>
+  <div class="hero-legend rv">
+    <div class="hl-row"><i class="sw sw-hot"></i>VIIRS 375 m detection, by age</div>
+    <div class="hl-row"><i class="sw sw-perim"></i>perimeter traced from detections</div>
+    <div class="hl-row"><i class="sw sw-pass"></i>satellite overpass</div>
+    <p id="heroClock">pass 00 · t+00 h</p>
+  </div>
+  <div class="scroll-cue">SCROLL ↓</div>
+</header>
+
+<main>
+<div class="doc">
+
+<section id="g-gap" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">01</span><span class="nm">Gap</span><span class="coord">What today's<br>datasets miss</span></aside>
+  <div class="body">
+    <h2>Why build another wildfire database?</h2>
+    <p class="lead">Machine-learning wildfire datasets exist, but each one covers a slice. None of them puts sub-daily fire spread, the 3D structure of the forest before and after, and burn severity for the same fire into one place you can query.</p>
+    <div class="tbl-wrap"><table class="tbl cmp">
+      <tr><th>Dataset</th><th>Resolution</th><th>Time step</th><th>Labels</th><th>LiDAR</th><th>Before / after</th></tr>
+      <tr><td>Next Day Wildfire Spread (2022)</td><td>1 km</td><td>1 day</td><td>MODIS fire mask</td><td class="no">no</td><td class="no">no</td></tr>
+      <tr><td>WildfireSpreadTS / WSTS+</td><td>375 m</td><td>1 day</td><td>VIIRS detections</td><td class="no">no</td><td class="no">no</td></tr>
+      <tr><td>Mesogeos (Mediterranean)</td><td>1 km</td><td>1 day</td><td>burned area</td><td class="no">no</td><td class="no">no</td></tr>
+      <tr><td>SeasFire cube (global)</td><td>0.25°</td><td>8 days</td><td>burned area</td><td class="no">no</td><td class="no">no</td></tr>
+      <tr class="me"><td><b>This database</b></td><td>30 m – 375 m, LiDAR ~1 m</td><td>every overpass + daily perimeters</td><td>perimeters, detections, severity</td><td class="yes">pre &amp; post</td><td class="yes">yes</td></tr>
+    </table></div>
+    <p>The design goal is simple to state: <b>ask for a fire, get everything</b>. Its incident record, every perimeter ever mapped, every satellite detection that belongs to it (and how sure we are that it does), the LiDAR and imagery from before and after, the fuels and terrain under it, and the weather over it. From there a training example is one SQL query away.</p>
+    <div class="callout"><p><b>What changed from the first version.</b> The earlier attempt stored hotspots with no link to any fire, mixed MODIS percentages with VIIRS letter grades in one "confidence" column, threw away the perimeter shapes, kept times as text and cause codes as bare numbers. All five are fixed here, and the 20 questions from the original project proposal are now the database's acceptance test (<a href="#g-queries">section 06</a>).</p></div>
+  </div>
+</section>
+
+<section id="g-sats" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">02</span><span class="nm">Satellites</span><span class="coord">Every source<br>that sees fire</span></aside>
+  <div class="body">
+    <h2>The satellites that watch wildfires</h2>
+    <p class="lead">Fire is seen in three ways from above: <b>heat</b> (thermal infrared detections, minutes to hours old), <b>change</b> (optical imagery before and after: burn severity) and <b>structure</b> (LiDAR: the 3D forest that burned). The database keeps all three.</p>
+    <h3>Resolution against revisit</h3>
+    <p>Each dot is a source. Smaller pixels see smaller fires; shorter revisit catches the spread between passes. No single source wins both, which is why they are combined. Click a dot.</p>
+    <div class="satchart" id="satChart"></div>
+    <div class="satcard" id="satCard"></div>
+
+    <h3>A real day of overpasses: Oregon, Labor Day 2020</h3>
+    <p>Every fire detection over Oregon from 7 to 10 September 2020, grouped into 10-minute bins, straight from this database. Polar-orbiting satellites (VIIRS, MODIS) see the state in two windows a day, around 2 a.m. and 1 p.m. local time. The <b>8–10 hour gaps</b> between them are exactly where geostationary GOES (every 5 minutes, but 2 km pixels) and the new FireSat constellation come in.</p>
+    <figure class="ovp"><div id="overpass"></div><figcaption>Detections per 10 minutes over Oregon by sensor (bar height = number of 375 m / 1 km pixels flagged as fire; colour = sensor). Times in Pacific time.</figcaption></figure>
+
+    <h3>The thermal sources in detail</h3>
+    <div class="sat-grid" id="satGrid"></div>
+    <div class="callout red"><p><b>Two changes in 2026 that matter.</b> NOAA ended Suomi-NPP products on <b>2 November 2026</b>, so live VIIRS now comes from NOAA-20 and NOAA-21 only (the S-NPP archive back to 2012 stays). And FireSat's first three operational satellites reached orbit on <b>7 July 2026</b>: its data goes to early-adopter agencies first, with non-commercial licences for academic users planned for 2027. The database already has a sensor row and an ingest adapter waiting for it.</p></div>
+  </div>
+</section>
+
+<section id="g-schema" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">03</span><span class="nm">Schema</span><span class="coord">PostgreSQL 17<br>PostGIS 3.5</span></aside>
+  <div class="body">
+    <h2>The schema: one fire, everything attached</h2>
+    <p class="lead"><code>fire_event</code> sits in the middle. Everything else hangs off it by key or by space and time: perimeters over time, detections through an explicit link table, imagery, LiDAR, rasters and weather.</p>
+    <p>Click a table to see its columns and why it is shaped that way. Lines are foreign keys; the dashed line is the spatial–temporal link built by the linking query.</p>
+    <div class="er" id="erDiagram"></div>
+    <div class="erinfo" id="erInfo"><p class="sub">Select a table.</p></div>
+    <h3>Design rules</h3>
+    <ul>
+      <li><b>Space is geometry, time is <code>timestamptz</code>.</b> Points, footprints and perimeters are PostGIS geometries in WGS 84; areas and distances use the geography type (metres, on the ellipsoid). Every time is UTC.</li>
+      <li><b>Never invent a number.</b> MODIS confidence is a percentage, VIIRS confidence is low/nominal/high. Each keeps its own form; a shared three-class column makes them comparable without pretending VIIRS has a percentage.</li>
+      <li><b>Codes carry their meaning.</b> Cause, incident-type and fuel codes are loaded with their descriptions from NIFC's own definitions.</li>
+      <li><b>Big files stay outside.</b> LiDAR point clouds and image rasters stay in cloud storage (COG, EPT/COPC); the database stores where they are, when they were taken and how they relate to the fire.</li>
+      <li><b>Detections are partitioned by month</b>, with spatial (GiST) and time (BRIN) indexes, so one fire's detections come back in milliseconds out of millions.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-link" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">04</span><span class="nm">Linking</span><span class="coord">Which fire is<br>this pixel?</span></aside>
+  <div class="body">
+    <h2>Linking a detection to its fire</h2>
+    <p class="lead">A satellite reports a hot pixel, not a fire name. The linking query decides which fire each detection belongs to, using where it is and when it was seen, and records <b>how</b> it decided, as a score.</p>
+    <div class="linkdemo" id="linkDemo"></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <tr><th>Score</th><th>Rule</th><th>Why</th></tr>
+      <tr><td><b>1.0</b></td><td>Inside a perimeter of the fire mapped within ±12 h</td><td>Same place, same time: no doubt</td></tr>
+      <tr><td><b>0.8</b></td><td>Inside the fire's final perimeter, during the fire</td><td>The fire burned there, at some point</td></tr>
+      <tr><td><b>≤ 0.6</b></td><td>Within 2 km of the perimeter (or the point of origin), decaying with distance</td><td>Pixels are 375 m–1 km wide and perimeters are drawn by hand</td></tr>
+      <tr><td><b>0.4</b></td><td>Left over, but part of a cluster within 5 km of a reported origin</td><td>Small fires that never got a perimeter</td></tr>
+    </table></div>
+    <p>"During the fire" means from one day before discovery to three days after the first known end (out, controlled, contained or last mapped perimeter). Detections that FIRMS flags as volcanoes, gas flares or offshore sources are never linked. Each detection gets at most one fire: highest score first, then nearest, then closest in time.</p>
+    <p>Perimeters can have more than 100,000 vertices, so the query first cuts each one into pieces of at most 64 vertices (<code>ST_Subdivide</code>) and lets the spatial index pair every detection only with nearby pieces. That took the busiest month on record, September 2020, from over ten minutes to under three.</p>
+    <div id="linkStats"></div>
+  </div>
+</section>
+
+<section id="g-ml" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">05</span><span class="nm">Models</span><span class="coord">DNN · GNN ·<br>neural ODE</span></aside>
+  <div class="body">
+    <h2>From database to model</h2>
+    <p class="lead">Every moment the fire's state is known, a mapped perimeter or a satellite overpass, becomes a time stamp. Consecutive time stamps make a training pair: the state at <i>t</i> and everything around it are the input; the state at the next time is the label.</p>
+    <div class="mltabs" id="mlTabs"></div>
+    <div class="mlpane" id="mlPane"></div>
+    <div class="callout blue"><p><b>Irregular time is a feature.</b> Overpasses come at 1:30 and 13:30, perimeters whenever a crew or aircraft maps one. Fixed-step models resample onto a grid; a neural ODE takes the true time gaps (<code>dt_hours</code>) directly, which is why the training view keeps them.</p></div>
+  </div>
+</section>
+
+<section id="g-queries" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">06</span><span class="nm">Questions</span><span class="coord">The proposal's<br>20 queries</span></aside>
+  <div class="body">
+    <h2>The original 20 questions, answered</h2>
+    <p class="lead">The project proposal set 10 basic and 10 advanced questions. Each one is now a SQL file in the repository and a test that must return rows. Here they are with their SQL and the first rows of the real answer.</p>
+    <div class="qlist" id="qList"></div>
+  </div>
+</section>
+
+<section id="g-cases" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">07</span><span class="nm">Case fires</span><span class="coord">Pacific Northwest<br>with LiDAR</span></aside>
+  <div class="body">
+    <h2>Case fires: the Pacific Northwest in 3D</h2>
+    <p class="lead">The app shows how a fire spread over the ground it burned. These fires were picked because the public USGS LiDAR archive covers them, and because together they show every kind of record.</p>
+    <div class="cases" id="caseCards"></div>
+    <p><a class="cta primary" href="app/">Open the 3D fire app →</a></p>
+  </div>
+</section>
+
+<section id="g-host" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">08</span><span class="nm">Hosting</span><span class="coord">Local master,<br>cloud copy</span></aside>
+  <div class="body">
+    <h2>Where the database lives</h2>
+    <p class="lead">The full archive is a few gigabytes, more than free cloud tiers hold. So the complete database runs locally for training, and a slimmer copy serves the web app.</p>
+    <div class="hostgrid">
+      <div class="hostcard"><b>Local master</b><span>PostgreSQL 17 + PostGIS 3.5 in <a href="https://postgresapp.com/">Postgres.app</a> on a Mac (or the <code>postgis/postgis</code> Docker image). Holds everything; ML exports read from here.</span></div>
+      <div class="hostcard"><b>Supabase serving copy</b><span>Postgres + PostGIS with an automatic REST API. Recent years and the case fires, simplified shapes, read-only access. Free tier 500 MB; Pro plan if it grows.</span></div>
+      <div class="hostcard"><b>Cloudflare Worker</b><span>A small edge function: proxies NASA FIRMS (which blocks browser requests and needs a private key), caches Supabase answers, converts GOES files to GeoJSON.</span></div>
+      <div class="hostcard"><b>GitHub Pages</b><span>This page and the app: static files that call the Worker and public open-data services directly.</span></div>
+    </div>
+    <h3>What the browser can fetch directly</h3>
+    <div class="tbl-wrap"><table class="tbl">
+      <tr><th>Directly from the browser</th><th>Through the Worker or the pipeline</th></tr>
+      <tr><td>NIFC perimeters and incidents (WFIGS)</td><td>NASA FIRMS detections (no CORS, private key)</td></tr>
+      <tr><td>NASA GIBS map tiles, incl. VIIRS fire layers</td><td>FireSat (licensed, from 2027)</td></tr>
+      <tr><td>USGS 3DEP LiDAR (EPT) and elevation</td><td>GEDI, ICESat-2, HLS (NASA Earthdata login)</td></tr>
+      <tr><td>Sentinel-2 via Earth Search; Planetary Computer tiles</td><td>Airborne IR (NIROPS: agency login)</td></tr>
+      <tr><td>GOES-18/19 fire product on AWS (NetCDF)</td><td>Datasets without CORS (mirror to storage)</td></tr>
+    </table></div>
+    <h3>Run it yourself</h3>
+<pre><code># 1. database (PostgreSQL 16+ with PostGIS)
+createdb wildfire
+for f in schema/*.sql; do psql -d wildfire -f "$f"; done
+
+# 2. data
+cd ingest
+python reference.py                      # states, counties, NIFC code lists
+python nifc.py incidents --csv inform_fire_occurrence_data.csv
+python nifc.py perimeters                # WFIGS final + daily perimeters
+python firms.py files fire_archive_*.csv # or: firms.py api --source VIIRS_NOAA21_NRT
+python lidar.py index &amp;&amp; python lidar.py link
+
+# 3. link detections to fires, then test
+link/run_link.sh 2020-01 2025-12
+pytest tests -q</code></pre>
+  </div>
+</section>
+
+<section id="g-sources" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">09</span><span class="nm">Sources</span><span class="coord">Data &amp; docs</span></aside>
+  <div class="body">
+    <h2>Sources</h2>
+    <ul class="sources">
+      <li><a href="https://firms.modaps.eosdis.nasa.gov/api/">NASA FIRMS API</a> · <a href="https://www.earthdata.nasa.gov/s3fs-public/2025-06/VIIRS_C2_AF-375m_User_Guide_1.2.pdf">VIIRS 375 m active fire user guide (C2, v1.2)</a> · <a href="https://www.earthdata.nasa.gov/news/blog/transitioning-from-s-npp-viirs-omps-what-nasa-firms-users-need-know">FIRMS: transitioning from S-NPP</a> · <a href="https://www.nesdis.noaa.gov/news/cessation-of-suomi-national-polar-orbiting-partnership-s-npp-data-users-onafter-november-2-2026">NOAA: S-NPP cessation</a></li>
+      <li><a href="https://earthfirealliance.org/about-firesat/">Earth Fire Alliance: about FireSat</a> · <a href="https://earthfirealliance.org/data-access/">FireSat data access</a> · <a href="https://www.muonspace.com/earth-fire-alliance-and-muon-space-release-first-light-and-first-active-fire-images-from-operational-firesat-constellation/">Muon Space: FireSat first light</a></li>
+      <li><a href="https://www.nesdis.noaa.gov/news/noaas-goes-19-now-operational-goes-east-providing-critical-new-data-forecasters">NOAA: GOES-19 operational as GOES-East</a></li>
+      <li><a href="https://data-nifc.opendata.arcgis.com/">NIFC Open Data</a> (InFORM Fire Occurrence, WFIGS interagency and daily perimeters) · <a href="https://www.usgs.gov/data/monitoring-trends-burn-severity-ver-120-april-2025">MTBS v12</a></li>
+      <li><a href="https://registry.opendata.aws/usgs-lidar/">USGS 3DEP LiDAR on AWS (EPT)</a> · <a href="https://github.com/hobuinc/usgs-lidar">collection boundaries</a> · <a href="https://planetarycomputer.microsoft.com/dataset/3dep-lidar-copc">Planetary Computer 3DEP COPC</a></li>
+      <li><a href="https://earth-search.aws.element84.com/v1">Earth Search STAC (Sentinel-2)</a> · <a href="https://planetarycomputer.microsoft.com/">Microsoft Planetary Computer</a> · <a href="https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api">NASA GIBS</a></li>
+      <li>ML datasets: <a href="https://arxiv.org/pdf/2112.02447">Next Day Wildfire Spread</a> · <a href="https://zenodo.org/records/8006177">WildfireSpreadTS</a> · <a href="https://arxiv.org/html/2502.12003v3">WSTS+</a> · <a href="https://arxiv.org/abs/2306.05144v2">Mesogeos</a></li>
+      <li><a href="https://www2.census.gov/geo/tiger/GENZ2024/">US Census cartographic boundaries 2024</a></li>
+    </ul>
+  </div>
+</section>
+
+</div>
+</main>
+<footer>
+  <p>Fire Archive · a wildfire–satellite database by Acamaro Cutcher · <a href="../index.html">more projects</a> · <a href="https://github.com/AcamaroCutcher/Wildfire_Database">code</a></p>
+  <p>AI-generated design, code and text (written with Claude, November 2026), checked by running every query against the loaded database. Satellite services change: check current documentation and licences before relying on any feed.</p>
+</footer>
+<script type="module" src="wd.js"></script>
+</body>
+</html>

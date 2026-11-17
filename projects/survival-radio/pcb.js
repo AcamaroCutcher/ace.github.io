@@ -8,6 +8,28 @@ import { PCB } from './pcb-data.js';
 
 const $ = (id) => document.getElementById(id);
 const host = $('pcbView');
+
+// KiCad footprint name -> what to draw; box (courtyard) -> centre and size
+const KIND = (fp) => /^R_/.test(fp) ? 'R' : /^C_0805/.test(fp) ? 'C' : /SOD-123/.test(fp) ? 'D' : /SOT-23/.test(fp) ? 'Q' : /SOIC/.test(fp) ? 'ic'
+  : /PinSocket/.test(fp) ? 'socket' : /IDC/.test(fp) ? 'idc' : /JST_SH/.test(fp) ? 'sh' : /JST_PH/.test(fp) ? 'jst' : /TerminalBlock/.test(fp) ? 'terminal'
+  : /Buzzer/.test(fp) ? 'buzzer' : /CP_Radial/.test(fp) ? 'cap-radial' : 'other';
+for (const c of PCB.comps) {
+  c.kind ||= KIND(c.fp || '');
+  if (c.box) { c.x = (c.box[0] + c.box[2]) / 2; c.y = (c.box[1] + c.box[3]) / 2; c.w = c.box[2] - c.box[0]; c.h = c.box[3] - c.box[1]; }
+}
+{ // the modules that plug into the sockets
+  const R_ = Object.fromEntries(PCB.comps.map((c) => [c.ref, c]));
+  if (R_.J9 && R_.J10 && !R_.U1) {
+    const xs = R_.J9.pads.map((p) => p.x), y = (R_.J9.pads[0].y + R_.J10.pads[0].y) / 2;
+    PCB.comps.push({ ref: 'U1', kind: 'feather', value: 'Adafruit ESP32-S3 Feather (5477)', x: (Math.min(...xs) + Math.max(...xs)) / 2, y, w: 50.8, h: 22.86,
+      desc: 'The controller. It plugs into sockets J9 and J10, so it can come out for flashing on the bench.', pads: [], socketPads: [...R_.J9.pads, ...R_.J10.pads] });
+  }
+  if (R_.J11 && !R_.U2) {
+    const xs = R_.J11.pads.map((p) => p.x);
+    PCB.comps.push({ ref: 'U2', kind: 'boost', value: 'Adafruit MiniBoost 5 V (4654)', x: (Math.min(...xs) + Math.max(...xs)) / 2, y: R_.J11.pads[0].y + 3.2, w: 12.5, h: 9.5,
+      desc: '5 V boost module in socket J11. EN low switches the 5 V rail fully off.', pads: [], socketPads: R_.J11.pads });
+  }
+}
 const KIND_COL = { power: 0xff5a4e, i2c: 0x5b8def, uart: 0xf2b33d, spi: 0xb07ae8, gpio: 0xd9d4c4 };
 const KIND_LABEL = { power: 'Power & ground', i2c: 'I²C', uart: 'UART', spi: 'SPI (e-paper)', gpio: 'GPIO & analog' };
 
@@ -109,6 +131,7 @@ function boot() {
     g.strokeStyle = '#efeadb'; g.fillStyle = '#efeadb'; g.lineWidth = 2.2;
     const X = (x) => x * S, Y = (y) => (B.h - y) * S;
     for (const c of PCB.comps) {
+      if (c.kind === 'feather' || c.kind === 'boost') continue;
       if (c.kind === 'R' || c.kind === 'C' || c.kind === 'D' || c.kind === 'Q') g.strokeRect(X(c.x - c.w / 2 - 0.4), Y(c.y + c.h / 2 + 0.4), (c.w + 0.8) * S, (c.h + 0.8) * S);
       else if (c.kind === 'buzzer' || c.kind === 'cap-radial') { g.beginPath(); g.arc(X(c.x), Y(c.y), c.w / 2 * S + 3, 0, Math.PI * 2); g.stroke(); }
       else g.strokeRect(X(c.x - c.w / 2), Y(c.y + c.h / 2), c.w * S, c.h * S);
@@ -118,7 +141,7 @@ function boot() {
       g.fillText(c.ref, X(lx), Y(ly) + (c.kind === 'R' || c.kind === 'C' ? 7 : 0));
     }
     g.font = '700 40px "Saira Stencil One", "IBM Plex Mono", sans-serif'; g.fillText('SURVIVAL RADIO', X(6), Y(52));
-    g.font = '500 20px "IBM Plex Mono", monospace'; g.fillText('CARRIER v0.1 · CONCEPT', X(6), Y(49));
+    g.font = '500 20px "IBM Plex Mono", monospace'; g.fillText('CARRIER v0.2', X(6), Y(49));
     g.fillText('acamaro.com', X(6), Y(46.5));
     const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
     const silk = new THREE.Mesh(new THREE.PlaneGeometry(B.w, B.h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
@@ -141,6 +164,7 @@ function boot() {
   for (const c of PCB.comps) {
     const g = new THREE.Group(); g.userData.comp = c; const ctr = P(c.x, c.y), top = T / 2;
     const pads = c.pads;
+    const bw = Math.max(1, c.w - 0.5), bh = Math.max(1, c.h - 0.5);
     switch (c.kind) {
       case 'R': case 'C': {
         const vert = c.h > c.w, len = 2.0, wid = 1.25, h = c.kind === 'R' ? 0.5 : 0.85;
@@ -149,39 +173,35 @@ function boot() {
         for (const p of pads) { const q = P(p.x, p.y); g.add(box(vert ? wid : 0.45, h, vert ? 0.45 : wid, tin, q.x + (vert ? 0 : (q.x > ctr.x ? -0.2 : 0.2)), top + h / 2 + 0.1, q.z + (vert ? (q.z > ctr.z ? -0.2 : 0.2) : 0))); }
         break;
       }
-      case 'Q': g.add(box(2.9, 1.0, 1.3, black, ctr.x, top + 0.6, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(box(0.4, 0.15, 0.9, tin, q.x, top + 0.15, q.z)); } break;
-      case 'D': { const vert = c.h > c.w; g.add(box(vert ? 1.6 : 2.7, 1.1, vert ? 2.7 : 1.6, black, ctr.x, top + 0.65, ctr.z)); const k = P(pads[0].x, pads[0].y); g.add(box(vert ? 1.62 : 0.35, 1.12, vert ? 0.35 : 1.62, std(0xd8d8d8, 0.5), ctr.x + (k.x - ctr.x) * 0.55, top + 0.66, ctr.z + (k.z - ctr.z) * 0.55)); break; }
-      case 'ic': { g.add(box(7.5, 2.4, 11.6, black, ctr.x, top + 1.3, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(box(1.4, 0.2, 0.42, tin, q.x, top + 0.2, q.z)); } const d = cyl(0.6, 0.05, std(0x333333), ctr.x - 2.4, top + 2.52, ctr.z - 4.4, 16); g.add(d); break; }
-      case 'J': {
-        if (c.ref === 'J1') { g.add(box(8.9, 9, 20.3, std(0x222222, 0.6), ctr.x, top + 4.5, ctr.z)); g.add(box(4, 6, 1.2, std(0x111111), ctr.x - 4.2, top + 5, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(box(0.64, 6, 0.64, gold, q.x, top + 3.2, q.z)); } }
-        else if (c.ref === 'J4') { g.add(box(6, 2.9, 4.3, white, ctr.x, top + 1.5, ctr.z)); }
-        else { const xs = pads.map((p) => p.x); const x0 = Math.min(...xs) - 1.95, x1 = Math.max(...xs) + 1.95; const q = P((x0 + x1) / 2, c.y); g.add(box(x1 - x0, 6, 4.5, white, q.x, top + 3, q.z)); g.add(box(x1 - x0 - 1, 4.4, 0.6, std(0xd2cdbf), q.x, top + 3.6, q.z - 2.3)); }
-        break;
-      }
-      case 'terminal': { g.add(box(7.6, 8.5, 7, green, ctr.x, top + 4.25, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(cyl(1.1, 0.6, tin, q.x, top + 8.6, q.z, 16)); } break; }
+      case 'Q': { const c3 = P((pads[0].x + pads[1].x + pads[2].x) / 3, (pads[0].y + pads[1].y + pads[2].y) / 3); g.add(box(1.3, 1.0, 2.9, black, c3.x, top + 0.6, c3.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(box(0.9, 0.15, 0.4, tin, q.x, top + 0.15, q.z)); } break; }
+      case 'D': { const k = P(pads[0].x, pads[0].y), a2 = P(pads[1].x, pads[1].y), m = k.clone().add(a2).multiplyScalar(0.5), vert = Math.abs(k.z - a2.z) > Math.abs(k.x - a2.x);
+        g.add(box(vert ? 1.6 : 2.7, 1.1, vert ? 2.7 : 1.6, black, m.x, top + 0.65, m.z)); g.add(box(vert ? 1.62 : 0.35, 1.12, vert ? 0.35 : 1.62, std(0xd8d8d8, 0.5), m.x + (k.x - m.x) * 0.55, top + 0.66, m.z + (k.z - m.z) * 0.55)); break; }
+      case 'ic': { g.add(box(7.5, 2.4, 11.6, black, ctr.x, top + 1.3, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(box(1.4, 0.2, 0.42, tin, q.x, top + 0.2, q.z)); } g.add(cyl(0.6, 0.05, std(0x333333), ctr.x - 2.4, top + 2.52, ctr.z - 4.4, 16)); break; }
+      case 'socket': g.add(headerStrip(pads, c.ref === 'J11' ? 8.5 : 8.5, pcbBlack)); break;
+      case 'idc': { g.add(box(bw, 9, bh, std(0x222222, 0.6), ctr.x, top + 4.5, ctr.z)); g.add(box(1.2, 6, 4.5, std(0x111111), ctr.x - bw / 2 - 0.3, top + 5, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(box(0.64, 6, 0.64, gold, q.x, top + 3.2, q.z)); } break; }
+      case 'jst': { g.add(box(bw, 6, bh, white, ctr.x, top + 3, ctr.z)); g.add(box(bw - 1, 4.4, 0.6, std(0xd2cdbf), ctr.x, top + 3.6, ctr.z - bh / 2 + 0.3)); break; }
+      case 'sh': { g.add(box(6, 2.9, 4.3, white, ctr.x, top + 1.5, ctr.z)); break; }
+      case 'terminal': { g.add(box(bw, 8.5, bh, green, ctr.x, top + 4.25, ctr.z)); for (const p of pads) { const q = P(p.x, p.y); g.add(cyl(1.1, 0.6, tin, q.x, top + 8.6, q.z, 16)); } break; }
       case 'buzzer': { g.add(cyl(6, 9.5, std(0x111111, 0.4), ctr.x, top + 4.75, ctr.z, 40)); g.add(cyl(1.0, 0.3, std(0x333), ctr.x, top + 9.6, ctr.z, 16)); break; }
       case 'cap-radial': { g.add(cyl(3.15, 7.7, std(0x2b3a55, 0.4, 0.2), ctr.x, top + 3.85, ctr.z, 32)); g.add(cyl(3.0, 0.2, can, ctr.x, top + 7.8, ctr.z, 32)); g.add(box(1.2, 7.6, 0.4, std(0xd8dce2, 0.5), ctr.x - 2.3, top + 3.85, ctr.z + 2.0)); break; }
-      case 'module': {
-        if (c.ref === 'U1') {
-          const fa = pads.filter((p) => p.y < 40), fb = pads.filter((p) => p.y > 40);
-          g.add(headerStrip(fa, 8.5, pcbBlack), headerStrip(fb, 8.5, pcbBlack));
-          const y = top + 8.5 + 1.0 + 0.8;
-          g.add(box(50.8, 1.6, 22.86, std(0x1d1d1d, 0.5), ctr.x, y, ctr.z));
-          g.add(box(18, 3.1, 15.4, can, ctr.x + 12, y + 2.3, ctr.z));                 // ESP32-S3 module can
-          g.add(box(9, 3.2, 7.4, std(0xb9bec4, 0.3, 1), ctr.x - 23, y + 2.3, ctr.z));     // USB-C
-          g.add(box(6, 5, 8, std(0xeeeeee, 0.6), ctr.x - 14, y + 3.3, ctr.z + 6));        // JST battery
-          g.add(box(3, 1, 3, std(0xf2f2f2), ctr.x - 8, y + 1.3, ctr.z - 7));
-          for (const p of pads) { const q = P(p.x, p.y); g.add(box(0.64, 2.5, 0.64, gold, q.x, y + 1.6, q.z)); }
-        } else {
-          g.add(headerStrip(pads, 2.54, pcbBlack));
-          const y = top + 2.54 + 1.6;
-          g.add(box(12.5, 1.6, 9.5, blue, ctr.x, y, ctr.z - 0.5));
-          g.add(box(4, 2, 4, std(0x222222), ctr.x - 1, y + 1.6, ctr.z - 1));
-          g.add(box(3.4, 1.4, 1.8, std(0x8a7a5a), ctr.x + 3.5, y + 1.4, ctr.z - 2));
-        }
+      case 'feather': {
+        const y = top + 8.5 + 2.5 + 0.8;
+        g.add(box(50.8, 1.6, 22.86, std(0x1d1d1d, 0.5), ctr.x, y, ctr.z));
+        g.add(box(18, 3.1, 15.4, can, ctr.x + 12, y + 2.3, ctr.z));
+        g.add(box(9, 3.2, 7.4, std(0xb9bec4, 0.3, 1), ctr.x - 23, y + 2.3, ctr.z));
+        g.add(box(6, 5, 8, std(0xeeeeee, 0.6), ctr.x - 14, y + 3.3, ctr.z + 6));
+        for (const p of c.socketPads) { const q = P(p.x, p.y); g.add(box(0.64, 3, 0.64, gold, q.x, y - 1.6, q.z)); }
         break;
       }
-      default: g.add(box(c.w, c.z, c.h, white, ctr.x, top + c.z / 2, ctr.z));
+      case 'boost': {
+        const y = top + 8.5 + 2.5 + 0.8;
+        g.add(box(12.5, 1.6, 9.5, blue, ctr.x, y, ctr.z));
+        g.add(box(4, 2, 4, std(0x222222), ctr.x - 1, y + 1.6, ctr.z - 1));
+        g.add(box(3.4, 1.4, 1.8, std(0x8a7a5a), ctr.x + 3.5, y + 1.4, ctr.z - 2));
+        for (const p of c.socketPads) { const q = P(p.x, p.y); g.add(box(0.64, 3, 0.64, gold, q.x, y - 1.6, q.z)); }
+        break;
+      }
+      default: g.add(box(bw, 2, bh, white, ctr.x, top + 1, ctr.z));
     }
     g.traverse((o) => { if (o.isMesh) { o.userData.comp = c; o.castShadow = true; } });
     L.parts.add(g); parts[c.ref] = g; g.userData.base = g.position.clone();
@@ -213,8 +233,8 @@ function boot() {
   function pickComp(c) {
     selComp = c;
     if (!c) { info.innerHTML = defaultInfo; return; }
-    const rows = c.pads.filter((p) => !/^M\d$/.test(p.pin)).map((p) => `<tr><td>${p.pin}</td><td>${p.net ? `<button type="button" class="netlink" data-net="${p.net}">${p.net}</button>` : '—'}</td></tr>`).join('');
-    info.innerHTML = `<h3>${c.ref} · ${c.value}</h3><p>${c.desc}</p><table class="mini-t">${rows}</table>`;
+    const rows = c.pads.filter((p) => !/^M/.test(p.pin)).map((p) => `<tr><td>${p.pin}</td><td>${p.net ? `<button type="button" class="netlink" data-net="${p.net}">${p.net}</button>` : '—'}</td></tr>`).join('');
+    info.innerHTML = `<h3>${c.ref} · ${c.value}</h3><p>${c.desc}</p>${c.fp ? `<p class="sub">Footprint: ${c.fp}</p>` : ''}${rows ? `<table class="mini-t">${rows}</table>` : ''}`;
   }
   info.addEventListener('click', (e) => { const b = e.target.closest('.netlink'); if (b) pickNet(b.dataset.net); });
 
@@ -233,10 +253,11 @@ function boot() {
   // build animation
   const STAGES = [
     ['Bare board: two copper layers, olive solder mask, white silkscreen.', () => []],
-    ['Stage 1 · surface-mount parts: resistors, capacitors, diodes, transistors, the expander and the Qwiic socket. Solder these first, lowest parts first.', (c) => ['R', 'C', 'D', 'Q', 'ic'].includes(c.kind) || c.ref === 'J4'],
-    ['Stage 2 · through-hole connectors: JST sockets, the modem box header, the screw terminal.', (c) => (c.kind === 'J' && c.ref !== 'J4') || c.kind === 'terminal'],
+    ['Stage 1 · surface-mount parts: resistors, capacitors, diodes, transistors, the expander and the Qwiic socket. Solder these first, lowest parts first.', (c) => ['R', 'C', 'D', 'Q', 'ic', 'sh'].includes(c.kind)],
+    ['Stage 2 · through-hole connectors: JST sockets, the modem box header, the screw terminal.', (c) => ['jst', 'idc', 'terminal'].includes(c.kind)],
     ['Stage 3 · tall parts: buzzer and 100 µF capacitor (check the polarity marks).', (c) => c.kind === 'buzzer' || c.kind === 'cap-radial'],
-    ['Stage 4 · modules: the boost board on its header, then the Feather in its sockets. Solder the sockets with the Feather plugged in so they line up.', (c) => c.kind === 'module'],
+    ['Stage 4 · sockets for the modules. Solder them with the Feather and boost board plugged in so they line up.', (c) => c.kind === 'socket'],
+    ['Stage 5 · plug in the modules: the MiniBoost and the Feather.', (c) => c.kind === 'feather' || c.kind === 'boost'],
     ['Done. Before powering it, check with a meter that LOAD, 5V and 3V3 are not shorted to GND, then power it from a current-limited supply.', () => []],
   ];
   function startBuild() {
@@ -367,8 +388,9 @@ if (host) new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { io.
   const t = $('pcbBom');
   if (t) {
     const groups = new Map();
-    for (const c of PCB.comps) { const k = c.value; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(c); }
-    t.innerHTML = '<tr><th>Refs</th><th>Part</th><th>Qty</th><th>What it does</th></tr>' + [...groups.entries()].map(([v, cs]) =>
-      `<tr><td><code>${cs.map((c) => c.ref).join(' ')}</code></td><td>${v}</td><td>${cs.length}</td><td>${cs[0].desc}</td></tr>`).join('');
+    for (const c of PCB.comps) { if (!c.fp) continue; const k = c.value + '|' + c.fp; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(c); }
+    t.innerHTML = '<tr><th>Refs</th><th>Part</th><th>Qty</th><th>Footprint</th><th>What it does</th></tr>' + [...groups.entries()].map(([k, cs]) =>
+      `<tr><td><code>${cs.map((c) => c.ref).join(' ')}</code></td><td>${cs[0].value}</td><td>${cs.length}</td><td><code>${cs[0].fp}</code></td><td>${cs[0].desc}</td></tr>`).join('');
+    const st = $('pcbStats'); if (st) st.textContent = `${PCB.tracks.length} copper traces and ${PCB.vias.length} vias`;
   }
 }

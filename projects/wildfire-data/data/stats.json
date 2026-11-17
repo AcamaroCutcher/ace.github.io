@@ -1,0 +1,61 @@
+{
+ "hotspots": 8253847,
+ "events": 674485,
+ "perimeters": 110165,
+ "lidar": 2284,
+ "links": [
+  [
+   "inside_final_perimeter",
+   2438691
+  ],
+  [
+   "buffer",
+   645528
+  ],
+  [
+   "inside_perimeter_same_time",
+   587392
+  ],
+  [
+   "cluster",
+   199058
+  ]
+ ],
+ "fires_with_pre_and_post_lidar": 24,
+ "generated": "2026-11-17T02:29+00:00",
+ "cases": [
+  {
+   "slug": "red-apple-2021",
+   "name": "Red Apple",
+   "where": "Chelan County, Washington",
+   "when": "2021-07",
+   "acres": 12288,
+   "hotspots": 394,
+   "perimeters": 1,
+   "lidar": "LiDAR before 2019 + after 2022",
+   "why": "LiDAR from both 2019 and 2022, so the canopy that burned can be measured directly."
+  },
+  {
+   "slug": "beachie-creek-2020",
+   "name": "Beachie Creek",
+   "where": "Santiam Canyon, Oregon",
+   "when": "2020-08",
+   "acres": 193573,
+   "hotspots": 17721,
+   "perimeters": 2,
+   "lidar": "LiDAR after 2022",
+   "why": "The 2020 Labor Day east-wind run: satellite detections trace it from about 1,100 acres on the afternoon of 7 September to about 115,000 acres by 2 a.m. the next morning. Post-fire LiDAR covers the whole burn."
+  },
+  {
+   "slug": "rail-ridge-2024",
+   "name": "Rail Ridge",
+   "where": "Grant County, Oregon",
+   "when": "2024-09",
+   "acres": 176661,
+   "hotspots": 25037,
+   "perimeters": 96,
+   "lidar": "LiDAR before 2019",
+   "why": "Mapped almost daily (96 perimeters) and covered by LiDAR flown five years before the fire: spread over known canopy."
+  }
+ ]
+}

@@ -37,7 +37,7 @@
   <button class="themeBtn" id="themeBtn" type="button" aria-label="Switch theme" title="Light / dark"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg></button>
   <button class="menuBtn" id="menuBtn" aria-expanded="false" aria-controls="chanMenu">Channels</button>
 </header>
-<nav class="chanMenu" id="chanMenu"><a href="#g-overview" data-no="01"><span>01</span>Brief</a><a href="#g-why" data-no="02"><span>02</span>Why</a><a href="#bench" data-no="03"><span>03</span>Workbench</a><a href="#g-diagram" data-no="04"><span>04</span>System</a><a href="#g-parts" data-no="05"><span>05</span>Parts</a><a href="#g-wires" data-no="06"><span>06</span>Wiring</a><a href="#g-pcb" data-no="07"><span>07</span>Circuits</a><a href="#g-phone" data-no="08"><span>08</span>Phone</a><a href="#g-journey" data-no="09"><span>09</span>Message</a><a href="#g-energy" data-no="10"><span>10</span>Power</a><a href="#g-pack" data-no="11"><span>11</span>Backpack</a><a href="#g-build" data-no="12"><span>12</span>Build</a><a href="#g-bom" data-no="13"><span>13</span>Materials</a><a href="#g-downloads" data-no="14"><span>14</span>Files</a><a href="#g-safety" data-no="15"><span>15</span>Safety</a><a href="#g-sources" data-no="16"><span>16</span>Sources</a></nav>
+<nav class="chanMenu" id="chanMenu"><a href="#g-overview" data-no="01"><span>01</span>Brief</a><a href="#g-why" data-no="02"><span>02</span>Why</a><a href="#g-budget" data-no="03"><span>03</span>Budget</a><a href="#bench" data-no="04"><span>04</span>Workbench</a><a href="#g-diagram" data-no="05"><span>05</span>System</a><a href="#g-parts" data-no="06"><span>06</span>Parts</a><a href="#g-wires" data-no="07"><span>07</span>Wiring</a><a href="#g-pcb" data-no="08"><span>08</span>Circuits</a><a href="#g-phone" data-no="09"><span>09</span>Phone</a><a href="#g-journey" data-no="10"><span>10</span>Message</a><a href="#g-energy" data-no="11"><span>11</span>Power</a><a href="#g-pack" data-no="12"><span>12</span>Backpack</a><a href="#g-build" data-no="13"><span>13</span>Build</a><a href="#g-bom" data-no="14"><span>14</span>Materials</a><a href="#g-downloads" data-no="15"><span>15</span>Files</a><a href="#g-safety" data-no="16"><span>16</span>Safety</a><a href="#g-sources" data-no="17"><span>17</span>Sources</a></nav>
 
 <header class="hero" id="top">
   <canvas id="heroCanvas" aria-hidden="true"></canvas>
@@ -47,6 +47,7 @@
     <p class="lede">A disaster communications hub you can build. When an earthquake takes the cell towers down, it still gets a message out: by Iridium satellite, by LoRa mesh to your neighbors, and by ham radio, from an IP67 case or a backpack.</p>
     <div class="ctas">
       <a class="cta primary" href="#bench">Open the 3D workbench ↓</a>
+      <a class="cta" href="#g-budget">Budget kit under $500</a>
       <a class="cta" href="#g-bom">Materials &amp; prices</a>
       <a class="cta" href="#g-downloads">CAD files</a>
     </div>
@@ -85,6 +86,7 @@
         <tr><td><span class="pill t1">Tier 1 · DIY hub</span></td><td>This build: Iridium modem, Meshtastic mesh radio, GNSS, sensor pod, e-paper, SOS switch, IP67 case</td><td>build it</td></tr>
         <tr><td><span class="pill t2">Tier 2 · ham radio</span></td><td>Handheld with APRS and Winlink; an SDR receiver for weather, aircraft and scanner traffic</td><td>amateur license to transmit</td></tr>
         <tr><td><span class="pill t3">Tier 3 · Starlink</span></td><td>Starlink Mini on its own 12 V battery, for real internet when you can spare the power</td><td>subscription, 25–40 W</td></tr>
+        <tr><td><span class="pill tb">Budget kit</span></td><td>The same layers from ready-made gear, under $500: Meshtastic trackers, crank NOAA radio, FRS walkie-talkies, your phone's satellite SOS, power bank and solar, hard case, CO alarm. <a href="#g-budget">See the kit ↓</a></td><td>buy, set up</td></tr>
       </table></div>
       <p>The tier buttons in the top-left corner of the 3D workbench show or hide each layer.</p>
       <p>Around those radios sit a GNSS receiver, a motion sensor, a pod of air-quality sensors (natural gas, carbon monoxide, oxygen, CO₂, smoke), a 72 Wh battery with solar, USB-C and hand-crank charging, an e-paper screen, and a guarded SOS switch, all in an IP67 case. The same hub can ride in a backpack.</p>
@@ -129,9 +131,56 @@
     </div>
 </section>
 </div>
+<div class="doc">
+<section id="g-budget" class="g">
+  <aside class="rail" aria-hidden="true"><span class="no">03</span><span class="nm">Budget</span><span class="coord">Same layers,<br>under $500</span></aside>
+  <div class="body">
+      <h2>The budget kit: same layers, under $500</h2>
+      <p class="lead">The full hub costs about $1,200 in parts, and a third of that is the satellite modem. The budget kit keeps the same idea, several independent ways to call for help, but uses cheap, ready-made gear. Nothing to solder, and it is ready in an afternoon.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>Layer</th><th>Full hub</th><th>Budget kit</th></tr>
+        <tr><td>Satellite SOS</td><td>RockBLOCK Iridium modem, works with no phone ($279 + airtime)</td><td>Your phone's built-in satellite SOS (recent iPhones and Pixels), or a 406 MHz beacon in the "beacon first" kit</td></tr>
+        <tr><td>Mesh texting</td><td>RAK mesh radio wired to the controller</td><td>Two card-sized Meshtastic trackers with GPS and battery, one for you and one for family</td></tr>
+        <tr><td>Weather and alerts</td><td>SDR receiver on a Raspberry Pi</td><td>Crank and solar NOAA alert radio that can also top up a phone</td></tr>
+        <tr><td>Voice</td><td>Licensed ham handheld (APRS)</td><td>License-free FRS walkie-talkie pair; GMRS or ham as an upgrade</td></tr>
+        <tr><td>Gas and air</td><td>Sensor pod: methane, CO, O₂, CO₂, smoke</td><td>A certified battery CO alarm</td></tr>
+        <tr><td>Power</td><td>72 Wh pack, solar, crank, USB-C</td><td>20,000 mAh power bank and a 28 W folding solar panel</td></tr>
+        <tr><td>Case</td><td>Pelican 1200, sealed connectors</td><td>Harbor Freight Apache 2800 (IP65) or a dry bag</td></tr>
+      </table></div>
+      <div class="callout"><p><b>What you give up.</b> Satellite SOS now depends on your phone: it has to be a supported model, charged, and working. The 406 MHz beacon is the dedicated, phone-free backstop, but at about $395 it doesn't fit under $500 together with everything else, so it gets its own preset. There is no automatic SOS from the case and no detailed air sensing; the CO alarm covers the most common deadly gas.</p></div>
+
+      <h3>Build your kit</h3>
+      <p>Start from a preset, then change any layer. The case shows what you've picked, and the meter keeps you honest against $500. Your choices are saved in this browser.</p>
+      <div class="kit" id="kit">
+        <div class="kit-presets" id="kitPresets"></div>
+        <div class="kit-top">
+          <div class="kit-art" id="kitArt"></div>
+          <div class="kit-meter" id="kitMeter"></div>
+        </div>
+        <div class="kit-slots" id="kitSlots"></div>
+        <h4 class="kit-addh">Add-ons</h4>
+        <div class="checks kit-addons" id="kitAddons"></div>
+        <h4 class="kit-addh">Your list</h4>
+        <div class="tbl-wrap" id="kitList"></div>
+        <div class="mat-foot"><button class="btn" id="kitCsv" type="button">Download my kit (.csv)</button><button class="btn" id="kitReset" type="button">Back to budget core</button></div>
+      </div>
+
+      <h3>Set it up in an afternoon</h3>
+      <ol>
+        <li><b>Mesh</b>: install the Meshtastic app, pair each tracker over Bluetooth, set the region to US, and make a private channel. Share it with your family's tracker by QR code. Walk around the block to see how far it reaches.</li>
+        <li><b>Phone satellite SOS</b>: open your phone's satellite demo (iPhone: Settings → Emergency SOS → Try Demo; Pixel: Satellite SOS in Safety &amp; emergency) and practice pointing at the sky. Check whether your model and plan still include it free.</li>
+        <li><b>Radio</b>: tune the weather radio to your local NOAA channel (162.550 MHz in Portland) and switch on its alert mode. Crank it once so you know how.</li>
+        <li><b>Walkie-talkies</b>: agree on a channel and a check-in time with your household, and write it inside the case lid.</li>
+        <li><b>Power</b>: charge the power bank, test the solar panel on a sunny day, and keep the cables in the case.</li>
+        <li><b>Drill</b>: once a season, spend an hour on battery and solar only: one mesh message across town, one satellite demo, one radio check-in.</li>
+      </ol>
+      <div class="callout blue"><p><b>Licenses.</b> FRS radios and Meshtastic need no license. GMRS needs an FCC license ($35, no exam, 10 years, covers your immediate family). The Baofeng ham radio needs an amateur license to transmit. Anyone may use any radio to call for help when life is in immediate danger.</p></div>
+  </div>
+</section>
+</div>
 <section class="bench" id="bench" aria-label="Interactive 3D workbench">
   <div class="bench-head rv">
-    <div><span class="no">03 · Workbench</span><h2>The hub on the bench</h2></div>
+    <div><span class="no">04 · Workbench</span><h2>The hub on the bench</h2></div>
     <p>The real CAD model at real size. Drag to orbit, scroll or pinch to zoom, right-drag to pan, and click any part. Double-click to fly to a part.</p>
     <div class="keys"><kbd>E</kbd> explode <kbd>X</kbd> x-ray <kbd>W</kbd> wiring <kbd>L</kbd> labels <kbd>B</kbd> backpack <kbd>R</kbd> reset <kbd>?</kbd> all keys</div>
   </div>
@@ -275,7 +324,7 @@
 </section>
 <div class="doc">
 <section id="g-diagram" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">04</span><span class="nm">System</span><span class="coord">Block diagram</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">05</span><span class="nm">System</span><span class="coord">Block diagram</span></aside>
   <div class="body">
       <h2>The whole system on one page</h2>
       <p>Every box is a part; every line is a connection, colored by type. <b>Tap a box</b> to jump to it in the 3D model.</p>
@@ -351,7 +400,7 @@
     </div>
 </section>
 <section id="g-parts" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">05</span><span class="nm">Parts</span><span class="coord">24 components</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">06</span><span class="nm">Parts</span><span class="coord">24 components</span></aside>
   <div class="body">
       <h2>The parts, one by one</h2>
       <p>Each card says what the part does, why this one, how it connects, its power use, and where to get it. Prices are approximate US retail checked in November 2026 and change often. Where a link goes to a distributor, any equivalent part works.</p>
@@ -359,7 +408,7 @@
     </div>
 </section>
 <section id="g-wires" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">06</span><span class="nm">Wiring</span><span class="coord">UART · I²C · SPI<br>GPIO · power · RF</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">07</span><span class="nm">Wiring</span><span class="coord">UART · I²C · SPI<br>GPIO · power · RF</span></aside>
   <div class="body">
       <h2>How the parts talk to each other</h2>
       <p>Inside the case, parts talk over <b>wires</b> using a handful of standard "buses", each a set of wires plus agreed rules. Outside, the hub talks over <b>radio</b>. Below are the buses from the ground up, with what actually travels on each one. In the 3D model, the <b>Connect</b> tab lights up each bus.</p>
@@ -519,7 +568,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-pcb" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">07</span><span class="nm">Circuits</span><span class="coord">Schematics &amp;<br>carrier PCB</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">08</span><span class="nm">Circuits</span><span class="coord">Schematics &amp;<br>carrier PCB</span></aside>
   <div class="body">
       <h2>Circuits and a carrier board</h2>
       <p class="lead">Start by hand-wiring with plug-in cables; it is the fastest way to get each part working. Once everything works, the small circuits around the controller move onto one <b>carrier board</b>: a PCB that the Feather, the boost module and every cable plug into.</p>
@@ -535,7 +584,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
       </div>
 
       <h3>The carrier board in 3D</h3>
-      <p>A 100 × 70 mm two-layer board, placed and routed by a script: 106 copper traces and 45 vias, with the whole bottom layer used as a ground plane. <b>Pick a net</b> to light it up and watch signals travel along its copper. <b>Drag the Layers slider</b> to pull the board apart into copper, solder mask, silkscreen and parts. <b>Build it</b> plays the assembly in the order you would solder it.</p>
+      <p>A 100 × 70 mm two-layer board designed in <b>KiCad</b> with parts from KiCad's standard libraries: <span id="pcbStats">about 100 copper traces and 45 vias</span>, with the whole bottom layer used as a ground plane. <b>Pick a net</b> to light it up and watch signals travel along its copper. <b>Drag the Layers slider</b> to pull the board apart into copper, solder mask, silkscreen and parts. <b>Build it</b> plays the assembly in the order you would solder it.</p>
       <div class="pcbwrap">
         <div class="pcbview" id="pcbView">
           <div class="pcbcap" id="pcbCap"></div><div class="pcbtip" id="pcbTip"></div>
@@ -551,7 +600,9 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
           <div class="links" id="pcbNets"></div>
         </aside>
       </div>
-      <div class="callout red"><p><b>Concept layout, not ready to order.</b> The script checks spacing between copper (0.2 mm minimum), but the board has not been through a full design-rule check, and the footprints are simplified. To make it, redraw the schematic in KiCad from the netlist below, use the manufacturers' footprints, and run KiCad's checks before you order. The Feather and module pin positions must be confirmed against their official drawings.</p></div>
+      <div class="callout"><p><b>Checked in KiCad 10.</b> The schematic passes the electrical rules check (0 errors, 0 warnings), and the board passes the design rules check with 0 violations, 0 unconnected pins and 0 differences from the schematic. The rules are 0.2 mm clearance and 0.25 mm minimum track, within what common prototype board houses make.</p>
+        <p><b>Before you order</b>, check three things against the real parts, because a script can't: the Feather's pin order on J9 and J10, the MiniBoost's pin order on J11, and the RockBLOCK 9704 header (modelled here as a 2 × 8 ribbon header). The board has not been built or tested yet.</p></div>
+      <figure class="shot"><img src="images/carrier-render-iso.jpg" alt="KiCad 3D render of the carrier board with its connectors, sockets, buzzer and expander chip" loading="lazy" width="1400" height="875" /><figcaption>KiCad's own 3D render of the board, using the library's 3D models. The Feather and the boost module plug into the black sockets.</figcaption></figure>
 
       <h3>What is on the board</h3>
       <div class="tbl-wrap"><table class="tbl" id="pcbBom"></table></div>
@@ -564,15 +615,19 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
         <li><b>Before power</b>: with a multimeter, check that LOAD, 5V and 3V3 are not shorted to GND. Then power the board from a bench supply at 3.7 V with the current limit at about 200 mA, and only then plug in the battery.</li>
       </ol>
       <div class="dl-grid">
-        <a class="dl" href="downloads/carrier-netlist.csv" download><b>Netlist (.csv)</b><span>Every net, every pin, with part numbers. The starting point for a KiCad schematic.</span><em>csv</em></a>
-        <a class="dl" href="downloads/carrier-top.svg" download><b>Top layer (.svg)</b><span>Copper, pads and vias as seen from above, at 1 mm per unit.</span><em>svg</em></a>
-        <a class="dl" href="downloads/carrier-bottom.svg" download><b>Bottom layer (.svg)</b><span>The ground pour and the bottom-side traces, seen through the board from above.</span><em>svg</em></a>
-        <a class="dl" href="cad/build_pcb.py" download><b>Board script (.py)</b><span>Placement, netlist and the two-layer grid router. <code>python3 build_pcb.py .</code></span><em>python</em></a>
+        <a class="dl" href="downloads/carrier-kicad.zip" download><b>KiCad project (.zip)</b><span>Schematic, board, project rules and library tables, plus the manufacturing files below. Opens in KiCad 10.</span><em>zip · KiCad 10</em></a>
+        <a class="dl" href="downloads/carrier-gerbers.zip" download><b>Gerbers + drill (.zip)</b><span>Ready to upload to a board house: copper, mask, silkscreen, paste, outline and drill files for a 2-layer, 1.6 mm board.</span><em>zip · Gerber X2</em></a>
+        <a class="dl" href="downloads/carrier-schematic.pdf" download><b>Schematic (.pdf)</b><span>Every part and net on one sheet. Nets are joined by name labels.</span><em>pdf</em></a>
+        <a class="dl" href="downloads/carrier-pcb-bom.csv" download><b>Board parts list (.csv)</b><span>References, values and footprints, grouped, as KiCad exports it.</span><em>csv</em></a>
+        <a class="dl" href="downloads/carrier-netlist.csv" download><b>Netlist (.csv)</b><span>Every net and every pin, with what each net does.</span><em>csv</em></a>
+        <a class="dl" href="downloads/carrier-top.svg" download><b>Top layer (.svg)</b><span>Copper, mask and silkscreen, plotted by KiCad.</span><em>svg</em></a>
+        <a class="dl" href="downloads/carrier-bottom.svg" download><b>Bottom layer (.svg)</b><span>The ground plane and bottom traces, mirrored as seen from below.</span><em>svg</em></a>
+        <a class="dl" href="cad/kicad/build_kicad.py" download><b>Board generator (.py)</b><span>Places the parts, routes the copper and writes the KiCad files. Needs <code>router.py</code> and <code>sexpr.py</code> from the same folder.</span><em>python</em></a>
       </div>
   </div>
 </section>
 <section id="g-phone" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">08</span><span class="nm">Phone</span><span class="coord">BLE · Wi-Fi · USB</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">09</span><span class="nm">Phone</span><span class="coord">BLE · Wi-Fi · USB</span></aside>
   <div class="body">
       <h2>Connecting your phone</h2>
       <p>The hub never <i>needs</i> your phone, but a phone makes typing and reading much easier. There are five ways they connect. Each uses a different radio or cable, and each is good for something different.</p>
@@ -626,7 +681,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-journey" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">09</span><span class="nm">Message</span><span class="coord">Switch → orbit<br>→ inbox</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">10</span><span class="nm">Message</span><span class="coord">Switch → orbit<br>→ inbox</span></aside>
   <div class="body">
       <h2>Follow one message from start to finish</h2>
       <h3>Journey 1: SOS with no phone</h3>
@@ -649,7 +704,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-energy" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">10</span><span class="nm">Power</span><span class="coord">Watt-hours in,<br>watt-hours out</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">11</span><span class="nm">Power</span><span class="coord">Watt-hours in,<br>watt-hours out</span></aside>
   <div class="body">
       <h2>Energy budget and charging</h2>
       <p>The <b>Power</b> tab in the 3D view is a live calculator. The rules of thumb behind it:</p>
@@ -668,7 +723,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-pack" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">11</span><span class="nm">Backpack</span><span class="coord">Wearable mode</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">12</span><span class="nm">Backpack</span><span class="coord">Wearable mode</span></aside>
   <div class="body">
       <h2>The backpack version</h2>
       <p>Press <b>Backpack</b> (or the <kbd>B</kbd> key) in the 3D workbench. The same hub stands upright in the padded hydration sleeve, against your back, low and centered for balance. That is the most protected spot if you fall.</p>
@@ -681,7 +736,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-build" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">12</span><span class="nm">Build</span><span class="coord">Ten stages,<br>ten tests</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">13</span><span class="nm">Build</span><span class="coord">Ten stages,<br>ten tests</span></aside>
   <div class="body">
       <h2>Build it in stages</h2>
       <p>Each stage ends with a test you can check off. Get one thing working before adding the next.</p>
@@ -700,10 +755,11 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-bom" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">13</span><span class="nm">Materials</span><span class="coord">Prices & where<br>to buy</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">14</span><span class="nm">Materials</span><span class="coord">Prices & where<br>to buy</span></aside>
   <div class="body">
       <h2>Materials: what to buy and where</h2>
       <p class="lead" id="bomTotal">Loading the list…</p>
+      <p class="sub">This list is for the full hub. For the under-$500 version built from ready-made gear, see the <a href="#g-budget">budget kit builder</a>.</p>
       <p>Every part of the hub, the build supplies, and the tools, with a price and a store link for each. Tick what you already own and change quantities; the totals update and are remembered in this browser. Prices are US retail checked on the date shown and change often, so treat them as a guide. Where a link goes to a distributor, any equivalent part works.</p>
       <div class="mat-tools">
         <input type="search" id="matSearch" placeholder="Search parts, vendors, part numbers…" aria-label="Search materials" />
@@ -715,7 +771,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-downloads" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">14</span><span class="nm">Files</span><span class="coord">STEP · STL · GLB</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">15</span><span class="nm">Files</span><span class="coord">STEP · STL · GLB</span></aside>
   <div class="body">
       <h2>Downloads: CAD model and files</h2>
       <p>The model is built at real scale in <b>millimetres</b>, with <b>Z up</b> and the latch side of the case facing <b>−Y</b>. It is generated by an open Python script, so you can change any dimension and rebuild it.</p>
@@ -740,7 +796,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-safety" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">15</span><span class="nm">Safety</span><span class="coord">Batteries, gas,<br>FCC rules</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">16</span><span class="nm">Safety</span><span class="coord">Batteries, gas,<br>FCC rules</span></aside>
   <div class="body">
       <h2>Safety and legal notes</h2>
       <ul>
@@ -761,7 +817,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
     </div>
 </section>
 <section id="g-sources" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">16</span><span class="nm">Sources</span><span class="coord">Datasheets & docs</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">17</span><span class="nm">Sources</span><span class="coord">Datasheets & docs</span></aside>
   <div class="body">
       <h2>Sources</h2>
       <ul class="sources">
@@ -802,6 +858,7 @@ modemPowerOff();                      // drive I_EN LOW, wait for I_BTD LOW</cod
 <script type="module" src="fx.js"></script>
 <script type="module" src="guide.js"></script>
 <script type="module" src="materials.js"></script>
+<script type="module" src="budget.js"></script>
 <script type="module" src="circuits.js"></script>
 <script type="module" src="pcb.js"></script>
 <script type="module" src="app.js"></script>
