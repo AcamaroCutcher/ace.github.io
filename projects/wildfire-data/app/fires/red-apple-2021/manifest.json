@@ -1,0 +1,163 @@
+{
+ "slug": "red-apple-2021",
+ "event_id": 159988,
+ "name": "RED APPLE",
+ "where": "Chelan County, Washington",
+ "why": "LiDAR from both 2019 and 2022, so the canopy that burned can be measured directly.",
+ "discovered": "2021-07-14",
+ "contained": "2021-07-26",
+ "acres": 12288,
+ "bounds": [
+  -120.44333054932277,
+  47.47278336084069,
+  -120.28543864806221,
+  47.56333513676181
+ ],
+ "bounds_3857": [
+  -13407690.226196542,
+  6019588.695155657,
+  -13390113.780147836,
+  6034514.385358705
+ ],
+ "lidar": {
+  "pre": {
+   "collection": "WA_EasternCascades_6_2019",
+   "year": 2019,
+   "zmin": 189.15999999999997,
+   "sx": 0.2681993751233199,
+   "sy": 0.2277514336316211,
+   "points": 600000,
+   "raw": {
+    "nodes": 458,
+    "depth": 8,
+    "points": 7781253,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/WA_EasternCascades_6_2019/ept.json"
+   },
+   "cell_m": 30.0,
+   "chm_mean": 10.668639183044434,
+   "chm_p95": 24.270000457763672
+  },
+  "post": {
+   "collection": "WA_CentralWildfire_1_D22",
+   "year": 2022,
+   "zmin": 187.72000000000003,
+   "sx": 0.2681993751233199,
+   "sy": 0.2277514336316211,
+   "points": 600000,
+   "raw": {
+    "nodes": 328,
+    "depth": 8,
+    "points": 5360026,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/WA_CentralWildfire_1_D22/ept.json"
+   },
+   "cell_m": 30.0,
+   "chm_mean": 10.763954162597656,
+   "chm_p95": 26.459999084472656
+  },
+  "diff": {
+   "overlap_frac": 0.17744013597050318,
+   "mean_change_inside_m": 0.8106652498245239,
+   "mean_change_outside_m": 0.9065817594528198,
+   "lost_over_5m_inside": 0.012735672368585341
+  }
+ },
+ "files": [
+  "bundle.json",
+  "chm_diff.png",
+  "chm_post.png",
+  "chm_pre.png",
+  "dnbr.png",
+  "lidar_detail_post.bin",
+  "lidar_detail_pre.bin",
+  "lidar_post.bin",
+  "lidar_pre.bin",
+  "s2_post.jpg",
+  "s2_pre.jpg",
+  "swir_post.jpg",
+  "swir_pre.jpg"
+ ],
+ "lidar_density_matched": {
+  "pre": 31.2,
+  "post": 10.8
+ },
+ "detail": {
+  "bounds": [
+   -120.36656950829476,
+   47.53547465601409,
+   -120.34411162619178,
+   47.55063453463196
+  ],
+  "bounds_3857": [
+   -13399145.226196542,
+   6029919.385358705,
+   -13396645.226196542,
+   6032419.385358705
+  ],
+  "size_m": 2500.0,
+  "pre": {
+   "zmin": 888.58537,
+   "sx": 0.03814755474174106,
+   "sy": 0.03814755474174106,
+   "points": 1000000,
+   "raw": {
+    "nodes": 134,
+    "depth": 9,
+    "points": 2851075,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/WA_EasternCascades_6_2019/ept.json"
+   }
+  },
+  "post": {
+   "zmin": 922.96542,
+   "sx": 0.03814755474174106,
+   "sy": 0.03814755474174106,
+   "points": 1000000,
+   "raw": {
+    "nodes": 119,
+    "depth": 10,
+    "points": 2559029,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/WA_CentralWildfire_1_D22/ept.json"
+   }
+  }
+ },
+ "imagery_rule": "post scene: soon after containment",
+ "dnbr": {
+  "mean": 0.14726224541664124,
+  "high_severity_frac": 0.0026611174555869724
+ },
+ "imagery": {
+  "pre": {
+   "date": "2021-07-11",
+   "items": [
+    "S2A_10TFT_20210711_0_L2A",
+    "S2A_10TFT_20210711_1_L2A",
+    "S2A_10TGT_20210711_1_L2A",
+    "S2A_10TGT_20210711_0_L2A"
+   ],
+   "cloud": [
+    0.13986,
+    0.000667,
+    0.00158,
+    0.064475
+   ]
+  },
+  "post": {
+   "date": "2021-09-24",
+   "items": [
+    "S2B_10TFT_20210924_0_L2A",
+    "S2B_10TFT_20210924_2_L2A",
+    "S2B_10TFT_20210924_1_L2A",
+    "S2B_10TGT_20210924_2_L2A",
+    "S2B_10TGT_20210924_1_L2A",
+    "S2B_10TGT_20210924_0_L2A"
+   ],
+   "cloud": [
+    0.122386,
+    0.000362,
+    0.000362,
+    0.000695,
+    0.000695,
+    0.052181
+   ]
+  }
+ }
+}
