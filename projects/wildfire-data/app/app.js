@@ -35,10 +35,14 @@ const style = {
   sky: { 'sky-color': '#7fa9d6', 'horizon-color': '#efe2c8', 'fog-color': '#e8dcc4', 'sky-horizon-blend': 0.55, 'horizon-fog-blend': 0.7, 'fog-ground-blend': 0.35,
          'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 8, 1, 12, 0] },
 };
-const map = new maplibregl.Map({ container: 'map', style, center: [-121.2, 44.6], zoom: 6.2, pitch: 55, bearing: -15, maxPitch: 80, hash: false, attributionControl: { compact: true } });
-map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
-map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
-map.addControl(new maplibregl.TerrainControl({ source: 'dem', exaggeration: 1.4 }), 'bottom-right');
+const map = new maplibregl.Map({
+  container: 'map', style, center: [-121.2, 44.6], zoom: 6.2, pitch: 55, bearing: -15,
+  maxPitch: 82, hash: false, attributionControl: { compact: true },
+  dragRotate: true, pitchWithRotate: true, touchPitch: true, keyboard: true,
+});
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+map.dragRotate.enable();
+map.touchZoomRotate.enableRotation();
 const overlay = new deck.MapboxOverlay({ interleaved: true, layers: [] });
 map.addControl(overlay);
 
@@ -102,7 +106,10 @@ function latestDerivedAt(T) { let b = -1; for (const f of S.derivedFeats || []) 
 /* ------------------------------------------------------------------ case fires */
 async function loadIndex() {
   const idx = await (await fetch(FIRES + 'index.json')).json();
-  $('fireList').innerHTML = idx.map((f) => `<button type="button" class="fire" data-slug="${f.slug}"><b>${esc(f.name)}</b><span>${esc(f.where)} · ${f.discovered?.slice(0, 4)}</span><span>${Math.round(f.acres).toLocaleString()} acres · LiDAR ${Object.keys(f.lidar).join(' + ') || 'none'}</span></button>`).join('');
+  const lidarBadge = (l) => ({ 'pre,post': 'LiDAR before + after', pre: 'LiDAR before', post: 'LiDAR after' }[Object.keys(l).sort().reverse().join(',')] || '');
+  $('fireList').innerHTML = idx.map((f) => `<button type="button" class="fire" data-slug="${f.slug}" data-tip="${esc(f.name)}|${esc(f.why)}">
+      <b>${esc(f.name.replace(/\b\w+/g, (w) => w[0] + w.slice(1).toLowerCase()))}</b><em>${lidarBadge(f.lidar)}</em>
+      <span>${esc(f.where)} · ${f.discovered?.slice(0, 4)} · ${Math.round(f.acres).toLocaleString()} acres</span></button>`).join('');
   $('fireList').addEventListener('click', (e) => { const b = e.target.closest('.fire'); if (b) openFire(b.dataset.slug); });
   openFire(params.get('fire') && idx.some((f) => f.slug === params.get('fire')) ? params.get('fire') : idx[0].slug, true);
 }
@@ -144,6 +151,11 @@ async function openFire(slug, first) {
   buildChart();
   // raster overlays and LiDAR choices
   setupOverlays(m);
+  S.front = await loadFront(m).catch(() => null);
+  setupFront(m);
+  const det = document.querySelector('[data-l=hotspots]');
+  det.checked = !S.front;                               // the front replaces the dots; they stay one click away
+  for (const id of ['hot', 'hot-glow']) map.setLayoutProperty(id, 'visibility', det.checked ? 'visible' : 'none');
   const lid = Object.keys(m.lidar).filter((k) => k !== 'diff');
   $('lidarSel').innerHTML = '<option value="">Off</option>' + lid.map((p) => `<option value="${p}">${p === 'pre' ? 'Before' : 'After'} ${m.lidar[p].year}, whole burn</option>`).join('')
     + (m.detail ? lid.filter((p) => m.detail[p]).map((p) => `<option value="detail_${p}">${p === 'pre' ? 'Before' : 'After'} ${m.lidar[p].year}, full detail 2.5 km</option>`).join('') : '');
@@ -153,8 +165,138 @@ async function openFire(slug, first) {
   const [w, s, e, n] = m.bounds;
   map.fitBounds([[w, s], [e, n]], { padding: pad(), pitch: 58, bearing: -20, duration: first ? 0 : 2200 });
   setPhase('during');
+  if (first && params.get('t')) { stop(); setTime(Math.min(S.t1, Math.max(S.t0, Date.parse(params.get('t'))))); }   // shareable moment: ?t=2020-09-08T04:00Z
+  if (first && params.get('cam')) {                    // shareable view: &cam=lon,lat,zoom,tilt,heading
+    const [lon, lat, zoom, pitch, bearing] = params.get('cam').split(',').map(Number);
+    map.jumpTo({ center: [lon, lat], zoom, pitch: pitch || 60, bearing: bearing || 0 });
+  }
   loading(false);
 }
+
+/* ------------------------------------------------------------------ fire front */
+// Reconstructed fire front, painted on a canvas draped over the terrain.
+// arrival.png holds, for every cell of the burn, when the fire reached it (built from satellite
+// detections and mapped perimeters by export/arrival.py). At time T each cell is coloured by how long
+// ago it ignited: faint pre-heating ahead of the front, flickering flame at the front, embers that
+// cool behind it, then charred ground.
+const FRONT = {
+  preheatH: 0.4,        // glow just ahead of the flames
+  flameH: 1.1,          // flaming zone behind the leading edge
+  emberH: 3.5,          // hours of glowing embers (longer where burn severity was high)
+  raggedH: 0.6,         // how far noise shifts the arrival (hours): roughens the edge into fingers
+};
+
+function hash2(x, y) {                              // repeatable pseudo-random value in [0, 1)
+  let h = (x * 374761393 + y * 668265263) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+function valueNoise(x, y, scale) {                  // smooth noise in [0, 1)
+  const gx = x / scale, gy = y / scale, x0 = Math.floor(gx), y0 = Math.floor(gy), fx = gx - x0, fy = gy - y0;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+  const a = hash2(x0, y0), b = hash2(x0 + 1, y0), c = hash2(x0, y0 + 1), d = hash2(x0 + 1, y0 + 1);
+  return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+}
+
+async function loadFront(m) {
+  if (!m.arrival || !m.files.includes('arrival.png')) return null;
+  const img = new Image();
+  img.src = FIRES + S.fire + '/arrival.png';
+  await img.decode();
+  const { nx, ny, unit_s } = m.arrival;
+  const src = document.createElement('canvas'); src.width = nx; src.height = ny;
+  const g = src.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const px = g.getImageData(0, 0, nx, ny).data;
+  const t0 = Date.parse(m.arrival.t0);
+  const arrival = new Float64Array(nx * ny).fill(NaN);   // ms since epoch, NaN = outside the burn
+  const grain = new Float32Array(nx * ny);               // per-cell texture (ash, ember sparkle)
+  for (let i = 0; i < nx * ny; i++) {
+    if (px[i * 4 + 2] === 0) continue;
+    const x = i % nx, y = (i / nx) | 0;
+    const ragged = (valueNoise(x, y, 9) * 0.65 + valueNoise(x, y, 3) * 0.35 - 0.5) * 2 * FRONT.raggedH * 3600e3;
+    arrival[i] = t0 + ((px[i * 4] << 8) | px[i * 4 + 1]) * unit_s * 1000 + ragged;
+    grain[i] = valueNoise(x, y, 6) * 0.45 + valueNoise(x, y, 2) * 0.35 + hash2(x, y) * 0.2;
+  }
+  // burn severity (0 unburned … 1 high) from the dNBR classes, resampled onto the same grid
+  const severity = new Float32Array(nx * ny).fill(0.6);
+  if (m.files.includes('dnbr.png')) {
+    try {
+      const dn = new Image(); dn.src = FIRES + S.fire + '/dnbr.png'; await dn.decode();
+      g.clearRect(0, 0, nx, ny); g.drawImage(dn, 0, 0, nx, ny);
+      const d = g.getImageData(0, 0, nx, ny).data;
+      for (let i = 0; i < nx * ny; i++) {
+        if (d[i * 4 + 3] < 40) { severity[i] = 0.15; continue; }               // unburned / no change
+        const r = d[i * 4], gr = d[i * 4 + 1], b = d[i * 4 + 2];
+        severity[i] = gr > r ? 0.05 : Math.max(0.15, Math.min(1, (255 - gr) / 215 + (r < 200 ? 0.15 : 0) - b / 900));
+      }
+    } catch (e) { /* severity is optional */ }
+  }
+  const canvas = document.createElement('canvas'); canvas.width = nx; canvas.height = ny;
+  return { nx, ny, arrival, grain, severity, canvas, ctx: canvas.getContext('2d'), image: new ImageData(nx, ny) };
+}
+
+function paintFront(T, now) {
+  const F = S.front; if (!F) return;
+  const { nx, ny, arrival, grain, severity, image } = F, out = new Uint32Array(image.data.buffer);
+  const t = now / 1000, H = 3600e3;
+  const pre = FRONT.preheatH * H, flame = FRONT.flameH * H;
+  const rgba = (r, g, b, a) => (a << 24) | (Math.max(0, Math.min(255, b)) << 16) | (Math.max(0, Math.min(255, g)) << 8) | Math.max(0, Math.min(255, r));
+  for (let i = 0; i < nx * ny; i++) {
+    const a = arrival[i];
+    if (!(a === a)) { out[i] = 0; continue; }                 // NaN: outside the burn
+    const dt = T - a, sev = severity[i], gr = grain[i];
+    if (dt < -pre) { out[i] = 0; continue; }                 // not reached yet
+    if (dt < 0) {                                             // pre-heating glow ahead of the flames
+      const k = 1 + dt / pre;
+      out[i] = rgba(255, 130, 40, 90 * k * k);
+      continue;
+    }
+    if (dt < flame) {                                         // flaming zone: white-yellow edge, orange then red behind
+      const k = dt / flame;
+      const flick = 0.7 + 0.3 * Math.sin(t * 9 + gr * 47 + (i % nx) * 0.61) * Math.sin(t * 5.7 + gr * 23 + ((i / nx) | 0) * 0.37);
+      const hot = Math.max(0, 1 - k * 2.2);                   // the leading third is the hottest
+      out[i] = rgba(255, (110 + 140 * hot + 40 * (1 - k)) * flick, (30 + 170 * hot * hot) * flick, 250 - 40 * k);
+      continue;
+    }
+    const emberH = FRONT.emberH * H * (0.35 + 1.1 * sev);     // high-severity ground smoulders longer
+    const charR = 120 - 95 * sev, charG = 95 - 75 * sev, charB = 70 - 55 * sev;   // scorched brown … black
+    const charA = 70 + 165 * sev;
+    const ash = (gr - 0.5) * 34;
+    if (dt < flame + emberH) {                                // embers: patchy glow fading into the char
+      const k = (dt - flame) / emberH;
+      const glow = (1 - k) * (gr > 0.55 ? 1 : 0.25 + 0.5 * gr) * (0.8 + 0.2 * Math.sin(t * 2.3 + gr * 70));
+      out[i] = rgba(charR + (230 - charR) * glow, charG + (70 - charG) * glow, charB + (15 - charB) * glow, charA + (235 - charA) * Math.min(1, glow * 1.4));
+      continue;
+    }
+    out[i] = rgba(charR + ash, charG + ash, charB + ash * 0.8, charA);   // burned ground, by severity
+  }
+  F.ctx.putImageData(image, 0, 0);
+}
+
+function setupFront(m) {
+  if (map.getLayer('front')) map.removeLayer('front');
+  if (map.getSource('front')) map.removeSource('front');
+  if (!S.front) return;
+  const [w, s, e, n] = m.bounds;
+  map.addSource('front', { type: 'canvas', canvas: S.front.canvas, coordinates: [[w, n], [e, n], [e, s], [w, s]], animate: true });
+  map.addLayer({ id: 'front', type: 'raster', source: 'front',
+    layout: { visibility: document.querySelector('[data-l=front]').checked ? 'visible' : 'none' },
+    paint: { 'raster-opacity': 0.95, 'raster-fade-duration': 0, 'raster-resampling': 'linear' } }, 'derived-line');
+  paintFront(S.T, performance.now());
+}
+
+// flames keep flickering even when the replay is paused
+(function frontLoop() {
+  let last = 0;
+  const tick = (now) => {
+    requestAnimationFrame(tick);
+    if (!S.front || S.mode !== 'archive' || now - last < 50) return;
+    if (!document.querySelector('[data-l=front]')?.checked) return;
+    last = now; paintFront(S.T, now);
+  };
+  requestAnimationFrame(tick);
+})();
 
 function setupOverlays(m) {
   const [w, s, e, n] = m.bounds;
@@ -242,8 +384,15 @@ async function showLidar(phase) {
 }
 
 /* ------------------------------------------------------------------ phases, timeline, chart */
+const PHASE_HINT = {
+  before: 'The ground before the fire, from Sentinel-2. Drag to look around; switch on LiDAR in step 4 to see the forest in 3D.',
+  during: 'The fire front, reconstructed from satellite passes and mapped perimeters: flames at the edge, embers behind, burned ground by severity. Press play, drag the slider, or step pass by pass with ⏮ ⏭.',
+  after: 'Burn severity: green = unburned or regrowth, yellow → dark red = low → high severity, from images before and after.',
+  canopy: 'Every LiDAR point in a 2.5 km tile, at true height: tan is ground, greens are vegetation by height. Right-drag to orbit.',
+};
 function setPhase(p) {
   for (const b of document.querySelectorAll('#phaseBtns button')) b.classList.toggle('on', b.dataset.phase === p);
+  $('phaseHint').textContent = PHASE_HINT[p] || '';
   const m = S.manifest, has = (f) => m.files.includes(f);
   const lid = Object.keys(m.lidar).filter((k) => k !== 'diff');
   stop();
@@ -284,7 +433,20 @@ function play() {
 }
 function stop() { S.playing = false; $('play').textContent = '▶'; }
 
+function passTimes() {
+  // satellite passes: detections closer than 20 minutes apart belong to the same pass
+  const ts = S.hot.map((h) => h.t).sort((a, b) => a - b), out = [];
+  for (const t of ts) if (!out.length || t - out[out.length - 1] > 20 * 60e3) out.push(t);
+  return out;
+}
+function stepPass(dir) {
+  stop();
+  const passes = S.passes || (S.passes = passTimes());
+  const next = dir > 0 ? passes.find((t) => t > S.T + 60e3) : [...passes].reverse().find((t) => t < S.T - 60e3);
+  if (next != null) setTime(Math.min(S.t1, Math.max(S.t0, next)));
+}
 function buildChart() {
+  S.passes = null;
   // overpasses: detections per 30-minute bin; area: mapped perimeters
   const bins = new Map();
   for (const h of S.hot) { const k = Math.floor(h.t / 1800e3); bins.set(k, (bins.get(k) || 0) + 1); }
@@ -332,6 +494,7 @@ function renderInfo() {
 
 function legend() {
   const parts = [];
+  if (S.mode === 'archive' && S.front && document.querySelector('[data-l=front]').checked) parts.push('<div><i class="lg-ramp front"></i>flames → embers → burned</div>');
   if (S.mode === 'archive') parts.push('<div><i class="lg-ramp hot"></i>detections: just seen → days old</div><div><i class="lg-line"></i>mapped perimeter</div>');
   const img = $('imgSel').value, chm = $('chmSel').value;
   if (img === 'dnbr') parts.push('<div><i class="lg-ramp dnbr"></i>burn severity: low → high (dNBR)</div>');
@@ -380,6 +543,7 @@ function setMode(mode) {
   $('pane-archive').classList.toggle('on', mode === 'archive'); $('pane-live').classList.toggle('on', mode === 'live');
   const arch = mode === 'archive' ? 'visible' : 'none';
   for (const id of ['perim-fill', 'perim-line', 'hot', 'hot-glow', 'ign']) map.setLayoutProperty(id, 'visibility', arch);
+  if (map.getLayer('front')) map.setLayoutProperty('front', 'visibility', mode === 'archive' && document.querySelector('[data-l=front]').checked ? 'visible' : 'none');
   if (map.getLayer('img')) { map.setLayoutProperty('img', 'visibility', mode === 'archive' && $('imgSel').value ? 'visible' : 'none'); map.setLayoutProperty('chm', 'visibility', mode === 'archive' && $('chmSel').value ? 'visible' : 'none'); }
   if (mode === 'live') { overlay.setProps({ layers: [] }); if (!S.liveList.length) loadLive(); map.flyTo({ center: [-114, 42], zoom: 4.6, pitch: 30, bearing: 0, duration: 1800 }); }
   else if (S.lidarPhase) showLidar(S.lidarPhase);
@@ -404,6 +568,8 @@ function wire() {
   for (const cb of document.querySelectorAll('#layers input[type=checkbox]')) cb.addEventListener('change', () => {
     const on = cb.checked ? 'visible' : 'none', l = cb.dataset.l;
     if (l === 'hotspots') { map.setLayoutProperty('hot', 'visibility', on); map.setLayoutProperty('hot-glow', 'visibility', on); }
+    if (l === 'front' && map.getLayer('front')) map.setLayoutProperty('front', 'visibility', on);
+    if (l === 'front') legend();
     if (l === 'perims') { map.setLayoutProperty('perim-line', 'visibility', on); map.setLayoutProperty('perim-fill', 'visibility', on); }
     if (l === 'derived') map.setLayoutProperty('derived-line', 'visibility', on);
     if (l === 'ignition') map.setLayoutProperty('ign', 'visibility', on);
@@ -423,14 +589,153 @@ function wire() {
     try { localStorage.setItem('quake-viz-theme', d ? 'dark' : 'light'); } catch (e) { /* ignore */ }
     drawChart();
   });
+  $('stepBack').addEventListener('click', () => stepPass(-1));
+  $('stepFwd').addEventListener('click', () => stepPass(1));
+  $('chart').addEventListener('click', (e) => {
+    const r = e.currentTarget.getBoundingClientRect(); stop();
+    setTime(S.t0 + (e.clientX - r.left) / r.width * (S.t1 - S.t0));
+  });
+  wireCamera();
+  wireTooltips();
+  wireHelp();
   document.addEventListener('keydown', (e) => {
-    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
-    if (e.key === ' ') { e.preventDefault(); play(); }
-    if (e.key === 'ArrowRight') setTime(Math.min(S.t1, S.T + (S.t1 - S.t0) / 100));
-    if (e.key === 'ArrowLeft') setTime(Math.max(S.t0, S.T - (S.t1 - S.t0) / 100));
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    const actions = {
+      ' ': play, ',': () => stepPass(-1), '.': () => stepPass(1),
+      q: () => camStep('rotL'), e: () => camStep('rotR'), r: () => camStep('tiltUp'), f: () => camStep('tiltDown'),
+      t: () => camStep('top'), v: () => camStep('persp'), n: () => camStep('north'), o: () => camStep('orbit'), Home: () => camStep('frame'),
+      h: () => $('help').classList.toggle('open'), '\\': () => document.body.classList.toggle('collapsed'),
+      Escape: () => $('help').classList.remove('open'),
+    };
+    if (actions[k]) { e.preventDefault(); actions[k](); }
   });
   addEventListener('resize', drawChart);
 }
+/* ------------------------------------------------------------------ camera dock */
+// Every camera button does a smooth step on click, and keeps moving while held down.
+const CAM_STEP = { rotL: { bearing: -22.5 }, rotR: { bearing: 22.5 }, tiltUp: { pitch: 12 }, tiltDown: { pitch: -12 }, zoomIn: { zoom: 0.7 }, zoomOut: { zoom: -0.7 } };
+const CAM_RATE = { rotL: { bearing: -70 }, rotR: { bearing: 70 }, tiltUp: { pitch: 35 }, tiltDown: { pitch: -35 }, zoomIn: { zoom: 1.2 }, zoomOut: { zoom: -1.2 } };  // per second
+
+function camStep(action) {
+  stopOrbit(action === 'orbit');
+  const d = CAM_STEP[action];
+  if (d) {
+    map.easeTo({ bearing: map.getBearing() + (d.bearing || 0), pitch: clampPitch(map.getPitch() + (d.pitch || 0)), zoom: map.getZoom() + (d.zoom || 0), duration: 450, easing: easeOut });
+    return;
+  }
+  if (action === 'top') map.easeTo({ pitch: 0, bearing: 0, duration: 900 });
+  if (action === 'persp') map.easeTo({ pitch: 60, duration: 900 });
+  if (action === 'north') map.easeTo({ bearing: 0, duration: 700 });
+  if (action === 'orbit') toggleOrbit();
+  if (action === 'frame') frameView();
+}
+const easeOut = (t) => 1 - (1 - t) ** 3;
+const clampPitch = (p) => Math.max(0, Math.min(82, p));
+
+function holdMove(action) {
+  const rate = CAM_RATE[action]; if (!rate) return () => {};
+  let last = performance.now(), live = true;
+  const tick = (now) => {
+    if (!live) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    map.jumpTo({ bearing: map.getBearing() + (rate.bearing || 0) * dt, pitch: clampPitch(map.getPitch() + (rate.pitch || 0) * dt), zoom: map.getZoom() + (rate.zoom || 0) * dt });
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  return () => { live = false; };
+}
+
+let orbitOn = false;
+function toggleOrbit() {
+  orbitOn = !orbitOn;
+  document.querySelector('[data-cam=orbit]').classList.toggle('on', orbitOn);
+  if (!orbitOn) return;
+  if (map.getPitch() < 35) map.easeTo({ pitch: 55, duration: 600 });
+  let last = performance.now();
+  const spin = (now) => {
+    if (!orbitOn) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    map.setBearing(map.getBearing() + 9 * dt);       // a full circle in 40 s
+    requestAnimationFrame(spin);
+  };
+  requestAnimationFrame(spin);
+}
+function stopOrbit(keep) { if (orbitOn && !keep) toggleOrbit(); }
+
+function frameView() {
+  if (S.mode === 'live') return map.flyTo({ center: [-114, 42], zoom: 4.6, pitch: 30, bearing: 0, duration: 1600 });
+  const [w, s, e, n] = S.manifest.bounds;
+  map.fitBounds([[w, s], [e, n]], { padding: pad(), pitch: 55, bearing: -20, duration: 1600 });
+}
+
+function wireCamera() {
+  for (const b of document.querySelectorAll('[data-cam]')) {
+    const action = b.dataset.cam;
+    let timer = null, stopHold = null;
+    b.addEventListener('pointerdown', (e) => {
+      if (!CAM_RATE[action]) return;
+      e.preventDefault(); b.setPointerCapture(e.pointerId);
+      timer = setTimeout(() => { timer = null; stopOrbit(); b.classList.add('held'); stopHold = holdMove(action); }, 220);
+    });
+    const release = () => {
+      if (timer) { clearTimeout(timer); timer = null; camStep(action); }    // short press: one smooth step
+      if (stopHold) { stopHold(); stopHold = null; b.classList.remove('held'); }
+    };
+    b.addEventListener('pointerup', release);
+    b.addEventListener('pointercancel', release);
+    b.addEventListener('click', (e) => { if (!CAM_RATE[action] && e.detail !== -1) camStep(action); });
+    b.addEventListener('keydown', (e) => { if (CAM_RATE[action] && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); camStep(action); } });
+  }
+  // the user grabbing the map stops the orbit
+  for (const ev of ['mousedown', 'touchstart', 'wheel']) map.getCanvas().addEventListener(ev, () => stopOrbit(), { passive: true });
+  const read = () => {
+    const b = ((map.getBearing() % 360) + 360) % 360;
+    $('needle').style.transform = `rotate(${-map.getBearing()}deg)`;
+    $('camRead').innerHTML = `heading ${Math.round(b)}°<br>tilt ${Math.round(map.getPitch())}° · z${map.getZoom().toFixed(1)}`;
+  };
+  map.on('move', read); read();
+}
+
+/* ------------------------------------------------------------------ tooltips and help */
+// Any element with data-tip="Title|Explanation" gets a tooltip on hover, keyboard focus or long-press.
+function wireTooltips() {
+  const tip = $('tip');
+  let current = null, press = null;
+  const show = (el) => {
+    const [title, body] = el.dataset.tip.split('|');
+    tip.innerHTML = `<b>${esc(title)}</b>${body ? esc(body) : ''}`;
+    tip.classList.add('show');
+    const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    let x = r.left + r.width / 2 - tw / 2, y = r.top - th - 8;
+    if (y < 8) y = r.bottom + 8;
+    if (r.left > innerWidth * 0.6) { x = r.left - tw - 10; y = r.top + r.height / 2 - th / 2; }   // dock: tooltip to the left
+    tip.style.left = Math.max(8, Math.min(innerWidth - tw - 8, x)) + 'px';
+    tip.style.top = Math.max(8, Math.min(innerHeight - th - 8, y)) + 'px';
+    current = el;
+  };
+  const hide = () => { tip.classList.remove('show'); current = null; };
+  document.addEventListener('pointerover', (e) => { const el = e.target.closest('[data-tip]'); if (el && e.pointerType === 'mouse') show(el); else if (!el && current) hide(); });
+  document.addEventListener('focusin', (e) => { const el = e.target.closest('[data-tip]'); if (el) show(el); });
+  document.addEventListener('focusout', hide);
+  document.addEventListener('pointerdown', (e) => {
+    hide();
+    const el = e.target.closest('[data-tip]');
+    if (el && e.pointerType === 'touch') press = setTimeout(() => show(el), 500);
+  });
+  document.addEventListener('pointerup', () => { clearTimeout(press); if (current && document.activeElement !== current) setTimeout(hide, 1600); });
+}
+
+function wireHelp() {
+  const help = $('help');
+  $('helpBtn').addEventListener('click', () => help.classList.add('open'));
+  $('helpClose').addEventListener('click', () => help.classList.remove('open'));
+  help.addEventListener('click', (e) => { if (e.target === help) help.classList.remove('open'); });
+  let seen = false;
+  try { seen = localStorage.getItem('fa-help-seen') === '1'; localStorage.setItem('fa-help-seen', '1'); } catch (e) { /* storage unavailable */ }
+  if (!seen && !params.has('nohelp')) setTimeout(() => help.classList.add('open'), 1200);
+}
+
 function pad() {   // keep the fire clear of the panel: left on desktop, bottom sheet on phones
   return window.innerWidth > 760 ? { left: 420, right: 40, top: 60, bottom: 60 } : { left: 20, right: 20, top: 40, bottom: Math.round(window.innerHeight * 0.55) };
 }

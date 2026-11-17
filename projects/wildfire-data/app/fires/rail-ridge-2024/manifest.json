@@ -47,7 +47,8 @@
   "s2_post.jpg",
   "s2_pre.jpg",
   "swir_post.jpg",
-  "swir_pre.jpg"
+  "swir_pre.jpg",
+  "arrival.png"
  ],
  "detail": {
   "bounds": [
@@ -112,5 +113,17 @@
     0.001334
    ]
   }
+ },
+ "arrival": {
+  "t0": "2024-09-02T13:31:00+00:00",
+  "unit_s": 120,
+  "cell_m": 57.292755262275634,
+  "nx": 647,
+  "ny": 804,
+  "detections": 24894,
+  "perimeters": 93,
+  "snapshots": 181,
+  "cells": 217830,
+  "span_h": 1037.8251399717535
  }
 }

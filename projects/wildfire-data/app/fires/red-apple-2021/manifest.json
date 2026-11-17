@@ -74,7 +74,8 @@
   "s2_post.jpg",
   "s2_pre.jpg",
   "swir_post.jpg",
-  "swir_pre.jpg"
+  "swir_pre.jpg",
+  "arrival.png"
  ],
  "lidar_density_matched": {
   "pre": 31.2,
@@ -159,5 +160,17 @@
     0.052181
    ]
   }
+ },
+ "arrival": {
+  "t0": "2021-07-14T00:43:00+00:00",
+  "unit_s": 120,
+  "cell_m": 20.260733674364175,
+  "nx": 586,
+  "ny": 498,
+  "detections": 369,
+  "perimeters": 0,
+  "snapshots": 15,
+  "cells": 120999,
+  "span_h": 45.21150586339618
  }
 }

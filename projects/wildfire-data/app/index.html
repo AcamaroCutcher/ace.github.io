@@ -10,7 +10,7 @@
 <script src="../../../js/theme-init.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" />
 <link rel="stylesheet" href="app.css" />
 <script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
@@ -19,60 +19,147 @@
 <body>
 <div id="map" aria-label="3D map"></div>
 
+<!-- ============================== control panel ============================== -->
 <aside class="panel" id="panel">
   <header class="ph">
-    <a class="back" href="../" title="Back to the guide">← Guide</a>
+    <a class="back" href="../" data-tip="Back to the guide|How the database and this app are built">←</a>
     <b>Fire Archive <span>3D</span></b>
-    <button class="ico" id="themeBtn" type="button" title="Light / dark" aria-label="Switch theme">◐</button>
-    <button class="ico" id="collapse" type="button" title="Hide panel" aria-label="Hide panel">⟨</button>
+    <button class="ico" id="helpBtn" type="button" data-tip="How to move around|Mouse, touch and keyboard controls (shortcut: H)">?</button>
+    <button class="ico" id="themeBtn" type="button" data-tip="Light / dark|Switch the panel and page theme">◐</button>
+    <button class="ico" id="collapse" type="button" data-tip="Hide panel|Give the map the whole screen (shortcut: \)">⟨</button>
   </header>
   <nav class="modes" role="tablist">
-    <button type="button" data-mode="archive" class="on" role="tab">Case fires</button>
-    <button type="button" data-mode="live" role="tab">Live now</button>
+    <button type="button" data-mode="archive" class="on" role="tab" data-tip="Case fires|Past fires with full records: detections, perimeters, imagery and LiDAR">Case fires</button>
+    <button type="button" data-mode="live" role="tab" data-tip="Live now|Fires with a current NIFC perimeter and today's satellite heat">Live now</button>
   </nav>
 
   <section class="pane on" id="pane-archive">
-    <div class="firelist" id="fireList"></div>
-    <div class="phase" id="phaseBtns">
-      <button type="button" data-phase="before">Before</button>
-      <button type="button" data-phase="during" class="on">During</button>
-      <button type="button" data-phase="after">After</button>
-      <button type="button" data-phase="canopy" title="LiDAR point cloud, close up">Canopy 3D</button>
+    <div class="step">
+      <h3><i>1</i>Pick a fire</h3>
+      <div class="firelist" id="fireList"></div>
     </div>
-    <div class="timeline">
-      <div class="tl-top"><button type="button" class="play" id="play" aria-label="Play">▶</button><output id="tNow">–</output><select id="speed" aria-label="Speed"><option value="0.5">½×</option><option value="1" selected>1×</option><option value="3">3×</option></select></div>
-      <input type="range" id="scrub" min="0" max="1000" value="1000" aria-label="Time" />
-      <canvas id="chart" aria-label="Burned area and detections over time"></canvas>
-      <div class="tl-leg"><span><i class="l-area"></i>mapped area</span><span><i class="l-traced"></i>traced from VIIRS</span><span><i class="l-det"></i>detections per overpass</span></div>
+
+    <div class="step">
+      <h3><i>2</i>Choose what to look at</h3>
+      <div class="phase" id="phaseBtns">
+        <button type="button" data-phase="before" data-tip="Before|Sentinel-2 image from just before the fire">Before</button>
+        <button type="button" data-phase="during" class="on" data-tip="During|Replay satellite detections overpass by overpass">During</button>
+        <button type="button" data-phase="after" data-tip="After|Burn severity (dNBR) from Sentinel-2 images before and after">After</button>
+        <button type="button" data-phase="canopy" data-tip="Canopy 3D|Fly into the LiDAR point cloud: every tree, at true height">Canopy 3D</button>
+      </div>
+      <p class="hint" id="phaseHint"></p>
     </div>
-    <div class="layers" id="layers">
-      <h4>Layers</h4>
-      <label><input type="checkbox" data-l="hotspots" checked /> Satellite detections <small>VIIRS · MODIS</small></label>
-      <label><input type="checkbox" data-l="perims" checked /> Mapped perimeters <small>NIFC</small></label>
-      <label><input type="checkbox" data-l="derived" /> Traced from detections <small>VIIRS</small></label>
-      <label><input type="checkbox" data-l="ignition" checked /> Ignition (estimated)</label>
-      <div class="sel"><span>Image</span><select id="imgSel"><option value="">Aerial basemap</option><option value="s2_pre">Sentinel-2 before</option><option value="s2_post">Sentinel-2 after</option><option value="swir_pre">Shortwave IR before</option><option value="swir_post">Shortwave IR after</option><option value="dnbr">Burn severity (dNBR)</option></select></div>
-      <div class="sel"><span>LiDAR</span><select id="lidarSel"><option value="">Off</option></select></div>
-      <div class="sel"><span>Canopy</span><select id="chmSel"><option value="">Off</option></select></div>
-      <label class="rng">Terrain relief <input type="range" id="exag" min="1" max="3" step="0.1" value="1.4" /><output id="exagOut">1.4×</output></label>
+
+    <div class="step">
+      <h3><i>3</i>Replay the spread</h3>
+      <div class="timeline">
+        <div class="tl-top">
+          <button type="button" class="play" id="play" data-tip="Play / pause|Replay the fire from discovery to the end (shortcut: Space)">▶</button>
+          <button type="button" class="ico sm" id="stepBack" data-tip="Previous pass|Jump to the previous satellite pass (shortcut: ,)">⏮</button>
+          <button type="button" class="ico sm" id="stepFwd" data-tip="Next pass|Jump to the next satellite pass (shortcut: .)">⏭</button>
+          <output id="tNow">–</output>
+          <select id="speed" data-tip="Replay speed|How fast time runs during playback"><option value="0.5">½×</option><option value="1" selected>1×</option><option value="3">3×</option></select>
+        </div>
+        <input type="range" id="scrub" min="0" max="1000" value="1000" aria-label="Time" />
+        <canvas id="chart" data-tip="Timeline|Bars: detections per satellite pass. Lines: area mapped (solid) and traced from detections (dashed). Click to jump."></canvas>
+        <div class="tl-leg"><span><i class="l-area"></i>mapped area</span><span><i class="l-traced"></i>traced from VIIRS</span><span><i class="l-det"></i>detections</span></div>
+      </div>
     </div>
-    <div class="info" id="info"></div>
+
+    <details class="step" id="layerBox" open>
+      <summary><h3><i>4</i>Map layers</h3></summary>
+      <div class="layers" id="layers">
+        <label><input type="checkbox" data-l="front" checked /><span><b>Fire front (reconstructed)</b><small>Flames, embers and burned ground, timed from the satellite detections and mapped perimeters. An interpolation between observations, not a physics simulation.</small></span></label>
+        <label><input type="checkbox" data-l="hotspots" checked /><span><b>Satellite detections</b><small>Each dot is a 375 m VIIRS or 1 km MODIS pixel that was on fire. Bright = just seen, dark red = days old.</small></span></label>
+        <label><input type="checkbox" data-l="perims" checked /><span><b>Mapped perimeters</b><small>Fire outlines drawn by crews and infrared flights (NIFC). The latest one is bold.</small></span></label>
+        <label><input type="checkbox" data-l="derived" /><span><b>Traced from detections</b><small>An outline around all detections so far: the spread, when few perimeters were mapped.</small></span></label>
+        <label><input type="checkbox" data-l="ignition" checked /><span><b>Ignition (estimated)</b><small>Where satellites first saw the fire with confidence.</small></span></label>
+        <div class="sel"><span>Image</span><select id="imgSel" data-tip="Image over the burn|Sentinel-2 true colour, shortwave infrared (burned ground looks red-brown), or burn severity"><option value="">Aerial basemap</option><option value="s2_pre">Sentinel-2 before</option><option value="s2_post">Sentinel-2 after</option><option value="swir_pre">Shortwave IR before</option><option value="swir_post">Shortwave IR after</option><option value="dnbr">Burn severity (dNBR)</option></select></div>
+        <div class="sel"><span>LiDAR</span><select id="lidarSel" data-tip="LiDAR point cloud|Laser points from aircraft: ground in tan, vegetation green by height. 'Full detail' is a 2.5 km tile with every point."><option value="">Off</option></select></div>
+        <div class="sel"><span>Canopy</span><select id="chmSel" data-tip="Canopy height map|Tree height from LiDAR on a 30 m grid; 'change' shows height lost or gained between surveys"><option value="">Off</option></select></div>
+        <label class="rng" data-tip="Terrain relief|Stretch the mountains vertically. 1× is true scale.">Relief <input type="range" id="exag" min="1" max="3" step="0.1" value="1.4" /><output id="exagOut">1.4×</output></label>
+      </div>
+    </details>
+
+    <details class="step" id="infoBox">
+      <summary><h3><i>i</i>About this fire</h3></summary>
+      <div class="info" id="info"></div>
+    </details>
   </section>
 
   <section class="pane" id="pane-live">
-    <p class="sub">Fires with a current perimeter in NIFC's interagency service (active fires, and recent ones until they are declared out), with satellite heat from VIIRS (daily) and GOES (every 10 minutes) drawn by NASA GIBS. Pick a day to see that day's VIIRS detections.</p>
+    <p class="hint">Fires with a current perimeter in NIFC's interagency service (active fires, and recent ones until they are declared out), with satellite heat drawn by NASA GIBS.</p>
     <div class="layers">
-      <label><input type="checkbox" id="liveViirs" checked /> VIIRS fire detections <small>NOAA-20 + NOAA-21</small></label>
-      <div class="sel"><span>Day</span><input type="date" id="liveDate" /></div>
-      <label><input type="checkbox" id="liveGoes" /> GOES fire temperature <small>latest 10 min</small></label>
-      <label><input type="checkbox" id="livePerims" checked /> Current perimeters <small>NIFC WFIGS</small></label>
+      <label><input type="checkbox" id="liveViirs" checked /><span><b>VIIRS fire detections</b><small>NOAA-20 and NOAA-21, 375 m pixels, for the day picked below.</small></span></label>
+      <div class="sel"><span>Day</span><input type="date" id="liveDate" data-tip="Day of detections|VIIRS passes twice a day; this shows everything detected that day" /></div>
+      <label><input type="checkbox" id="liveGoes" /><span><b>GOES fire temperature</b><small>Geostationary, refreshed every 10 minutes, 2 km pixels.</small></span></label>
+      <label><input type="checkbox" id="livePerims" checked /><span><b>Current perimeters</b><small>NIFC WFIGS, updated every few minutes. Click one for details.</small></span></label>
     </div>
-    <div class="firelist live" id="liveList"><p class="sub">Loading current fires…</p></div>
-    <p class="sub" id="liveNote"></p>
+    <div class="firelist live" id="liveList"><p class="hint">Loading current fires…</p></div>
+    <p class="hint" id="liveNote"></p>
   </section>
-  <footer class="pf">Imagery: USGS The National Map · EOX Sentinel-2 cloudless · Terrain: AWS Terrain Tiles · Fire data: NIFC, NASA FIRMS/GIBS, USGS 3DEP, ESA Copernicus Sentinel-2. AI-generated app (Claude, Nov 2026).</footer>
+  <footer class="pf">Imagery: USGS The National Map · EOX Sentinel-2 cloudless · Terrain: AWS Terrain Tiles · Fire data: NIFC, NASA FIRMS/GIBS, USGS 3DEP, Copernicus Sentinel-2. AI-generated app (Claude, Nov 2026).</footer>
 </aside>
-<button class="reopen" id="reopen" type="button" aria-label="Show panel">⟩ Fire Archive</button>
+<button class="reopen" id="reopen" type="button">⟩ Fire Archive</button>
+
+<!-- ============================== camera dock ============================== -->
+<div class="dock" id="dock" role="toolbar" aria-label="Camera">
+  <div class="dock-group">
+    <span class="dock-lbl">Rotate</span>
+    <button type="button" data-cam="rotL" data-tip="Rotate left|Turn the view counter-clockwise. Hold to keep turning (Q)">⟲</button>
+    <button type="button" data-cam="rotR" data-tip="Rotate right|Turn the view clockwise. Hold to keep turning (E)">⟳</button>
+  </div>
+  <div class="dock-group">
+    <span class="dock-lbl">Tilt</span>
+    <button type="button" data-cam="tiltUp" data-tip="Tilt toward the horizon|Look across the terrain, more 3D. Hold to keep tilting (R)">⤒</button>
+    <button type="button" data-cam="tiltDown" data-tip="Tilt toward overhead|Look down onto the map. Hold to keep tilting (F)">⤓</button>
+  </div>
+  <div class="dock-group">
+    <span class="dock-lbl">Zoom</span>
+    <button type="button" data-cam="zoomIn" data-tip="Zoom in|Hold to keep zooming (+ or scroll)">+</button>
+    <button type="button" data-cam="zoomOut" data-tip="Zoom out|Hold to keep zooming (− or scroll)">−</button>
+  </div>
+  <div class="dock-group">
+    <span class="dock-lbl">View</span>
+    <button type="button" data-cam="top" data-tip="Map view|Straight down, north up: best for reading outlines (T)">2D</button>
+    <button type="button" data-cam="persp" data-tip="3D view|Tilted view of the terrain (V)">3D</button>
+    <button type="button" data-cam="north" id="compass" data-tip="North up|Turn back to north without changing the tilt (N)"><span id="needle">▲</span></button>
+    <button type="button" data-cam="orbit" data-tip="Orbit|Slowly circle around the centre of the view (O)">◎</button>
+    <button type="button" data-cam="frame" data-tip="Frame the fire|Fly back to show the whole fire (Home)">⌂</button>
+  </div>
+  <div class="camread" id="camRead"></div>
+</div>
+
+<!-- ============================== help card ============================== -->
+<div class="help" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="help-box">
+    <h2 id="helpTitle">Moving around the map</h2>
+    <div class="help-grid">
+      <div><h4>Mouse</h4><ul>
+        <li><b>Drag</b>: move the map</li>
+        <li><b>Right-drag</b> or <b>Ctrl + drag</b>: rotate and tilt</li>
+        <li><b>Scroll</b>: zoom toward the pointer</li>
+        <li><b>Double-click</b>: zoom in there</li></ul></div>
+      <div><h4>Touch</h4><ul>
+        <li><b>One finger</b>: move</li>
+        <li><b>Pinch</b>: zoom</li>
+        <li><b>Two-finger twist</b>: rotate</li>
+        <li><b>Two-finger drag up/down</b>: tilt</li></ul></div>
+      <div><h4>Keyboard</h4><ul>
+        <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>+</kbd><kbd>−</kbd> zoom</li>
+        <li><kbd>Q</kbd><kbd>E</kbd> rotate · <kbd>R</kbd><kbd>F</kbd> tilt</li>
+        <li><kbd>T</kbd> map view · <kbd>V</kbd> 3D · <kbd>N</kbd> north · <kbd>O</kbd> orbit · <kbd>Home</kbd> frame fire</li>
+        <li><kbd>Space</kbd> play · <kbd>,</kbd><kbd>.</kbd> previous / next pass · <kbd>H</kbd> this help</li></ul></div>
+    </div>
+    <p class="hint"><b>About the fire front:</b> satellites see a fire only a few times a day, so the front between passes is reconstructed: each spot is timed by its distance from where the fire was at the previous pass, so it arrives exactly when the next pass saw it. Mapped perimeters set hard limits. It is an interpolation of real observations, not a physics simulation. Links can open at a moment and view: <code>?fire=beachie-creek-2020&amp;t=2020-09-08T07:00Z</code>.</p>
+    <div hidden>
+    </div>
+    <p class="hint">Every button has a short explanation: hover over it (or long-press on a phone).</p>
+    <button type="button" class="play wide" id="helpClose">Got it</button>
+  </div>
+</div>
+
+<div class="tip" id="tip" role="tooltip"></div>
 <div class="legend" id="legend"></div>
 <div class="toast" id="toast"></div>
 <div class="loader" id="loader"><span>Loading…</span><div><i id="loadBar"></i></div></div>

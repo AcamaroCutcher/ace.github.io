@@ -15,20 +15,19 @@
 <meta property="og:image" content="https://acamaro.com/projects/thumbs/wildfire-data.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
 <script src="../../js/theme-init.js"></script>
-<meta name="theme-color" content="#ebe5d2" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#11120f" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#f4f1e8" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#05080f" media="(prefers-color-scheme: dark)" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Stencil+One&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" href="page.css" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="theme.css" />
 </head>
 <body>
 <header class="topbar">
   <a class="back" href="../index.html" title="All projects">←<span> Projects</span></a>
-  <a class="brand" href="#top"><span class="led on" id="hdrLed"></span><b>Fire Archive</b></a>
-  <nav class="tuner" id="tuner" aria-label="Sections"><div class="scale" id="scale"></div><div class="needle" id="needle"></div></nav>
-  <div class="readout" id="readout">CH 00 · STANDBY</div>
+  <a class="brand" href="#top"><svg class="orb" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 12h15M12 4.5c3 3.2 3 11.8 0 15M12 4.5c-3 3.2-3 11.8 0 15" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/><circle cx="16.5" cy="9" r="2.2" fill="#ff7a1a"/></svg><b>Fire Archive</b></a>
+  <nav class="bands" id="bands" aria-label="Sections"></nav>
+  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
   <button class="themeBtn" id="themeBtn" type="button" aria-label="Switch theme" title="Light / dark"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg></button>
   <button class="menuBtn" id="menuBtn" aria-expanded="false" aria-controls="chanMenu">Channels</button>
 </header>
@@ -65,7 +64,7 @@
 <div class="doc">
 
 <section id="g-gap" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">01</span><span class="nm">Gap</span><span class="coord">What today's<br>datasets miss</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B01</span><span class="nm">Gap</span><span class="coord">What today's<br>datasets miss</span></aside>
   <div class="body">
     <h2>Why build another wildfire database?</h2>
     <p class="lead">Machine-learning wildfire datasets exist, but each one covers a slice. None of them puts sub-daily fire spread, the 3D structure of the forest before and after, and burn severity for the same fire into one place you can query.</p>
@@ -83,7 +82,7 @@
 </section>
 
 <section id="g-sats" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">02</span><span class="nm">Satellites</span><span class="coord">Every source<br>that sees fire</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B02</span><span class="nm">Satellites</span><span class="coord">Every source<br>that sees fire</span></aside>
   <div class="body">
     <h2>The satellites that watch wildfires</h2>
     <p class="lead">Fire is seen in three ways from above: <b>heat</b> (thermal infrared detections, minutes to hours old), <b>change</b> (optical imagery before and after: burn severity) and <b>structure</b> (LiDAR: the 3D forest that burned). The database keeps all three.</p>
@@ -103,7 +102,7 @@
 </section>
 
 <section id="g-schema" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">03</span><span class="nm">Schema</span><span class="coord">PostgreSQL 17<br>PostGIS 3.5</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B03</span><span class="nm">Schema</span><span class="coord">PostgreSQL 17<br>PostGIS 3.5</span></aside>
   <div class="body">
     <h2>The schema: one fire, everything attached</h2>
     <p class="lead"><code>fire_event</code> sits in the middle. Everything else hangs off it by key or by space and time: perimeters over time, detections through an explicit link table, imagery, LiDAR, rasters and weather.</p>
@@ -122,10 +121,11 @@
 </section>
 
 <section id="g-link" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">04</span><span class="nm">Linking</span><span class="coord">Which fire is<br>this pixel?</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B04</span><span class="nm">Linking</span><span class="coord">Which fire is<br>this pixel?</span></aside>
   <div class="body">
     <h2>Linking a detection to its fire</h2>
     <p class="lead">A satellite reports a hot pixel, not a fire name. The linking query decides which fire each detection belongs to, using where it is and when it was seen, and records <b>how</b> it decided, as a score.</p>
+    <p><b>Try it:</b> drag the detection around the fire, and slide the time it was seen. The score below is computed with the same rules the database uses.</p>
     <div class="linkdemo" id="linkDemo"></div>
     <div class="tbl-wrap"><table class="tbl">
       <tr><th>Score</th><th>Rule</th><th>Why</th></tr>
@@ -141,7 +141,7 @@
 </section>
 
 <section id="g-ml" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">05</span><span class="nm">Models</span><span class="coord">DNN · GNN ·<br>neural ODE</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B05</span><span class="nm">Models</span><span class="coord">DNN · GNN ·<br>neural ODE</span></aside>
   <div class="body">
     <h2>From database to model</h2>
     <p class="lead">Every moment the fire's state is known, a mapped perimeter or a satellite overpass, becomes a time stamp. Consecutive time stamps make a training pair: the state at <i>t</i> and everything around it are the input; the state at the next time is the label.</p>
@@ -152,7 +152,7 @@
 </section>
 
 <section id="g-queries" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">06</span><span class="nm">Questions</span><span class="coord">The proposal's<br>20 queries</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B06</span><span class="nm">Questions</span><span class="coord">The proposal's<br>20 queries</span></aside>
   <div class="body">
     <h2>The original 20 questions, answered</h2>
     <p class="lead">The project proposal set 10 basic and 10 advanced questions. Each one is now a SQL file in the repository and a test that must return rows. Here they are with their SQL and the first rows of the real answer.</p>
@@ -161,7 +161,7 @@
 </section>
 
 <section id="g-cases" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">07</span><span class="nm">Case fires</span><span class="coord">Pacific Northwest<br>with LiDAR</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B07</span><span class="nm">Case fires</span><span class="coord">Pacific Northwest<br>with LiDAR</span></aside>
   <div class="body">
     <h2>Case fires: the Pacific Northwest in 3D</h2>
     <p class="lead">The app shows how a fire spread over the ground it burned. These fires were picked because the public USGS LiDAR archive covers them, and because together they show every kind of record.</p>
@@ -171,7 +171,7 @@
 </section>
 
 <section id="g-host" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">08</span><span class="nm">Hosting</span><span class="coord">Local master,<br>cloud copy</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B08</span><span class="nm">Hosting</span><span class="coord">Local master,<br>cloud copy</span></aside>
   <div class="body">
     <h2>Where the database lives</h2>
     <p class="lead">The full archive is a few gigabytes, more than free cloud tiers hold. So the complete database runs locally for training, and a slimmer copy serves the web app.</p>
@@ -210,7 +210,7 @@ pytest tests -q</code></pre>
 </section>
 
 <section id="g-sources" class="g">
-  <aside class="rail" aria-hidden="true"><span class="no">09</span><span class="nm">Sources</span><span class="coord">Data &amp; docs</span></aside>
+  <aside class="rail" aria-hidden="true"><span class="no">B09</span><span class="nm">Sources</span><span class="coord">Data &amp; docs</span></aside>
   <div class="body">
     <h2>Sources</h2>
     <ul class="sources">

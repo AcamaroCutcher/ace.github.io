@@ -1,4 +1,4 @@
-// Fire Archive page: navigation, theme and reveal shared with the Survival Radio page,
+// Fire Archive page: navigation, theme toggle and reveal-on-scroll,
 // plus this page's interactive figures. Data files in ./data are generated from the database.
 const $ = (id) => document.getElementById(id);
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -29,53 +29,37 @@ function noise3(x, y, z) {
 }
 
 
-/* ------------------------------------------------------------------ tuner navigation */
+/* ------------------------------------------------------------------ section navigation */
+// Sections are labelled like spectral bands (B01, B02 ...). The header highlights the band you are
+// reading, and a thermal-coloured bar shows how far down the page you are.
 function tuner() {
-  const scale = $('scale'), needle = $('needle'), readout = $('readout'), menu = $('chanMenu'), mb = $('menuBtn');
-  const chans = [...menu.querySelectorAll('a')].map((a) => ({ id: a.getAttribute('href').slice(1), no: a.dataset.no, name: a.textContent.replace(a.dataset.no, '').trim() }));
-  const items = chans.map((c) => ({ ...c, el: document.getElementById(c.id) })).filter((c) => c.el);
-  const pos = (i) => 3 + (i / (items.length - 1)) * 94;          // % across the scale
-  function build() {
-    const narrow = scale.clientWidth / items.length < 84;
-    let h = '';
-    for (let k = 0; k <= 120; k++) h += `<span class="tick${k % 8 === 0 ? ' mj' : ''}" style="left:${3 + k / 120 * 94}%"></span>`;
-    items.forEach((c, i) => { h += `<a class="ch" href="#${c.id}" data-i="${i}" style="left:${pos(i)}%" title="${c.no} ${c.name}" data-full="${c.no} ${c.name}" data-short="${narrow ? c.no : c.no + ' ' + c.name}">${narrow ? c.no : c.no + ' ' + c.name}</a>`; });
-    scale.innerHTML = h;
-  }
-  build(); addEventListener('resize', () => { clearTimeout(build.t); build.t = setTimeout(build, 150); });
-  $('tuner').addEventListener('click', (e) => {
-    if (e.target.closest('a')) return;
-    const r = scale.getBoundingClientRect(), p = (e.clientX - r.left) / r.width * 100;
-    let best = 0; items.forEach((c, i) => { if (Math.abs(pos(i) - p) < Math.abs(pos(best) - p)) best = i; });
-    items[best].el.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' });
-  });
-  mb.addEventListener('click', () => { const o = menu.classList.toggle('open'); mb.setAttribute('aria-expanded', o); });
-  menu.addEventListener('click', (e) => { if (e.target.closest('a')) { menu.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); } });
+  const menu = $('chanMenu'), mb = $('menuBtn'), bands = $('bands'), bar = $('progress');
+  const items = [...menu.querySelectorAll('a')]
+    .map((a) => ({ id: a.getAttribute('href').slice(1), no: a.dataset.no, name: a.textContent.replace(a.dataset.no, '').trim() }))
+    .map((c) => ({ ...c, el: document.getElementById(c.id) }))
+    .filter((c) => c.el);
+  bands.innerHTML = items.map((c, i) => `<a href="#${c.id}" data-i="${i}"><span>B${c.no}</span><em>${c.name}</em></a>`).join('');
+  for (const a of menu.querySelectorAll('a span')) a.textContent = 'B' + a.textContent;
+
+  mb.addEventListener('click', () => { const open = menu.classList.toggle('open'); mb.setAttribute('aria-expanded', open); });
+  menu.addEventListener('click', (e) => { if (e.target.closest('a')) menu.classList.remove('open'); });
   document.addEventListener('click', (e) => { if (!menu.contains(e.target) && e.target !== mb) menu.classList.remove('open'); });
-  let ticking = false, lastI = -2;
+
+  let current = -2, ticking = false;
   function update() {
     ticking = false;
+    const doc = document.documentElement;
+    bar.style.width = (100 * scrollY / Math.max(1, doc.scrollHeight - innerHeight)).toFixed(1) + '%';
     const line = innerHeight * 0.35;
     let i = -1;
-    for (let k = 0; k < items.length; k++) if (items[k].el.getBoundingClientRect().top <= line) i = k;
-    let left;
-    if (i < 0) { const top = items[0].el.getBoundingClientRect().top; left = Math.max(0, 3 * (1 - (top - line) / innerHeight)); }
-    else {
-      const a = items[i].el.getBoundingClientRect(), nx = items[i + 1] ? items[i + 1].el.getBoundingClientRect().top : a.bottom;
-      const f = Math.max(0, Math.min(1, (line - a.top) / Math.max(1, nx - a.top)));
-      left = i + 1 < items.length ? lerp(pos(i), pos(i + 1), f) : pos(i);
-    }
-    needle.style.left = left + '%';
-    if (i !== lastI) {
-      lastI = i;
-      readout.textContent = i < 0 ? 'CH 00 · STANDBY' : `CH ${items[i].no} · ${items[i].name.toUpperCase()}`;
-      for (const a of scale.querySelectorAll('.ch')) { const on = +a.dataset.i === i; a.classList.toggle('on', on); a.textContent = on ? a.dataset.full : a.dataset.short; }
-    }
+    items.forEach((c, k) => { if (c.el.getBoundingClientRect().top <= line) i = k; });
+    if (i === current) return;
+    current = i;
+    for (const a of bands.children) a.classList.toggle('on', +a.dataset.i === i);
   }
   addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
   update();
 }
-
 
 /* ------------------------------------------------------------------ reveal + clock */
 function reveal() {

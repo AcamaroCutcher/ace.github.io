@@ -4,7 +4,7 @@ import { noise3, tuner, reveal, theme, $, REDUCED, isDark } from './shared.js';
 
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const SENSOR_COLOR = { VIIRS_SNPP: '#ffb35c', VIIRS_NOAA20: '#ff6b1a', VIIRS_NOAA21: '#ff3d2e', MODIS_TERRA: '#74d2c3', MODIS_AQUA: '#5b8def', GOES: '#b9a5ee', FIRESAT: '#f2d64b' };
+const SENSOR_COLOR = { VIIRS_SNPP: '#ffb04a', VIIRS_NOAA20: '#ff6a1f', VIIRS_NOAA21: '#e0442f', MODIS_TERRA: '#5cc8ff', MODIS_AQUA: '#7d7bff', GOES: '#c08cff', FIRESAT: '#ffd84a' };
 
 /* ------------------------------------------------------------------ hero: fire seen by satellite pixels */
 function hero() {
@@ -15,7 +15,7 @@ function hero() {
   function layout() {
     dpr = Math.min(devicePixelRatio || 1, 2); W = cv.clientWidth; H = cv.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    cell = W < 700 ? 11 : 15; nx = Math.ceil(W / cell); ny = Math.ceil(H / cell);
+    cell = W < 700 ? 8 : 11; nx = Math.ceil(W / cell); ny = Math.ceil(H / cell);
     fuel = new Float32Array(nx * ny); state = new Uint8Array(nx * ny); age = new Float32Array(nx * ny); seen = new Float32Array(nx * ny).fill(-1);
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) fuel[j * nx + i] = 0.55 + 0.45 * noise3(i / 18, j / 18, 3.1);
     ignite();
@@ -53,7 +53,7 @@ function hero() {
     const dark = isDark();
     g.clearRect(0, 0, W, H);
     // contour-ish terrain
-    g.strokeStyle = dark ? 'rgba(196,182,128,.08)' : 'rgba(110,92,40,.12)'; g.lineWidth = 1;
+    g.strokeStyle = dark ? 'rgba(92,200,255,.10)' : 'rgba(26,111,168,.14)'; g.lineWidth = 1;
     for (let j = 0; j < ny; j += 1) for (let i = 0; i < nx; i += 1) {
       const v = fuel[idx(i, j)] * 10;
       if (Math.floor(v) !== Math.floor(fuel[idx(Math.min(nx - 1, i + 1), j)] * 10)) { g.beginPath(); g.moveTo((i + 1) * cell, j * cell); g.lineTo((i + 1) * cell, (j + 1) * cell); g.stroke(); }
@@ -63,11 +63,11 @@ function hero() {
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
       const s = seen[idx(i, j)]; if (s < 0) continue;
       const ageP = pass - s;
-      const c = ageP === 0 ? 'rgba(255,240,180,.95)' : ageP === 1 ? 'rgba(255,150,40,.8)' : ageP < 4 ? 'rgba(220,70,20,.55)' : (dark ? 'rgba(120,40,20,.35)' : 'rgba(150,60,30,.28)');
+      const c = ageP === 0 ? 'rgba(255,243,166,.95)' : ageP === 1 ? 'rgba(255,154,31,.85)' : ageP < 4 ? 'rgba(224,68,47,.65)' : (dark ? 'rgba(155,30,90,.45)' : 'rgba(155,30,90,.3)');
       g.fillStyle = c; g.fillRect(i * cell + 1, j * cell + 1, cell - 2, cell - 2);
     }
     // perimeter around everything detected so far (outline of the detected-cell mask)
-    g.strokeStyle = dark ? 'rgba(255,107,26,.9)' : 'rgba(212,80,10,.95)'; g.lineWidth = 1.6; g.beginPath();
+    g.strokeStyle = dark ? 'rgba(255,122,26,.95)' : 'rgba(201,80,13,.95)'; g.lineWidth = 1.6; g.beginPath();
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
       const on = seen[idx(i, j)] >= 0; if (!on) continue;
       if (i === 0 || seen[idx(i - 1, j)] < 0) { g.moveTo(i * cell, j * cell); g.lineTo(i * cell, (j + 1) * cell); }
@@ -80,9 +80,9 @@ function hero() {
     if (sweep >= 0) {
       const y = sweep * (H + 200) - 100;
       const grd = g.createLinearGradient(0, y - 90, 0, y + 10);
-      grd.addColorStop(0, 'rgba(116,210,195,0)'); grd.addColorStop(1, dark ? 'rgba(116,210,195,.22)' : 'rgba(34,117,106,.2)');
+      grd.addColorStop(0, 'rgba(92,200,255,0)'); grd.addColorStop(1, dark ? 'rgba(92,200,255,.22)' : 'rgba(26,111,168,.18)');
       g.fillStyle = grd; g.fillRect(0, y - 90, W, 100);
-      g.fillStyle = dark ? 'rgba(116,210,195,.8)' : 'rgba(34,117,106,.85)'; g.fillRect(0, y, W, 1.5);
+      g.fillStyle = dark ? 'rgba(92,200,255,.85)' : 'rgba(26,111,168,.85)'; g.fillRect(0, y, W, 1.5);
     }
     const hc = $('heroClock'); if (hc) hc.textContent = `pass ${String(pass).padStart(2, '0')} · t+${String(pass * 12).padStart(2, '0')} h`;
   }
@@ -140,7 +140,7 @@ const SATS = [
     what: 'Spaceborne LiDAR samples: GEDI footprints (~25 m) give canopy height, cover and biomass; ICESat-2 ATL08 gives canopy and terrain along tracks. Samples, not a map.',
     when: 'Scattered in space and time.', access: 'NASA Earthdata (login), so loaded by the pipeline.' },
 ];
-const KIND_COL = { heat: '#ff6b1a', change: '#74d2c3', structure: '#b9a5ee' };
+const KIND_COL = { heat: '#ff7a1a', change: '#5cc8ff', structure: '#c08cff' };
 
 function satChart() {
   const host = $('satChart'); if (!host) return;
@@ -252,23 +252,82 @@ function erDiagram() {
   show('fire_event');
 }
 
-/* ------------------------------------------------------------------ linking demo */
+/* ------------------------------------------------------------------ linking demo (interactive) */
+// The same rules as link_hotspots() in schema/60_link.sql, applied to one detection you can drag around.
+//   1.0  inside a perimeter mapped within 12 h of the detection
+//   0.8  inside the final perimeter
+//   0.6 × (1 − d / 2 km)  within 2 km of the final perimeter
+//   none farther away
+const LINK = { finalPath: 'M150,90 C230,40 360,50 420,110 C470,160 450,250 360,280 C270,305 170,270 130,210 C105,170 110,120 150,90Z',
+               dailyPath: 'M190,120 C250,90 330,100 360,140 C385,175 360,225 300,235 C240,245 190,215 175,180 C165,150 170,130 190,120Z',
+               metresPerUnit: 20, bufferM: 2000, mappedAtHour: 14 };
+
+function scoreDetection(x, y, hour, shapes) {
+  const pt = new DOMPoint(x, y);
+  const insideDaily = shapes.daily.isPointInFill(pt);
+  const insideFinal = shapes.final.isPointInFill(pt);
+  const sameTime = Math.abs(hour - LINK.mappedAtHour) <= 12;
+  if (insideDaily && sameTime) return { score: 1.0, rule: 'inside a perimeter mapped within 12 hours', dist: 0 };
+  if (insideFinal) return { score: 0.8, rule: 'inside the final perimeter', dist: 0 };
+  const dist = distanceToPath(shapes.final, x, y) * LINK.metresPerUnit;
+  if (dist <= LINK.bufferM) return { score: 0.6 * (1 - dist / LINK.bufferM), rule: `within 2 km of the perimeter (${Math.round(dist)} m away)`, dist };
+  return { score: 0, rule: `${(dist / 1000).toFixed(1)} km from the perimeter: not linked to this fire`, dist };
+}
+
+function distanceToPath(path, x, y) {
+  const len = path.getTotalLength();
+  let best = Infinity;
+  for (let s = 0; s <= len; s += 4) { const p = path.getPointAtLength(s); best = Math.min(best, Math.hypot(p.x - x, p.y - y)); }
+  return best;
+}
+
 function linkDemo() {
   const host = $('linkDemo'); if (!host) return;
-  // a perimeter observed at 14:00, the final perimeter, a 2 km buffer, and detections around them
-  const final = 'M150,90 C230,40 360,50 420,110 C470,160 450,250 360,280 C270,305 170,270 130,210 C105,170 110,120 150,90Z';
-  const daily = 'M190,120 C250,90 330,100 360,140 C385,175 360,225 300,235 C240,245 190,215 175,180 C165,150 170,130 190,120Z';
-  const pts = [[260, 170, 1.0], [300, 200, 1.0], [230, 150, 1.0], [400, 220, 0.8], [180, 245, 0.8], [455, 268, 0.3], [100, 250, 0.5], [500, 115, 0.1], [530, 300, 0]];
-  const leg = [['s1', '1.0', 'inside the perimeter mapped at 14:00'], ['s8', '0.8', 'inside the final perimeter'], ['s6', '≤ 0.6', 'within 2 km: score falls with distance'], ['s0', '×', 'farther: not this fire']];
-  host.innerHTML = `<svg viewBox="0 0 760 330" role="img" aria-label="How detections are scored against a fire's perimeters">
-    <path class="buf" d="${final}" transform="translate(-30 -26) scale(1.12)"/>
-    <path class="fin" d="${final}"/>
-    <path class="day" d="${daily}"/>
-    <text class="ax" x="196" y="28">2 km buffer</text><text class="ax" x="300" y="44">final perimeter</text><text class="ax" x="215" y="112">mapped 14:00</text>
-    ${pts.map(([x, y, sc], i) => `<g class="pt" style="--d:${i * 0.25}s"><rect x="${x - 7}" y="${y - 7}" width="14" height="14" class="px ${sc >= 1 ? 's1' : sc >= 0.8 ? 's8' : sc > 0 ? 's6' : 's0'}"/><text class="sc${sc ? '' : ' no'}" x="${x}" y="${y - 12}" text-anchor="middle">${sc ? sc.toFixed(1) : '×'}</text></g>`).join('')}
-    <g transform="translate(570 70)">${leg.map(([c, v, t], i) => `<g transform="translate(0 ${i * 44})"><rect width="14" height="14" class="px ${c}"/><text class="sc" x="22" y="12">${v}</text><text class="ax" x="0" y="32">${t.length > 26 ? t.slice(0, t.lastIndexOf(' ', 26)) : t}</text>${t.length > 26 ? `<text class="ax" x="0" y="46">${t.slice(t.lastIndexOf(' ', 26) + 1)}</text>` : ''}</g>`).join('')}</g>
-    <text class="ax dim" x="12" y="320">squares = 375 m VIIRS pixels detected at 13:30</text></svg>`;
-  new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { host.classList.add('go'); io.disconnect(); } }, { threshold: 0.4 }).observe(host);
+  host.innerHTML = `
+    <svg viewBox="0 0 700 330" role="img" aria-label="Drag the detection to see how it would be scored">
+      <path class="buf" d="${LINK.finalPath}" transform="translate(-30 -26) scale(1.12)"/>
+      <path class="fin" id="lkFinal" d="${LINK.finalPath}"/>
+      <path class="day" id="lkDaily" d="${LINK.dailyPath}"/>
+      <text class="ax" x="500" y="66">2 km buffer</text>
+      <text class="ax" x="476" y="128">final perimeter</text>
+      <text class="ax" x="206" y="150">mapped 14:00</text>
+      <g class="drag" id="lkDot" tabindex="0" role="slider" aria-label="Detection position (arrow keys move it)">
+        <circle class="halo" r="16"/><rect x="-8" y="-8" width="16" height="16" class="px s1"/><text class="sc" y="-14" text-anchor="middle"></text>
+      </g>
+      <text class="ax dim" x="12" y="320">drag the square (a 375 m VIIRS pixel) · arrow keys work too</text>
+    </svg>
+    <div class="linkctl">
+      <label for="lkHour">Seen at</label>
+      <input type="range" id="lkHour" min="0" max="47" step="1" value="13" aria-label="Time the detection was seen" />
+      <output id="lkHourOut"></output>
+    </div>
+    <div class="verdict" id="lkVerdict"></div>`;
+  const svg = host.querySelector('svg'), dot = $('lkDot'), hour = $('lkHour');
+  const shapes = { final: $('lkFinal'), daily: $('lkDaily') };
+  let x = 300, y = 205;
+
+  function render() {
+    const h = +hour.value;
+    const r = scoreDetection(x, y, h, shapes);
+    dot.setAttribute('transform', `translate(${x} ${y})`);
+    dot.querySelector('rect').setAttribute('class', `px ${r.score >= 1 ? 's1' : r.score >= 0.8 ? 's8' : r.score > 0 ? 's6' : 's0'}`);
+    dot.querySelector('text').textContent = r.score ? r.score.toFixed(2) : '×';
+    shapes.daily.classList.toggle('off', Math.abs(h - LINK.mappedAtHour) > 12);
+    $('lkHourOut').textContent = `${h < 24 ? 'day 1' : 'day 2'} ${String(h % 24).padStart(2, '0')}:00`;
+    $('lkVerdict').innerHTML = `<b style="color:${r.score ? 'var(--accent)' : 'var(--bad)'}">${r.score ? r.score.toFixed(2) : 'no link'}</b>${r.rule}.`;
+  }
+  function toSvg(e) { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse()); return [p.x, p.y]; }
+  let dragging = false;
+  dot.addEventListener('pointerdown', (e) => { dragging = true; dot.setPointerCapture(e.pointerId); });
+  dot.addEventListener('pointermove', (e) => { if (!dragging) return; [x, y] = toSvg(e); x = Math.max(10, Math.min(690, x)); y = Math.max(10, Math.min(305, y)); render(); });
+  dot.addEventListener('pointerup', () => { dragging = false; });
+  svg.addEventListener('click', (e) => { if (e.target.closest('#lkDot')) return; [x, y] = toSvg(e); render(); });
+  dot.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 20 : 6, d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+    if (d) { e.preventDefault(); x += d[0]; y += d[1]; render(); }
+  });
+  hour.addEventListener('input', render);
+  render();
 }
 
 /* ------------------------------------------------------------------ ML recipes */
@@ -344,7 +403,9 @@ function mlTabs() {
   const show = (i) => {
     const m = ML[keys[i]];
     for (const b of tabs.children) b.classList.toggle('on', +b.dataset.k === i);
-    pane.innerHTML = `<p>${m.text}</p><div class="codepair"><div><span class="ctag">SQL</span><pre><code>${esc(m.code)}</code></pre></div><div><span class="ctag">Python</span><pre><code>${esc(m.py)}</code></pre></div></div>`;
+    pane.innerHTML = `<p>${m.text}</p><div class="codecap"><span>1 · Ask the database (SQL)</span></div><pre><code data-lang="sql">${esc(m.code)}</code></pre>
+      <div class="codecap"><span>2 · Build the model input (Python)</span></div><pre><code data-lang="py">${esc(m.py)}</code></pre>`;
+    decorateCode(pane);
   };
   tabs.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) show(+b.dataset.k); });
   show(0);
@@ -355,10 +416,73 @@ async function questions() {
   const host = $('qList'); if (!host) return;
   let data;
   try { data = await (await fetch('data/queries.json')).json(); } catch (e) { host.innerHTML = '<p class="sub">Results not generated yet.</p>'; return; }
-  host.innerHTML = data.map((q, i) => `<details class="q"><summary><span class="qn">${q.id.startsWith('b') ? 'Basic' : 'Advanced'} ${parseInt(q.id.slice(1), 10)}</span><span class="qt">${esc(q.question)}</span><span class="qr">${q.rows_total.toLocaleString()} row${q.rows_total === 1 ? '' : 's'}</span></summary>
+  const filter = document.createElement('div');
+  filter.className = 'qfilter';
+  filter.innerHTML = `<button type="button" data-k="all" class="on">All 20</button><button type="button" data-k="b">Basic</button><button type="button" data-k="a">Advanced</button>
+    <input type="search" placeholder="Search the questions (e.g. VIIRS, Oregon, acres)…" aria-label="Search the questions" />`;
+  host.before(filter);
+  host.innerHTML = data.map((q, i) => `<details class="q" data-kind="${q.id[0]}"><summary><span class="qn">${q.id.startsWith('b') ? 'Basic' : 'Advanced'} ${parseInt(q.id.slice(1), 10)}</span><span class="qt">${esc(q.question)}</span><span class="qr">${q.rows_total.toLocaleString()} row${q.rows_total === 1 ? '' : 's'}</span></summary>
     <pre><code>${esc(q.sql)}</code></pre>
     <div class="tbl-wrap"><table class="tbl small"><tr>${q.columns.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${q.rows.map((r) => `<tr>${r.map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table></div>
     <p class="sub">${q.rows.length < q.rows_total ? `First ${q.rows.length} of ${q.rows_total.toLocaleString()} rows. ` : ''}Ran in ${q.ms.toLocaleString()} ms on the local database.</p></details>`).join('');
+  let kind = 'all', text = '';
+  const apply = () => { for (const d of host.children) d.hidden = !((kind === 'all' || d.dataset.kind === kind) && d.textContent.toLowerCase().includes(text)); };
+  filter.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; kind = b.dataset.k; for (const x of filter.querySelectorAll('button')) x.classList.toggle('on', x === b); apply(); });
+  filter.querySelector('input').addEventListener('input', (e) => { text = e.target.value.toLowerCase(); apply(); });
+  decorateCode(host);
+}
+
+/* ------------------------------------------------------------------ legible code */
+// A small highlighter for the SQL and Python on this page: keywords, functions, strings, numbers,
+// comments and types each get a colour; every block gets line numbers and a copy button.
+const SQL_KW = new Set('select from where join left right inner outer on using as and or not in is null distinct group by order having limit with union all case when then else end insert into values update set delete create table view function returns language begin return over partition between like ilike exists cross lateral desc asc true false filter coalesce interval'.split(' '));
+const PY_KW = new Set('import from as def class return for in if else elif while with not and or is None True False lambda yield try except raise pass break continue'.split(' '));
+const SQL_TY = new Set('bigint integer text timestamptz real numeric geometry geography boolean smallint jsonb'.split(' '));
+
+function highlight(src, lang) {
+  const kw = lang === 'py' ? PY_KW : SQL_KW;
+  const comment = lang === 'py' ? /#.*$/ : /--.*$/;
+  const tokens = /(\s+)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][\w.]*)|(.)/g;
+  return src.split('\n').map((line) => {
+    let code = line, tail = '';
+    const c = line.match(comment);
+    if (c && !/['"]/.test(line.slice(0, c.index).replace(/'[^']*'|"[^"]*"/g, ''))) { code = line.slice(0, c.index); tail = `<span class="tk-com">${esc(c[0])}</span>`; }
+    const out = code.replace(tokens, (m, ws, str, num, word, other, offset, whole) => {
+      if (ws) return ws;
+      if (str) return `<span class="tk-str">${esc(str)}</span>`;
+      if (num) return `<span class="tk-num">${num}</span>`;
+      if (word) {
+        const lw = word.toLowerCase();
+        if (kw.has(lw)) return `<span class="tk-kw">${esc(word)}</span>`;
+        if (lang !== 'py' && SQL_TY.has(lw)) return `<span class="tk-ty">${esc(word)}</span>`;
+        if (whole[offset + word.length] === '(') return `<span class="tk-fn">${esc(word)}</span>`;
+        return esc(word);
+      }
+      return esc(other);
+    });
+    return out + tail;
+  });
+}
+
+function decorateCode(root = document) {
+  for (const code of root.querySelectorAll('pre > code')) {
+    if (code.dataset.done) continue;
+    code.dataset.done = '1';
+    const src = code.textContent.replace(/\n$/, '');
+    const lang = code.dataset.lang || (/^\s*(import|from|def|class|#)/m.test(src) && !/\bselect\b/i.test(src) ? 'py' : /\b(select|create|insert|with)\b/i.test(src) ? 'sql' : 'sh');
+    const lines = lang === 'sh' ? src.split('\n').map((l) => l.startsWith('#') ? `<span class="tk-com">${esc(l)}</span>` : esc(l).replace(/(#.*)$/, '<span class="tk-com">$1</span>'))
+                                : highlight(src, lang);
+    code.innerHTML = lines.map((l, i) => `<span class="ln">${i + 1}</span>${l}`).join('\n');
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'copy'; btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy this code');
+    btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(src); btn.textContent = 'Copied'; btn.classList.add('ok'); }
+      catch (e) { btn.textContent = 'Select & copy'; }
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1600);
+    });
+    code.parentElement.appendChild(btn);
+  }
 }
 
 /* ------------------------------------------------------------------ stats and case fires */
@@ -377,4 +501,4 @@ async function stats() {
   if (cc && s.cases) cc.innerHTML = s.cases.map((c) => `<a class="case" href="app/?fire=${c.slug}"><b>${esc(c.name)}</b><span>${esc(c.where)} · ${esc(c.when)}</span><span>${Math.round(c.acres).toLocaleString()} acres · ${c.hotspots.toLocaleString()} detections · ${c.perimeters} perimeter${c.perimeters === 1 ? '' : 's'}</span><span class="lid">${esc(c.lidar)}</span><em>${esc(c.why)}</em></a>`).join('');
 }
 
-theme(); tuner(); reveal(); hero(); satChart(); overpasses(); erDiagram(); linkDemo(); mlTabs(); questions(); stats();
+theme(); tuner(); reveal(); hero(); satChart(); overpasses(); erDiagram(); linkDemo(); mlTabs(); questions(); stats(); decorateCode();
