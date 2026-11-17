@@ -1,0 +1,116 @@
+{
+ "slug": "rail-ridge-2024",
+ "event_id": 487049,
+ "name": "RAIL RIDGE",
+ "where": "Grant County, Oregon",
+ "why": "Mapped almost daily (96 perimeters) and covered by LiDAR flown five years before the fire: spread over known canopy.",
+ "discovered": "2024-09-02",
+ "contained": "2024-11-01",
+ "acres": 176661,
+ "bounds": [
+  -119.76626572908481,
+  44.05488185397299,
+  -119.3019493211082,
+  44.46851756198046
+ ],
+ "bounds_3857": [
+  -13332319.715173611,
+  5473939.208416204,
+  -13280632.249070695,
+  5538234.955566225
+ ],
+ "lidar": {
+  "pre": {
+   "collection": "OR_NRCSUSGS_2_2019",
+   "year": 2019,
+   "zmin": 736.125955,
+   "sx": 0.7887001770491607,
+   "sy": 0.981090213626622,
+   "points": 600000,
+   "raw": {
+    "nodes": 592,
+    "depth": 5,
+    "points": 10155192,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/OR_NRCSUSGS_2_2019/ept.json"
+   },
+   "cell_m": 30.0,
+   "chm_mean": 14.775884628295898,
+   "chm_p95": 35.7400016784668
+  }
+ },
+ "files": [
+  "bundle.json",
+  "chm_pre.png",
+  "dnbr.png",
+  "lidar_detail_pre.bin",
+  "lidar_pre.bin",
+  "s2_post.jpg",
+  "s2_pre.jpg",
+  "swir_post.jpg",
+  "swir_pre.jpg"
+ ],
+ "detail": {
+  "bounds": [
+   -119.71295071697232,
+   44.34160837434124,
+   -119.69049283486932,
+   44.35766772259715
+  ],
+  "bounds_3857": [
+   -13326384.715173611,
+   5518459.955566225,
+   -13323884.715173611,
+   5520959.955566225
+  ],
+  "size_m": 2500.0,
+  "pre": {
+   "zmin": 1434.226815,
+   "sx": 0.03814755474174106,
+   "sy": 0.03814755474174106,
+   "points": 1000000,
+   "raw": {
+    "nodes": 72,
+    "depth": 7,
+    "points": 1227364,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/OR_NRCSUSGS_2_2019/ept.json"
+   }
+  }
+ },
+ "imagery_rule": "post scene: next growing season (extended assessment)",
+ "dnbr": {
+  "mean": 0.10300272703170776,
+  "high_severity_frac": 0.010972698777215009
+ },
+ "imagery": {
+  "pre": {
+   "date": "2024-08-26",
+   "items": [
+    "S2B_10TGP_20240826_0_L2A",
+    "S2B_11TLJ_20240826_0_L2A",
+    "S2B_10TGQ_20240826_0_L2A",
+    "S2B_11TLK_20240826_0_L2A"
+   ],
+   "cloud": [
+    0.000461,
+    0.007988,
+    1e-05,
+    0.000936
+   ]
+  },
+  "post": {
+   "date": "2025-08-11",
+   "items": [
+    "S2B_10TGP_20250811_1_L2A",
+    "S2B_11TLJ_20250811_1_L2A",
+    "S2B_10TGQ_20250811_0_L2A",
+    "S2B_11TLK_20250811_0_L2A"
+   ],
+   "cloud": [
+    0.00223,
+    0.001634,
+    0.000451,
+    0.001334
+   ]
+  }
+ }
+}
