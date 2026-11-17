@@ -1,0 +1,110 @@
+{
+ "slug": "beachie-creek-2020",
+ "event_id": 45160,
+ "name": "Beachie Creek",
+ "where": "Santiam Canyon, Oregon",
+ "why": "The 2020 Labor Day east-wind run: satellite detections trace it from about 1,100 acres on the afternoon of 7 September to about 115,000 acres by 2 a.m. the next morning. Post-fire LiDAR covers the whole burn.",
+ "discovered": "2020-08-16",
+ "contained": "2020-10-29",
+ "acres": 193573,
+ "bounds": [
+  -122.6849142246098,
+  44.683745016902414,
+  -122.06164063158822,
+  45.03856181166056
+ ],
+ "bounds_3857": [
+  -13657222.179500008,
+  5571870.263899997,
+  -13587839.680499952,
+  5627594.298500007
+ ],
+ "lidar": {
+  "post": {
+   "collection": "OR_WWildfires_1_A22",
+   "year": 2022,
+   "zmin": 195.893015,
+   "sx": 1.0587090714893677,
+   "sy": 0.8502942641338238,
+   "points": 600000,
+   "raw": {
+    "nodes": 215,
+    "depth": 6,
+    "points": 1951016,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/OR_WWildfires_1_A22/ept.json"
+   },
+   "cell_m": 30.0,
+   "chm_mean": 18.5278377532959,
+   "chm_p95": 53.511375427246094
+  }
+ },
+ "files": [
+  "bundle.json",
+  "chm_post.png",
+  "dnbr.png",
+  "lidar_detail_post.bin",
+  "lidar_post.bin",
+  "s2_post.jpg",
+  "s2_pre.jpg",
+  "swir_post.jpg",
+  "swir_pre.jpg"
+ ],
+ "detail": {
+  "bounds": [
+   -122.22331491586498,
+   44.734174282697786,
+   -122.20085703376198,
+   44.75012570802875
+  ],
+  "bounds_3857": [
+   -13605837.179500008,
+   5579769.298500007,
+   -13603337.179500008,
+   5582269.298500007
+  ],
+  "size_m": 2500.0,
+  "post": {
+   "zmin": 667.11242,
+   "sx": 0.03814755474174106,
+   "sy": 0.03814755474174106,
+   "points": 1000000,
+   "raw": {
+    "nodes": 57,
+    "depth": 9,
+    "points": 1509356,
+    "ept": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/OR_WWildfires_1_A22/ept.json"
+   }
+  }
+ },
+ "imagery_rule": "post scene: next growing season (extended assessment)",
+ "dnbr": {
+  "mean": 0.24189560115337372,
+  "high_severity_frac": 0.17870350806869664
+ },
+ "imagery": {
+  "pre": {
+   "date": "2020-08-10",
+   "items": [
+    "S2B_10TEQ_20200810_1_L2A",
+    "S2B_10TEQ_20200810_0_L2A"
+   ],
+   "cloud": [
+    0.000153,
+    0.07781
+   ]
+  },
+  "post": {
+   "date": "2021-06-21",
+   "items": [
+    "S2A_10TEQ_20210621_0_L2A",
+    "S2A_10TEQ_20210621_2_L2A",
+    "S2A_10TEQ_20210621_1_L2A"
+   ],
+   "cloud": [
+    0.115958,
+    0.000418,
+    0.000418
+   ]
+  }
+ }
+}
